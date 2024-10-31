@@ -1,11 +1,3 @@
 ## Hurricane
 
-- third party
-- makefile
-
-- api
-- go docs
-- go lint
-- docs
-- tools
-- scripts
+Hurricane is a feature-rich web development template ⚡️ that integrates with the popular golang toolchain library.

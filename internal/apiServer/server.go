@@ -48,6 +48,12 @@ func createMasterApiServer(config *config.Config) (*MasterApiServer, error) {
 	gs := shutdown.New()
 	gs.AddShutdownManager(shutdown.NewPosixSignalManager())
 
+	gs.AddShutdownCallback(shutdown.ShutdownFunc(func(s string) error {
+		log.Info("call shutdown callback")
+		log.Info("finish shutdown callback")
+		return nil
+	}))
+
 	if err != nil {
 		return nil, err
 	}

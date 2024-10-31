@@ -11,12 +11,10 @@ log:
   enable-file: false # 日志是否输出到文件
   enable-color: true # 是否开启颜色输出，true:是，false:否
   layout: "2006-01-02 15:04:05"
-
   # 如果不写，默认是程序入口根入口目录的 hurricane.err.log  hurricane.inf.log hurricane.deb.log
   info-file-path: ""
   error-file-path: ""
   debug-file-path: ""
-
   # 日志可以写入文件时，默认日志不会过期 100M 一个日志文件，可以通过以下选项对日志保存时间进行控制
   max-age: 0
   max-backups: 0
@@ -30,7 +28,7 @@ server:
   mode: debug # server mode: release, debug, test，默认 release
   healthz: true # 是否开启健康检查，如果开启会安装 /healthz 路由，默认 true
   # middlewares: recovery,logger,secure,nocache,cors,dump # 加载的 gin 中间件列表，多个中间件，逗号(,)隔开
-  middlewares: recovery,logger # 加载的 gin 中间件列表，多个中间件，逗号(,)隔开
+  middlewares: logger,cors # 加载的 gin 中间件列表，多个中间件，逗号(,)隔开
   # max-ping-count: 3 # http 服务启动后，自检尝试次数，默认 3
 # GRPC 服务配置
 # grpc:

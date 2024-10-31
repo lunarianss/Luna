@@ -10,7 +10,9 @@ var Middlewares = defaultMiddlewares()
 
 func defaultMiddlewares() map[string]gin.HandlerFunc {
 	return map[string]gin.HandlerFunc{
-		"recovery": Recovery(),
-		"logger":   gin.Logger(),
+		"recovery":  Recovery(),
+		"logger":    gin.Logger(),
+		"requestid": RequestID(),
+		"cors":      Cors(),
 	}
 }

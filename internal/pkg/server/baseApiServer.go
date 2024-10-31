@@ -14,6 +14,7 @@ import (
 
 	"github.com/Ryan-eng-del/hurricane/internal/pkg/middleware"
 	"github.com/Ryan-eng-del/hurricane/pkg/log"
+	"github.com/fatih/color"
 
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
@@ -22,10 +23,9 @@ import (
 )
 
 type BaseApiServer struct {
-	middlewares         []string
-	SecureServingInfo   *SecureServingInfo
-	InsecureServingInfo *InsecureServingInfo
-	// shutdownTimeout                              time.Duration
+	middlewares                                  []string
+	SecureServingInfo                            *SecureServingInfo
+	InsecureServingInfo                          *InsecureServingInfo
 	enableHealth, enableMetrics, enableProfiling bool
 	InsecureServer, SecureServer                 *http.Server
 	*ServerOption
@@ -73,10 +73,10 @@ func (s *BaseApiServer) Setup() {
 // InstallMiddlewares install generic middlewares.
 func (s *BaseApiServer) InstallMiddlewares() {
 	// necessary middlewares
-	// s.Use(gin.Logger())
-	// s.Use(middleware.Recovery())
-	// s.Use(middleware.RequestID())
-	// s.Use(middleware.Context())
+	s.Use(middleware.RequestID())
+	s.Use(middleware.Context())
+	s.Use(middleware.Recovery())
+
 	// install custom middlewares
 	for _, m := range s.middlewares {
 		mw, ok := middleware.Middlewares[m]
@@ -119,8 +119,7 @@ func (s *BaseApiServer) Run() error {
 	// Initializing the server in a goroutine so that
 	// it won't block the graceful shutdown handling below
 	eg.Go(func() error {
-		log.Infof("Start to listening the incoming requests on http address: %s", s.InsecureServingInfo.Address())
-
+		log.Infof("Start to listening the incoming requests on http address: %s", color.HiGreenString(s.InsecureServingInfo.Address()))
 		if err := s.InsecureServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatal(err.Error())
 
@@ -138,7 +137,7 @@ func (s *BaseApiServer) Run() error {
 			return nil
 		}
 
-		log.Infof("Start to listening the incoming requests on https address: %s", s.SecureServingInfo.Address())
+		log.Infof("Start to listening the incoming requests on https address: %s", color.HiGreenString(s.SecureServer.Addr))
 
 		if err := s.SecureServer.ListenAndServeTLS(cert, key); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatal(err.Error())

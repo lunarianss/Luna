@@ -46,14 +46,14 @@ func RecoveryWithWriter(out io.Writer) gin.HandlerFunc {
 	return CustomRecoveryWithWriter(out, defaultHandleRecovery)
 }
 
-//nolint: gocognit
+// nolint: gocognit
 // CustomRecoveryWithWriter returns a middleware for a given writer that recovers from any panics and calls the provided
 // handle func to handle it.
 func CustomRecoveryWithWriter(out io.Writer, handle RecoveryFunc) gin.HandlerFunc {
-	logger := log.Log
 
 	return func(c *gin.Context) {
 		defer func() {
+			logger := log.Log
 			//nolint: nestif
 			if err := recover(); err != nil {
 				// Check for a broken connection, as it is not really a

@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/Ryan-eng-del/hurricane/pkg/log"
+	"github.com/lunarianss/Hurricane/pkg/log"
 )
 
 const Name = "PosixSignalManager"

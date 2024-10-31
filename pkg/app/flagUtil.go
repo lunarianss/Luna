@@ -16,7 +16,7 @@ import (
 
 	"github.com/fatih/color"
 
-	"github.com/Ryan-eng-del/hurricane/pkg/log"
+	"github.com/lunarianss/Hurricane/pkg/log"
 
 	"github.com/moby/term"
 	"github.com/spf13/pflag"

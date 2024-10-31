@@ -5,7 +5,7 @@
 package controller
 
 import (
-	"github.com/Ryan-eng-del/hurricane/internal/apiServer/service"
+	"github.com/lunarianss/Hurricane/internal/apiServer/service"
 )
 
 type BlogController struct {

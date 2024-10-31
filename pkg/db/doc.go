@@ -2,4 +2,4 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
-package db // import "github.com/Ryan-eng-del/hurricane/pkg/db"
+package db // import "github.com/lunarianss/Hurricane/pkg/db"

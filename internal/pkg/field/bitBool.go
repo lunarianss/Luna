@@ -7,8 +7,8 @@ package field
 import (
 	"database/sql/driver"
 
-	"github.com/Ryan-eng-del/hurricane/internal/pkg/code"
-	"github.com/Ryan-eng-del/hurricane/pkg/errors"
+	"github.com/lunarianss/Hurricane/internal/pkg/code"
+	"github.com/lunarianss/Hurricane/pkg/errors"
 )
 
 type BitBool int

@@ -7,12 +7,12 @@ package controller
 import (
 	"strconv"
 
-	dto "github.com/Ryan-eng-del/hurricane/internal/apiServer/dto/blog"
-	"github.com/Ryan-eng-del/hurricane/internal/pkg/code"
-	"github.com/Ryan-eng-del/hurricane/internal/pkg/core"
-	"github.com/Ryan-eng-del/hurricane/pkg/errors"
-	"github.com/Ryan-eng-del/hurricane/pkg/log"
 	"github.com/gin-gonic/gin"
+	dto "github.com/lunarianss/Hurricane/internal/apiServer/dto/blog"
+	"github.com/lunarianss/Hurricane/internal/pkg/code"
+	"github.com/lunarianss/Hurricane/internal/pkg/core"
+	"github.com/lunarianss/Hurricane/pkg/errors"
+	"github.com/lunarianss/Hurricane/pkg/log"
 )
 
 func (bc *BlogController) Update(c *gin.Context) {

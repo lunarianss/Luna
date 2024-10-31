@@ -5,7 +5,7 @@
 package validation
 
 import (
-	"github.com/Ryan-eng-del/hurricane/internal/pkg/validation"
+	"github.com/lunarianss/Hurricane/internal/pkg/validation"
 )
 
 // validation unified registration portal

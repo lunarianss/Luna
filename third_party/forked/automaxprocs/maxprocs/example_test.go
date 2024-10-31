@@ -23,7 +23,7 @@ package maxprocs_test
 import (
 	"log"
 
-	"github.com/Ryan-eng-del/hurricane/third_party/forked/automaxprocs/maxprocs"
+	"github.com/lunarianss/Hurricane/third_party/forked/automaxprocs/maxprocs"
 )
 
 func Example() {

@@ -8,9 +8,9 @@ import (
 	"math/rand"
 	"time"
 
-	master "github.com/Ryan-eng-del/hurricane/internal/apiServer"
+	master "github.com/lunarianss/Hurricane/internal/apiServer"
 
-	_ "github.com/Ryan-eng-del/hurricane/third_party/forked/automaxprocs"
+	_ "github.com/lunarianss/Hurricane/third_party/forked/automaxprocs"
 )
 
 func main() {

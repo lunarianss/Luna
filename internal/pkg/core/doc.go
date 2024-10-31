@@ -2,4 +2,4 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
-package core // import "github.com/Ryan-eng-del/hurricane/pkg/core"
+package core // import "github.com/lunarianss/Hurricane/pkg/core"

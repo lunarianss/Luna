@@ -7,7 +7,7 @@ package options
 import (
 	"fmt"
 
-	"github.com/Ryan-eng-del/hurricane/internal/pkg/server"
+	"github.com/lunarianss/Hurricane/internal/pkg/server"
 
 	"github.com/spf13/pflag"
 )

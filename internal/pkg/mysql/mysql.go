@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/Ryan-eng-del/hurricane/internal/pkg/options"
-	"github.com/Ryan-eng-del/hurricane/pkg/db"
-	"github.com/Ryan-eng-del/hurricane/pkg/log"
+	"github.com/lunarianss/Hurricane/internal/pkg/options"
+	"github.com/lunarianss/Hurricane/pkg/db"
+	"github.com/lunarianss/Hurricane/pkg/log"
 	"gorm.io/gorm"
 )
 

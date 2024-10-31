@@ -5,7 +5,7 @@
 package master
 
 import (
-	"github.com/Ryan-eng-del/hurricane/internal/pkg/server"
+	"github.com/lunarianss/Hurricane/internal/pkg/server"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,7 +14,7 @@ var masterMiddlewares = make([]gin.HandlerFunc, 0)
 
 type MasterMiddleware struct{}
 
-//nolint: gochecknoinits
+// nolint: gochecknoinits
 func init() {
 	server.AddMiddlewares(&MasterMiddleware{})
 }

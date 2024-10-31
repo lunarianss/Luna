@@ -5,14 +5,14 @@
 package master
 
 import (
-	"github.com/Ryan-eng-del/hurricane/internal/apiServer/config"
-	_ "github.com/Ryan-eng-del/hurricane/internal/apiServer/route"
-	_ "github.com/Ryan-eng-del/hurricane/internal/apiServer/validation"
-	"github.com/Ryan-eng-del/hurricane/internal/pkg/mysql"
-	"github.com/Ryan-eng-del/hurricane/internal/pkg/server"
-	"github.com/Ryan-eng-del/hurricane/internal/pkg/validation"
-	"github.com/Ryan-eng-del/hurricane/pkg/log"
-	"github.com/Ryan-eng-del/hurricane/pkg/shutdown"
+	"github.com/lunarianss/Hurricane/internal/apiServer/config"
+	_ "github.com/lunarianss/Hurricane/internal/apiServer/route"
+	_ "github.com/lunarianss/Hurricane/internal/apiServer/validation"
+	"github.com/lunarianss/Hurricane/internal/pkg/mysql"
+	"github.com/lunarianss/Hurricane/internal/pkg/server"
+	"github.com/lunarianss/Hurricane/internal/pkg/validation"
+	"github.com/lunarianss/Hurricane/pkg/log"
+	"github.com/lunarianss/Hurricane/pkg/shutdown"
 )
 
 type MasterApiServer struct {

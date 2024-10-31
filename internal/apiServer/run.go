@@ -4,7 +4,7 @@
 
 package master
 
-import "github.com/Ryan-eng-del/hurricane/internal/apiServer/config"
+import "github.com/lunarianss/Hurricane/internal/apiServer/config"
 
 func Run(config *config.Config) error {
 	server, err := createMasterApiServer(config)

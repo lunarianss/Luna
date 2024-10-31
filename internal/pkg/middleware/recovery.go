@@ -17,7 +17,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Ryan-eng-del/hurricane/pkg/log"
+	"github.com/lunarianss/Hurricane/pkg/log"
 
 	"github.com/gin-gonic/gin"
 )

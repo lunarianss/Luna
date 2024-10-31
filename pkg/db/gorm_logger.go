@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Ryan-eng-del/hurricane/pkg/log"
+	"github.com/lunarianss/Hurricane/pkg/log"
 	gormlogger "gorm.io/gorm/logger"
 )
 

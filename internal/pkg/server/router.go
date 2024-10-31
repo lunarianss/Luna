@@ -7,8 +7,8 @@ package server
 import (
 	"fmt"
 
-	"github.com/Ryan-eng-del/hurricane/pkg/errors"
 	"github.com/gin-gonic/gin"
+	"github.com/lunarianss/Hurricane/pkg/errors"
 )
 
 type Router interface {

@@ -1,4 +1,4 @@
-module github.com/Ryan-eng-del/hurricane
+module github.com/lunarianss/Hurricane
 
 go 1.22.1
 

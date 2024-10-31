@@ -30,7 +30,7 @@ import (
 	"strconv"
 	"testing"
 
-	iruntime "github.com/Ryan-eng-del/hurricane/third_party/forked/automaxprocs/internal/runtime"
+	iruntime "github.com/lunarianss/Hurricane/third_party/forked/automaxprocs/internal/runtime"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

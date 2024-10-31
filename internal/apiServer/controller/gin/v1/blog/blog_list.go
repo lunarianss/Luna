@@ -5,10 +5,10 @@
 package controller
 
 import (
-	dto "github.com/Ryan-eng-del/hurricane/internal/apiServer/dto/blog"
-	"github.com/Ryan-eng-del/hurricane/internal/pkg/core"
-	"github.com/Ryan-eng-del/hurricane/pkg/log"
 	"github.com/gin-gonic/gin"
+	dto "github.com/lunarianss/Hurricane/internal/apiServer/dto/blog"
+	"github.com/lunarianss/Hurricane/internal/pkg/core"
+	"github.com/lunarianss/Hurricane/pkg/log"
 )
 
 func (bc *BlogController) List(c *gin.Context) {
@@ -28,8 +28,8 @@ func (bc *BlogController) List(c *gin.Context) {
 	}
 
 	core.WriteResponse(c, err, &dto.GetBlogListResponse{
-		Count: count,
-		Items: blogs,
-		NextPage:  params.Page + 1,
+		Count:    count,
+		Items:    blogs,
+		NextPage: params.Page + 1,
 	})
 }

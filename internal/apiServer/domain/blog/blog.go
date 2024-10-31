@@ -4,7 +4,7 @@
 
 package domain
 
-import "github.com/Ryan-eng-del/hurricane/internal/apiServer/repo"
+import "github.com/lunarianss/Hurricane/internal/apiServer/repo"
 
 type BlogDomain struct {
 	BlogRepo repo.BlogRepo

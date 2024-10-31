@@ -5,9 +5,9 @@
 package validation
 
 import (
-	vtor "github.com/Ryan-eng-del/hurricane/internal/pkg/validation"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
+	vtor "github.com/lunarianss/Hurricane/internal/pkg/validation"
 )
 
 type blogValidation struct{}

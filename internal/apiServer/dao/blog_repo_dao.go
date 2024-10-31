@@ -7,11 +7,11 @@ package dao
 import (
 	"context"
 
-	"github.com/Ryan-eng-del/hurricane/internal/apiServer/model/v1"
-	"github.com/Ryan-eng-del/hurricane/internal/apiServer/repo"
-	"github.com/Ryan-eng-del/hurricane/internal/pkg/code"
-	"github.com/Ryan-eng-del/hurricane/internal/pkg/mysql"
-	"github.com/Ryan-eng-del/hurricane/pkg/errors"
+	"github.com/lunarianss/Hurricane/internal/apiServer/model/v1"
+	"github.com/lunarianss/Hurricane/internal/apiServer/repo"
+	"github.com/lunarianss/Hurricane/internal/pkg/code"
+	"github.com/lunarianss/Hurricane/internal/pkg/mysql"
+	"github.com/lunarianss/Hurricane/pkg/errors"
 	"gorm.io/gorm"
 )
 

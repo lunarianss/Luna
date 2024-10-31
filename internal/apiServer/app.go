@@ -5,10 +5,10 @@
 package master
 
 import (
-	"github.com/Ryan-eng-del/hurricane/internal/apiServer/config"
-	"github.com/Ryan-eng-del/hurricane/internal/apiServer/options"
-	"github.com/Ryan-eng-del/hurricane/pkg/app"
-	"github.com/Ryan-eng-del/hurricane/pkg/log"
+	"github.com/lunarianss/Hurricane/internal/apiServer/config"
+	"github.com/lunarianss/Hurricane/internal/apiServer/options"
+	"github.com/lunarianss/Hurricane/pkg/app"
+	"github.com/lunarianss/Hurricane/pkg/log"
 )
 
 // nolint: lll

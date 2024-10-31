@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	unknownCoder defaultCoder = defaultCoder{1, http.StatusInternalServerError, "An internal server error occurred", "github.com/Ryan-eng-del/hurricane.git"}
+	unknownCoder defaultCoder = defaultCoder{1, http.StatusInternalServerError, "An internal server error occurred", "github.com/lunarianss/Hurricane.git"}
 )
 
 // Coder defines an interface for an error with code

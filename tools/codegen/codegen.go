@@ -23,7 +23,7 @@ import (
 
 	"golang.org/x/tools/go/packages"
 
-	"github.com/Ryan-eng-del/hurricane/pkg/log"
+	"github.com/lunarianss/Hurricane/pkg/log"
 )
 
 var errCodeDocPrefix = `# 错误码
@@ -111,7 +111,7 @@ func main() {
 
 	if !*doc {
 		// Print the header and package clause.
-		g.Printf("// Copyright 2020 Lingfei Kong <colin404@foxmail.com>. All rights reserved.\n")
+		g.Printf("// Copyright 2024 Benjamin <cyan0908@163.com>. All rights reserved.\n")
 		g.Printf("// Use of this source code is governed by a MIT style\n")
 		g.Printf("// license that can be found in the LICENSE file.\n")
 		g.Printf("\n")
@@ -251,9 +251,9 @@ func (g *Generator) generate(typeName string) {
 		log.Fatalf("no values defined for type %s", typeName)
 	}
 
-	g.Printf("\t import \"github.com/Ryan-eng-del/hurricane/pkg/errors\"")
+	g.Printf("\t import \"github.com/lunarianss/Hurricane/pkg/errors\"")
 	// Generate code that will fail if the constants change value.
-	g.Printf("\t// init register error codes defines in this source code to `github.com/Ryan-eng-del/hurricane/pkg/errors\n")
+	g.Printf("\t// init register error codes defines in this source code to `github.com/lunarianss/Hurricane/pkg/errors\n")
 
 	g.Printf("func init() {\n")
 	for _, v := range values {

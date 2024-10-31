@@ -1,4 +1,4 @@
-// Copyright 2020 Lingfei Kong <colin404@foxmail.com>. All rights reserved.
+// Copyright 2024 Benjamin <cyan0908@163.com>. All rights reserved.
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 package code
 
-import "github.com/Ryan-eng-del/hurricane/pkg/errors" // init register error codes defines in this source code to `github.com/Ryan-eng-del/hurricane/pkg/errors
+import "github.com/lunarianss/Hurricane/pkg/errors" // init register error codes defines in this source code to `github.com/lunarianss/Hurricane/pkg/errors
 func init() {
 	errors.Enroll(ErrSuccess, 200, "OK")
 	errors.Enroll(ErrUnknown, 500, "Internal server error")

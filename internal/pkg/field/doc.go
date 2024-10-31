@@ -2,4 +2,4 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
-package field // import "github.com/Ryan-eng-del/hurricane/internal/pkg/field"
+package field // import "github.com/lunarianss/Hurricane/internal/pkg/field"

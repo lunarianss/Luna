@@ -5,12 +5,12 @@
 package route
 
 import (
-	controller "github.com/Ryan-eng-del/hurricane/internal/apiServer/controller/gin/v1/blog"
-	"github.com/Ryan-eng-del/hurricane/internal/apiServer/dao"
-	domain "github.com/Ryan-eng-del/hurricane/internal/apiServer/domain/blog"
-	"github.com/Ryan-eng-del/hurricane/internal/apiServer/service"
-	"github.com/Ryan-eng-del/hurricane/internal/pkg/mysql"
 	"github.com/gin-gonic/gin"
+	controller "github.com/lunarianss/Hurricane/internal/apiServer/controller/gin/v1/blog"
+	"github.com/lunarianss/Hurricane/internal/apiServer/dao"
+	domain "github.com/lunarianss/Hurricane/internal/apiServer/domain/blog"
+	"github.com/lunarianss/Hurricane/internal/apiServer/service"
+	"github.com/lunarianss/Hurricane/internal/pkg/mysql"
 )
 
 type blogRoutes struct{}

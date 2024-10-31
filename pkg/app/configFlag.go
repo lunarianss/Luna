@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Ryan-eng-del/hurricane/pkg/log"
+	"github.com/lunarianss/Hurricane/pkg/log"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -28,7 +28,7 @@ func AddGlobalFlags(fs *pflag.FlagSet, name string) {
 	fs.BoolP("help", "h", false, fmt.Sprintf("help for %s", name))
 }
 
-//nolint: gochecknoinits
+// nolint: gochecknoinits
 func init() {
 	pflag.StringVarP(&cfgFile, "config", "c", cfgFile, "Read configuration from specified `FILE`, "+
 		"support JSON, TOML, YAML, HCL, or Java properties formats.")

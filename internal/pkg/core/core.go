@@ -7,12 +7,12 @@ package core
 import (
 	"net/http"
 
-	"github.com/Ryan-eng-del/hurricane/internal/pkg/code"
-	"github.com/Ryan-eng-del/hurricane/internal/pkg/validation"
-	"github.com/Ryan-eng-del/hurricane/pkg/errors"
-	"github.com/Ryan-eng-del/hurricane/pkg/log"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/lunarianss/Hurricane/internal/pkg/code"
+	"github.com/lunarianss/Hurricane/internal/pkg/validation"
+	"github.com/lunarianss/Hurricane/pkg/errors"
+	"github.com/lunarianss/Hurricane/pkg/log"
 )
 
 // ErrResponse defines the return messages when an error occurred.

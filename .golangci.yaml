@@ -289,7 +289,7 @@ linters-settings:
   goimports:
     # put imports beginning with prefix after 3rd-party packages;
     # it's a comma-separated list of prefixes
-    local-prefixes: github.com/Ryan-eng-del/hurricane
+    local-prefixes: github.com/lunarianss/Hurricane
   gomoddirectives:
     # Allow local `replace` directives. Default is false.
     replace-local: true
@@ -313,7 +313,7 @@ linters-settings:
           - $gostd
         deny:
           - pkg: "github.com/pkg/errors"
-            desc: Should be replaced by github.com/Ryan-eng-del/hurricane/pkg/errors package
+            desc: Should be replaced by github.com/lunarianss/Hurricane/pkg/errors package
   gomodguard:
     allowed:
       modules: # List of allowed modules

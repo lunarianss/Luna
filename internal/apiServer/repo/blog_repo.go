@@ -7,7 +7,7 @@ package repo
 import (
 	"context"
 
-	model "github.com/Ryan-eng-del/hurricane/internal/apiServer/model/v1"
+	model "github.com/lunarianss/Hurricane/internal/apiServer/model/v1"
 )
 
 type BlogRepo interface {

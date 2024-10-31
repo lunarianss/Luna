@@ -7,10 +7,10 @@ package service
 import (
 	"context"
 
-	domain "github.com/Ryan-eng-del/hurricane/internal/apiServer/domain/blog"
-	blogDto "github.com/Ryan-eng-del/hurricane/internal/apiServer/dto/blog"
-	"github.com/Ryan-eng-del/hurricane/internal/apiServer/model/v1"
-	"github.com/Ryan-eng-del/hurricane/internal/pkg/field"
+	domain "github.com/lunarianss/Hurricane/internal/apiServer/domain/blog"
+	blogDto "github.com/lunarianss/Hurricane/internal/apiServer/dto/blog"
+	"github.com/lunarianss/Hurricane/internal/apiServer/model/v1"
+	"github.com/lunarianss/Hurricane/internal/pkg/field"
 )
 
 type BlogService struct {

@@ -5,6 +5,7 @@
 package log
 
 import (
+	"context"
 	"log"
 	"sync"
 
@@ -18,6 +19,12 @@ var (
 )
 
 var _logOnce sync.Once
+
+// Defines common log fields.
+const (
+	KeyRequestID string = "requestID"
+	KeyUsername  string = "username"
+)
 
 // StdInfoLogger returns logger of standard library which writes to supplied zap
 // logger at info level.
@@ -195,4 +202,25 @@ func Panicw(msg string, keysAndValues ...interface{}) {
 // variadic key-value pairs are treated as they are in With.
 func Fatalw(msg string, keysAndValues ...interface{}) {
 	getLogger().Fatalw(msg, keysAndValues...)
+}
+
+// Info uses fmt.Sprint to construct and log a message.
+func InfoL(ctx context.Context, args ...interface{}) {
+	var withCtxLogger *zap.SugaredLogger = nil
+	if requestID := ctx.Value(KeyRequestID); requestID != nil {
+		withCtxLogger = getLogger().With(zap.Any(KeyRequestID, requestID))
+	}
+	if username := ctx.Value(KeyUsername); username != nil {
+		if withCtxLogger == nil {
+			withCtxLogger = getLogger().With(zap.Any(KeyUsername, username))
+		} else {
+			withCtxLogger = withCtxLogger.With(zap.Any(KeyUsername, username))
+		}
+	}
+
+	if withCtxLogger == nil {
+		getLogger().With().Info(args)
+	} else {
+		withCtxLogger.Info(args)
+	}
 }

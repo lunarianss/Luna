@@ -24,11 +24,9 @@ func (r *blogRoutes) Register(g *gin.Engine) error {
 
 	// dao
 	blogDao := dao.NewBlogDao(gormIns)
-	categoryDao := dao.NewCategoryDao(gormIns)
-	draftDao := dao.NewDraftDao(gormIns)
 
 	// domain
-	blogDomain := domain.NewBlogDomain(blogDao, categoryDao, draftDao)
+	blogDomain := domain.NewBlogDomain(blogDao)
 
 	// service
 	blogService := service.NewBlogService(blogDomain)

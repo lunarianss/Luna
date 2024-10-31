@@ -4,10 +4,16 @@
 
 package server
 
-import "github.com/gin-gonic/gin"
+import (
+	"fmt"
+
+	"github.com/Ryan-eng-del/hurricane/pkg/errors"
+	"github.com/gin-gonic/gin"
+)
 
 type Router interface {
-	Register(r *gin.Engine)
+	Register(r *gin.Engine) error
+	GetModule() string
 }
 
 var routers []Router
@@ -16,8 +22,11 @@ func RegisterRoute(rs ...Router) {
 	routers = append(routers, rs...)
 }
 
-func (s *BaseApiServer) initRouter(r *gin.Engine) {
+func (s *BaseApiServer) initRouter(r *gin.Engine) error {
 	for _, router := range routers {
-		router.Register(r)
+		if err := router.Register(r); err != nil {
+			return errors.WithMessage(err, fmt.Sprintf("route module %s error", router.GetModule()))
+		}
 	}
+	return nil
 }

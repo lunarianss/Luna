@@ -36,7 +36,9 @@ func initGenericAPIServer(s *BaseApiServer) {
 	s.Setup()
 	s.InstallMiddlewares()
 	s.InstallAPIs()
-	s.initRouter(s.Engine)
+	if err := s.initRouter(s.Engine); err != nil {
+		log.Error(err)
+	}
 }
 
 // InstallAPIs install generic apis.

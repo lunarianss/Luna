@@ -6,6 +6,7 @@ package master
 
 import (
 	"github.com/Ryan-eng-del/hurricane/internal/apiServer/config"
+	_ "github.com/Ryan-eng-del/hurricane/internal/apiServer/route"
 	"github.com/Ryan-eng-del/hurricane/internal/pkg/mysql"
 	"github.com/Ryan-eng-del/hurricane/internal/pkg/server"
 	"github.com/Ryan-eng-del/hurricane/pkg/log"

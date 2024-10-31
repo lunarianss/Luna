@@ -11,11 +11,11 @@ import (
 	"github.com/Ryan-eng-del/hurricane/pkg/log"
 )
 
-//nolint: lll
-const commandDesc = `Hurricane, a distributed cron tool in Golang. The master node is responsible for accepting tasks and distributing them to the workers using etcd as a coordination service. Upon receiving the tasks, the worker nodes execute them accordingly, ensuring efficient task management and execution in a distributed environment.
+// nolint: lll
+const commandDesc = `Hurricane, a command and rich functional web develop template.
 
 Find more hurricane information at:
-    https://github.com/Ryan-eng-del/hurricane/`
+    https://github.com/lunarianss/hurricane/`
 
 // NewApp creates an App object with default parameters.
 func NewApp(basename string) *app.App {

@@ -7,8 +7,10 @@ package master
 import (
 	"github.com/Ryan-eng-del/hurricane/internal/apiServer/config"
 	_ "github.com/Ryan-eng-del/hurricane/internal/apiServer/route"
+	_ "github.com/Ryan-eng-del/hurricane/internal/apiServer/validation"
 	"github.com/Ryan-eng-del/hurricane/internal/pkg/mysql"
 	"github.com/Ryan-eng-del/hurricane/internal/pkg/server"
+	"github.com/Ryan-eng-del/hurricane/internal/pkg/validation"
 	"github.com/Ryan-eng-del/hurricane/pkg/log"
 	"github.com/Ryan-eng-del/hurricane/pkg/shutdown"
 )
@@ -20,9 +22,16 @@ type MasterApiServer struct {
 }
 
 func (s *MasterApiServer) Run() error {
-	_, err := mysql.GetMySQLIns(s.AppRuntimeConfig.MySQLOptions)
+	// Register the module of master router and validator
+	if err := validation.InitAppValidator(); err != nil {
+		return err
+	}
 
-	if err != nil {
+	if _, err := mysql.GetMySQLIns(s.AppRuntimeConfig.MySQLOptions); err != nil {
+		return err
+	}
+
+	if err := s.APIServer.InitRouter(s.APIServer.Engine); err != nil {
 		return err
 	}
 

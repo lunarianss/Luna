@@ -22,7 +22,7 @@ func RegisterRoute(rs ...Router) {
 	routers = append(routers, rs...)
 }
 
-func (s *BaseApiServer) initRouter(r *gin.Engine) error {
+func (s *BaseApiServer) InitRouter(r *gin.Engine) error {
 	for _, router := range routers {
 		if err := router.Register(r); err != nil {
 			return errors.WithMessage(err, fmt.Sprintf("route module %s error", router.GetModule()))

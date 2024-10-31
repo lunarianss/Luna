@@ -1,3 +1,3 @@
-## Hurricane
+## Luna
 
-Hurricane is a feature-rich web development template ⚡️ that integrates with the popular golang toolchain library.
+Luna is an open-source platform for building AI applications, combine LLMOps to streamline the development of generative AI solutions.

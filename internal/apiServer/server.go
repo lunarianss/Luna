@@ -5,7 +5,7 @@
 package master
 
 import (
-	"github.com/Ryan-eng-del/hurricane/internal/master/config"
+	"github.com/Ryan-eng-del/hurricane/internal/apiServer/config"
 	"github.com/Ryan-eng-del/hurricane/internal/pkg/server"
 	"github.com/Ryan-eng-del/hurricane/pkg/log"
 	"github.com/Ryan-eng-del/hurricane/pkg/shutdown"

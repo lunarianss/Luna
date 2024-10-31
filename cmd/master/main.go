@@ -8,7 +8,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/Ryan-eng-del/hurricane/internal/master"
+	master "github.com/Ryan-eng-del/hurricane/internal/apiServer"
 
 	_ "github.com/Ryan-eng-del/hurricane/third_party/forked/automaxprocs"
 )

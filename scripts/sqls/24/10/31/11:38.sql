@@ -5,23 +5,19 @@
 -- ----------------------------
 -- Table structure for blog
 -- ----------------------------
-DROP TABLE IF EXISTS `blog`;
-CREATE TABLE `blog`  (
-  `id` bigint(22) NOT NULL AUTO_INCREMENT,
-  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '文章标题',
-  `blog_pic` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '文章首图，用于随机文章展示',
-  `content` json NOT NULL COMMENT '文章正文',
-  `description` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '描述',
-  `is_published` bit(1) NOT NULL COMMENT '公开或私密',
-  `create_time` datetime NOT NULL COMMENT '创建时间',
-  `update_time` datetime NOT NULL COMMENT '更新时间',
-  `views` int(7) NOT NULL COMMENT '浏览次数',
-  `words` int(7) NOT NULL COMMENT '文章字数',
-  `read_time` int(7) NOT NULL COMMENT '阅读时长(分钟)',
-  `category_id` bigint(22) NOT NULL COMMENT '文章分类',
-  `is_top` bit(1) NOT NULL COMMENT '是否置顶',
-  `is_deleted` BIT(1) NOT NULL DEFAULT 0 COMMENT '逻辑删除',
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `category_id`(`category_id`) USING BTREE
+DROP TABLE IF EXISTS `providers`;
+CREATE TABLE `providers`  (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    tenant_id CHAR(36) NOT NULL,
+    provider_name VARCHAR(255) NOT NULL,
+    provider_type VARCHAR(40) NOT NULL DEFAULT 'custom',
+    encrypted_config TEXT,
+    is_valid bit(1) NOT NULL DEFAULT 0,
+    last_used TIMESTAMP,
+    quota_type VARCHAR(40) DEFAULT '',
+    quota_limit BIGINT,
+    quota_used BIGINT,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 

@@ -5,6 +5,7 @@
 package log
 
 import (
+	"log"
 	"sync"
 
 	"go.uber.org/zap"
@@ -17,6 +18,18 @@ var (
 )
 
 var _logOnce sync.Once
+
+// StdInfoLogger returns logger of standard library which writes to supplied zap
+// logger at info level.
+func StdInfoLogger() *log.Logger {
+	if StdLog == nil {
+		return nil
+	}
+	if l, err := zap.NewStdLogAt(StdLog.Desugar(), zapcore.InfoLevel); err == nil {
+		return l
+	}
+	return nil
+}
 
 func setGlobalZapLogger(zapCores []zapcore.Core) {
 	_logOnce.Do(func() {

@@ -6,6 +6,7 @@ package master
 
 import (
 	"github.com/Ryan-eng-del/hurricane/internal/apiServer/config"
+	"github.com/Ryan-eng-del/hurricane/internal/pkg/mysql"
 	"github.com/Ryan-eng-del/hurricane/internal/pkg/server"
 	"github.com/Ryan-eng-del/hurricane/pkg/log"
 	"github.com/Ryan-eng-del/hurricane/pkg/shutdown"
@@ -14,9 +15,16 @@ import (
 type MasterApiServer struct {
 	APIServer        *server.BaseApiServer
 	GracefulShutdown *shutdown.GracefulShutdown
+	AppRuntimeConfig *config.Config
 }
 
 func (s *MasterApiServer) Run() error {
+	_, err := mysql.GetMySQLIns(s.AppRuntimeConfig.MySQLOptions)
+
+	if err != nil {
+		return err
+	}
+
 	if err := s.GracefulShutdown.Start(); err != nil {
 		log.Fatalf("start shutdown manager failed: %s", err.Error())
 	}
@@ -41,6 +49,7 @@ func createMasterApiServer(config *config.Config) (*MasterApiServer, error) {
 	return &MasterApiServer{
 		APIServer:        apiServer,
 		GracefulShutdown: gs,
+		AppRuntimeConfig: config,
 	}, nil
 }
 

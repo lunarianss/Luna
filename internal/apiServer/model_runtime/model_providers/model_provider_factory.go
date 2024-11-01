@@ -17,7 +17,7 @@ import (
 )
 
 const POSITION_FILE = "_position.yaml"
-const PROVIDER_COUNT = 45
+const PROVIDER_COUNT = 52
 
 var Factory = ModelProviderFactory{}
 
@@ -31,10 +31,23 @@ type ModelProviderExtension struct {
 }
 
 func (f *ModelProviderFactory) GetProvidersFromDir() ([]*entities.ProviderEntity, error) {
-	modelProviderExtensions, err := f.getMapProviders()
+	modelProviderExtensions, providerPositionMap, err := f.getMapProvidersExtensions()
 	if err != nil {
 		return nil, err
 	}
+
+	providerEntities, err := f.extensionConvertProviderEntity(modelProviderExtensions)
+
+	if err != nil {
+		return nil, err
+	}
+
+	f.sortProviderEntityByPosition(providerEntities, providerPositionMap)
+
+	return providerEntities, nil
+}
+
+func (f *ModelProviderFactory) extensionConvertProviderEntity(modelProviderExtensions map[string]*ModelProviderExtension) ([]*entities.ProviderEntity, error) {
 
 	providers := make([]*entities.ProviderEntity, 0, PROVIDER_COUNT)
 
@@ -46,11 +59,15 @@ func (f *ModelProviderFactory) GetProvidersFromDir() ([]*entities.ProviderEntity
 			providers = append(providers, provider)
 		}
 	}
-
 	return providers, nil
-
 }
 
+func (f *ModelProviderFactory) sortProviderEntityByPosition(providers []*entities.ProviderEntity, providerPositionMap map[string]int) {
+	sort.Slice(providers, func(i, j int) bool {
+		return providerPositionMap[providers[i].Provider] < providerPositionMap[providers[j].Provider]
+	})
+
+}
 func (f *ModelProviderFactory) getPositionMap(fileDir string) (map[string]int, error) {
 	positionInfo := make([]string, 0, PROVIDER_COUNT)
 	positionFilePath := filepath.Join(fileDir, POSITION_FILE)
@@ -118,31 +135,28 @@ func (f *ModelProviderFactory) resolveProviderDir(dirEntries []fs.DirEntry, full
 	return modelProviderResolvePaths, nil
 }
 
-func (f *ModelProviderFactory) getMapProviders() (map[string]*ModelProviderExtension, error) {
+func (f *ModelProviderFactory) getMapProvidersExtensions() (map[string]*ModelProviderExtension, map[string]int, error) {
 	dirEntries, fullFilePath, fileDir, err := f.resolveProviderDirInfo()
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	modelProviderResolvePaths, err := f.resolveProviderDir(dirEntries, fullFilePath)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	positionMap, err := f.getPositionMap(fileDir)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resolveProviderExtensions := f.resolveProviderExtensions(modelProviderResolvePaths, positionMap)
 
-	return f.sortByPositionMap(resolveProviderExtensions), nil
+	return f.resolveMapProviderExtensions(resolveProviderExtensions), positionMap, nil
 }
 
-func (f *ModelProviderFactory) sortByPositionMap(providerExtensions []*ModelProviderExtension) map[string]*ModelProviderExtension {
-	sort.Slice(providerExtensions, func(i, j int) bool {
-		return providerExtensions[i].Position < providerExtensions[j].Position
-	})
+func (f *ModelProviderFactory) resolveMapProviderExtensions(providerExtensions []*ModelProviderExtension) map[string]*ModelProviderExtension {
 
 	providerMap := make(map[string]*ModelProviderExtension)
 

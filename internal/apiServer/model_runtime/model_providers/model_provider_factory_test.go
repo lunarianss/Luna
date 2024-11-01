@@ -1,7 +1,6 @@
 package model_providers
 
 import (
-	"encoding/json"
 	"testing"
 
 	"github.com/lunarianss/Hurricane/pkg/errors"
@@ -22,6 +21,6 @@ func TestModelProviderFactory(t *testing.T) {
 		return
 	}
 
-	c, _ := json.MarshalIndent(providers, "", " ")
-	t.Logf("providers: %+v", string(c))
+	// c, _ := json.MarshalIndent(providers, "", " ")
+	t.Logf("len providers : %d, the first three provider names are %s | %s | %s", len(providers), providers[0].Provider, providers[1].Provider, providers[2].Provider)
 }

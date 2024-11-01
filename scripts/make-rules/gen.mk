@@ -15,7 +15,7 @@ gen.errcode: gen.errcode.code gen.errcode.doc
 
 .PHONY: gen.errcode.code
 gen.errcode.code: tools.verify.codegen
-	@echo "===========> Generating hurricane error code go source files"
+	@echo "===========> Generating Luna error code go source files"
 	@codegen -type=int ${ROOT_DIR}/internal/pkg/code
 
 .PHONY: gen.errcode.doc

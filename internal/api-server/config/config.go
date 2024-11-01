@@ -6,13 +6,13 @@ package config
 
 import "github.com/lunarianss/Luna/internal/api-server/options"
 
-// Config is the running configuration structure of the hurricane service.
+// Config is the running configuration structure of the Luna service.
 type Config struct {
 	*options.Options
 }
 
 // CreateConfigFromOptions creates a running configuration instance based
-// on a given hurricane pump command line or configuration file option.
+// on a given Luna pump command line or configuration file option.
 func CreateConfigFromOptions(options *options.Options) (*Config, error) {
 	return &Config{options}, nil
 }

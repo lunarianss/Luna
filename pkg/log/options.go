@@ -24,9 +24,9 @@ const (
 )
 
 var (
-	defaultDebugFilePath = getDefaultFilePath("hurricane.deb.log")
-	defaultInfoFilePath  = getDefaultFilePath("hurricane.inf.log")
-	defaultErrorFilePath = getDefaultFilePath("hurricane.err.log")
+	defaultDebugFilePath = getDefaultFilePath("luna.deb.log")
+	defaultInfoFilePath  = getDefaultFilePath("luna.inf.log")
+	defaultErrorFilePath = getDefaultFilePath("luna.err.log")
 )
 
 func getDefaultFilePath(name string) string {

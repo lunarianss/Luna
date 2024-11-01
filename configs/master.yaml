@@ -2,7 +2,7 @@
 # Use of this source code is governed by a MIT style
 # license that can be found in the LICENSE file.
 
-# hurricane master 全配置
+# Luna  全配置
 # RESTful 服务配置
 # 替换环境变量
 log:
@@ -11,7 +11,7 @@ log:
   enable-file: false # 日志是否输出到文件
   enable-color: true # 是否开启颜色输出，true:是，false:否
   layout: "2006-01-02 15:04:05"
-  # 如果不写，默认是程序入口根入口目录的 hurricane.err.log  hurricane.inf.log hurricane.deb.log
+  # 如果不写，默认是程序入口根入口目录的 luna.err.log  luna.inf.log luna.deb.log
   info-file-path: ""
   error-file-path: ""
   debug-file-path: ""

@@ -12,15 +12,14 @@ import (
 )
 
 // nolint: lll
-const commandDesc = `Hurricane, a command and rich functional web develop template.
-
-Find more hurricane information at:
+const commandDesc = `Luna🌛 is an open-source platform for building AI applications ⚡️, combine LLMOps to streamline the development of generative AI solutions.
+Find more Luna information at:
     https://github.com/lunarianss/Luna/`
 
 // NewApp creates an App object with default parameters.
 func NewApp(basename string) *app.App {
 	opts := options.NewOptions()
-	application := app.NewApp("Hurricane Distributed CronTab Application",
+	application := app.NewApp("Luna AI Application",
 		basename,
 		app.WithOptions(opts),
 		app.WithDescription(commandDesc),

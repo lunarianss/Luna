@@ -28,6 +28,7 @@ IAM 系统支持的错误码列表如下：
 | ErrTokenInvalid | 100005 | 401 | Token invalid |
 | ErrPageNotFound | 100006 | 404 | Page not found |
 | ErrRestfulId | 100007 | 400 | Error occurred while parse restful id from url |
+| ErrRunTimeCaller | 100008 | 500 | Error occurred while call go inner function |
 | ErrDatabase | 100101 | 500 | Database error |
 | ErrRecordNotFound | 100102 | 500 | Database record not found |
 | ErrScanToField | 100103 | 400 | Database scan error to field |

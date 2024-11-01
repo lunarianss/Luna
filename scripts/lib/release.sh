@@ -26,13 +26,13 @@ readonly RELEASE_IMAGES="${LOCAL_OUTPUT_ROOT}/release-images"
 
 # IAM github account info
 readonly IAM_GITHUB_ORG=Ryan-eng-del
-readonly IAM_GITHUB_REPO=hurricane
+readonly IAM_GITHUB_REPO=Luna
 readonly IAM_GITHUB_TAG=v0.0.1
-readonly IAM_GITHUB_NAME="Hurricane ${IAM_GITHUB_TAG}"
+readonly IAM_GITHUB_NAME="Luna ${IAM_GITHUB_TAG}"
 readonly IAM_GITHUB_TOKEN=$(sed -n '1p' "${IAM_ROOT}/security.log")
 export GITHUB_TOKEN=${IAM_GITHUB_TOKEN}
 
-readonly ARTIFACT=hurricane.tar.gz
+readonly ARTIFACT=Luna.tar.gz
 readonly CHECKSUM=${ARTIFACT}.sha1sum
 
 IAM_BUILD_CONFORMANCE=${IAM_BUILD_CONFORMANCE:-y}
@@ -561,7 +561,7 @@ EOF
 # https://github.com/github-release/github-release
 function iam::release::github_release() {
   # create a github release
-  iam::log::info "create hurricane release"
+  iam::log::info "create Luna release"
   github-release release \
     --user ${IAM_GITHUB_ORG} \
     --repo ${IAM_GITHUB_REPO} \
@@ -578,9 +578,9 @@ function iam::release::github_upload() {
   github-release upload \
     --user ${IAM_GITHUB_ORG} \
     --repo ${IAM_GITHUB_REPO} \
-    --name hurricane.tar.gz \
+    --name Luna.tar.gz \
     --tag ${IAM_GITHUB_TAG} \
-    --file ${RELEASE_TARS}/hurricane.tar.gz
+    --file ${RELEASE_TARS}/Luna.tar.gz
 }
 
 function iam::release::generate_changelog() {

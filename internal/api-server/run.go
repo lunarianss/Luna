@@ -7,7 +7,7 @@ package master
 import "github.com/lunarianss/Luna/internal/api-server/config"
 
 func Run(config *config.Config) error {
-	server, err := createMasterApiServer(config)
+	server, err := createLunaApiServer(config)
 	if err != nil {
 		return err
 	}

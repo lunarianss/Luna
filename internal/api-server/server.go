@@ -15,13 +15,13 @@ import (
 	"github.com/lunarianss/Luna/pkg/shutdown"
 )
 
-type MasterApiServer struct {
+type LunaApiServer struct {
 	APIServer        *server.BaseApiServer
 	GracefulShutdown *shutdown.GracefulShutdown
 	AppRuntimeConfig *config.Config
 }
 
-func (s *MasterApiServer) Run() error {
+func (s *LunaApiServer) Run() error {
 	// Register the module of master router and validator
 	if err := validation.InitAppValidator(); err != nil {
 		return err
@@ -42,7 +42,7 @@ func (s *MasterApiServer) Run() error {
 	return s.APIServer.Run()
 }
 
-func createMasterApiServer(config *config.Config) (*MasterApiServer, error) {
+func createLunaApiServer(config *config.Config) (*LunaApiServer, error) {
 	apiServerConfig, err := buildApiServerConfig(config)
 
 	gs := shutdown.New()
@@ -62,7 +62,7 @@ func createMasterApiServer(config *config.Config) (*MasterApiServer, error) {
 		return nil, err
 	}
 
-	return &MasterApiServer{
+	return &LunaApiServer{
 		APIServer:        apiServer,
 		GracefulShutdown: gs,
 		AppRuntimeConfig: config,

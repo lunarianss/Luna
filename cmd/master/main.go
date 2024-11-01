@@ -8,12 +8,12 @@ import (
 	"math/rand"
 	"time"
 
-	master "github.com/lunarianss/Hurricane/internal/apiServer"
+	master "github.com/lunarianss/Hurricane/internal/api-server"
 
 	_ "github.com/lunarianss/Hurricane/third_party/forked/automaxprocs"
 )
 
 func main() {
 	rand.New(rand.NewSource(time.Now().UTC().UnixNano()))
-	master.NewApp("hurricane").Run()
+	master.NewApp("Luna").Run()
 }

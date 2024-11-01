@@ -47,7 +47,7 @@ func (o *EtcdOptions) Validate() []error {
 	return errs
 }
 
-// AddFlags adds flags related to redis storage for a specific APIServer to the specified FlagSet.
+// AddFlags adds flags related to redis storage for a specific api-server to the specified FlagSet.
 func (o *EtcdOptions) AddFlags(fs *pflag.FlagSet) {
 	fs.StringSliceVar(&o.Endpoints, "etcd.endpoints", o.Endpoints, "Endpoints of etcd cluster.")
 	fs.StringVar(&o.Username, "etcd.username", o.Username, "Username of etcd cluster.")

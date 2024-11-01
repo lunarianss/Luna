@@ -43,5 +43,5 @@ type Provider struct {
 }
 
 func (*Provider) TableName() string {
-	return "provider"
+	return "providers"
 }

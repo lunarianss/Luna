@@ -15,12 +15,11 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/marmotedu/log"
-
 	"github.com/lunarianss/Luna/internal/api-server/model-runtime/entities"
 	base "github.com/lunarianss/Luna/internal/api-server/model-runtime/model-providers/__base"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
+	"github.com/lunarianss/Luna/pkg/log"
 )
 
 const POSITION_FILE = "_position.yaml"

@@ -4,10 +4,14 @@
 
 package route
 
-import "github.com/lunarianss/Luna/internal/pkg/server"
+import (
+	consoleWorkSpaceRoute "github.com/lunarianss/Luna/internal/api-server/route/console/workspace"
+	"github.com/lunarianss/Luna/internal/pkg/server"
+)
 
 // Route unified registration portal
 func init() {
 	server.RegisterRoute(&blogRoutes{})
+	server.RegisterRoute(&consoleWorkSpaceRoute.ModelProviderRoutes{})
 	server.RegisterRoute(&staticRoute{})
 }

@@ -40,7 +40,7 @@ func (mpSrv *ModelProviderService) GetProviderList(tenantId int64, modelType str
 			}
 		}
 
-		if providerConfiguration.Provider != nil {
+		if providerConfiguration.CustomConfiguration.Provider != nil {
 			customConfigurationStatus = dto.ACTIVE
 		} else {
 			customConfigurationStatus = dto.NO_CONFIGURE

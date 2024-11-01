@@ -110,12 +110,14 @@ func (mpd *ModelProviderDomain) toCustomConfiguration(
 
 	// todo 对用户的 api key 进行加密｜解密
 
-	customProviderConfiguration = &providerEntities.CustomProviderConfiguration{
-		Credentials: providerCredentials,
+	if custom_provider_record != nil {
+		customProviderConfiguration = &providerEntities.CustomProviderConfiguration{
+			Credentials: providerCredentials,
+		}
 	}
 
 	return &providerEntities.CustomConfiguration{
-		Provider: *customProviderConfiguration,
+		Provider: customProviderConfiguration,
 	}
 }
 

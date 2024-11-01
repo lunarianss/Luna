@@ -19,7 +19,7 @@ const (
 )
 
 type CustomConfigurationResponse struct {
-	Status CustomConfigurationStatus
+	Status CustomConfigurationStatus `json:"status"`
 }
 
 type SystemConfigurationResponse struct {

@@ -46,7 +46,7 @@ type CustomProviderConfiguration struct {
 }
 
 type CustomConfiguration struct {
-	Provider CustomProviderConfiguration
+	Provider *CustomProviderConfiguration
 	Models   []*CustomModelConfiguration
 }
 

@@ -1,3 +1,7 @@
+// Copyright 2024 Benjamin Lee <cyan0908@163.com>. All rights reserved.
+// Use of this source code is governed by a MIT style
+// license that can be found in the LICENSE file.
+
 package model_providers
 
 import (
@@ -10,6 +14,8 @@ import (
 	"strings"
 
 	"gopkg.in/yaml.v3"
+
+	"github.com/marmotedu/log"
 
 	"github.com/lunarianss/Luna/internal/api-server/model-runtime/entities"
 	base "github.com/lunarianss/Luna/internal/api-server/model-runtime/model-providers/__base"
@@ -42,8 +48,17 @@ func (f *ModelProviderFactory) GetProvidersFromDir() ([]*entities.ProviderEntity
 		return nil, err
 	}
 
+	for _, providerEntity := range providerEntities {
+		if providerEntity.Provider == "" {
+			log.Info("排序前存在问题")
+			log.Info(providerEntity.Description.Zh_Hans)
+		}
+	}
+	log.Infof("providerEntity 0 %+v", providerEntities[0])
+	log.Infof("providerEntity 1 %+v", providerEntities[1])
 	f.sortProviderEntityByPosition(providerEntities, providerPositionMap)
-
+	log.Infof("providerEntity 0 %+v", providerEntities[0])
+	log.Infof("providerEntity 1 %+v", providerEntities[1])
 	return providerEntities, nil
 }
 

@@ -1,3 +1,7 @@
+# Copyright 2024 Benjamin Lee <cyan0908@163.com>. All rights reserved.
+# Use of this source code is governed by a MIT style
+# license that can be found in the LICENSE file.
+
 # for more details, please refer to https://help.aliyun.com/zh/model-studio/getting-started/models#3383780daf8hw
 model: text-embedding-v3
 model_type: text-embedding

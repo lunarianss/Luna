@@ -1,3 +1,7 @@
+# Copyright 2024 Benjamin Lee <cyan0908@163.com>. All rights reserved.
+# Use of this source code is governed by a MIT style
+# license that can be found in the LICENSE file.
+
 - 360gpt2-pro
 - 360gpt-turbo
 - 360gpt-turbo-responsibility-8k

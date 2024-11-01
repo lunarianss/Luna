@@ -1,3 +1,7 @@
+# Copyright 2024 Benjamin Lee <cyan0908@163.com>. All rights reserved.
+# Use of this source code is governed by a MIT style
+# license that can be found in the LICENSE file.
+
 # this model corresponds to qwen-max, for more details
 # please refer to (https://help.aliyun.com/zh/model-studio/getting-started/models#cf6cc4aa2aokf)
 model: qwen-max-1201

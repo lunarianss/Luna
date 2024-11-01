@@ -1,3 +1,7 @@
+// Copyright 2024 Benjamin Lee <cyan0908@163.com>. All rights reserved.
+// Use of this source code is governed by a MIT style
+// license that can be found in the LICENSE file.
+
 package dto
 
 import (
@@ -35,7 +39,7 @@ type ProviderResponse struct {
 	SupportedModelTypes      []entities.ModelType               `json:"supported_model_types"`      // Supported model types
 	ConfigurationMethods     []entities.ConfigurationMethod     `json:"configuration_methods"`      // Configuration methods                    // Models offered by the provider
 	ProviderCredentialSchema *entities.ProviderCredentialSchema `json:"provider_credential_schema"` // Schema for provider credentials
-	ModelCredentialSchema    *entities.ModelCredentialSchema    `json:"model_credential_schema" `   // Schema for model credentials
+	ModelCredentialSchema    *entities.ModelCredentialSchema    `json:"model_credential_schema"`    // Schema for model credentials
 	PreferredProviderType    model.ProviderType                 `json:"preferred_provider_type"`    //
 	CustomConfiguration      *CustomConfigurationResponse       `json:"custom_configuration"`
 	SystemConfiguration      *SystemConfigurationResponse       `json:"system_configuration"`

@@ -15,6 +15,6 @@ func NewModelProviderService(modelProviderDomain domain.ModelProviderDomain) *Mo
 // 3. 获取租户工作空间的 configurations （区分订阅/未订阅）
 func (mpSrv *ModelProviderService) GetProviderList(tenant_id string, model_type string) (interface{}, error) {
 
-    mpSrv.ModelProviderDomain.ModelProviderRepo.Get
+	return nil, nil
 
 }

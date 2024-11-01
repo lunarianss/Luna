@@ -4,6 +4,19 @@
 
 package main
 
+import (
+	"fmt"
+	"path/filepath"
+	"runtime"
+)
+
 func main() {
+	_, file, _, _ := runtime.Caller(0)
+
+	fmt.Println(file)
+
+	fmt.Println(filepath.Dir(file))
+
+	fmt.Println(filepath.Base(filepath.Dir(file)))
 
 }

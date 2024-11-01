@@ -5,12 +5,11 @@
 package dao
 
 import (
-	"context"
-
 	"github.com/lunarianss/Hurricane/internal/apiServer/model/v1"
+	"github.com/lunarianss/Hurricane/internal/apiServer/model_runtime/entities"
+	"github.com/lunarianss/Hurricane/internal/apiServer/model_runtime/model_providers"
 	"github.com/lunarianss/Hurricane/internal/apiServer/repo"
 	"github.com/lunarianss/Hurricane/internal/pkg/code"
-	"github.com/lunarianss/Hurricane/internal/pkg/mysql"
 	"github.com/lunarianss/Hurricane/pkg/errors"
 	"gorm.io/gorm"
 )
@@ -19,57 +18,55 @@ type ModelProviderDao struct {
 	db *gorm.DB
 }
 
-var _ repo.BlogRepo = (*BlogDao)(nil)
+var _ repo.ModelProviderRepo = (*ModelProviderDao)(nil)
 
-func NewModelProvider(db *gorm.DB) *BlogDao {
-	return &BlogDao{db}
+func NewModelProvider(db *gorm.DB) *ModelProviderDao {
+	return &ModelProviderDao{db}
 }
 
-func (u *BlogDao) Create(ctx context.Context, blog *model.Blog) (*model.Blog, error) {
-	if err := u.db.Create(blog).Error; err != nil {
-		return nil, err
+// Get tenant's model providers
+func (mpd *ModelProviderDao) GetTenantModelProviders(tenantId int64) ([]*model.Provider, error) {
+
+	tenantProviders := []*model.Provider{}
+
+	if err := mpd.db.Where("tenant_id = ?", tenantId).Find(&tenantProviders).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
 	}
-	return blog, nil
+	return tenantProviders, nil
 }
 
-func (u *BlogDao) Delete(ctx context.Context, id int64) error {
-	blog, err := u.Get(ctx, id)
+// Get tenant's model providers mapped by provider name
+func (mpd *ModelProviderDao) GetMapTenantModelProviders(tenantId int64) (map[string]*model.Provider, error) {
+	providersMap := make(map[string]*model.Provider)
+	tenantProviders, err := mpd.GetTenantModelProviders(tenantId)
+
 	if err != nil {
-		return err
-	}
-	blog.IsDeleted = 1
-	if err := u.db.Save(blog).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-func (u *BlogDao) Update(ctx context.Context, blog *model.Blog) (*model.Blog, error) {
-	if err := u.db.Updates(blog).Error; err != nil {
 		return nil, err
 	}
-	return blog, nil
+
+	for _, tenantProvider := range tenantProviders {
+		providersMap[tenantProvider.ProviderName] = tenantProvider
+	}
+	return providersMap, nil
 }
 
-func (u *BlogDao) Get(ctx context.Context, id int64) (*model.Blog, error) {
-	var blog model.Blog
+// Get all inner Providers
+func (mpd *ModelProviderDao) GetSystemProviders() ([]*entities.ProviderEntity, error) {
+	return model_providers.Factory.GetProvidersFromDir()
+}
 
-	if err := u.db.Scopes(mysql.LogicalObjects()).First(&blog, id).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.WithCode(code.ErrRecordNotFound, err.Error())
-		}
+// Get all inner Providers mapped by provider name
+func (mpd *ModelProviderDao) GetMapSystemProviders() (map[string]*entities.ProviderEntity, error) {
+	mapSystemProviders := make(map[string]*entities.ProviderEntity, model_providers.PROVIDER_COUNT)
+
+	systemProviders, err := mpd.GetSystemProviders()
+
+	if err != nil {
 		return nil, err
 	}
-	return &blog, nil
-}
 
-func (u *BlogDao) List(ctx context.Context, page, pageSize int) ([]*model.Blog, int64, error) {
-	var (
-		blogs []*model.Blog
-		count int64
-	)
-	if err := u.db.Table("blog").Count(&count).Scopes(mysql.LogicalObjects(), mysql.Paginate(page, pageSize), mysql.IDDesc()).Find(&blogs).Error; err != nil {
-		return nil, 0, err
+	for _, provider := range systemProviders {
+		mapSystemProviders[provider.Provider] = provider
 	}
-	return blogs, count, nil
+	return mapSystemProviders, nil
 }

@@ -395,7 +395,14 @@ func testFormatRegexp(t *testing.T, n int, arg interface{}, format, want string)
 	wantLines := strings.SplitN(want, "\n", -1)
 
 	if len(wantLines) > len(gotLines) {
-		t.Errorf("test %d: wantLines(%d) > gotLines(%d):\n got: %q\nwant: %q", n+1, len(wantLines), len(gotLines), got, want)
+		t.Errorf(
+			"test %d: wantLines(%d) > gotLines(%d):\n got: %q\nwant: %q",
+			n+1,
+			len(wantLines),
+			len(gotLines),
+			got,
+			want,
+		)
 		return
 	}
 
@@ -413,22 +420,21 @@ func testFormatRegexp(t *testing.T, n int, arg interface{}, format, want string)
 var stackLineR = regexp.MustCompile(`\.`)
 
 // parseBlocks parses input into a slice, where:
-//  - incase entry contains a newline, its a stacktrace
-//  - incase entry contains no newline, its a solo line.
+//   - incase entry contains a newline, its a stacktrace
+//   - incase entry contains no newline, its a solo line.
 //
 // Detecting stack boundaries only works incase the WithStack-calls are
 // to be found on the same line, thats why it is optionally here.
 //
 // Example use:
 //
-// for _, e := range blocks {
-//   if strings.ContainsAny(e, "\n") {
-//     // Match as stack
-//   } else {
-//     // Match as line
-//   }
-// }
-//
+//	for _, e := range blocks {
+//	  if strings.ContainsAny(e, "\n") {
+//	    // Match as stack
+//	  } else {
+//	    // Match as line
+//	  }
+//	}
 func parseBlocks(input string, detectStackboundaries bool) ([]string, error) {
 	var blocks []string
 
@@ -482,7 +488,14 @@ func parseBlocks(input string, detectStackboundaries bool) ([]string, error) {
 	return blocks, nil
 }
 
-func testFormatCompleteCompare(t *testing.T, n int, arg interface{}, format string, want []string, detectStackBoundaries bool) {
+func testFormatCompleteCompare(
+	t *testing.T,
+	n int,
+	arg interface{},
+	format string,
+	want []string,
+	detectStackBoundaries bool,
+) {
 	gotStr := fmt.Sprintf(format, arg)
 
 	got, err := parseBlocks(gotStr, detectStackBoundaries)
@@ -491,8 +504,16 @@ func testFormatCompleteCompare(t *testing.T, n int, arg interface{}, format stri
 	}
 
 	if len(got) != len(want) {
-		t.Fatalf("test %d: fmt.Sprintf(%s, err) -> wrong number of blocks: got(%d) want(%d)\n got: %s\nwant: %s\ngotStr: %q",
-			n+1, format, len(got), len(want), prettyBlocks(got), prettyBlocks(want), gotStr)
+		t.Fatalf(
+			"test %d: fmt.Sprintf(%s, err) -> wrong number of blocks: got(%d) want(%d)\n got: %s\nwant: %s\ngotStr: %q",
+			n+1,
+			format,
+			len(got),
+			len(want),
+			prettyBlocks(got),
+			prettyBlocks(want),
+			gotStr,
+		)
 	}
 
 	for i := range got {
@@ -551,7 +572,9 @@ func testGenericRecursive(t *testing.T, beforeErr error, beforeWant []string, li
 
 		// Merge two stacks behind each other.
 		if strings.ContainsAny(beforeWant[last], "\n") && strings.ContainsAny(w.want[0], "\n") {
-			want = append(beforeWant[:last], append([]string{beforeWant[last] + "((?s).*)" + w.want[0]}, w.want[1:]...)...)
+			want = append(
+				beforeWant[:last],
+				append([]string{beforeWant[last] + "((?s).*)" + w.want[0]}, w.want[1:]...)...)
 		} else {
 			want = append(beforeWant, w.want...)
 		}

@@ -11,20 +11,20 @@ import (
 
 // create
 type CreateBlogRequest struct {
-	Title       string                 `json:"title" validate:"required"`
-	BlogPic     string                 `json:"blog_pic" validate:"required"`
-	Content     map[string]interface{} `json:"content" validate:"required"`
-	Words       int32                  `json:"words" validate:"required"`
-	ReadTime    int32                  `json:"read_time" validate:"required"`
-	CategoryId  int64                  `json:"category_id" validate:"required"`
+	Title       string                 `json:"title"        validate:"required"`
+	BlogPic     string                 `json:"blog_pic"     validate:"required"`
+	Content     map[string]interface{} `json:"content"      validate:"required"`
+	Words       int32                  `json:"words"        validate:"required"`
+	ReadTime    int32                  `json:"read_time"    validate:"required"`
+	CategoryId  int64                  `json:"category_id"  validate:"required"`
 	Description string                 `json:"description"`
 	IsPublished int                    `json:"is_published" validate:"min=0,max=1"`
-	IsTop       int                    `json:"is_top" validate:"min=0,max=1"`
+	IsTop       int                    `json:"is_top"       validate:"min=0,max=1"`
 }
 
 // get list
 type GetBlogRequest struct {
-	Page     int `json:"page" form:"page" validate:"required,min=1"`
+	Page     int `json:"page"     form:"page"      validate:"required,min=1"`
 	PageSize int `json:"pageSize" form:"page_size" validate:"required,min=1,max=100"`
 }
 
@@ -60,7 +60,7 @@ type UpdateBlogRequest struct {
 	CategoryId  int64                  `json:"category_id"`
 	Description string                 `json:"description"`
 	IsPublished int                    `json:"is_published" validate:"min=0,max=1"`
-	IsTop       int                    `json:"is_top" validate:"min=0,max=1"`
+	IsTop       int                    `json:"is_top"       validate:"min=0,max=1"`
 }
 
 func Convert(b *model.Blog) *Blog {

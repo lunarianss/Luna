@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/fatih/color"
+
 	"github.com/lunarianss/Hurricane/internal/pkg/middleware"
 	"github.com/lunarianss/Hurricane/pkg/log"
 
@@ -119,7 +120,10 @@ func (s *BaseApiServer) Run() error {
 	// Initializing the server in a goroutine so that
 	// it won't block the graceful shutdown handling below
 	eg.Go(func() error {
-		log.Infof("Start to listening the incoming requests on http address: %s", color.HiGreenString(s.InsecureServingInfo.Address()))
+		log.Infof(
+			"Start to listening the incoming requests on http address: %s",
+			color.HiGreenString(s.InsecureServingInfo.Address()),
+		)
 		if err := s.InsecureServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatal(err.Error())
 
@@ -137,7 +141,10 @@ func (s *BaseApiServer) Run() error {
 			return nil
 		}
 
-		log.Infof("Start to listening the incoming requests on https address: %s", color.HiGreenString(s.SecureServer.Addr))
+		log.Infof(
+			"Start to listening the incoming requests on https address: %s",
+			color.HiGreenString(s.SecureServer.Addr),
+		)
 
 		if err := s.SecureServer.ListenAndServeTLS(cert, key); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatal(err.Error())

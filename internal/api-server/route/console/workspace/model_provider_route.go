@@ -6,9 +6,10 @@ package route
 
 import (
 	"github.com/gin-gonic/gin"
-	controller "github.com/lunarianss/Hurricane/internal/api-server/controller/gin/v1/blog"
+
+	controller "github.com/lunarianss/Hurricane/internal/api-server/controller/gin/v1/model-provider"
 	"github.com/lunarianss/Hurricane/internal/api-server/dao"
-	domain "github.com/lunarianss/Hurricane/internal/api-server/domain/blog"
+	domain "github.com/lunarianss/Hurricane/internal/api-server/domain/model-provider"
 	"github.com/lunarianss/Hurricane/internal/api-server/service"
 	"github.com/lunarianss/Hurricane/internal/pkg/mysql"
 )
@@ -23,18 +24,18 @@ func (r *ModelProviderRoutes) Register(g *gin.Engine) error {
 	}
 
 	// dao
-	blogDao := dao.NewBlogDao(gormIns)
+	modelProviderDao := dao.NewModelProvider(gormIns)
 
 	// domain
-	blogDomain := domain.NewBlogDomain(blogDao)
+	modelProviderDomain := domain.NewModelProviderDomain(modelProviderDao)
 
 	// service
-	blogService := service.NewBlogService(blogDomain)
-	blogController := controller.NewBlogController(blogService)
+	modelProviderService := service.NewModelProviderService(modelProviderDomain)
+	modelProviderController := controller.NewModelProviderController(modelProviderService)
 
 	v1 := g.Group("/v1")
 	blogV1 := v1.Group("/console/workspace/current")
-	blogV1.GET("/model-providers", blogController.List)
+	blogV1.GET("/model-providers", modelProviderController.List)
 	return nil
 }
 

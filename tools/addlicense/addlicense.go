@@ -113,7 +113,7 @@ var (
 	}
 )
 
-//nolint: gocognit // no lint
+// nolint: gocognit // no lint
 func main() {
 	pflag.Usage = usage
 	pflag.Parse()
@@ -446,7 +446,7 @@ func prefix(t *template.Template, d *copyrightData, top, mid, bot string) ([]byt
 	return out.Bytes(), nil
 }
 
-//nolint: gochecknoinits
+// nolint: gochecknoinits
 func init() {
 	licenseTemplate["apache"] = template.Must(template.New("").Parse(tmplApache))
 	licenseTemplate["mit"] = template.Must(template.New("").Parse(tmplMIT))

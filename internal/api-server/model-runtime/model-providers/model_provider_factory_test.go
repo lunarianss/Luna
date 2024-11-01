@@ -22,5 +22,11 @@ func TestModelProviderFactory(t *testing.T) {
 	}
 
 	// c, _ := json.MarshalIndent(providers, "", " ")
-	t.Logf("len providers : %d, the first three provider names are %s | %s | %s", len(providers), providers[0].Provider, providers[1].Provider, providers[2].Provider)
+	t.Logf(
+		"len providers : %d, the first three provider names are %s | %s | %s",
+		len(providers),
+		providers[0].Provider,
+		providers[1].Provider,
+		providers[2].Provider,
+	)
 }

@@ -8,10 +8,11 @@ import (
 	"fmt"
 	"sync"
 
+	"gorm.io/gorm"
+
 	"github.com/lunarianss/Hurricane/internal/pkg/options"
 	"github.com/lunarianss/Hurricane/pkg/db"
 	"github.com/lunarianss/Hurricane/pkg/log"
-	"gorm.io/gorm"
 )
 
 var (

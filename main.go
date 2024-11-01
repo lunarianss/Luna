@@ -4,19 +4,11 @@
 
 package main
 
-import (
-	"fmt"
-	"path/filepath"
-	"runtime"
-)
+import "fmt"
 
 func main() {
-	_, file, _, _ := runtime.Caller(0)
+	var sr []string
 
-	fmt.Println(file)
-
-	fmt.Println(filepath.Dir(file))
-
-	fmt.Println(filepath.Base(filepath.Dir(file)))
+	fmt.Println(append(sr, "13"), len(sr))
 
 }

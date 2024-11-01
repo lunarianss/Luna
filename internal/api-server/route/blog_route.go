@@ -6,6 +6,7 @@ package route
 
 import (
 	"github.com/gin-gonic/gin"
+
 	controller "github.com/lunarianss/Hurricane/internal/api-server/controller/gin/v1/blog"
 	"github.com/lunarianss/Hurricane/internal/api-server/dao"
 	domain "github.com/lunarianss/Hurricane/internal/api-server/domain/blog"

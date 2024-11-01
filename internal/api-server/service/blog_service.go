@@ -71,7 +71,11 @@ func (s *BlogService) Create(ctx context.Context, params *blogDto.CreateBlogRequ
 	return s.BlogDomain.BlogRepo.Create(ctx, blog)
 }
 
-func (s *BlogService) Update(ctx context.Context, blogId int64, params *blogDto.UpdateBlogRequest) (*model.Blog, error) {
+func (s *BlogService) Update(
+	ctx context.Context,
+	blogId int64,
+	params *blogDto.UpdateBlogRequest,
+) (*model.Blog, error) {
 
 	blog := &model.Blog{
 		Id:          blogId,

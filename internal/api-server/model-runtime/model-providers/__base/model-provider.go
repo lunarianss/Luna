@@ -5,10 +5,11 @@ import (
 	"os"
 	"path/filepath"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/lunarianss/Hurricane/internal/api-server/model-runtime/entities"
 	"github.com/lunarianss/Hurricane/internal/pkg/code"
 	"github.com/lunarianss/Hurricane/pkg/errors"
-	"gopkg.in/yaml.v3"
 )
 
 type IModelProviderRepo interface {

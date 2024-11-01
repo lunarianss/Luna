@@ -253,7 +253,9 @@ func (g *Generator) generate(typeName string) {
 
 	g.Printf("\t import \"github.com/lunarianss/Hurricane/pkg/errors\"")
 	// Generate code that will fail if the constants change value.
-	g.Printf("\t// init register error codes defines in this source code to `github.com/lunarianss/Hurricane/pkg/errors\n")
+	g.Printf(
+		"\t// init register error codes defines in this source code to `github.com/lunarianss/Hurricane/pkg/errors\n",
+	)
 
 	g.Printf("func init() {\n")
 	for _, v := range values {

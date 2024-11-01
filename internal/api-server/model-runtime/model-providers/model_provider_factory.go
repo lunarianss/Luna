@@ -9,11 +9,12 @@ import (
 	"sort"
 	"strings"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/lunarianss/Hurricane/internal/api-server/model-runtime/entities"
 	base "github.com/lunarianss/Hurricane/internal/api-server/model-runtime/model-providers/__base"
 	"github.com/lunarianss/Hurricane/internal/pkg/code"
 	"github.com/lunarianss/Hurricane/pkg/errors"
-	"gopkg.in/yaml.v3"
 )
 
 const POSITION_FILE = "_position.yaml"
@@ -24,7 +25,6 @@ var Factory = ModelProviderFactory{}
 type ModelProviderFactory struct{}
 
 type ModelProviderExtension struct {
-	ModelConfig      interface{}
 	ProviderInstance *base.ModelProvider
 	Name             string
 	Position         int
@@ -47,7 +47,9 @@ func (f *ModelProviderFactory) GetProvidersFromDir() ([]*entities.ProviderEntity
 	return providerEntities, nil
 }
 
-func (f *ModelProviderFactory) extensionConvertProviderEntity(modelProviderExtensions map[string]*ModelProviderExtension) ([]*entities.ProviderEntity, error) {
+func (f *ModelProviderFactory) extensionConvertProviderEntity(
+	modelProviderExtensions map[string]*ModelProviderExtension,
+) ([]*entities.ProviderEntity, error) {
 
 	providers := make([]*entities.ProviderEntity, 0, PROVIDER_COUNT)
 
@@ -62,7 +64,10 @@ func (f *ModelProviderFactory) extensionConvertProviderEntity(modelProviderExten
 	return providers, nil
 }
 
-func (f *ModelProviderFactory) sortProviderEntityByPosition(providers []*entities.ProviderEntity, providerPositionMap map[string]int) {
+func (f *ModelProviderFactory) sortProviderEntityByPosition(
+	providers []*entities.ProviderEntity,
+	providerPositionMap map[string]int,
+) {
 	sort.Slice(providers, func(i, j int) bool {
 		return providerPositionMap[providers[i].Provider] < providerPositionMap[providers[j].Provider]
 	})
@@ -90,7 +95,10 @@ func (f *ModelProviderFactory) getPositionMap(fileDir string) (map[string]int, e
 	return positionIndexMap, nil
 }
 
-func (f *ModelProviderFactory) resolveProviderExtensions(modelProviderResolvePaths []string, positionMap map[string]int) []*ModelProviderExtension {
+func (f *ModelProviderFactory) resolveProviderExtensions(
+	modelProviderResolvePaths []string,
+	positionMap map[string]int,
+) []*ModelProviderExtension {
 	modelProviderExtensions := make([]*ModelProviderExtension, 0, PROVIDER_COUNT)
 	for _, path := range modelProviderResolvePaths {
 		modelProviderName := filepath.Base(path)
@@ -129,7 +137,10 @@ func (f *ModelProviderFactory) resolveProviderDir(dirEntries []fs.DirEntry, full
 	providerDir := filepath.Dir(fullFilePath)
 	for _, dirEntry := range dirEntries {
 		if dirEntry.IsDir() && !strings.HasPrefix(dirEntry.Name(), "__") {
-			modelProviderResolvePaths = append(modelProviderResolvePaths, fmt.Sprintf("%s/%s", providerDir, dirEntry.Name()))
+			modelProviderResolvePaths = append(
+				modelProviderResolvePaths,
+				fmt.Sprintf("%s/%s", providerDir, dirEntry.Name()),
+			)
 		}
 	}
 	return modelProviderResolvePaths, nil
@@ -156,7 +167,9 @@ func (f *ModelProviderFactory) getMapProvidersExtensions() (map[string]*ModelPro
 	return f.resolveMapProviderExtensions(resolveProviderExtensions), positionMap, nil
 }
 
-func (f *ModelProviderFactory) resolveMapProviderExtensions(providerExtensions []*ModelProviderExtension) map[string]*ModelProviderExtension {
+func (f *ModelProviderFactory) resolveMapProviderExtensions(
+	providerExtensions []*ModelProviderExtension,
+) map[string]*ModelProviderExtension {
 
 	providerMap := make(map[string]*ModelProviderExtension)
 

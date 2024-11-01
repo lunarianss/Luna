@@ -5,13 +5,14 @@
 package dao
 
 import (
+	"gorm.io/gorm"
+
 	"github.com/lunarianss/Hurricane/internal/api-server/model-runtime/entities"
 	model_providers "github.com/lunarianss/Hurricane/internal/api-server/model-runtime/model-providers"
 	"github.com/lunarianss/Hurricane/internal/api-server/model/v1"
 	"github.com/lunarianss/Hurricane/internal/api-server/repo"
 	"github.com/lunarianss/Hurricane/internal/pkg/code"
 	"github.com/lunarianss/Hurricane/pkg/errors"
-	"gorm.io/gorm"
 )
 
 type ModelProviderDao struct {
@@ -29,15 +30,15 @@ func (mpd *ModelProviderDao) GetTenantModelProviders(tenantId int64) ([]*model.P
 
 	tenantProviders := []*model.Provider{}
 
-	if err := mpd.db.Where("tenant_id = ?", tenantId).Find(&tenantProviders).Error; err != nil {
+	if err := mpd.db.Where("tenant_id = ? and is_valid = ?", tenantId, 1).Find(&tenantProviders).Error; err != nil {
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())
 	}
 	return tenantProviders, nil
 }
 
 // Get tenant's model providers mapped by provider name
-func (mpd *ModelProviderDao) GetMapTenantModelProviders(tenantId int64) (map[string]*model.Provider, error) {
-	providersMap := make(map[string]*model.Provider)
+func (mpd *ModelProviderDao) GetMapTenantModelProviders(tenantId int64) (map[string][]*model.Provider, error) {
+	providersMap := make(map[string][]*model.Provider)
 	tenantProviders, err := mpd.GetTenantModelProviders(tenantId)
 
 	if err != nil {
@@ -45,7 +46,7 @@ func (mpd *ModelProviderDao) GetMapTenantModelProviders(tenantId int64) (map[str
 	}
 
 	for _, tenantProvider := range tenantProviders {
-		providersMap[tenantProvider.ProviderName] = tenantProvider
+		providersMap[tenantProvider.ProviderName] = append(providersMap[tenantProvider.ProviderName], tenantProvider)
 	}
 	return providersMap, nil
 }

@@ -1,4 +1,4 @@
-module github.com/lunarianss/Hurricane
+module github.com/lunarianss/Luna
 
 go 1.22.1
 

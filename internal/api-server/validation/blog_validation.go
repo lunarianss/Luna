@@ -7,6 +7,7 @@ package validation
 import (
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
+
 	vtor "github.com/lunarianss/Hurricane/internal/pkg/validation"
 )
 

@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+
 	"github.com/lunarianss/Hurricane/internal/pkg/code"
 	"github.com/lunarianss/Hurricane/internal/pkg/validation"
 	"github.com/lunarianss/Hurricane/pkg/errors"

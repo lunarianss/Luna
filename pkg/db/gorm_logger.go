@@ -14,8 +14,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lunarianss/Hurricane/pkg/log"
 	gormlogger "gorm.io/gorm/logger"
+
+	"github.com/lunarianss/Hurricane/pkg/log"
 )
 
 // Define colors.

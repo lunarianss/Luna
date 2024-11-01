@@ -91,7 +91,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 		o.Layout, "Disable the log to record a stack trace for all messages at or above panic level.")
 }
 
-//nolint: errchkjson
+// nolint: errchkjson
 func (o *Options) String() string {
 	data, _ := json.Marshal(o)
 

@@ -6,6 +6,7 @@ package service
 
 import (
 	"slices"
+	"sort"
 
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/model-provider"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/provider"
@@ -53,6 +54,7 @@ func (mpSrv *ModelProviderService) GetProviderList(tenantId int64, modelType str
 			IconLarge:                providerConfiguration.Provider.IconLarge,
 			Background:               providerConfiguration.Provider.Background,
 			Help:                     providerConfiguration.Provider.Help,
+			Position:                 providerConfiguration.Provider.Position,
 			SupportedModelTypes:      providerConfiguration.Provider.SupportedModelTypes,
 			ConfigurationMethods:     providerConfiguration.Provider.ConfigurationMethods,
 			ProviderCredentialSchema: providerConfiguration.Provider.ProviderCredentialSchema,
@@ -62,6 +64,12 @@ func (mpSrv *ModelProviderService) GetProviderList(tenantId int64, modelType str
 				Status: customConfigurationStatus,
 			},
 		})
+
 	}
+
+	sort.Slice(providerListResponse, func(i, j int) bool {
+		return providerListResponse[i].Position < providerListResponse[j].Position
+	})
+
 	return providerListResponse, nil
 }

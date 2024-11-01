@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"sort"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -19,7 +18,6 @@ import (
 	base "github.com/lunarianss/Luna/internal/api-server/model-runtime/model-providers/__base"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
-	"github.com/lunarianss/Luna/pkg/log"
 )
 
 const POSITION_FILE = "_position.yaml"
@@ -36,7 +34,7 @@ type ModelProviderExtension struct {
 }
 
 func (f *ModelProviderFactory) GetProvidersFromDir() ([]*entities.ProviderEntity, error) {
-	modelProviderExtensions, providerPositionMap, err := f.getMapProvidersExtensions()
+	modelProviderExtensions, err := f.getMapProvidersExtensions()
 	if err != nil {
 		return nil, err
 	}
@@ -47,17 +45,6 @@ func (f *ModelProviderFactory) GetProvidersFromDir() ([]*entities.ProviderEntity
 		return nil, err
 	}
 
-	for _, providerEntity := range providerEntities {
-		if providerEntity.Provider == "" {
-			log.Info("排序前存在问题")
-			log.Info(providerEntity.Description.Zh_Hans)
-		}
-	}
-	log.Infof("providerEntity 0 %+v", providerEntities[0])
-	log.Infof("providerEntity 1 %+v", providerEntities[1])
-	f.sortProviderEntityByPosition(providerEntities, providerPositionMap)
-	log.Infof("providerEntity 0 %+v", providerEntities[0])
-	log.Infof("providerEntity 1 %+v", providerEntities[1])
 	return providerEntities, nil
 }
 
@@ -72,22 +59,23 @@ func (f *ModelProviderFactory) extensionConvertProviderEntity(
 		if provider, err := modelProviderInstance.GetProviderSchema(); err != nil {
 			return nil, err
 		} else {
+			provider.Position = providerExtension.Position
 			providers = append(providers, provider)
 		}
 	}
 	return providers, nil
 }
 
-func (f *ModelProviderFactory) sortProviderEntityByPosition(
-	providers []*entities.ProviderEntity,
-	providerPositionMap map[string]int,
-) {
-	sort.Slice(providers, func(i, j int) bool {
-		return providerPositionMap[providers[i].Provider] < providerPositionMap[providers[j].Provider]
-	})
+// func (f *ModelProviderFactory) sortProviderEntityByPosition(
+// 	providers []*entities.ProviderEntity,
+// 	providerPositionMap map[string]int,
+// ) {
+// 	sort.Slice(providers, func(i, j int) bool {
+// 		return providerPositionMap[providers[i].Provider] < providerPositionMap[providers[j].Provider]
+// 	})
+// }
 
-}
-func (f *ModelProviderFactory) getPositionMap(fileDir string) (map[string]int, error) {
+func (f *ModelProviderFactory) GetPositionMap(fileDir string) (map[string]int, error) {
 	positionInfo := make([]string, 0, PROVIDER_COUNT)
 	positionFilePath := filepath.Join(fileDir, POSITION_FILE)
 	positionFileContent, err := os.ReadFile(positionFilePath)
@@ -160,25 +148,26 @@ func (f *ModelProviderFactory) resolveProviderDir(dirEntries []fs.DirEntry, full
 	return modelProviderResolvePaths, nil
 }
 
-func (f *ModelProviderFactory) getMapProvidersExtensions() (map[string]*ModelProviderExtension, map[string]int, error) {
+func (f *ModelProviderFactory) getMapProvidersExtensions() (map[string]*ModelProviderExtension, error) {
 	dirEntries, fullFilePath, fileDir, err := f.resolveProviderDirInfo()
 
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	modelProviderResolvePaths, err := f.resolveProviderDir(dirEntries, fullFilePath)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	positionMap, err := f.getPositionMap(fileDir)
+	positionMap, err := f.GetPositionMap(fileDir)
 
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
+
 	resolveProviderExtensions := f.resolveProviderExtensions(modelProviderResolvePaths, positionMap)
 
-	return f.resolveMapProviderExtensions(resolveProviderExtensions), positionMap, nil
+	return f.resolveMapProviderExtensions(resolveProviderExtensions), nil
 }
 
 func (f *ModelProviderFactory) resolveMapProviderExtensions(

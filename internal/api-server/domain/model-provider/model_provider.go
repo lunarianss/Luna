@@ -10,6 +10,7 @@ import (
 
 	providerEntities "github.com/lunarianss/Luna/internal/api-server/entities/provider"
 	"github.com/lunarianss/Luna/internal/api-server/model-runtime/entities"
+	model_providers "github.com/lunarianss/Luna/internal/api-server/model-runtime/model-providers"
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/api-server/repo"
 	"github.com/lunarianss/Luna/pkg/log"
@@ -40,7 +41,8 @@ func (mpd *ModelProviderDomain) GetConfigurations(tenantId int64) (*providerEnti
 	}
 
 	providerConfigurations := &providerEntities.ProviderConfigurations{
-		TenantId: tenantId,
+		TenantId:       tenantId,
+		Configurations: make(map[string]*providerEntities.ProviderConfiguration, model_providers.PROVIDER_COUNT),
 	}
 
 	for _, providerEntity := range providerNameMapEntities {
@@ -51,8 +53,8 @@ func (mpd *ModelProviderDomain) GetConfigurations(tenantId int64) (*providerEnti
 		providerConfiguration := &providerEntities.ProviderConfiguration{
 			TenantId:              tenantId,
 			Provider:              providerEntity,
-			UsingProviderType:     "custom",
-			PreferredProviderType: "custom",
+			UsingProviderType:     "system",
+			PreferredProviderType: "system",
 			CustomConfiguration:   customConfiguration,
 		}
 

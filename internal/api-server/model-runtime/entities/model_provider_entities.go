@@ -73,4 +73,5 @@ type ProviderEntity struct {
 	Models                   []*ProviderModel          `json:"models"                     yaml:"models"`                     // Models offered by the provider
 	ProviderCredentialSchema *ProviderCredentialSchema `json:"provider_credential_schema" yaml:"provider_credential_schema"` // Schema for provider credentials
 	ModelCredentialSchema    *ModelCredentialSchema    `json:"model_credential_schema"    yaml:"model_credential_schema"`    // Schema for model credentials
+	Position                 int                       `json:"position" yaml:"position"`
 }

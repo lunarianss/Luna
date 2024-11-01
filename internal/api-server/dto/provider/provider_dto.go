@@ -43,4 +43,5 @@ type ProviderResponse struct {
 	PreferredProviderType    model.ProviderType                 `json:"preferred_provider_type"`    //
 	CustomConfiguration      *CustomConfigurationResponse       `json:"custom_configuration"`
 	SystemConfiguration      *SystemConfigurationResponse       `json:"system_configuration"`
+	Position                 int                                `json:"position"`
 }

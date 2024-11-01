@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/lunarianss/Hurricane/pkg/log"
+	"github.com/lunarianss/Luna/pkg/log"
 )
 
 var progressMessage = color.GreenString("==>")

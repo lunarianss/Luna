@@ -6,7 +6,7 @@
 
 package code
 
-import "github.com/lunarianss/Hurricane/pkg/errors" // init register error codes defines in this source code to `github.com/lunarianss/Hurricane/pkg/errors
+import "github.com/lunarianss/Luna/pkg/errors" // init register error codes defines in this source code to `github.com/lunarianss/Luna/pkg/errors
 func init() {
 	errors.Enroll(ErrSuccess, 200, "OK")
 	errors.Enroll(ErrUnknown, 500, "Internal server error")

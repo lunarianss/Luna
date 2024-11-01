@@ -7,7 +7,7 @@ package middleware
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/lunarianss/Hurricane/pkg/log"
+	"github.com/lunarianss/Luna/pkg/log"
 )
 
 // UsernameKey defines the key in gin context which represents the owner of the secret.

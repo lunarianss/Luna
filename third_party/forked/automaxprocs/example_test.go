@@ -21,7 +21,7 @@
 package automaxprocs_test
 
 // Importing automaxprocs automatically adjusts GOMAXPROCS.
-import _ "github.com/lunarianss/Hurricane/third_party/forked/automaxprocs"
+import _ "github.com/lunarianss/Luna/third_party/forked/automaxprocs"
 
 // To render a whole-file example, we need a package-level declaration.
 var _ = ""

@@ -9,7 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/lunarianss/Hurricane/pkg/errors"
+	"github.com/lunarianss/Luna/pkg/errors"
 )
 
 type Router interface {

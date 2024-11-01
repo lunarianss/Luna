@@ -14,8 +14,8 @@ import (
 
 	"github.com/fatih/color"
 
-	"github.com/lunarianss/Hurricane/internal/pkg/middleware"
-	"github.com/lunarianss/Hurricane/pkg/log"
+	"github.com/lunarianss/Luna/internal/pkg/middleware"
+	"github.com/lunarianss/Luna/pkg/log"
 
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"

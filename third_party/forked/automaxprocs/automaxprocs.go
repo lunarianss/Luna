@@ -23,8 +23,8 @@
 package automaxprocs // import "go.uber.org/automaxprocs"
 
 import (
-	"github.com/lunarianss/Hurricane/pkg/log"
-	"github.com/lunarianss/Hurricane/third_party/forked/automaxprocs/maxprocs"
+	"github.com/lunarianss/Luna/pkg/log"
+	"github.com/lunarianss/Luna/third_party/forked/automaxprocs/maxprocs"
 )
 
 func init() {

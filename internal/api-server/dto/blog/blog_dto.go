@@ -5,8 +5,8 @@
 package dto
 
 import (
-	"github.com/lunarianss/Hurricane/internal/api-server/model/v1"
-	"github.com/lunarianss/Hurricane/internal/pkg/field"
+	"github.com/lunarianss/Luna/internal/api-server/model/v1"
+	"github.com/lunarianss/Luna/internal/pkg/field"
 )
 
 // create

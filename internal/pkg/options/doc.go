@@ -2,4 +2,4 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
-package options // import "github.com/lunarianss/Hurricane/internal/pkg/options"
+package options // import "github.com/lunarianss/Luna/internal/pkg/options"

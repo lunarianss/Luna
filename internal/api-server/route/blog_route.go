@@ -7,11 +7,11 @@ package route
 import (
 	"github.com/gin-gonic/gin"
 
-	controller "github.com/lunarianss/Hurricane/internal/api-server/controller/gin/v1/blog"
-	"github.com/lunarianss/Hurricane/internal/api-server/dao"
-	domain "github.com/lunarianss/Hurricane/internal/api-server/domain/blog"
-	"github.com/lunarianss/Hurricane/internal/api-server/service"
-	"github.com/lunarianss/Hurricane/internal/pkg/mysql"
+	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/blog"
+	"github.com/lunarianss/Luna/internal/api-server/dao"
+	domain "github.com/lunarianss/Luna/internal/api-server/domain/blog"
+	"github.com/lunarianss/Luna/internal/api-server/service"
+	"github.com/lunarianss/Luna/internal/pkg/mysql"
 )
 
 type blogRoutes struct{}

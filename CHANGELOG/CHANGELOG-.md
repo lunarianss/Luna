@@ -1,6 +1,6 @@
 <a name="v0.0.1"></a>
 
-## [v0.0.1](https://github.com/lunarianss/Hurricane.git/compare/v0.1.1...v0.0.1) (2024-10-14)
+## [v0.0.1](https://github.com/lunarianss/Luna.git/compare/v0.1.1...v0.0.1) (2024-10-14)
 
 ### Bug Fixes
 
@@ -15,7 +15,7 @@
 
 <a name="v0.1.1"></a>
 
-## [v0.1.1](https://github.com/lunarianss/Hurricane.git/compare/v0.1.0...v0.1.1) (2024-10-12)
+## [v0.1.1](https://github.com/lunarianss/Luna.git/compare/v0.1.0...v0.1.1) (2024-10-12)
 
 ### Bug Fixes
 

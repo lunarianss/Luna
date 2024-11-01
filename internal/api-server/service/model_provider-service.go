@@ -3,10 +3,10 @@ package service
 import (
 	"slices"
 
-	domain "github.com/lunarianss/Hurricane/internal/api-server/domain/model-provider"
-	dto "github.com/lunarianss/Hurricane/internal/api-server/dto/provider"
-	"github.com/lunarianss/Hurricane/internal/api-server/model-runtime/entities"
-	model_providers "github.com/lunarianss/Hurricane/internal/api-server/model-runtime/model-providers"
+	domain "github.com/lunarianss/Luna/internal/api-server/domain/model-provider"
+	dto "github.com/lunarianss/Luna/internal/api-server/dto/provider"
+	"github.com/lunarianss/Luna/internal/api-server/model-runtime/entities"
+	model_providers "github.com/lunarianss/Luna/internal/api-server/model-runtime/model-providers"
 )
 
 type ModelProviderService struct {

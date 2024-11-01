@@ -3,8 +3,8 @@ package model_providers
 import (
 	"testing"
 
-	"github.com/lunarianss/Hurricane/pkg/errors"
-	"github.com/lunarianss/Hurricane/pkg/log"
+	"github.com/lunarianss/Luna/pkg/errors"
+	"github.com/lunarianss/Luna/pkg/log"
 )
 
 func TestModelProviderFactory(t *testing.T) {

@@ -16,7 +16,7 @@ import (
 
 	gormlogger "gorm.io/gorm/logger"
 
-	"github.com/lunarianss/Hurricane/pkg/log"
+	"github.com/lunarianss/Luna/pkg/log"
 )
 
 // Define colors.

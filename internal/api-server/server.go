@@ -5,14 +5,14 @@
 package master
 
 import (
-	"github.com/lunarianss/Hurricane/internal/api-server/config"
-	_ "github.com/lunarianss/Hurricane/internal/api-server/route"
-	_ "github.com/lunarianss/Hurricane/internal/api-server/validation"
-	"github.com/lunarianss/Hurricane/internal/pkg/mysql"
-	"github.com/lunarianss/Hurricane/internal/pkg/server"
-	"github.com/lunarianss/Hurricane/internal/pkg/validation"
-	"github.com/lunarianss/Hurricane/pkg/log"
-	"github.com/lunarianss/Hurricane/pkg/shutdown"
+	"github.com/lunarianss/Luna/internal/api-server/config"
+	_ "github.com/lunarianss/Luna/internal/api-server/route"
+	_ "github.com/lunarianss/Luna/internal/api-server/validation"
+	"github.com/lunarianss/Luna/internal/pkg/mysql"
+	"github.com/lunarianss/Luna/internal/pkg/server"
+	"github.com/lunarianss/Luna/internal/pkg/validation"
+	"github.com/lunarianss/Luna/pkg/log"
+	"github.com/lunarianss/Luna/pkg/shutdown"
 )
 
 type MasterApiServer struct {

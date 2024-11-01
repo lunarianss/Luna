@@ -9,11 +9,11 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/lunarianss/Hurricane/internal/api-server/model/v1"
-	"github.com/lunarianss/Hurricane/internal/api-server/repo"
-	"github.com/lunarianss/Hurricane/internal/pkg/code"
-	"github.com/lunarianss/Hurricane/internal/pkg/mysql"
-	"github.com/lunarianss/Hurricane/pkg/errors"
+	"github.com/lunarianss/Luna/internal/api-server/model/v1"
+	"github.com/lunarianss/Luna/internal/api-server/repo"
+	"github.com/lunarianss/Luna/internal/pkg/code"
+	"github.com/lunarianss/Luna/internal/pkg/mysql"
+	"github.com/lunarianss/Luna/pkg/errors"
 )
 
 type BlogDao struct {

@@ -26,7 +26,7 @@ package runtime
 import (
 	"errors"
 
-	cg "github.com/lunarianss/Hurricane/third_party/forked/automaxprocs/internal/cgroups"
+	cg "github.com/lunarianss/Luna/third_party/forked/automaxprocs/internal/cgroups"
 )
 
 // CPUQuotaToGOMAXPROCS converts the CPU quota applied to the calling process

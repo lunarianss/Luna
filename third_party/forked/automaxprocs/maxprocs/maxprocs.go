@@ -27,7 +27,7 @@ import (
 	"os"
 	"runtime"
 
-	iruntime "github.com/lunarianss/Hurricane/third_party/forked/automaxprocs/internal/runtime"
+	iruntime "github.com/lunarianss/Luna/third_party/forked/automaxprocs/internal/runtime"
 )
 
 const _maxProcsKey = "GOMAXPROCS"

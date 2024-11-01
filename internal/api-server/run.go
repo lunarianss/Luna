@@ -4,7 +4,7 @@
 
 package master
 
-import "github.com/lunarianss/Hurricane/internal/api-server/config"
+import "github.com/lunarianss/Luna/internal/api-server/config"
 
 func Run(config *config.Config) error {
 	server, err := createMasterApiServer(config)

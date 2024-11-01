@@ -58,7 +58,7 @@ definitions:
       - newPassword
     title: ChangePasswordRequest defines the ChangePasswordRequest data format.
     type: object
-    x-go-package: github.com/lunarianss/Hurricane/api/swagger/docs
+    x-go-package: github.com/lunarianss/Luna/api/swagger/docs
   Condition:
     properties:
       GetName:

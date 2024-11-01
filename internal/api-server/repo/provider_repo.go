@@ -1,8 +1,8 @@
 package repo
 
 import (
-	"github.com/lunarianss/Hurricane/internal/api-server/model-runtime/entities"
-	"github.com/lunarianss/Hurricane/internal/api-server/model/v1"
+	"github.com/lunarianss/Luna/internal/api-server/model-runtime/entities"
+	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 )
 
 type ModelProviderRepo interface {

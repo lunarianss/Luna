@@ -9,11 +9,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	dto "github.com/lunarianss/Hurricane/internal/api-server/dto/blog"
-	"github.com/lunarianss/Hurricane/internal/pkg/code"
-	"github.com/lunarianss/Hurricane/internal/pkg/core"
-	"github.com/lunarianss/Hurricane/pkg/errors"
-	"github.com/lunarianss/Hurricane/pkg/log"
+	dto "github.com/lunarianss/Luna/internal/api-server/dto/blog"
+	"github.com/lunarianss/Luna/internal/pkg/code"
+	"github.com/lunarianss/Luna/internal/pkg/core"
+	"github.com/lunarianss/Luna/pkg/errors"
+	"github.com/lunarianss/Luna/pkg/log"
 )
 
 func (bc *BlogController) Update(c *gin.Context) {

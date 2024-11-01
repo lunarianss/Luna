@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/lunarianss/Hurricane/pkg/log"
+	"github.com/lunarianss/Luna/pkg/log"
 )
 
 type LocalTime time.Time

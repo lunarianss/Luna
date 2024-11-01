@@ -7,7 +7,7 @@ package main
 //go:generate swagger generate spec -o ../../api/swagger/swagger.yaml --scan-models
 
 import (
-	_ "github.com/lunarianss/Hurricane/api/swagger/docs"
+	_ "github.com/lunarianss/Luna/api/swagger/docs"
 )
 
 func main() {

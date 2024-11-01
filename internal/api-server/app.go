@@ -5,17 +5,17 @@
 package master
 
 import (
-	"github.com/lunarianss/Hurricane/internal/api-server/config"
-	"github.com/lunarianss/Hurricane/internal/api-server/options"
-	"github.com/lunarianss/Hurricane/pkg/app"
-	"github.com/lunarianss/Hurricane/pkg/log"
+	"github.com/lunarianss/Luna/internal/api-server/config"
+	"github.com/lunarianss/Luna/internal/api-server/options"
+	"github.com/lunarianss/Luna/pkg/app"
+	"github.com/lunarianss/Luna/pkg/log"
 )
 
 // nolint: lll
 const commandDesc = `Hurricane, a command and rich functional web develop template.
 
 Find more hurricane information at:
-    https://github.com/lunarianss/hurricane/`
+    https://github.com/lunarianss/Luna/`
 
 // NewApp creates an App object with default parameters.
 func NewApp(basename string) *app.App {

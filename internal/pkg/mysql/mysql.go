@@ -10,9 +10,9 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/lunarianss/Hurricane/internal/pkg/options"
-	"github.com/lunarianss/Hurricane/pkg/db"
-	"github.com/lunarianss/Hurricane/pkg/log"
+	"github.com/lunarianss/Luna/internal/pkg/options"
+	"github.com/lunarianss/Luna/pkg/db"
+	"github.com/lunarianss/Luna/pkg/log"
 )
 
 var (

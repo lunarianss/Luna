@@ -4,7 +4,7 @@
 
 package route
 
-import "github.com/lunarianss/Hurricane/internal/pkg/server"
+import "github.com/lunarianss/Luna/internal/pkg/server"
 
 // Route unified registration portal
 func init() {

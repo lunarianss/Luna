@@ -5,7 +5,7 @@
 package master
 
 import (
-	"github.com/lunarianss/Hurricane/internal/pkg/server"
+	"github.com/lunarianss/Luna/internal/pkg/server"
 
 	"github.com/gin-gonic/gin"
 )

@@ -12,8 +12,8 @@ all: tidy add-copyright format lint cover build
 # ==============================================================================
 # Build options
 
-ROOT_PACKAGE=github.com/lunarianss/Hurricane
-VERSION_PACKAGE=github.com/lunarianss/Hurricane/pkg/app
+ROOT_PACKAGE=github.com/lunarianss/Luna
+VERSION_PACKAGE=github.com/lunarianss/Luna/pkg/app
 
 # ==============================================================================
 # Includes

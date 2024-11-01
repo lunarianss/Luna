@@ -4,7 +4,7 @@
 
 package config
 
-import "github.com/lunarianss/Hurricane/internal/api-server/options"
+import "github.com/lunarianss/Luna/internal/api-server/options"
 
 // Config is the running configuration structure of the hurricane service.
 type Config struct {

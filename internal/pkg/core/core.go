@@ -10,10 +10,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 
-	"github.com/lunarianss/Hurricane/internal/pkg/code"
-	"github.com/lunarianss/Hurricane/internal/pkg/validation"
-	"github.com/lunarianss/Hurricane/pkg/errors"
-	"github.com/lunarianss/Hurricane/pkg/log"
+	"github.com/lunarianss/Luna/internal/pkg/code"
+	"github.com/lunarianss/Luna/internal/pkg/validation"
+	"github.com/lunarianss/Luna/pkg/errors"
+	"github.com/lunarianss/Luna/pkg/log"
 )
 
 // ErrResponse defines the return messages when an error occurred.

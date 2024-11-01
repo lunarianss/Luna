@@ -29,7 +29,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/lunarianss/Hurricane/third_party/forked/automaxprocs/internal/cgroups"
+	"github.com/lunarianss/Luna/third_party/forked/automaxprocs/internal/cgroups"
 	"github.com/prashantv/gostub"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

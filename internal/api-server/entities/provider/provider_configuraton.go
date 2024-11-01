@@ -1,8 +1,8 @@
 package entities
 
 import (
-	modelRuntimeEntities "github.com/lunarianss/Hurricane/internal/api-server/model-runtime/entities"
-	"github.com/lunarianss/Hurricane/internal/api-server/model/v1"
+	modelRuntimeEntities "github.com/lunarianss/Luna/internal/api-server/model-runtime/entities"
+	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 )
 
 type ProviderConfiguration struct {

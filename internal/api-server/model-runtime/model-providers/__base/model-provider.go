@@ -7,9 +7,9 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/lunarianss/Hurricane/internal/api-server/model-runtime/entities"
-	"github.com/lunarianss/Hurricane/internal/pkg/code"
-	"github.com/lunarianss/Hurricane/pkg/errors"
+	"github.com/lunarianss/Luna/internal/api-server/model-runtime/entities"
+	"github.com/lunarianss/Luna/internal/pkg/code"
+	"github.com/lunarianss/Luna/pkg/errors"
 )
 
 type IModelProviderRepo interface {

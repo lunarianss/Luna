@@ -3,7 +3,7 @@ package model
 import (
 	"time"
 
-	"github.com/lunarianss/Hurricane/internal/pkg/field"
+	"github.com/lunarianss/Luna/internal/pkg/field"
 )
 
 type ProviderType string

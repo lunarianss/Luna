@@ -1,9 +1,9 @@
 package dto
 
 import (
-	providerEntities "github.com/lunarianss/Hurricane/internal/api-server/entities/provider"
-	"github.com/lunarianss/Hurricane/internal/api-server/model-runtime/entities"
-	"github.com/lunarianss/Hurricane/internal/api-server/model/v1"
+	providerEntities "github.com/lunarianss/Luna/internal/api-server/entities/provider"
+	"github.com/lunarianss/Luna/internal/api-server/model-runtime/entities"
+	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 )
 
 // List model providers

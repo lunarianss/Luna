@@ -7,9 +7,9 @@ package options
 import (
 	"encoding/json"
 
-	"github.com/lunarianss/Hurricane/internal/pkg/options"
-	"github.com/lunarianss/Hurricane/pkg/app"
-	"github.com/lunarianss/Hurricane/pkg/log"
+	"github.com/lunarianss/Luna/internal/pkg/options"
+	"github.com/lunarianss/Luna/pkg/app"
+	"github.com/lunarianss/Luna/pkg/log"
 )
 
 type Options struct {

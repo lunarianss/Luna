@@ -5,7 +5,7 @@
 package model
 
 import (
-	"github.com/lunarianss/Hurricane/internal/pkg/field"
+	"github.com/lunarianss/Luna/internal/pkg/field"
 )
 
 type Blog struct {

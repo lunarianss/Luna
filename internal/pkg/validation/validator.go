@@ -15,7 +15,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	en_translations "github.com/go-playground/validator/v10/translations/en"
 
-	"github.com/lunarianss/Hurricane/pkg/errors"
+	"github.com/lunarianss/Luna/pkg/errors"
 )
 
 var globalTrans ut.Translator

@@ -15,7 +15,7 @@ var (
 		1,
 		http.StatusInternalServerError,
 		"An internal server error occurred",
-		"github.com/lunarianss/Hurricane.git",
+		"github.com/lunarianss/Luna.git",
 	}
 )
 

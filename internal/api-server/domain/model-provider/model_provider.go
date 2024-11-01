@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"strings"
 
-	providerEntities "github.com/lunarianss/Hurricane/internal/api-server/entities/provider"
-	"github.com/lunarianss/Hurricane/internal/api-server/model-runtime/entities"
-	"github.com/lunarianss/Hurricane/internal/api-server/model/v1"
-	"github.com/lunarianss/Hurricane/internal/api-server/repo"
-	"github.com/lunarianss/Hurricane/pkg/log"
+	providerEntities "github.com/lunarianss/Luna/internal/api-server/entities/provider"
+	"github.com/lunarianss/Luna/internal/api-server/model-runtime/entities"
+	"github.com/lunarianss/Luna/internal/api-server/model/v1"
+	"github.com/lunarianss/Luna/internal/api-server/repo"
+	"github.com/lunarianss/Luna/pkg/log"
 )
 
 type ModelProviderDomain struct {

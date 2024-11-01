@@ -23,7 +23,7 @@ import (
 
 	"golang.org/x/tools/go/packages"
 
-	"github.com/lunarianss/Hurricane/pkg/log"
+	"github.com/lunarianss/Luna/pkg/log"
 )
 
 var errCodeDocPrefix = `# 错误码
@@ -251,10 +251,10 @@ func (g *Generator) generate(typeName string) {
 		log.Fatalf("no values defined for type %s", typeName)
 	}
 
-	g.Printf("\t import \"github.com/lunarianss/Hurricane/pkg/errors\"")
+	g.Printf("\t import \"github.com/lunarianss/Luna/pkg/errors\"")
 	// Generate code that will fail if the constants change value.
 	g.Printf(
-		"\t// init register error codes defines in this source code to `github.com/lunarianss/Hurricane/pkg/errors\n",
+		"\t// init register error codes defines in this source code to `github.com/lunarianss/Luna/pkg/errors\n",
 	)
 
 	g.Printf("func init() {\n")

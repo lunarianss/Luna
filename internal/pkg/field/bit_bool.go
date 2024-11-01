@@ -7,8 +7,8 @@ package field
 import (
 	"database/sql/driver"
 
-	"github.com/lunarianss/Hurricane/internal/pkg/code"
-	"github.com/lunarianss/Hurricane/pkg/errors"
+	"github.com/lunarianss/Luna/internal/pkg/code"
+	"github.com/lunarianss/Luna/pkg/errors"
 )
 
 type BitBool int

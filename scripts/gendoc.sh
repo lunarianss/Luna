@@ -9,7 +9,7 @@ do
         if [ ! -f $d/doc.go ]; then
             if ls $d/*.go > /dev/null 2>&1; then
                 echo $d/doc.go
-                echo "package $(basename $d) // import \"github.com/lunarianss/Hurricane/$d\"" > $d/doc.go
+                echo "package $(basename $d) // import \"github.com/lunarianss/Luna/$d\"" > $d/doc.go
             fi
         fi
     done

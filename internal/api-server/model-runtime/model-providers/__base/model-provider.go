@@ -41,5 +41,6 @@ func (mp *ModelProvider) GetProviderSchema() (*entities.ProviderEntity, error) {
 		return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
 	}
 
+	provider.PatchI18nObject()
 	return provider, nil
 }

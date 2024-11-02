@@ -4,6 +4,14 @@
 
 package entities
 
+import (
+	"reflect"
+)
+
+const (
+	PATCH_FUNCTION_NAME = "PatchZh"
+)
+
 type ConfigurationMethod string
 
 const (
@@ -24,6 +32,15 @@ const (
 type I18nObject struct {
 	Zh_Hans string `json:"zh_Hans" yaml:"zh_Hans"`
 	En_US   string `json:"en_US"   yaml:"en_US"`
+}
+
+func (o *I18nObject) PatchZh() {
+	if o == nil {
+		return
+	}
+	if o.Zh_Hans == "" {
+		o.Zh_Hans = o.En_US
+	}
 }
 
 type ProviderHelpEntity struct {
@@ -74,4 +91,18 @@ type ProviderEntity struct {
 	ProviderCredentialSchema *ProviderCredentialSchema `json:"provider_credential_schema" yaml:"provider_credential_schema"` // Schema for provider credentials
 	ModelCredentialSchema    *ModelCredentialSchema    `json:"model_credential_schema"    yaml:"model_credential_schema"`    // Schema for model credentials
 	Position                 int                       `json:"position" yaml:"position"`
+}
+
+func (pe *ProviderEntity) PatchI18nObject() {
+	v := reflect.ValueOf(pe).Elem()
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+
+		if field.Kind() == reflect.Ptr && field.Type() == reflect.TypeOf(&I18nObject{}) {
+			method := field.MethodByName(PATCH_FUNCTION_NAME)
+			if method.IsValid() && method.Type().NumIn() == 0 {
+				method.Call(nil)
+			}
+		}	
+	}
 }

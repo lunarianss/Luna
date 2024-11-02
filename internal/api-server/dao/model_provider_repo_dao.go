@@ -5,6 +5,8 @@
 package dao
 
 import (
+	"fmt"
+
 	"gorm.io/gorm"
 
 	"github.com/lunarianss/Luna/internal/api-server/model-runtime/entities"
@@ -70,4 +72,29 @@ func (mpd *ModelProviderDao) GetMapSystemProviders() (map[string]*entities.Provi
 		mapSystemProviders[provider.Provider] = provider
 	}
 	return mapSystemProviders, nil
+}
+
+func (mpd *ModelProviderDao) GetProviderPath(provider string) (string, error) {
+	providerPath, err := model_providers.Factory.ResolveProviderDirPath()
+
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%s/%s", providerPath, provider), nil
+}
+
+func (mpd *ModelProviderDao) GetProviderEntity(provider string) (*entities.ProviderEntity, error) {
+	modelProvider, err := model_providers.Factory.GetProviderInstance(provider)
+
+	if err != nil {
+		return nil, err
+	}
+
+	providerEntity, err := modelProvider.GetProviderSchema()
+
+	if err != nil {
+		return nil, err
+	}
+	return providerEntity, nil
 }

@@ -10,7 +10,9 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 )
 
-// List model providers
+// --
+// --- List model providers
+// --
 type CustomConfigurationStatus string
 
 const (
@@ -44,4 +46,13 @@ type ProviderResponse struct {
 	CustomConfiguration      *CustomConfigurationResponse       `json:"custom_configuration"`
 	SystemConfiguration      *SystemConfigurationResponse       `json:"system_configuration"`
 	Position                 int                                `json:"position"`
+}
+
+// --
+// --- List icon
+// --
+type ListIconRequest struct {
+	IconType string `json:"icon_type" uri:"iconType" validate:"required"`
+	Lang     string `json:"lang" uri:"lang" validate:"required"`
+	Provider string `json:"provider" uri:"provider" validate:"required"`
 }

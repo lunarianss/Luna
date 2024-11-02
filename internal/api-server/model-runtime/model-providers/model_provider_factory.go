@@ -20,8 +20,11 @@ import (
 	"github.com/lunarianss/Luna/pkg/errors"
 )
 
-const POSITION_FILE = "_position.yaml"
-const PROVIDER_COUNT = 52
+const (
+	POSITION_FILE  = "_position.yaml"
+	PROVIDER_COUNT = 52
+	ASSETS_DIR     = "_assets"
+)
 
 var Factory = ModelProviderFactory{}
 
@@ -33,13 +36,35 @@ type ModelProviderExtension struct {
 	Position         int
 }
 
+func (f *ModelProviderFactory) GetPositionMap(fileDir string) (map[string]int, error) {
+	positionInfo := make([]string, 0, PROVIDER_COUNT)
+	positionFilePath := filepath.Join(fileDir, POSITION_FILE)
+	positionFileContent, err := os.ReadFile(positionFilePath)
+
+	if err != nil {
+		return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+	}
+
+	if err := yaml.Unmarshal(positionFileContent, &positionInfo); err != nil {
+		return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+	}
+
+	positionIndexMap := make(map[string]int)
+
+	for index, providerName := range positionInfo {
+		positionIndexMap[strings.Trim(providerName, " ")] = index
+	}
+
+	return positionIndexMap, nil
+}
+
 func (f *ModelProviderFactory) GetProvidersFromDir() ([]*entities.ProviderEntity, error) {
 	modelProviderExtensions, err := f.getMapProvidersExtensions()
 	if err != nil {
 		return nil, err
 	}
 
-	providerEntities, err := f.extensionConvertProviderEntity(modelProviderExtensions)
+	providerEntities, err := f.extensionsConvertProviderEntity(modelProviderExtensions)
 
 	if err != nil {
 		return nil, err
@@ -48,7 +73,23 @@ func (f *ModelProviderFactory) GetProvidersFromDir() ([]*entities.ProviderEntity
 	return providerEntities, nil
 }
 
-func (f *ModelProviderFactory) extensionConvertProviderEntity(
+func (f *ModelProviderFactory) GetProviderInstance(provider string) (*base.ModelProvider, error) {
+	providerMap, err := f.getMapProvidersExtensions()
+
+	if err != nil {
+		return nil, err
+	}
+
+	providerExtension, ok := providerMap[provider]
+
+	if !ok {
+		return nil, errors.WithCode(code.ErrProviderMapModel, fmt.Sprintf("invalid provider: %v", provider))
+	}
+
+	return providerExtension.ProviderInstance, nil
+}
+
+func (f *ModelProviderFactory) extensionsConvertProviderEntity(
 	modelProviderExtensions map[string]*ModelProviderExtension,
 ) ([]*entities.ProviderEntity, error) {
 
@@ -75,28 +116,6 @@ func (f *ModelProviderFactory) extensionConvertProviderEntity(
 // 	})
 // }
 
-func (f *ModelProviderFactory) GetPositionMap(fileDir string) (map[string]int, error) {
-	positionInfo := make([]string, 0, PROVIDER_COUNT)
-	positionFilePath := filepath.Join(fileDir, POSITION_FILE)
-	positionFileContent, err := os.ReadFile(positionFilePath)
-
-	if err != nil {
-		return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
-	}
-
-	if err := yaml.Unmarshal(positionFileContent, &positionInfo); err != nil {
-		return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
-	}
-
-	positionIndexMap := make(map[string]int)
-
-	for index, providerName := range positionInfo {
-		positionIndexMap[strings.Trim(providerName, " ")] = index
-	}
-
-	return positionIndexMap, nil
-}
-
 func (f *ModelProviderFactory) resolveProviderExtensions(
 	modelProviderResolvePaths []string,
 	positionMap map[string]int,
@@ -114,6 +133,16 @@ func (f *ModelProviderFactory) resolveProviderExtensions(
 	}
 
 	return modelProviderExtensions
+}
+
+func (f *ModelProviderFactory) ResolveProviderDirPath() (string, error) {
+	_, fullFilePath, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", errors.WithCode(code.ErrRunTimeCaller, "Fail to get runtime caller info")
+	}
+
+	fileDir := filepath.Dir(fullFilePath)
+	return fileDir, nil
 }
 
 func (f *ModelProviderFactory) resolveProviderDirInfo() ([]fs.DirEntry, string, string, error) {

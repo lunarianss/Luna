@@ -5,13 +5,17 @@
 package service
 
 import (
+	"fmt"
 	"slices"
 	"sort"
+	"strings"
 
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/model-provider"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/provider"
 	"github.com/lunarianss/Luna/internal/api-server/model-runtime/entities"
 	model_providers "github.com/lunarianss/Luna/internal/api-server/model-runtime/model-providers"
+	"github.com/lunarianss/Luna/internal/pkg/code"
+	"github.com/lunarianss/Luna/pkg/errors"
 )
 
 type ModelProviderService struct {
@@ -72,4 +76,57 @@ func (mpSrv *ModelProviderService) GetProviderList(tenantId int64, modelType str
 	})
 
 	return providerListResponse, nil
+}
+
+func (mpSrv *ModelProviderService) GetProviderIconPath(provider, iconType, lang string) (string, error) {
+
+	providerPath, err := mpSrv.ModelProviderDomain.ModelProviderRepo.GetProviderPath(provider)
+
+	if err != nil {
+		return "", err
+	}
+
+	providerEntity, err := mpSrv.ModelProviderDomain.ModelProviderRepo.GetProviderEntity(provider)
+
+	if err != nil {
+		return "", err
+	}
+
+	iconName, err := mpSrv.getIconName(providerEntity, iconType, lang)
+
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%s/%s/%s", providerPath, model_providers.ASSETS_DIR, iconName), nil
+}
+
+func (mpSrv *ModelProviderService) getIconName(providerEntity *entities.ProviderEntity, iconType, lang string) (string, error) {
+	var (
+		iconName string
+	)
+
+	if iconType == "icon_small" {
+		if providerEntity.IconSmall == nil {
+			return "", errors.WithCode(code.ErrProviderNotHaveIcon, fmt.Sprintf("provider %s not have a small icon", providerEntity.Provider))
+		}
+
+		if strings.ToLower(lang) == "zh_hans" {
+			iconName = providerEntity.IconSmall.Zh_Hans
+		} else {
+			iconName = providerEntity.IconSmall.En_US
+		}
+	} else {
+		if providerEntity.IconLarge == nil {
+			return "", errors.WithCode(code.ErrProviderNotHaveIcon, fmt.Sprintf("provider %s not have a large icon", providerEntity.Provider))
+		}
+
+		if strings.ToLower(lang) == "zh_hans" {
+			iconName = providerEntity.IconLarge.Zh_Hans
+		} else {
+			iconName = providerEntity.IconLarge.En_US
+		}
+	}
+
+	return iconName, nil
 }

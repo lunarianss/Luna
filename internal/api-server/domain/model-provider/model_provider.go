@@ -26,7 +26,7 @@ func NewModelProviderDomain(modelProviderRepo repo.ModelProviderRepo) *ModelProv
 	}
 }
 
-// Get all providers, models config for tenant
+// GetConfigurations Get all providers, models config for tenant
 func (mpd *ModelProviderDomain) GetConfigurations(tenantId int64) (*providerEntities.ProviderConfigurations, error) {
 	providerNameMapRecords, err := mpd.ModelProviderRepo.GetMapTenantModelProviders(tenantId)
 

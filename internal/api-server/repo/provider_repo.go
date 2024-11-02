@@ -18,4 +18,8 @@ type ModelProviderRepo interface {
 	GetSystemProviders() ([]*entities.ProviderEntity, error)
 	// Get all inner Providers mapped by provider name
 	GetMapSystemProviders() (map[string]*entities.ProviderEntity, error)
+	// Get provider path
+	GetProviderPath(provider string) (string, error)
+	// GerProviderEntity get the provider entity by provider name
+	GetProviderEntity(provider string) (*entities.ProviderEntity, error)
 }

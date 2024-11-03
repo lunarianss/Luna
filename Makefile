@@ -180,10 +180,10 @@ check-updates:
 tidy:
 	@$(GO) mod tidy
 
-.PHONY: runm
-runm:
+.PHONY: run
+run:
 	@echo $(ROOT_DIR)
-	@$(GO) run $(ROOT_DIR)/cmd/master -c $(ROOT_DIR)/configs/master.yaml
+	@$(GO) run $(ROOT_DIR)/cmd/luna -c $(ROOT_DIR)/configs/luna.yaml
 
 ## help: Show this help info.
 .PHONY: help

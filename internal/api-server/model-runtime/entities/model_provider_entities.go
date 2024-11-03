@@ -44,8 +44,8 @@ func (o *I18nObject) PatchZh() {
 }
 
 type ProviderHelpEntity struct {
-	Title I18nObject `json:"title" yaml:"title"`
-	Url   I18nObject `json:"url"   yaml:"url"`
+	Title *I18nObject `json:"title" yaml:"title"`
+	Url   *I18nObject `json:"url"   yaml:"url"`
 }
 
 type FormShowOnObject struct {
@@ -54,18 +54,18 @@ type FormShowOnObject struct {
 }
 
 type CredentialFormSchema struct {
-	Variable     string             `json:"variable"   yaml:"variable"`   // Variable name
-	Label        I18nObject         `json:"label"      yaml:"label"`      // Field label in i18n format
-	Type         FormType           `json:"type"       yaml:"type"`       // Field type
-	Required     bool               `json:"required"   yaml:"required"`   // Whether the field is required
-	DefaultValue string             `json:"default"    yaml:"default"`    // Default value
-	MaxLength    int                `json:"max_length" yaml:"max_length"` // Maximum length
-	ShowOn       []FormShowOnObject `json:"show_on"    yaml:"show_on"`    // Conditions to show the field
+	Variable     string              `json:"variable"   yaml:"variable"`   // Variable name
+	Label        *I18nObject         `json:"label"      yaml:"label"`      // Field label in i18n format
+	Type         FormType            `json:"type"       yaml:"type"`       // Field type
+	Required     bool                `json:"required"   yaml:"required"`   // Whether the field is required
+	DefaultValue string              `json:"default"    yaml:"default"`    // Default value
+	MaxLength    int                 `json:"max_length" yaml:"max_length"` // Maximum length
+	ShowOn       []*FormShowOnObject `json:"show_on"    yaml:"show_on"`    // Conditions to show the field
 }
 
 type FieldModelSchema struct {
-	Label       I18nObject `json:"label"`
-	PlaceHolder I18nObject `json:"place_holder"`
+	Label       *I18nObject `json:"label"`
+	PlaceHolder *I18nObject `json:"place_holder"`
 }
 
 type ModelCredentialSchema struct {
@@ -93,16 +93,55 @@ type ProviderEntity struct {
 	Position                 int                       `json:"position" yaml:"position"`
 }
 
-func (pe *ProviderEntity) PatchI18nObject() {
-	v := reflect.ValueOf(pe).Elem()
-	for i := 0; i < v.NumField(); i++ {
-		field := v.Field(i)
+type RecursiveObject func(obj interface{})
 
-		if field.Kind() == reflect.Ptr && field.Type() == reflect.TypeOf(&I18nObject{}) {
-			method := field.MethodByName(PATCH_FUNCTION_NAME)
-			if method.IsValid() && method.Type().NumIn() == 0 {
-				method.Call(nil)
+func (pe *ProviderEntity) PatchI18nObject() {
+	var recursiveObject RecursiveObject
+	recursiveObject = func(obj interface{}) {
+
+		if obj == nil {
+			return
+		}
+
+		var v reflect.Value
+
+		objValue := reflect.ValueOf(obj)
+
+		if objValue.Kind() == reflect.Ptr {
+			v = objValue.Elem()
+		} else {
+			v = objValue
+		}
+
+		if v.Kind() == reflect.Struct {
+			for i := 0; i < v.NumField(); i++ {
+				field := v.Field(i)
+
+				if field.Kind() == reflect.Ptr {
+					if field.IsNil() {
+						continue
+					}
+
+					if field.Type() == reflect.TypeOf(&I18nObject{}) {
+						method := field.MethodByName(PATCH_FUNCTION_NAME)
+						if method.IsValid() && method.Type().NumIn() == 0 {
+							method.Call(nil)
+						}
+					} else {
+						recursiveObject(field.Interface())
+					}
+				} else if field.Kind() == reflect.Slice {
+					for j := 0; j < field.Len(); j++ {
+						recursiveObject(field.Index(j).Interface())
+					}
+				} else if field.Kind() == reflect.Interface {
+					if !field.IsNil() {
+						recursiveObject(field.Interface())
+					}
+				}
 			}
-		}	
+		}
 	}
+
+	recursiveObject(pe)
 }

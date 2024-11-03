@@ -16,6 +16,7 @@ func init() {
 	errors.Enroll(ErrPageNotFound, 404, "Page not found")
 	errors.Enroll(ErrRestfulId, 400, "Error occurred while parse restful id from url")
 	errors.Enroll(ErrRunTimeCaller, 500, "Error occurred while call go inner function")
+	errors.Enroll(ErrRunTimeConfig, 500, "Error occurred while runtime config is nil")
 	errors.Enroll(ErrDatabase, 500, "Database error")
 	errors.Enroll(ErrRecordNotFound, 500, "Database record not found")
 	errors.Enroll(ErrScanToField, 400, "Database scan error to field")
@@ -34,4 +35,6 @@ func init() {
 	errors.Enroll(ErrInvalidYaml, 500, "Data is not valid Yaml")
 	errors.Enroll(ErrEncodingYaml, 500, "Yaml data could not be encoded")
 	errors.Enroll(ErrDecodingYaml, 500, "Yaml data could not be decoded")
+	errors.Enroll(ErrProviderMapModel, 500, "Error occurred while attempt to index from providerMpa using provider")
+	errors.Enroll(ErrProviderNotHaveIcon, 500, "Error occurred while provider entity doesn't have icon property")
 }

@@ -5,6 +5,9 @@
 package dto
 
 import (
+	"fmt"
+
+	"github.com/lunarianss/Luna/internal/api-server/config"
 	providerEntities "github.com/lunarianss/Luna/internal/api-server/entities/provider"
 	"github.com/lunarianss/Luna/internal/api-server/model-runtime/entities"
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
@@ -46,6 +49,34 @@ type ProviderResponse struct {
 	CustomConfiguration      *CustomConfigurationResponse       `json:"custom_configuration"`
 	SystemConfiguration      *SystemConfigurationResponse       `json:"system_configuration"`
 	Position                 int                                `json:"position"`
+}
+
+func (pr *ProviderResponse) PatchIcon() error {
+	runtimeConfig, err := config.GetLunaRuntimeConfig()
+
+	provider := pr.Provider
+
+	if err != nil {
+		return err
+	}
+
+	insecureAddress := fmt.Sprintf("%s:%d", runtimeConfig.InsecureServing.BindAddress, runtimeConfig.InsecureServing.BindPort)
+
+	urlPrefix := fmt.Sprintf("http://%s/%s/%s", insecureAddress, "v1/console/workspace/current/model-providers", provider)
+
+	if pr.IconLarge != nil {
+		pr.IconLarge = &entities.I18nObject{
+			Zh_Hans: fmt.Sprintf("%s/%s", urlPrefix, "icon_large/zh_Hans"),
+			En_US:   fmt.Sprintf("%s/%s", urlPrefix, "icon_large/en_US"),
+		}
+	} else if pr.IconSmall != nil {
+		pr.IconSmall = &entities.I18nObject{
+			Zh_Hans: fmt.Sprintf("%s/%s", urlPrefix, "icon_small/zh_Hans"),
+			En_US:   fmt.Sprintf("%s/%s", urlPrefix, "icon_small/en_US"),
+		}
+	}
+
+	return nil
 }
 
 // --

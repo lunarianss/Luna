@@ -29,6 +29,7 @@ IAM 系统支持的错误码列表如下：
 | ErrPageNotFound | 100006 | 404 | Page not found |
 | ErrRestfulId | 100007 | 400 | Error occurred while parse restful id from url |
 | ErrRunTimeCaller | 100008 | 500 | Error occurred while call go inner function |
+| ErrRunTimeConfig | 100009 | 500 | Error occurred while runtime config is nil |
 | ErrDatabase | 100101 | 500 | Database error |
 | ErrRecordNotFound | 100102 | 500 | Database record not found |
 | ErrScanToField | 100103 | 400 | Database scan error to field |
@@ -47,4 +48,6 @@ IAM 系统支持的错误码列表如下：
 | ErrInvalidYaml | 100306 | 500 | Data is not valid Yaml |
 | ErrEncodingYaml | 100307 | 500 | Yaml data could not be encoded |
 | ErrDecodingYaml | 100308 | 500 | Yaml data could not be decoded |
+| ErrProviderMapModel | 110001 | 500 | Error occurred while attempt to index from providerMpa using provider |
+| ErrProviderNotHaveIcon | 110002 | 500 | Error occurred while provider entity doesn't have icon property |
 

@@ -50,7 +50,7 @@ func (mpSrv *ModelProviderService) GetProviderList(tenantId int64, modelType str
 			customConfigurationStatus = dto.NO_CONFIGURE
 		}
 
-		providerListResponse = append(providerListResponse, &dto.ProviderResponse{
+		providerResponse := &dto.ProviderResponse{
 			Provider:                 providerConfiguration.Provider.Provider,
 			Label:                    providerConfiguration.Provider.Label,
 			Description:              providerConfiguration.Provider.Description,
@@ -67,7 +67,13 @@ func (mpSrv *ModelProviderService) GetProviderList(tenantId int64, modelType str
 			CustomConfiguration: &dto.CustomConfigurationResponse{
 				Status: customConfigurationStatus,
 			},
-		})
+		}
+
+		if err := providerResponse.PatchIcon(); err != nil {
+			return nil, err
+		}
+
+		providerListResponse = append(providerListResponse, providerResponse)
 
 	}
 

@@ -4,15 +4,29 @@
 
 package config
 
-import "github.com/lunarianss/Luna/internal/api-server/options"
+import (
+	"github.com/lunarianss/Luna/internal/api-server/options"
+	"github.com/lunarianss/Luna/internal/pkg/code"
+	"github.com/lunarianss/Luna/pkg/errors"
+)
 
 // Config is the running configuration structure of the Luna service.
 type Config struct {
 	*options.Options
 }
 
+var lunaRuntimeConfiguration *Config
+
 // CreateConfigFromOptions creates a running configuration instance based
 // on a given Luna pump command line or configuration file option.
 func CreateConfigFromOptions(options *options.Options) (*Config, error) {
-	return &Config{options}, nil
+	lunaRuntimeConfiguration = &Config{options}
+	return lunaRuntimeConfiguration, nil
+}
+
+func GetLunaRuntimeConfig() (*Config, error) {
+	if lunaRuntimeConfiguration == nil {
+		return nil, errors.WithCode(code.ErrRunTimeConfig, "luna runtime configuration is nil")
+	}
+	return lunaRuntimeConfiguration, nil
 }

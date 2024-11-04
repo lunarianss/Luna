@@ -13,11 +13,11 @@ CREATE TABLE `providers`  (
     provider_type VARCHAR(40) NOT NULL DEFAULT 'custom',
     encrypted_config TEXT,
     is_valid bit(1) NOT NULL DEFAULT 0,
-    last_used TIMESTAMP,
+    last_used int(10),
     quota_type VARCHAR(40) DEFAULT '',
     quota_limit BIGINT,
     quota_used BIGINT,
-    created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL
+    created_at int(10) NOT NULL,
+    updated_at int(10) NOT NULL
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 

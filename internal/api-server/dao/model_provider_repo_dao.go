@@ -14,6 +14,7 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/api-server/repo"
 	"github.com/lunarianss/Luna/internal/pkg/code"
+	"github.com/lunarianss/Luna/internal/pkg/mysql"
 	"github.com/lunarianss/Luna/pkg/errors"
 )
 
@@ -27,10 +28,23 @@ func NewModelProvider(db *gorm.DB) *ModelProviderDao {
 	return &ModelProviderDao{db}
 }
 
-// Get tenant's model providers
-func (mpd *ModelProviderDao) GetTenantModelProviders(tenantId int64) ([]*model.Provider, error) {
+func (mpd *ModelProviderDao) GetTenantProvider(tenantId string, providerName string, providerType string) (*model.Provider, error) {
+	var provider *model.Provider
 
-	tenantProviders := []*model.Provider{}
+	if err := mpd.db.Scopes(mysql.IDDesc()).Where("tenant_id = ? and provider_name = ? and provider_type = ?", tenantId, providerName, providerType).First(&provider).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		} else {
+			return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		}
+	}
+	return provider, nil
+}
+
+// Get tenant's model providers
+func (mpd *ModelProviderDao) GetTenantModelProviders(tenantId string) ([]*model.Provider, error) {
+
+	var tenantProviders []*model.Provider
 
 	if err := mpd.db.Where("tenant_id = ? and is_valid = ?", tenantId, 1).Find(&tenantProviders).Error; err != nil {
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())
@@ -39,7 +53,7 @@ func (mpd *ModelProviderDao) GetTenantModelProviders(tenantId int64) ([]*model.P
 }
 
 // Get tenant's model providers mapped by provider name
-func (mpd *ModelProviderDao) GetMapTenantModelProviders(tenantId int64) (map[string][]*model.Provider, error) {
+func (mpd *ModelProviderDao) GetMapTenantModelProviders(tenantId string) (map[string][]*model.Provider, error) {
 	providersMap := make(map[string][]*model.Provider)
 	tenantProviders, err := mpd.GetTenantModelProviders(tenantId)
 
@@ -97,4 +111,20 @@ func (mpd *ModelProviderDao) GetProviderEntity(provider string) (*entities.Provi
 		return nil, err
 	}
 	return providerEntity, nil
+}
+
+func (mpd *ModelProviderDao) UpdateProvider(provider *model.Provider) error {
+	if err := mpd.db.Updates(provider).Error; err != nil {
+		return errors.WithCode(code.ErrDatabase, err.Error())
+	}
+
+	return nil
+}
+
+func (mpd *ModelProviderDao) CreateProvider(provider *model.Provider) error {
+	if err := mpd.db.Create(provider).Error; err != nil {
+		return errors.WithCode(code.ErrDatabase, err.Error())
+	}
+
+	return nil
 }

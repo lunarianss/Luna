@@ -87,3 +87,16 @@ type ListIconRequest struct {
 	Lang     string `json:"lang" uri:"lang" validate:"required"`
 	Provider string `json:"provider" uri:"provider" validate:"required"`
 }
+
+// --
+// --- Create provider credentials
+// --
+
+type CreateProviderCredentialUri struct {
+	Provider string `uri:"provider"  validate:"required"`
+}
+
+type CreateProviderCredentialBody struct {
+	ConfigFrom  string                 `json:"config_from"  validate:"required"`
+	Credentials map[string]interface{} `json:"credentials"  validate:"required"`
+}

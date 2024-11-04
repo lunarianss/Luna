@@ -26,7 +26,7 @@ func NewModelProviderService(modelProviderDomain *domain.ModelProviderDomain) *M
 	return &ModelProviderService{ModelProviderDomain: modelProviderDomain}
 }
 
-func (mpSrv *ModelProviderService) GetProviderList(tenantId int64, modelType string) ([]*dto.ProviderResponse, error) {
+func (mpSrv *ModelProviderService) GetProviderList(tenantId string, modelType string) ([]*dto.ProviderResponse, error) {
 	var customConfigurationStatus dto.CustomConfigurationStatus
 
 	providerConfigurations, err := mpSrv.ModelProviderDomain.GetConfigurations(tenantId)
@@ -105,6 +105,25 @@ func (mpSrv *ModelProviderService) GetProviderIconPath(provider, iconType, lang 
 	}
 
 	return fmt.Sprintf("%s/%s/%s", providerPath, model_providers.ASSETS_DIR, iconName), nil
+}
+
+func (mpSrv *ModelProviderService) CreateProviderCredentials(tenantId string, provider string, credentials map[string]interface{}) error {
+	providerConfigurations, err := mpSrv.ModelProviderDomain.GetConfigurations(tenantId)
+
+	if err != nil {
+		return err
+	}
+
+	providerConfiguration, ok := providerConfigurations.Configurations[provider]
+
+	if !ok {
+		return errors.WithCode(code.ErrProviderMapModel, fmt.Sprintf("when create %s provider credential for provider", provider))
+	}
+
+	if err := mpSrv.ModelProviderDomain.AddOrUpdateCustomProviderCredentials(providerConfiguration, credentials); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (mpSrv *ModelProviderService) getIconName(providerEntity *entities.ProviderEntity, iconType, lang string) (string, error) {

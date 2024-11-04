@@ -10,7 +10,7 @@ import (
 )
 
 type ProviderConfiguration struct {
-	TenantId              int64                                `json:"tenant_id"`
+	TenantId              string                               `json:"tenant_id"`
 	Provider              *modelRuntimeEntities.ProviderEntity `json:"provider"`
 	PreferredProviderType model.ProviderType                   `json:"preferred_provider_type"`
 	UsingProviderType     model.ProviderType                   `json:"using_provider_type"`
@@ -20,6 +20,6 @@ type ProviderConfiguration struct {
 }
 
 type ProviderConfigurations struct {
-	TenantId       int64                             `json:"tenant_id"`
+	TenantId       string                            `json:"tenant_id"`
 	Configurations map[string]*ProviderConfiguration `json:"configurations"`
 }

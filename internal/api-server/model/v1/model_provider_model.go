@@ -7,7 +7,9 @@ package model
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/lunarianss/Luna/internal/pkg/field"
+	"gorm.io/gorm"
 )
 
 type ProviderType string
@@ -44,4 +46,9 @@ type Provider struct {
 
 func (*Provider) TableName() string {
 	return "providers"
+}
+
+func (u *Provider) BeforeCreate(tx *gorm.DB) (err error) {
+	u.ID = uuid.NewString()
+	return
 }

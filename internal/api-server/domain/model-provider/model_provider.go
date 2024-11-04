@@ -13,6 +13,8 @@ import (
 	model_providers "github.com/lunarianss/Luna/internal/api-server/model-runtime/model-providers"
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/api-server/repo"
+	"github.com/lunarianss/Luna/internal/pkg/code"
+	"github.com/lunarianss/Luna/pkg/errors"
 	"github.com/lunarianss/Luna/pkg/log"
 )
 
@@ -27,7 +29,7 @@ func NewModelProviderDomain(modelProviderRepo repo.ModelProviderRepo) *ModelProv
 }
 
 // GetConfigurations Get all providers, models config for tenant
-func (mpd *ModelProviderDomain) GetConfigurations(tenantId int64) (*providerEntities.ProviderConfigurations, error) {
+func (mpd *ModelProviderDomain) GetConfigurations(tenantId string) (*providerEntities.ProviderConfigurations, error) {
 	providerNameMapRecords, err := mpd.ModelProviderRepo.GetMapTenantModelProviders(tenantId)
 
 	if err != nil {
@@ -64,8 +66,57 @@ func (mpd *ModelProviderDomain) GetConfigurations(tenantId int64) (*providerEnti
 	return providerConfigurations, nil
 }
 
+func (mpd *ModelProviderDomain) validateProviderCredentials(providerConfiguration *providerEntities.ProviderConfiguration, credentials map[string]interface{}) (*model.Provider, map[string]interface{}, error) {
+
+	provider, err := mpd.ModelProviderRepo.GetTenantProvider(providerConfiguration.TenantId, providerConfiguration.Provider.Provider, string(model.CUSTOM))
+
+	if err != nil {
+		return nil, nil, err
+	}
+	// credentials 对 apikey 进行 validate and encrypt
+	return provider, credentials, nil
+}
+
+func (mpd *ModelProviderDomain) AddOrUpdateCustomProviderCredentials(providerConfiguration *providerEntities.ProviderConfiguration, credentialParam map[string]interface{}) error {
+
+	providerRecord, credentials, err := mpd.validateProviderCredentials(providerConfiguration, credentialParam)
+
+	if err != nil {
+		return err
+	}
+
+	byteCredentials, err := json.Marshal(credentials)
+
+	if err != nil {
+		return errors.WithCode(code.ErrEncodingJSON, err.Error())
+	}
+
+	if providerRecord != nil {
+		providerRecord.EncryptedConfig = string(byteCredentials)
+		providerRecord.IsValid = 1
+
+		if err := mpd.ModelProviderRepo.UpdateProvider(providerRecord); err != nil {
+			return err
+		}
+
+	} else {
+		provider := &model.Provider{
+			ProviderName:    providerConfiguration.Provider.Provider,
+			ProviderType:    string(model.CUSTOM),
+			EncryptedConfig: string(byteCredentials),
+			IsValid:         1,
+			TenantID:        providerConfiguration.TenantId,
+		}
+
+		if err := mpd.ModelProviderRepo.CreateProvider(provider); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (mpd *ModelProviderDomain) toCustomConfiguration(
-	_ int64,
+	_ string,
 	providerEntity *entities.ProviderEntity,
 	providerRecords []*model.Provider,
 ) *providerEntities.CustomConfiguration {

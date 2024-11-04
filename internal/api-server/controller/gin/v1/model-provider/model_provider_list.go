@@ -13,7 +13,8 @@ import (
 
 func (bc *ModelProviderController) List(c *gin.Context) {
 	log.InfoL(c, "model provider list function called.")
-	providerLists, err := bc.modelProviderService.GetProviderList(1, "")
+	providerLists, err := bc.modelProviderService.GetProviderList("9ecdc361-cbc1-4c9b-8fb9-827dff4c145a", "")
+
 	if err != nil {
 		core.WriteResponse(c, err, nil)
 		return

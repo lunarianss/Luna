@@ -33,9 +33,12 @@ func (r *ModelProviderRoutes) Register(g *gin.Engine) error {
 	modelProviderController := controller.NewModelProviderController(modelProviderService)
 
 	v1 := g.Group("/v1")
-	blogV1 := v1.Group("/console/workspace/current")
-	blogV1.GET("/model-providers", modelProviderController.List)
-	blogV1.GET("/model-providers/:provider/:iconType/:lang", modelProviderController.ListIcons)
+	modelProviderV1 := v1.Group("/console/workspace/current")
+
+	modelProviderV1.GET("/model-providers", modelProviderController.List)
+	modelProviderV1.GET("/model-providers/:provider/:iconType/:lang", modelProviderController.ListIcons)
+	modelProviderV1.POST("/model-providers/:provider", modelProviderController.CreateProviderCredential)
+
 	return nil
 }
 

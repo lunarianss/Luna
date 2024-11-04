@@ -10,10 +10,14 @@ import (
 )
 
 type ModelProviderRepo interface {
+	// UpdateProvider updates Provider by gorm updates
+	UpdateProvider(provider *model.Provider) error
+	// UpdateProvider updates Provider by gorm updates
+	CreateProvider(provider *model.Provider) error
 	// Get tenant's model providers
-	GetTenantModelProviders(tenantId int64) ([]*model.Provider, error)
+	GetTenantModelProviders(tenantId string) ([]*model.Provider, error)
 	// Get tenant's model providers mapped by provider name
-	GetMapTenantModelProviders(tenantId int64) (map[string][]*model.Provider, error)
+	GetMapTenantModelProviders(tenantId string) (map[string][]*model.Provider, error)
 	// Get all inner Providers
 	GetSystemProviders() ([]*entities.ProviderEntity, error)
 	// Get all inner Providers mapped by provider name
@@ -22,4 +26,6 @@ type ModelProviderRepo interface {
 	GetProviderPath(provider string) (string, error)
 	// GerProviderEntity get the provider entity by provider name
 	GetProviderEntity(provider string) (*entities.ProviderEntity, error)
+	// GetProviders get all provider by searchProvider
+	GetTenantProvider(tenant string, providerName string, providerType string) (*model.Provider, error)
 }

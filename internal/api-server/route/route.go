@@ -13,5 +13,6 @@ import (
 func init() {
 	server.RegisterRoute(&blogRoutes{})
 	server.RegisterRoute(&consoleWorkSpaceRoute.ModelProviderRoutes{})
+	server.RegisterRoute(&consoleWorkSpaceRoute.ModelRoutes{})
 	server.RegisterRoute(&staticRoute{})
 }

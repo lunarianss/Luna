@@ -7,7 +7,7 @@ package route
 import (
 	"github.com/gin-gonic/gin"
 
-	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/model-provider"
+	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/model-provider/provider"
 	"github.com/lunarianss/Luna/internal/api-server/dao"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/model-provider"
 	"github.com/lunarianss/Luna/internal/api-server/service"
@@ -37,7 +37,7 @@ func (r *ModelProviderRoutes) Register(g *gin.Engine) error {
 
 	modelProviderV1.GET("/model-providers", modelProviderController.List)
 	modelProviderV1.GET("/model-providers/:provider/:iconType/:lang", modelProviderController.ListIcons)
-	modelProviderV1.POST("/model-providers/:provider", modelProviderController.CreateProviderCredential)
+	modelProviderV1.POST("/model-providers/:provider", modelProviderController.SaveProviderCredential)
 
 	return nil
 }

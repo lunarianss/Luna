@@ -107,7 +107,7 @@ func (mpSrv *ModelProviderService) GetProviderIconPath(provider, iconType, lang 
 	return fmt.Sprintf("%s/%s/%s", providerPath, model_providers.ASSETS_DIR, iconName), nil
 }
 
-func (mpSrv *ModelProviderService) CreateProviderCredentials(tenantId string, provider string, credentials map[string]interface{}) error {
+func (mpSrv *ModelProviderService) SaveProviderCredentials(tenantId string, provider string, credentials map[string]interface{}) error {
 	providerConfigurations, err := mpSrv.ModelProviderDomain.GetConfigurations(tenantId)
 
 	if err != nil {

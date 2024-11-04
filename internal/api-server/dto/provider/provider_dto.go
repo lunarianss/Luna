@@ -100,3 +100,16 @@ type CreateProviderCredentialBody struct {
 	ConfigFrom  string                 `json:"config_from"  validate:"required"`
 	Credentials map[string]interface{} `json:"credentials"  validate:"required"`
 }
+
+// --
+// --- Create  model credentials
+// --
+type CreateModelCredentialUri struct {
+	Provider string `uri:"provider"  validate:"required"`
+}
+
+type CreateModelCredentialBody struct {
+	Model       string                 `json:"model"  validate:"required"`
+	ModelType   string                 `json:"model_type"  validate:"required"`
+	Credentials map[string]interface{} `json:"credentials"  validate:"required"`
+}

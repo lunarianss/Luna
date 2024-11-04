@@ -6,9 +6,9 @@ import (
 	"github.com/lunarianss/Luna/internal/pkg/core"
 )
 
-func (mc *ModelProviderController) CreateProviderCredential(c *gin.Context) {
-	paramsUri := &dto.CreateProviderCredentialUri{}
-	paramsBody := &dto.CreateProviderCredentialBody{}
+func (mc *ModelController) SaveModelCredential(c *gin.Context) {
+	paramsUri := &dto.CreateModelCredentialUri{}
+	paramsBody := &dto.CreateModelCredentialBody{}
 
 	if err := c.ShouldBindUri(paramsUri); err != nil {
 		core.WriteBindErrResponse(c, err)
@@ -20,7 +20,7 @@ func (mc *ModelProviderController) CreateProviderCredential(c *gin.Context) {
 		return
 	}
 
-	if err := mc.modelProviderService.CreateProviderCredentials("9ecdc361-cbc1-4c9b-8fb9-827dff4c145a", paramsUri.Provider, paramsBody.Credentials); err != nil {
+	if err := mc.modelProviderService.SaveModelCredentials("9ecdc361-cbc1-4c9b-8fb9-827dff4c145a", paramsBody.Model, paramsBody.ModelType, paramsUri.Provider, paramsBody.Credentials); err != nil {
 		core.WriteResponse(c, err, nil)
 		return
 	}

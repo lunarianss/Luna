@@ -3,7 +3,7 @@
 -- license that can be found in the LICENSE file.
 
 -- ----------------------------
--- Table structure for blog
+-- Table structure for providers
 -- ----------------------------
 DROP TABLE IF EXISTS `providers`;
 CREATE TABLE `providers`  (

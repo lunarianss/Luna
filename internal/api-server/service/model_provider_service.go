@@ -5,6 +5,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"slices"
 	"sort"
@@ -26,10 +27,10 @@ func NewModelProviderService(modelProviderDomain *domain.ModelProviderDomain) *M
 	return &ModelProviderService{ModelProviderDomain: modelProviderDomain}
 }
 
-func (mpSrv *ModelProviderService) GetProviderList(tenantId string, modelType string) ([]*dto.ProviderResponse, error) {
+func (mpSrv *ModelProviderService) GetProviderList(ctx context.Context, tenantId string, modelType string) ([]*dto.ProviderResponse, error) {
 	var customConfigurationStatus dto.CustomConfigurationStatus
 
-	providerConfigurations, err := mpSrv.ModelProviderDomain.GetConfigurations(tenantId)
+	providerConfigurations, err := mpSrv.ModelProviderDomain.GetConfigurations(ctx, tenantId)
 	if err != nil {
 		return nil, err
 	}
@@ -84,15 +85,15 @@ func (mpSrv *ModelProviderService) GetProviderList(tenantId string, modelType st
 	return providerListResponse, nil
 }
 
-func (mpSrv *ModelProviderService) GetProviderIconPath(provider, iconType, lang string) (string, error) {
+func (mpSrv *ModelProviderService) GetProviderIconPath(ctx context.Context, provider, iconType, lang string) (string, error) {
 
-	providerPath, err := mpSrv.ModelProviderDomain.ModelProviderRepo.GetProviderPath(provider)
+	providerPath, err := mpSrv.ModelProviderDomain.ModelProviderRepo.GetProviderPath(ctx, provider)
 
 	if err != nil {
 		return "", err
 	}
 
-	providerEntity, err := mpSrv.ModelProviderDomain.ModelProviderRepo.GetProviderEntity(provider)
+	providerEntity, err := mpSrv.ModelProviderDomain.ModelProviderRepo.GetProviderEntity(ctx, provider)
 
 	if err != nil {
 		return "", err
@@ -107,8 +108,8 @@ func (mpSrv *ModelProviderService) GetProviderIconPath(provider, iconType, lang 
 	return fmt.Sprintf("%s/%s/%s", providerPath, model_providers.ASSETS_DIR, iconName), nil
 }
 
-func (mpSrv *ModelProviderService) SaveProviderCredentials(tenantId string, provider string, credentials map[string]interface{}) error {
-	providerConfigurations, err := mpSrv.ModelProviderDomain.GetConfigurations(tenantId)
+func (mpSrv *ModelProviderService) SaveProviderCredentials(ctx context.Context, tenantId string, provider string, credentials map[string]interface{}) error {
+	providerConfigurations, err := mpSrv.ModelProviderDomain.GetConfigurations(ctx, tenantId)
 
 	if err != nil {
 		return err
@@ -120,7 +121,7 @@ func (mpSrv *ModelProviderService) SaveProviderCredentials(tenantId string, prov
 		return errors.WithCode(code.ErrProviderMapModel, fmt.Sprintf("when create %s provider credential for provider", provider))
 	}
 
-	if err := mpSrv.ModelProviderDomain.AddOrUpdateCustomProviderCredentials(providerConfiguration, credentials); err != nil {
+	if err := mpSrv.ModelProviderDomain.AddOrUpdateCustomProviderCredentials(ctx, providerConfiguration, credentials); err != nil {
 		return err
 	}
 	return nil

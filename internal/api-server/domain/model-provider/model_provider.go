@@ -5,6 +5,7 @@
 package model_provider
 
 import (
+	"context"
 	"encoding/json"
 	"strings"
 
@@ -29,14 +30,14 @@ func NewModelProviderDomain(modelProviderRepo repo.ModelProviderRepo) *ModelProv
 }
 
 // GetConfigurations Get all providers, models config for tenant
-func (mpd *ModelProviderDomain) GetConfigurations(tenantId string) (*providerEntities.ProviderConfigurations, error) {
-	providerNameMapRecords, err := mpd.ModelProviderRepo.GetMapTenantModelProviders(tenantId)
+func (mpd *ModelProviderDomain) GetConfigurations(ctx context.Context, tenantId string) (*providerEntities.ProviderConfigurations, error) {
+	providerNameMapRecords, err := mpd.ModelProviderRepo.GetMapTenantModelProviders(ctx, tenantId)
 
 	if err != nil {
 		return nil, err
 	}
 
-	providerNameMapEntities, err := mpd.ModelProviderRepo.GetSystemProviders()
+	providerNameMapEntities, err := mpd.ModelProviderRepo.GetSystemProviders(ctx)
 
 	if err != nil {
 		return nil, err
@@ -66,9 +67,9 @@ func (mpd *ModelProviderDomain) GetConfigurations(tenantId string) (*providerEnt
 	return providerConfigurations, nil
 }
 
-func (mpd *ModelProviderDomain) validateProviderCredentials(providerConfiguration *providerEntities.ProviderConfiguration, credentials map[string]interface{}) (*model.Provider, map[string]interface{}, error) {
+func (mpd *ModelProviderDomain) validateProviderCredentials(ctx context.Context, providerConfiguration *providerEntities.ProviderConfiguration, credentials map[string]interface{}) (*model.Provider, map[string]interface{}, error) {
 
-	provider, err := mpd.ModelProviderRepo.GetTenantProvider(providerConfiguration.TenantId, providerConfiguration.Provider.Provider, string(model.CUSTOM))
+	provider, err := mpd.ModelProviderRepo.GetTenantProvider(ctx, providerConfiguration.TenantId, providerConfiguration.Provider.Provider, string(model.CUSTOM))
 
 	if err != nil {
 		return nil, nil, err
@@ -77,9 +78,9 @@ func (mpd *ModelProviderDomain) validateProviderCredentials(providerConfiguratio
 	return provider, credentials, nil
 }
 
-func (mpd *ModelProviderDomain) AddOrUpdateCustomProviderCredentials(providerConfiguration *providerEntities.ProviderConfiguration, credentialParam map[string]interface{}) error {
+func (mpd *ModelProviderDomain) AddOrUpdateCustomProviderCredentials(ctx context.Context, providerConfiguration *providerEntities.ProviderConfiguration, credentialParam map[string]interface{}) error {
 
-	providerRecord, credentials, err := mpd.validateProviderCredentials(providerConfiguration, credentialParam)
+	providerRecord, credentials, err := mpd.validateProviderCredentials(ctx, providerConfiguration, credentialParam)
 
 	if err != nil {
 		return err
@@ -95,7 +96,7 @@ func (mpd *ModelProviderDomain) AddOrUpdateCustomProviderCredentials(providerCon
 		providerRecord.EncryptedConfig = string(byteCredentials)
 		providerRecord.IsValid = 1
 
-		if err := mpd.ModelProviderRepo.UpdateProvider(providerRecord); err != nil {
+		if err := mpd.ModelProviderRepo.UpdateProvider(ctx, providerRecord); err != nil {
 			return err
 		}
 
@@ -108,7 +109,7 @@ func (mpd *ModelProviderDomain) AddOrUpdateCustomProviderCredentials(providerCon
 			TenantID:        providerConfiguration.TenantId,
 		}
 
-		if err := mpd.ModelProviderRepo.CreateProvider(provider); err != nil {
+		if err := mpd.ModelProviderRepo.CreateProvider(ctx, provider); err != nil {
 			return err
 		}
 	}

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"context"
 	"encoding/json"
 
 	entities "github.com/lunarianss/Luna/internal/api-server/entities/provider"
@@ -20,9 +21,9 @@ func NewModelDomain(modelRepo repo.ModelRepo) *ModelDomain {
 	}
 }
 
-func (mpd *ModelDomain) AddOrUpdateCustomModelCredentials(providerConfiguration *entities.ProviderConfiguration, credentialParam map[string]interface{}, modelType, modelName string) error {
+func (mpd *ModelDomain) AddOrUpdateCustomModelCredentials(ctx context.Context, providerConfiguration *entities.ProviderConfiguration, credentialParam map[string]interface{}, modelType, modelName string) error {
 
-	modelRecord, credentials, err := mpd.validateProviderCredentials(providerConfiguration, credentialParam, modelType, modelName)
+	modelRecord, credentials, err := mpd.validateProviderCredentials(ctx, providerConfiguration, credentialParam, modelType, modelName)
 
 	if err != nil {
 		return err
@@ -38,7 +39,7 @@ func (mpd *ModelDomain) AddOrUpdateCustomModelCredentials(providerConfiguration 
 		modelRecord.EncryptedConfig = string(byteCredentials)
 		modelRecord.IsValid = 1
 
-		if err := mpd.ModelRepo.UpdateModel(modelRecord); err != nil {
+		if err := mpd.ModelRepo.UpdateModel(ctx, modelRecord); err != nil {
 			return err
 		}
 
@@ -52,16 +53,16 @@ func (mpd *ModelDomain) AddOrUpdateCustomModelCredentials(providerConfiguration 
 			TenantID:        providerConfiguration.TenantId,
 		}
 
-		if err := mpd.ModelRepo.CreateModel(model); err != nil {
+		if err := mpd.ModelRepo.CreateModel(ctx, model); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (mpd *ModelDomain) validateProviderCredentials(providerConfiguration *entities.ProviderConfiguration, credentials map[string]interface{}, modelType, modeName string) (*model.ProviderModel, map[string]interface{}, error) {
+func (mpd *ModelDomain) validateProviderCredentials(ctx context.Context, providerConfiguration *entities.ProviderConfiguration, credentials map[string]interface{}, modelType, modeName string) (*model.ProviderModel, map[string]interface{}, error) {
 
-	model, err := mpd.ModelRepo.GetTenantModel(providerConfiguration.TenantId, providerConfiguration.Provider.Provider, modeName, modelType)
+	model, err := mpd.ModelRepo.GetTenantModel(ctx, providerConfiguration.TenantId, providerConfiguration.Provider.Provider, modeName, modelType)
 
 	if err != nil {
 		return nil, nil, err

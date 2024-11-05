@@ -5,6 +5,8 @@
 package service
 
 import (
+	"context"
+
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/model"
 	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/model-provider"
 	"github.com/lunarianss/Luna/internal/pkg/code"
@@ -20,9 +22,9 @@ func NewModelService(modelDomain *domain.ModelDomain, modelProviderDomain *provi
 	return &ModelService{ModelDomain: modelDomain, ModelProviderDomain: modelProviderDomain}
 }
 
-func (ms *ModelService) SaveModelCredentials(tenantId, model, modelTpe, provider string, credentials map[string]interface{}) error {
+func (ms *ModelService) SaveModelCredentials(ctx context.Context, tenantId, model, modelTpe, provider string, credentials map[string]interface{}) error {
 
-	providerConfigurations, err := ms.ModelProviderDomain.GetConfigurations(tenantId)
+	providerConfigurations, err := ms.ModelProviderDomain.GetConfigurations(ctx, tenantId)
 
 	if err != nil {
 		return err
@@ -34,7 +36,7 @@ func (ms *ModelService) SaveModelCredentials(tenantId, model, modelTpe, provider
 		return errors.WithCode(code.ErrProviderMapModel, "provider %s not found in map provider configuration", provider)
 	}
 
-	err = ms.ModelDomain.AddOrUpdateCustomModelCredentials(providerConfiguration, credentials, modelTpe, model)
+	err = ms.ModelDomain.AddOrUpdateCustomModelCredentials(ctx, providerConfiguration, credentials, modelTpe, model)
 
 	if err != nil {
 		return err

@@ -5,6 +5,7 @@
 package dao
 
 import (
+	"context"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -28,7 +29,7 @@ func NewModelProvider(db *gorm.DB) *ModelProviderDao {
 	return &ModelProviderDao{db}
 }
 
-func (mpd *ModelProviderDao) GetTenantProvider(tenantId string, providerName string, providerType string) (*model.Provider, error) {
+func (mpd *ModelProviderDao) GetTenantProvider(ctx context.Context, tenantId string, providerName string, providerType string) (*model.Provider, error) {
 	var provider *model.Provider
 
 	if err := mpd.db.Scopes(mysql.IDDesc()).Where("tenant_id = ? and provider_name = ? and provider_type = ?", tenantId, providerName, providerType).First(&provider).Error; err != nil {
@@ -42,7 +43,7 @@ func (mpd *ModelProviderDao) GetTenantProvider(tenantId string, providerName str
 }
 
 // Get tenant's model providers
-func (mpd *ModelProviderDao) GetTenantModelProviders(tenantId string) ([]*model.Provider, error) {
+func (mpd *ModelProviderDao) GetTenantModelProviders(ctx context.Context, tenantId string) ([]*model.Provider, error) {
 
 	var tenantProviders []*model.Provider
 
@@ -53,9 +54,9 @@ func (mpd *ModelProviderDao) GetTenantModelProviders(tenantId string) ([]*model.
 }
 
 // Get tenant's model providers mapped by provider name
-func (mpd *ModelProviderDao) GetMapTenantModelProviders(tenantId string) (map[string][]*model.Provider, error) {
+func (mpd *ModelProviderDao) GetMapTenantModelProviders(ctx context.Context, tenantId string) (map[string][]*model.Provider, error) {
 	providersMap := make(map[string][]*model.Provider)
-	tenantProviders, err := mpd.GetTenantModelProviders(tenantId)
+	tenantProviders, err := mpd.GetTenantModelProviders(ctx, tenantId)
 
 	if err != nil {
 		return nil, err
@@ -68,15 +69,15 @@ func (mpd *ModelProviderDao) GetMapTenantModelProviders(tenantId string) (map[st
 }
 
 // Get all inner Providers
-func (mpd *ModelProviderDao) GetSystemProviders() ([]*entities.ProviderEntity, error) {
+func (mpd *ModelProviderDao) GetSystemProviders(ctx context.Context) ([]*entities.ProviderEntity, error) {
 	return model_providers.Factory.GetProvidersFromDir()
 }
 
 // Get all inner Providers mapped by provider name
-func (mpd *ModelProviderDao) GetMapSystemProviders() (map[string]*entities.ProviderEntity, error) {
+func (mpd *ModelProviderDao) GetMapSystemProviders(ctx context.Context) (map[string]*entities.ProviderEntity, error) {
 	mapSystemProviders := make(map[string]*entities.ProviderEntity, model_providers.PROVIDER_COUNT)
 
-	systemProviders, err := mpd.GetSystemProviders()
+	systemProviders, err := mpd.GetSystemProviders(ctx)
 
 	if err != nil {
 		return nil, err
@@ -88,7 +89,7 @@ func (mpd *ModelProviderDao) GetMapSystemProviders() (map[string]*entities.Provi
 	return mapSystemProviders, nil
 }
 
-func (mpd *ModelProviderDao) GetProviderPath(provider string) (string, error) {
+func (mpd *ModelProviderDao) GetProviderPath(ctx context.Context, provider string) (string, error) {
 	providerPath, err := model_providers.Factory.ResolveProviderDirPath()
 
 	if err != nil {
@@ -98,7 +99,7 @@ func (mpd *ModelProviderDao) GetProviderPath(provider string) (string, error) {
 	return fmt.Sprintf("%s/%s", providerPath, provider), nil
 }
 
-func (mpd *ModelProviderDao) GetProviderEntity(provider string) (*entities.ProviderEntity, error) {
+func (mpd *ModelProviderDao) GetProviderEntity(ctx context.Context, provider string) (*entities.ProviderEntity, error) {
 	modelProvider, err := model_providers.Factory.GetProviderInstance(provider)
 
 	if err != nil {
@@ -113,7 +114,7 @@ func (mpd *ModelProviderDao) GetProviderEntity(provider string) (*entities.Provi
 	return providerEntity, nil
 }
 
-func (mpd *ModelProviderDao) UpdateProvider(provider *model.Provider) error {
+func (mpd *ModelProviderDao) UpdateProvider(ctx context.Context, provider *model.Provider) error {
 	if err := mpd.db.Updates(provider).Error; err != nil {
 		return errors.WithCode(code.ErrDatabase, err.Error())
 	}
@@ -121,7 +122,7 @@ func (mpd *ModelProviderDao) UpdateProvider(provider *model.Provider) error {
 	return nil
 }
 
-func (mpd *ModelProviderDao) CreateProvider(provider *model.Provider) error {
+func (mpd *ModelProviderDao) CreateProvider(ctx context.Context, provider *model.Provider) error {
 	if err := mpd.db.Create(provider).Error; err != nil {
 		return errors.WithCode(code.ErrDatabase, err.Error())
 	}

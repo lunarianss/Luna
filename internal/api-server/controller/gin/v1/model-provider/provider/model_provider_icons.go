@@ -15,7 +15,7 @@ func (mc *ModelProviderController) ListIcons(c *gin.Context) {
 		return
 	}
 
-	filePath, err := mc.modelProviderService.GetProviderIconPath(params.Provider, params.IconType, params.Lang)
+	filePath, err := mc.modelProviderService.GetProviderIconPath(c, params.Provider, params.IconType, params.Lang)
 
 	if err != nil {
 		core.WriteResponse(c, err, nil)

@@ -1,0 +1,99 @@
+// Copyright 2024 Benjamin Lee <cyan0908@163.com>. All rights reserved.
+// Use of this source code is governed by a MIT style
+// license that can be found in the LICENSE file.
+
+package model_provider
+
+import (
+	"fmt"
+	"os"
+	"strings"
+
+	"github.com/lunarianss/Luna/internal/api-server/entities/base"
+	"github.com/lunarianss/Luna/internal/pkg/code"
+	"github.com/lunarianss/Luna/pkg/errors"
+	"gopkg.in/yaml.v3"
+)
+
+type ParameterType string
+
+const (
+	FLOAT   ParameterType = "float"
+	INT     ParameterType = "int"
+	STRING  ParameterType = "string"
+	BOOLEAN ParameterType = "boolean"
+	TEXT    ParameterType = "text"
+)
+
+type ParameterRule struct {
+	Name        string           `json:"name" yaml:"name"`
+	UseTemplate string           `json:"use_template" yaml:"use_template"`
+	Label       *base.I18nObject `json:"label" yaml:"label"`
+	Type        ParameterType    `json:"type" yaml:"type"`
+	Help        *base.I18nObject `json:"help" yaml:"help"`
+	Required    bool             `json:"required" yaml:"required"`
+	Default     any              `json:"default" yaml:"default"`
+	Min         float64          `json:"min" yaml:"min"`
+	Max         float64          `json:"max" yaml:"max"`
+	Precision   int              `json:"precision" yaml:"precision"`
+	Options     string           `json:"options" yaml:"options"`
+}
+
+type PriceConfig struct {
+	Input    float64 `json:"input" yaml:"input"`
+	Output   float64 `json:"output" yaml:"output"`
+	Unit     float64 `json:"unit" yaml:"unit"`
+	Currency string  `json:"currency" yaml:"currency"`
+}
+
+type AIModelEntity struct {
+	*ProviderModel
+	ParameterRules []*ParameterRule `json:"parameter_rules" yaml:"parameter_rules"`
+	Pricing        *PriceConfig     `json:"pricing" yaml:"pricing"`
+}
+
+type AIModel struct {
+	ModelType     base.ModelType   `json:"model_type" yaml:"model_type"`
+	ModelSchemas  []*AIModelEntity `json:"model_schemas" yaml:"model_schemas"`
+	StartedAt     float64          `json:"started_at" yaml:"started_at"`
+	ModelConfPath string           `json:"model_conf_path" yaml:"model_conf_path"`
+}
+
+func (a *AIModel) PredefinedModels() ([]*AIModelEntity, error) {
+	var (
+		modelSchemaYamlPath []string
+		AIModelEntities     []*AIModelEntity
+	)
+
+	modelConfDir := a.ModelConfPath
+
+	dirEntries, err := os.ReadDir(modelConfDir)
+
+	if err != nil {
+		return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+	}
+
+	for _, dirEntry := range dirEntries {
+		dirOrFileName := dirEntry.Name()
+		if !dirEntry.IsDir() && !strings.HasPrefix(dirOrFileName, "_") && !strings.HasPrefix(dirOrFileName, "__") && strings.HasSuffix(dirOrFileName, ".yaml") {
+			modelSchemaYamlPath = append(modelSchemaYamlPath, fmt.Sprintf("%s/%s", modelConfDir, dirOrFileName))
+		}
+	}
+
+	for _, modelSchemaYamlPath := range modelSchemaYamlPath {
+		AIModelEntity := &AIModelEntity{}
+
+		AIModelEntityContent, err := os.ReadFile(modelSchemaYamlPath)
+		if err != nil {
+			return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+		}
+
+		if err := yaml.Unmarshal(AIModelEntityContent, AIModelEntity); err != nil {
+			return nil, errors.WithCode(code.ErrDecodingYaml, err.Error())
+		}
+
+		AIModelEntities = append(AIModelEntities, AIModelEntity)
+	}
+
+	return AIModelEntities, nil
+}

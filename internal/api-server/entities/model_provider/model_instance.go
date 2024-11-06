@@ -1,9 +1,5 @@
 package model_provider
 
-import (
-	"github.com/lunarianss/Luna/internal/api-server/entities/model_runtime"
-)
-
 type ModelStatus string
 
 const (
@@ -16,14 +12,14 @@ const (
 
 type ProviderModelBundle struct {
 	Configuration     *ProviderConfiguration
-	ProviderInstance  ModelProvider
-	ModelTypeInstance *model_runtime.AIModel
+	ProviderInstance  *ModelProvider
+	ModelTypeInstance *AIModel
 }
 
 type ModelInstance struct {
-	ProviderModelBundle *ProviderModelBundle   `json:"provider_model_bundle"`
-	Model               string                 `json:"model"`
-	Provider            string                 `json:"provider"`
-	Credentials         map[string]any         `json:"credentials"`
-	ModelTypeInstance   *model_runtime.AIModel `json:"model_type_instance"`
+	ProviderModelBundle *ProviderModelBundle `json:"provider_model_bundle"`
+	Model               string               `json:"model"`
+	Provider            string               `json:"provider"`
+	Credentials         map[string]any       `json:"credentials"`
+	ModelTypeInstance   *AIModel             `json:"model_type_instance"`
 }

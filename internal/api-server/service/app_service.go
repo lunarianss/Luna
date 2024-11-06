@@ -6,15 +6,18 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/app"
 	modelDomain "github.com/lunarianss/Luna/internal/api-server/domain/model"
 	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/app"
+	"github.com/lunarianss/Luna/internal/api-server/entities/base"
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/api-server/pkg/template"
 	"github.com/lunarianss/Luna/internal/pkg/code"
+	"github.com/lunarianss/Luna/internal/pkg/util"
 	"github.com/lunarianss/Luna/pkg/errors"
 )
 
@@ -30,13 +33,102 @@ func NewAppService(appDomain *domain.AppDomain, modelDomain *modelDomain.ModelDo
 
 func (as *AppService) CreateApp(ctx context.Context, tenantID, accountID string, createAppRequest *dto.CreateAppRequest) (*model.App, error) {
 
+	var (
+		retApp *model.App
+	)
 	appTemplate, ok := template.DefaultAppTemplates[model.AppMode(createAppRequest.Mode)]
 
 	if !ok {
 		return nil, errors.WithCode(code.ErrAppMapMode, fmt.Sprintf("Invalid node template: %v", createAppRequest.Mode))
 	}
+	defaultModelConfig := &template.ModelConfig{}
+	defaultModel := &template.Model{}
 
-	defaultTemplateModelConfig := appTemplate.ModelConfig
+	util.DeepCopyUsingJSON(appTemplate.ModelConfig, defaultModelConfig)
 
-	return nil, nil
+	if defaultModelConfig.Model.Name != "" {
+		modelInstance, err := as.ProviderDomain.GetDefaultModelInstance(ctx, tenantID, base.LLM)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if modelInstance != nil {
+			if modelInstance.Model == defaultModelConfig.Model.Name && modelInstance.Provider == defaultModelConfig.Model.Provider {
+				defaultModel = &defaultModelConfig.Model
+			} else {
+				modelSchema, err := as.ProviderDomain.GetModelSchema(ctx, modelInstance.Model, modelInstance.Credentials, modelInstance.ModelTypeInstance)
+				if err != nil {
+					return nil, err
+				}
+
+				defaultModel.Provider = modelInstance.Provider
+				defaultModel.Name = modelInstance.Model
+
+				if v, ok := modelSchema.ModelProperties[base.MODE].(string); ok {
+					defaultModel.Mode = v
+				}
+				defaultModel.CompletionParams = make(map[string]interface{})
+			}
+		} else {
+			provider, model, err := as.ProviderDomain.GetFirstProviderFirstModel(ctx, tenantID, string(base.LLM))
+
+			if err != nil {
+				return nil, err
+			}
+			defaultModelConfig.Model.Provider = provider
+			defaultModelConfig.Model.Name = model
+			defaultModel = &defaultModelConfig.Model
+		}
+
+		defaultModelConfig.Model = *defaultModel
+	}
+
+	modelContents, err := json.Marshal(defaultModelConfig.Model)
+
+	if err != nil {
+		return nil, errors.WithCode(code.ErrEncodingJSON, err.Error())
+	}
+
+	app := &model.App{
+		Name:           createAppRequest.Name,
+		Description:    createAppRequest.Description,
+		Mode:           createAppRequest.Mode,
+		Icon:           createAppRequest.Icon,
+		IconBackground: createAppRequest.IconBackground,
+		TenantID:       tenantID,
+		CreatedBy:      accountID,
+		UpdatedBy:      accountID,
+		APIRpm:         createAppRequest.ApiRpm,
+		APIRph:         createAppRequest.ApiRph,
+	}
+
+	appConfig := &model.AppModelConfig{
+		CreatedBy:     accountID,
+		UpdatedBy:     accountID,
+		UserInputForm: defaultModelConfig.UserInputForm,
+		PrePrompt:     defaultModelConfig.PrePrompt,
+		Provider:      defaultModelConfig.Model.Provider,
+		Model:         string(modelContents),
+	}
+
+	if createAppRequest.IconType == "" {
+		app.IconType = "emoji"
+	}
+
+	if defaultModelConfig.Model.Provider != "" && defaultModelConfig.Model.Name != "" {
+		app, err := as.AppDomain.AppRepo.CreateAppWithConfig(ctx, app, appConfig, string(modelContents))
+		if err != nil {
+			return nil, err
+		}
+		retApp = app
+	} else {
+		app, err := as.AppDomain.AppRepo.CreateApp(ctx, app)
+		if err != nil {
+			return nil, err
+		}
+		retApp = app
+	}
+
+	return retApp, nil
 }

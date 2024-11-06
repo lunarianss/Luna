@@ -59,3 +59,10 @@ func (md *ModelDao) GetTenantDefaultModel(ctx context.Context, tenantID, modelTy
 	}
 	return defaultModel, nil
 }
+
+func (md *ModelDao) CreateTenantDefaultModel(ctx context.Context, tenantDefaultModel *model.TenantDefaultModel) (*model.TenantDefaultModel, error) {
+	if err := md.db.Create(tenantDefaultModel).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return tenantDefaultModel, nil
+}

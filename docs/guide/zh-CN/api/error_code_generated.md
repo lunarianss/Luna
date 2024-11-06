@@ -21,6 +21,7 @@ IAM 系统支持的错误码列表如下：
 
 | Identifier | Code | HTTP Code | Description |
 | ---------- | ---- | --------- | ----------- |
+| ErrAppMapMode | 110101 | 500 | Error occurred while attempt to index from appTemplate using mode |
 | ErrSuccess | 100001 | 200 | OK |
 | ErrUnknown | 100002 | 500 | Internal server error |
 | ErrBind | 100003 | 400 | Error occurred while binding the request body to the struct |
@@ -50,4 +51,7 @@ IAM 系统支持的错误码列表如下：
 | ErrDecodingYaml | 100308 | 500 | Yaml data could not be decoded |
 | ErrProviderMapModel | 110001 | 500 | Error occurred while attempt to index from providerMpa using provider |
 | ErrProviderNotHaveIcon | 110002 | 500 | Error occurred while provider entity doesn't have icon property |
+| ErrToOriginModelType | 110003 | 500 | Error occurred while convert to origin model type |
+| ErrDefaultModelNotFound | 110004 | 500 | Error occurred while trying to convert default model to unknown |
+| ErrModelSchemaNotFound | 110005 | 500 | Error occurred while attempt to index from predefined models using model name |
 

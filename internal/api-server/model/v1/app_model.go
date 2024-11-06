@@ -5,6 +5,17 @@ import (
 	"gorm.io/gorm"
 )
 
+type AppMode string
+
+const (
+	COMPLETION    AppMode = "completion"
+	WORKFLOW      AppMode = "workflow"
+	CHAT          AppMode = "chat"
+	ADVANCED_CHAT AppMode = "advanced-chat"
+	AGENT_CHAT    AppMode = "agent-chat"
+	CHANNEL       AppMode = "channel"
+)
+
 // App represents the app table in the database
 type App struct {
 	ID                  string `gorm:"column:id" json:"id"`
@@ -43,13 +54,42 @@ func (a *App) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
-type AppMode string
+type AppModelConfig struct {
+	ID                            string `json:"id"`
+	AppID                         string `json:"app_id"`
+	Provider                      string `json:"provider"`
+	ModelID                       string `json:"model_id"`
+	Configs                       string `json:"configs"`
+	CreatedAt                     int64  `json:"created_at"`
+	UpdatedAt                     int64  `json:"updated_at"`
+	OpeningStatement              string `json:"opening_statement"`
+	SuggestedQuestions            string `json:"suggested_questions"`
+	SuggestedQuestionsAfterAnswer string `json:"suggested_questions_after_answer"`
+	MoreLikeThis                  string `json:"more_like_this"`
+	Model                         string `json:"model"`
+	UserInputForm                 string `json:"user_input_form"`
+	PrePrompt                     string `json:"pre_prompt"`
+	AgentMode                     string `json:"agent_mode"`
+	SpeechToText                  string `json:"speech_to_text"`
+	SensitiveWordAvoidance        string `json:"sensitive_word_avoidance"`
+	RetrieverResource             string `json:"retriever_resource"`
+	DatasetQueryVariable          string `json:"dataset_query_variable"`
+	PromptType                    string `json:"prompt_type"`
+	ChatPromptConfig              string `json:"chat_prompt_config"`
+	CompletionPromptConfig        string `json:"completion_prompt_config"`
+	DatasetConfigs                string `json:"dataset_configs"`
+	ExternalDataTools             string `json:"external_data_tools"`
+	FileUpload                    string `json:"file_upload"`
+	TextToSpeech                  string `json:"text_to_speech"`
+	CreatedBy                     string `json:"created_by"`
+	UpdatedBy                     string `json:"updated_by"`
+}
 
-const (
-	COMPLETION    AppMode = "completion"
-	WORKFLOW      AppMode = "workflow"
-	CHAT          AppMode = "chat"
-	ADVANCED_CHAT AppMode = "advanced-chat"
-	AGENT_CHAT    AppMode = "agent-chat"
-	CHANNEL       AppMode = "channel"
-)
+func (a *AppModelConfig) TableName() string {
+	return "app_model_configs"
+}
+
+func (a *AppModelConfig) BeforeCreate(tx *gorm.DB) (err error) {
+	a.ID = uuid.NewString()
+	return
+}

@@ -8,6 +8,7 @@ package code
 
 import "github.com/lunarianss/Luna/pkg/errors" // init register error codes defines in this source code to `github.com/lunarianss/Luna/pkg/errors
 func init() {
+	errors.Enroll(ErrAppMapMode, 500, "Error occurred while attempt to index from appTemplate using mode")
 	errors.Enroll(ErrSuccess, 200, "OK")
 	errors.Enroll(ErrUnknown, 500, "Internal server error")
 	errors.Enroll(ErrBind, 400, "Error occurred while binding the request body to the struct")
@@ -37,4 +38,7 @@ func init() {
 	errors.Enroll(ErrDecodingYaml, 500, "Yaml data could not be decoded")
 	errors.Enroll(ErrProviderMapModel, 500, "Error occurred while attempt to index from providerMpa using provider")
 	errors.Enroll(ErrProviderNotHaveIcon, 500, "Error occurred while provider entity doesn't have icon property")
+	errors.Enroll(ErrToOriginModelType, 500, "Error occurred while convert to origin model type")
+	errors.Enroll(ErrDefaultModelNotFound, 500, "Error occurred while trying to convert default model to unknown")
+	errors.Enroll(ErrModelSchemaNotFound, 500, "Error occurred while attempt to index from predefined models using model name")
 }

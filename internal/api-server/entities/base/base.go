@@ -1,5 +1,10 @@
 package base
 
+import (
+	"github.com/lunarianss/Luna/internal/pkg/code"
+	"github.com/lunarianss/Luna/pkg/errors"
+)
+
 type ModelType string
 
 const (
@@ -11,6 +16,30 @@ const (
 	TTS            ModelType = "tts"
 	TEXT2IMG       ModelType = "text2img"
 )
+
+func (m ModelType) ToOriginModelType() (string, error) {
+	var originType string
+
+	switch m {
+	case LLM:
+		originType = "text-generation"
+	case TEXT_EMBEDDING:
+		originType = "embeddings"
+	case RERANK:
+		originType = "reranking"
+	case SPEECH2TEXT:
+		originType = "speech2text"
+	case TTS:
+		originType = "tts"
+	case MODERATION:
+		originType = "moderation"
+	case TEXT2IMG:
+		originType = "text2img"
+	default:
+		return "", errors.WithCode(code.ErrToOriginModelType, "unknown model type %s", m)
+	}
+	return originType, nil
+}
 
 type ModelFeature string
 

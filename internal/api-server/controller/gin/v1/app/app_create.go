@@ -15,6 +15,12 @@ func (ac *AppController) Create(c *gin.Context) {
 		return
 	}
 
-	// ac.AppService.CreateApp(c)
+	app, err := ac.AppService.CreateApp(c, "9ecdc361-cbc1-4c9b-8fb9-827dff4c145a", "8ecdc361-cbc1-4c9b-8fb9-827dff4c145a", params)
 
+	if err != nil {
+		core.WriteResponse(c, err, nil)
+		return
+	}
+
+	core.WriteResponse(c, nil, app)
 }

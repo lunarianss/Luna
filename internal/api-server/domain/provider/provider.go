@@ -9,8 +9,8 @@ import (
 	"encoding/json"
 	"strings"
 
-	providerEntities "github.com/lunarianss/Luna/internal/api-server/entities/provider"
-	"github.com/lunarianss/Luna/internal/api-server/model-runtime/entities"
+	"github.com/lunarianss/Luna/internal/api-server/entities/base"
+	"github.com/lunarianss/Luna/internal/api-server/entities/model_provider"
 	model_providers "github.com/lunarianss/Luna/internal/api-server/model-runtime/model-providers"
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/api-server/repo"
@@ -21,16 +21,18 @@ import (
 
 type ModelProviderDomain struct {
 	ModelProviderRepo repo.ModelProviderRepo
+	ModelRepo         repo.ModelRepo
 }
 
-func NewModelProviderDomain(modelProviderRepo repo.ModelProviderRepo) *ModelProviderDomain {
+func NewModelProviderDomain(modelProviderRepo repo.ModelProviderRepo, modelRepo repo.ModelRepo) *ModelProviderDomain {
 	return &ModelProviderDomain{
 		ModelProviderRepo: modelProviderRepo,
+		ModelRepo:         modelRepo,
 	}
 }
 
 // GetConfigurations Get all providers, models config for tenant
-func (mpd *ModelProviderDomain) GetConfigurations(ctx context.Context, tenantId string) (*providerEntities.ProviderConfigurations, error) {
+func (mpd *ModelProviderDomain) GetConfigurations(ctx context.Context, tenantId string) (*model_provider.ProviderConfigurations, error) {
 	providerNameMapRecords, err := mpd.ModelProviderRepo.GetMapTenantModelProviders(ctx, tenantId)
 
 	if err != nil {
@@ -43,9 +45,9 @@ func (mpd *ModelProviderDomain) GetConfigurations(ctx context.Context, tenantId 
 		return nil, err
 	}
 
-	providerConfigurations := &providerEntities.ProviderConfigurations{
+	providerConfigurations := &model_provider.ProviderConfigurations{
 		TenantId:       tenantId,
-		Configurations: make(map[string]*providerEntities.ProviderConfiguration, model_providers.PROVIDER_COUNT),
+		Configurations: make(map[string]*model_provider.ProviderConfiguration, model_providers.PROVIDER_COUNT),
 	}
 
 	for _, providerEntity := range providerNameMapEntities {
@@ -53,7 +55,7 @@ func (mpd *ModelProviderDomain) GetConfigurations(ctx context.Context, tenantId 
 		providerRecords := providerNameMapRecords[providerName]
 		customConfiguration := mpd.toCustomConfiguration(tenantId, providerEntity, providerRecords)
 
-		providerConfiguration := &providerEntities.ProviderConfiguration{
+		providerConfiguration := &model_provider.ProviderConfiguration{
 			TenantId:              tenantId,
 			Provider:              providerEntity,
 			UsingProviderType:     "system",
@@ -67,7 +69,86 @@ func (mpd *ModelProviderDomain) GetConfigurations(ctx context.Context, tenantId 
 	return providerConfigurations, nil
 }
 
-func (mpd *ModelProviderDomain) validateProviderCredentials(ctx context.Context, providerConfiguration *providerEntities.ProviderConfiguration, credentials map[string]interface{}) (*model.Provider, map[string]interface{}, error) {
+func (mpd *ModelProviderDomain) GetDefaultModel(ctx context.Context, tenantId, modelType string) (*model_provider.DefaultModelEntity, error) {
+	defaultModel, err := mpd.ModelRepo.GetTenantDefaultModel(ctx, tenantId, modelType)
+	var allModels []*model_provider.ModelWithProviderEntity
+
+	if err != nil {
+		return nil, err
+	}
+
+	if defaultModel == nil {
+		providerConfigurations, err := mpd.GetConfigurations(ctx, tenantId)
+
+		if err != nil {
+			return nil, err
+		}
+
+		for _, providerConfiguration := range providerConfigurations.Configurations {
+			providerModels, err := mpd.getProviderModels(ctx, providerConfiguration, modelType, true)
+
+			if err != nil {
+				return nil, err
+			}
+
+			allModels = append(allModels, providerModels...)
+		}
+	}
+
+	return nil, nil
+
+}
+
+func (mpd *ModelProviderDomain) getCustomProviderModels(modelType []base.ModelType, providerInstance *model_provider.ModelProvider, modelSettingMap map[string]map[string]model_provider.ModelSettings, providerConfiguration model_provider.ProviderConfiguration) ([]*model_provider.ModelWithProviderEntity, error) {
+
+	// var (
+	// 	providerModels []*model_provider.ModelWithProviderEntity
+	// 	credentials    interface{}
+	// )
+
+	// if providerConfiguration.CustomConfiguration.Provider != nil {
+	// 	credentials = providerConfiguration.CustomConfiguration.Provider.Credentials
+	// }
+
+	return nil, nil
+
+}
+
+func (mpd *ModelProviderDomain) getProviderModels(ctx context.Context, providerConfiguration *model_provider.ProviderConfiguration, modelType string, onlyActive bool) ([]*model_provider.ModelWithProviderEntity, error) {
+	providerInstance, err := mpd.ModelProviderRepo.GetProviderInstance(ctx, providerConfiguration.Provider.Provider)
+
+	if err != nil {
+		return nil, err
+	}
+
+	modelTypes := make([]base.ModelType, 0, 2)
+
+	if modelType != "" {
+		modelTypes = append(modelTypes, base.ModelType(modelType))
+	} else {
+		providerEntity, err := providerInstance.GetProviderSchema()
+		if err != nil {
+			return nil, err
+		}
+
+		modelTypes = append(modelTypes, providerEntity.SupportedModelTypes...)
+	}
+
+	modelSettingMap := make(map[string]map[string]model_provider.ModelSettings)
+
+	for _, modelSetting := range providerConfiguration.ModelSettings {
+		modelSettingMap[string(modelSetting.Model)][modelSetting.Model] = *modelSetting
+	}
+
+	if providerConfiguration.UsingProviderType == model.CUSTOM {
+		return nil, nil
+	}
+
+	return nil, nil
+
+}
+
+func (mpd *ModelProviderDomain) validateProviderCredentials(ctx context.Context, providerConfiguration *model_provider.ProviderConfiguration, credentials map[string]interface{}) (*model.Provider, map[string]interface{}, error) {
 
 	provider, err := mpd.ModelProviderRepo.GetTenantProvider(ctx, providerConfiguration.TenantId, providerConfiguration.Provider.Provider, string(model.CUSTOM))
 
@@ -78,7 +159,7 @@ func (mpd *ModelProviderDomain) validateProviderCredentials(ctx context.Context,
 	return provider, credentials, nil
 }
 
-func (mpd *ModelProviderDomain) AddOrUpdateCustomProviderCredentials(ctx context.Context, providerConfiguration *providerEntities.ProviderConfiguration, credentialParam map[string]interface{}) error {
+func (mpd *ModelProviderDomain) AddOrUpdateCustomProviderCredentials(ctx context.Context, providerConfiguration *model_provider.ProviderConfiguration, credentialParam map[string]interface{}) error {
 
 	providerRecord, credentials, err := mpd.validateProviderCredentials(ctx, providerConfiguration, credentialParam)
 
@@ -118,16 +199,16 @@ func (mpd *ModelProviderDomain) AddOrUpdateCustomProviderCredentials(ctx context
 
 func (mpd *ModelProviderDomain) toCustomConfiguration(
 	_ string,
-	providerEntity *entities.ProviderEntity,
+	providerEntity *model_provider.ProviderEntity,
 	providerRecords []*model.Provider,
-) *providerEntities.CustomConfiguration {
+) *model_provider.CustomConfiguration {
 
 	var (
 		custom_provider_record *model.Provider
 		// todo 从缓存中取 credentials information
 		cache_provider_credentials  map[string]interface{}
 		providerCredentials         map[string]interface{}
-		customProviderConfiguration *providerEntities.CustomProviderConfiguration
+		customProviderConfiguration *model_provider.CustomProviderConfiguration
 	)
 
 	// provider_credential_secret_variables := mpd.extractSecretVariables(
@@ -163,12 +244,12 @@ func (mpd *ModelProviderDomain) toCustomConfiguration(
 	// todo 对用户的 api key 进行加密｜解密
 
 	if custom_provider_record != nil {
-		customProviderConfiguration = &providerEntities.CustomProviderConfiguration{
+		customProviderConfiguration = &model_provider.CustomProviderConfiguration{
 			Credentials: providerCredentials,
 		}
 	}
 
-	return &providerEntities.CustomConfiguration{
+	return &model_provider.CustomConfiguration{
 		Provider: customProviderConfiguration,
 	}
 }

@@ -11,9 +11,10 @@ import (
 	"sort"
 	"strings"
 
-	domain "github.com/lunarianss/Luna/internal/api-server/domain/model-provider"
+	domain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/provider"
-	"github.com/lunarianss/Luna/internal/api-server/model-runtime/entities"
+	"github.com/lunarianss/Luna/internal/api-server/entities/base"
+	"github.com/lunarianss/Luna/internal/api-server/entities/model_provider"
 	model_providers "github.com/lunarianss/Luna/internal/api-server/model-runtime/model-providers"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
@@ -40,7 +41,7 @@ func (mpSrv *ModelProviderService) GetProviderList(ctx context.Context, tenantId
 	for _, providerConfiguration := range providerConfigurations.Configurations {
 
 		if modelType != "" {
-			if !slices.Contains(providerConfiguration.Provider.SupportedModelTypes, entities.ModelType(modelType)) {
+			if !slices.Contains(providerConfiguration.Provider.SupportedModelTypes, base.ModelType(modelType)) {
 				continue
 			}
 		}
@@ -127,7 +128,7 @@ func (mpSrv *ModelProviderService) SaveProviderCredentials(ctx context.Context, 
 	return nil
 }
 
-func (mpSrv *ModelProviderService) getIconName(providerEntity *entities.ProviderEntity, iconType, lang string) (string, error) {
+func (mpSrv *ModelProviderService) getIconName(providerEntity *model_provider.ProviderEntity, iconType, lang string) (string, error) {
 	var (
 		iconName string
 	)

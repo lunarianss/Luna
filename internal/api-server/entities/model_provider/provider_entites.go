@@ -2,10 +2,21 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
-package entities
+package model_provider
 
 import (
 	"reflect"
+
+	"github.com/lunarianss/Luna/internal/api-server/entities/base"
+	"github.com/lunarianss/Luna/internal/api-server/model/v1"
+)
+
+type QuotaUnit string
+
+const (
+	TIMES   QuotaUnit = "times"
+	TOKENS  QuotaUnit = "tokens"
+	CREDITS QuotaUnit = "credits"
 )
 
 const (
@@ -29,23 +40,54 @@ const (
 	SWITCH       FormType = "switch"
 )
 
-type I18nObject struct {
-	Zh_Hans string `json:"zh_Hans" yaml:"zh_Hans"`
-	En_US   string `json:"en_US"   yaml:"en_US"`
+type RestrictModels struct {
+	Model         string
+	BaseModelName string
+	ModelType     string
 }
 
-func (o *I18nObject) PatchZh() {
-	if o == nil {
-		return
-	}
-	if o.Zh_Hans == "" {
-		o.Zh_Hans = o.En_US
-	}
+type QuotaConfiguration struct {
+	QuotaType      model.ProviderQuotaType
+	QuotaUnit      QuotaUnit
+	QuotaLimit     int
+	QuotaUsed      int
+	IsValid        bool
+	RestrictModels []*RestrictModels
+}
+
+type SystemConfiguration struct {
+	Enabled             bool
+	CurrentQuotaType    model.ProviderQuotaType
+	QuotaConfigurations []*QuotaConfiguration
+	Credentials         interface{}
+}
+
+type CustomConfigurationStatus string
+
+type CustomProviderConfiguration struct {
+	Credentials interface{}
+}
+
+type CustomConfiguration struct {
+	Provider *CustomProviderConfiguration
+	Models   []*CustomModelConfiguration
+}
+
+type CustomModelConfiguration struct {
+	Model       string
+	ModelType   string
+	Credentials interface{}
+}
+
+type ModelSettings struct {
+	Model     string
+	ModelType base.ModelType
+	Enabled   bool
 }
 
 type ProviderHelpEntity struct {
-	Title *I18nObject `json:"title" yaml:"title"`
-	Url   *I18nObject `json:"url"   yaml:"url"`
+	Title *base.I18nObject `json:"title" yaml:"title"`
+	Url   *base.I18nObject `json:"url"   yaml:"url"`
 }
 
 type FormShowOnObject struct {
@@ -55,7 +97,7 @@ type FormShowOnObject struct {
 
 type CredentialFormSchema struct {
 	Variable     string              `json:"variable"   yaml:"variable"`   // Variable name
-	Label        *I18nObject         `json:"label"      yaml:"label"`      // Field label in i18n format
+	Label        *base.I18nObject    `json:"label"      yaml:"label"`      // Field label in i18n format
 	Type         FormType            `json:"type"       yaml:"type"`       // Field type
 	Required     bool                `json:"required"   yaml:"required"`   // Whether the field is required
 	DefaultValue string              `json:"default"    yaml:"default"`    // Default value
@@ -64,8 +106,8 @@ type CredentialFormSchema struct {
 }
 
 type FieldModelSchema struct {
-	Label       *I18nObject `json:"label"`
-	PlaceHolder *I18nObject `json:"place_holder"`
+	Label       *base.I18nObject `json:"label"`
+	PlaceHolder *base.I18nObject `json:"place_holder"`
 }
 
 type ModelCredentialSchema struct {
@@ -79,15 +121,15 @@ type ProviderCredentialSchema struct {
 
 type ProviderEntity struct {
 	Provider                 string                    `json:"provider"                   yaml:"provider"`                   // Provider name
-	Label                    *I18nObject               `json:"label"                      yaml:"label"`                      // Label in i18n format
-	Description              *I18nObject               `json:"description"                yaml:"description"`                // Description in i18n format
-	IconSmall                *I18nObject               `json:"icon_small"                 yaml:"icon_small"`                 // Small icon in i18n format
-	IconLarge                *I18nObject               `json:"icon_large"                 yaml:"icon_large"`                 // Large icon in i18n format
+	Label                    *base.I18nObject          `json:"label"                      yaml:"label"`                      // Label in i18n format
+	Description              *base.I18nObject          `json:"description"                yaml:"description"`                // Description in i18n format
+	IconSmall                *base.I18nObject          `json:"icon_small"                 yaml:"icon_small"`                 // Small icon in i18n format
+	IconLarge                *base.I18nObject          `json:"icon_large"                 yaml:"icon_large"`                 // Large icon in i18n format
 	Background               string                    `json:"background"                 yaml:"background"`                 // Background color or image
 	Help                     *ProviderHelpEntity       `json:"help"                       yaml:"help"`                       // Help information
-	SupportedModelTypes      []ModelType               `json:"supported_model_types"      yaml:"supported_model_types"`      // Supported model types
+	SupportedModelTypes      []base.ModelType          `json:"supported_model_types"      yaml:"supported_model_types"`      // Supported model types
 	ConfigurationMethods     []ConfigurationMethod     `json:"configuration_methods"      yaml:"configuration_methods"`      // Configuration methods
-	Models                   []*ProviderModel          `json:"models"                     yaml:"models"`                     // Models offered by the provider
+	Models                   []ProviderModel           `json:"models"                     yaml:"models"`                     // Models offered by the provider
 	ProviderCredentialSchema *ProviderCredentialSchema `json:"provider_credential_schema" yaml:"provider_credential_schema"` // Schema for provider credentials
 	ModelCredentialSchema    *ModelCredentialSchema    `json:"model_credential_schema"    yaml:"model_credential_schema"`    // Schema for model credentials
 	Position                 int                       `json:"position" yaml:"position"`
@@ -122,7 +164,7 @@ func (pe *ProviderEntity) PatchI18nObject() {
 						continue
 					}
 
-					if field.Type() == reflect.TypeOf(&I18nObject{}) {
+					if field.Type() == reflect.TypeOf(&base.I18nObject{}) {
 						method := field.MethodByName(PATCH_FUNCTION_NAME)
 						if method.IsValid() && method.Type().NumIn() == 0 {
 							method.Call(nil)

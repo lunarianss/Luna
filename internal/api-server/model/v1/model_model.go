@@ -26,3 +26,22 @@ func (u *ProviderModel) BeforeCreate(tx *gorm.DB) (err error) {
 	u.ID = uuid.NewString()
 	return
 }
+
+type TenantDefaultModel struct {
+	ID           string `gorm:"column:id"                        json:"id"`
+	TenantID     string `gorm:"column:tenant_id"                 json:"tenant_id"`
+	ProviderName string `gorm:"column:provider_name"             json:"provider_name"`
+	ModelName    string `gorm:"column:model_name"             json:"mode_name"`
+	ModelType    string `gorm:"column:model_type"            json:"model_type"`
+	CreatedAt    int64  `gorm:"column:created_at;autoCreateTime" json:"created_at"`
+	UpdatedAt    int64  `gorm:"column:updated_at;autoUpdateTime" json:"updated_at"`
+}
+
+func (*TenantDefaultModel) TableName() string {
+	return "tenant_default_models"
+}
+
+func (u *TenantDefaultModel) BeforeCreate(tx *gorm.DB) (err error) {
+	u.ID = uuid.NewString()
+	return
+}

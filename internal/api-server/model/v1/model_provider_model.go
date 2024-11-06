@@ -52,3 +52,4 @@ func (u *Provider) BeforeCreate(tx *gorm.DB) (err error) {
 	u.ID = uuid.NewString()
 	return
 }
+

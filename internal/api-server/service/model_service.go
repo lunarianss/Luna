@@ -8,7 +8,7 @@ import (
 	"context"
 
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/model"
-	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/model-provider"
+	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
 )

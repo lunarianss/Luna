@@ -9,6 +9,8 @@ import (
 type ModelRepo interface {
 	// GetTenantModels get all models by searchModel
 	GetTenantModel(ctx context.Context, tenantId, providerName, modelName, modelType string) (*model.ProviderModel, error)
+	// Get the corresponding TenantDefaultModel record
+	GetTenantDefaultModel(ctx context.Context, tenantId, modelType string) (*model.TenantDefaultModel, error)
 	// UpdateModel updates model
 	UpdateModel(ctx context.Context, model *model.ProviderModel) error
 	// CreateModel create model

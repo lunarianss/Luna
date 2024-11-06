@@ -5,7 +5,7 @@ import (
 	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/model-provider/model"
 	"github.com/lunarianss/Luna/internal/api-server/dao"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/model"
-	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/model-provider"
+	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
 	"github.com/lunarianss/Luna/internal/api-server/service"
 	"github.com/lunarianss/Luna/internal/pkg/mysql"
 )
@@ -25,7 +25,7 @@ func (r *ModelRoutes) Register(g *gin.Engine) error {
 
 	// domain
 	modelDomain := domain.NewModelDomain(modelDao)
-	modelProviderDomain := providerDomain.NewModelProviderDomain(modelProviderDao)
+	modelProviderDomain := providerDomain.NewModelProviderDomain(modelProviderDao, modelDao)
 
 	// service
 	modelService := service.NewModelService(modelDomain, modelProviderDomain)

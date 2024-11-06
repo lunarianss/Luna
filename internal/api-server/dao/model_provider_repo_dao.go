@@ -10,7 +10,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/lunarianss/Luna/internal/api-server/model-runtime/entities"
+	"github.com/lunarianss/Luna/internal/api-server/entities/model_provider"
 	model_providers "github.com/lunarianss/Luna/internal/api-server/model-runtime/model-providers"
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/api-server/repo"
@@ -69,13 +69,13 @@ func (mpd *ModelProviderDao) GetMapTenantModelProviders(ctx context.Context, ten
 }
 
 // Get all inner Providers
-func (mpd *ModelProviderDao) GetSystemProviders(ctx context.Context) ([]*entities.ProviderEntity, error) {
+func (mpd *ModelProviderDao) GetSystemProviders(ctx context.Context) ([]*model_provider.ProviderEntity, error) {
 	return model_providers.Factory.GetProvidersFromDir()
 }
 
 // Get all inner Providers mapped by provider name
-func (mpd *ModelProviderDao) GetMapSystemProviders(ctx context.Context) (map[string]*entities.ProviderEntity, error) {
-	mapSystemProviders := make(map[string]*entities.ProviderEntity, model_providers.PROVIDER_COUNT)
+func (mpd *ModelProviderDao) GetMapSystemProviders(ctx context.Context) (map[string]*model_provider.ProviderEntity, error) {
+	mapSystemProviders := make(map[string]*model_provider.ProviderEntity, model_providers.PROVIDER_COUNT)
 
 	systemProviders, err := mpd.GetSystemProviders(ctx)
 
@@ -99,7 +99,7 @@ func (mpd *ModelProviderDao) GetProviderPath(ctx context.Context, provider strin
 	return fmt.Sprintf("%s/%s", providerPath, provider), nil
 }
 
-func (mpd *ModelProviderDao) GetProviderEntity(ctx context.Context, provider string) (*entities.ProviderEntity, error) {
+func (mpd *ModelProviderDao) GetProviderEntity(ctx context.Context, provider string) (*model_provider.ProviderEntity, error) {
 	modelProvider, err := model_providers.Factory.GetProviderInstance(provider)
 
 	if err != nil {
@@ -128,4 +128,8 @@ func (mpd *ModelProviderDao) CreateProvider(ctx context.Context, provider *model
 	}
 
 	return nil
+}
+
+func (mpd *ModelProviderDao) GetProviderInstance(ctx context.Context, provider string) (*model_provider.ModelProvider, error) {
+	return model_providers.Factory.GetProviderInstance(provider)
 }

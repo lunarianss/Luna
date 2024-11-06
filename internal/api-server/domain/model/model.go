@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	entities "github.com/lunarianss/Luna/internal/api-server/entities/provider"
+	"github.com/lunarianss/Luna/internal/api-server/entities/model_provider"
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/api-server/repo"
 	"github.com/lunarianss/Luna/internal/pkg/code"
@@ -21,7 +21,13 @@ func NewModelDomain(modelRepo repo.ModelRepo) *ModelDomain {
 	}
 }
 
-func (mpd *ModelDomain) AddOrUpdateCustomModelCredentials(ctx context.Context, providerConfiguration *entities.ProviderConfiguration, credentialParam map[string]interface{}, modelType, modelName string) error {
+func (mpd *ModelDomain) GetDefaultModelInstance(ctx context.Context, tenantID, modelType string) (*model_provider.ModelInstance, error) {
+
+	return nil, nil
+
+}
+
+func (mpd *ModelDomain) AddOrUpdateCustomModelCredentials(ctx context.Context, providerConfiguration *model_provider.ProviderConfiguration, credentialParam map[string]interface{}, modelType, modelName string) error {
 
 	modelRecord, credentials, err := mpd.validateProviderCredentials(ctx, providerConfiguration, credentialParam, modelType, modelName)
 
@@ -60,7 +66,7 @@ func (mpd *ModelDomain) AddOrUpdateCustomModelCredentials(ctx context.Context, p
 	return nil
 }
 
-func (mpd *ModelDomain) validateProviderCredentials(ctx context.Context, providerConfiguration *entities.ProviderConfiguration, credentials map[string]interface{}, modelType, modeName string) (*model.ProviderModel, map[string]interface{}, error) {
+func (mpd *ModelDomain) validateProviderCredentials(ctx context.Context, providerConfiguration *model_provider.ProviderConfiguration, credentials map[string]interface{}, modelType, modeName string) (*model.ProviderModel, map[string]interface{}, error) {
 
 	model, err := mpd.ModelRepo.GetTenantModel(ctx, providerConfiguration.TenantId, providerConfiguration.Provider.Provider, modeName, modelType)
 

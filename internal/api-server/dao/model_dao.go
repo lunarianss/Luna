@@ -47,3 +47,15 @@ func (md *ModelDao) CreateModel(ctx context.Context, model *model.ProviderModel)
 	}
 	return nil
 }
+
+func (md *ModelDao) GetTenantDefaultModel(ctx context.Context, tenantID, modelType string) (*model.TenantDefaultModel, error) {
+	var defaultModel *model.TenantDefaultModel
+	if err := md.db.Scopes(mysql.IDDesc()).Where("tenant_id = ? and model_type = ?", tenantID, modelType).First(&defaultModel).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		} else {
+			return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		}
+	}
+	return defaultModel, nil
+}

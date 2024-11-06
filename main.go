@@ -8,7 +8,7 @@ import "fmt"
 
 func main() {
 	var sr []string
-
-	fmt.Println(append(sr, "13"), len(sr))
+	sr = append(sr, "13")
+	fmt.Println(sr, len(sr))
 
 }

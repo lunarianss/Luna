@@ -29,4 +29,4 @@ CREATE TABLE `app_model_configs` (
     text_to_speech TEXT,
     created_by CHAR(36),
     updated_by CHAR(36)
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;

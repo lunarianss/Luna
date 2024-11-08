@@ -10,4 +10,4 @@ CREATE TABLE `tenant_default_models` (
     model_name VARCHAR(255) NOT NULL,
     created_by CHAR(36),
     updated_by CHAR(36)
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -29,4 +29,4 @@ CREATE TABLE apps (
     created_by CHAR(36),
     updated_by CHAR(36),
     use_icon_as_answer_icon BIT(1) DEFAULT 0 NOT NULL
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

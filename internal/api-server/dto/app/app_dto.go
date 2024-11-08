@@ -1,5 +1,7 @@
 package dto
 
+import "github.com/lunarianss/Luna/internal/api-server/model/v1"
+
 // Create App Input Dto
 type CreateAppRequest struct {
 	Name           string `json:"name" validate:"required"`
@@ -10,4 +12,10 @@ type CreateAppRequest struct {
 	IconBackground string `json:"icon_background"`
 	ApiRph         int    `json:"api_rph"`
 	ApiRpm         int    `json:"api_rpm"`
+}
+
+// Create App Response Dto
+type CreateAppResponse struct {
+	*model.App
+	ModelConfig *model.AppModelConfig `json:"model_config"`
 }

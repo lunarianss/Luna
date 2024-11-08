@@ -41,4 +41,5 @@ func init() {
 	errors.Enroll(ErrToOriginModelType, 500, "Error occurred while convert to origin model type")
 	errors.Enroll(ErrDefaultModelNotFound, 500, "Error occurred while trying to convert default model to unknown")
 	errors.Enroll(ErrModelSchemaNotFound, 500, "Error occurred while attempt to index from predefined models using model name")
+	errors.Enroll(ErrAllModelsEmpty, 500, "Error occurred when all models are empty")
 }

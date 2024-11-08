@@ -61,16 +61,18 @@ func DeepCopyUsingJSON[T interface{}](src, dst T) error {
 }
 
 type A struct {
-	Name string `json:"name"`
+	Name string `json:"name" yaml:"name"`
 }
 
-var a = &A{Name: "test"}
+type App struct {
+	A
+}
 
 func main() {
-	var b A
-	// DeepCopyUsingJSON(a, b)
-	// a.Name = "cccc"
-	fmt.Printf(b == nil)
-	fmt.Printf("b %+v", b)
+	var a map[string]interface{} = make(map[string]interface{})
+
+	c, _ := json.Marshal(a)
+
+	fmt.Println(string(c))
 
 }

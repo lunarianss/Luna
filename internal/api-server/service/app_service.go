@@ -6,7 +6,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/app"
@@ -19,6 +18,7 @@ import (
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/internal/pkg/util"
 	"github.com/lunarianss/Luna/pkg/errors"
+	"github.com/lunarianss/Luna/pkg/log"
 )
 
 type AppService struct {
@@ -31,12 +31,12 @@ func NewAppService(appDomain *domain.AppDomain, modelDomain *modelDomain.ModelDo
 	return &AppService{AppDomain: appDomain, ModelDomain: modelDomain, ProviderDomain: providerDomain}
 }
 
-func (as *AppService) CreateApp(ctx context.Context, tenantID, accountID string, createAppRequest *dto.CreateAppRequest) (*model.App, error) {
+func (as *AppService) CreateApp(ctx context.Context, tenantID, accountID string, createAppRequest *dto.CreateAppRequest) (*dto.CreateAppResponse, error) {
 
 	var (
 		retApp *model.App
 	)
-	appTemplate, ok := template.DefaultAppTemplates[model.AppMode(createAppRequest.Mode)]
+	appTemplate, ok := template.DefaultAppTemplates[template.AppMode(createAppRequest.Mode)]
 
 	if !ok {
 		return nil, errors.WithCode(code.ErrAppMapMode, fmt.Sprintf("Invalid node template: %v", createAppRequest.Mode))
@@ -49,8 +49,8 @@ func (as *AppService) CreateApp(ctx context.Context, tenantID, accountID string,
 	if defaultModelConfig.Model.Name != "" {
 		modelInstance, err := as.ProviderDomain.GetDefaultModelInstance(ctx, tenantID, base.LLM)
 
-		if err != nil {
-			return nil, err
+		if err != nil && errors.IsCode(err, code.ErrDefaultModelNotFound) {
+			log.Warnf("%s doesn't no default type of  %s model", tenantID, base.LLM)
 		}
 
 		if modelInstance != nil {
@@ -72,7 +72,6 @@ func (as *AppService) CreateApp(ctx context.Context, tenantID, accountID string,
 			}
 		} else {
 			provider, model, err := as.ProviderDomain.GetFirstProviderFirstModel(ctx, tenantID, string(base.LLM))
-
 			if err != nil {
 				return nil, err
 			}
@@ -80,14 +79,7 @@ func (as *AppService) CreateApp(ctx context.Context, tenantID, accountID string,
 			defaultModelConfig.Model.Name = model
 			defaultModel = &defaultModelConfig.Model
 		}
-
 		defaultModelConfig.Model = *defaultModel
-	}
-
-	modelContents, err := json.Marshal(defaultModelConfig.Model)
-
-	if err != nil {
-		return nil, errors.WithCode(code.ErrEncodingJSON, err.Error())
 	}
 
 	app := &model.App{
@@ -109,7 +101,8 @@ func (as *AppService) CreateApp(ctx context.Context, tenantID, accountID string,
 		UserInputForm: defaultModelConfig.UserInputForm,
 		PrePrompt:     defaultModelConfig.PrePrompt,
 		Provider:      defaultModelConfig.Model.Provider,
-		Model:         string(modelContents),
+		Model:         defaultModelConfig.Model,
+		PromptType:    "simple",
 	}
 
 	if createAppRequest.IconType == "" {
@@ -117,7 +110,7 @@ func (as *AppService) CreateApp(ctx context.Context, tenantID, accountID string,
 	}
 
 	if defaultModelConfig.Model.Provider != "" && defaultModelConfig.Model.Name != "" {
-		app, err := as.AppDomain.AppRepo.CreateAppWithConfig(ctx, app, appConfig, string(modelContents))
+		app, err := as.AppDomain.AppRepo.CreateAppWithConfig(ctx, app, appConfig)
 		if err != nil {
 			return nil, err
 		}
@@ -130,5 +123,8 @@ func (as *AppService) CreateApp(ctx context.Context, tenantID, accountID string,
 		retApp = app
 	}
 
-	return retApp, nil
+	return &dto.CreateAppResponse{
+		ModelConfig: appConfig,
+		App:         retApp,
+	}, nil
 }

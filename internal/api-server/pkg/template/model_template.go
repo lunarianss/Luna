@@ -1,9 +1,14 @@
 package template
 
-import (
-	"encoding/json"
+type AppMode string
 
-	"github.com/lunarianss/Luna/internal/api-server/model/v1"
+const (
+	COMPLETION    AppMode = "completion"
+	WORKFLOW      AppMode = "workflow"
+	CHAT          AppMode = "chat"
+	ADVANCED_CHAT AppMode = "advanced-chat"
+	AGENT_CHAT    AppMode = "agent-chat"
+	CHANNEL       AppMode = "channel"
 )
 
 // App holds the basic app configuration.
@@ -23,9 +28,9 @@ type Model struct {
 
 // ModelConfig holds the model and additional configurations.
 type ModelConfig struct {
-	Model         Model  `json:"model"`
-	UserInputForm string `json:"user_input_form"`
-	PrePrompt     string `json:"pre_prompt"`
+	Model         Model                               `json:"model"`
+	UserInputForm []map[string]map[string]interface{} `json:"user_input_form"`
+	PrePrompt     string                              `json:"pre_prompt"`
 }
 
 // AppTemplate holds the template for each mode.
@@ -35,17 +40,17 @@ type AppTemplate struct {
 }
 
 // Initialize default app templates
-var DefaultAppTemplates = map[model.AppMode]AppTemplate{
-	model.WORKFLOW: {
+var DefaultAppTemplates = map[AppMode]AppTemplate{
+	WORKFLOW: {
 		App: App{
-			Mode:       string(model.WORKFLOW),
+			Mode:       string(WORKFLOW),
 			EnableSite: true,
 			EnableAPI:  true,
 		},
 	},
-	model.COMPLETION: {
+	COMPLETION: {
 		App: App{
-			Mode:       string(model.COMPLETION),
+			Mode:       string(COMPLETION),
 			EnableSite: true,
 			EnableAPI:  true,
 		},
@@ -56,20 +61,22 @@ var DefaultAppTemplates = map[model.AppMode]AppTemplate{
 				Mode:             "chat",
 				CompletionParams: map[string]interface{}{},
 			},
-			UserInputForm: string(json.RawMessage(`[{
-				"paragraph": {
-						"label": "Query",
+			PrePrompt: "{{query}}",
+			UserInputForm: []map[string]map[string]interface{}{
+				{
+					"params": {
+						"label":    "Query",
 						"variable": "query",
 						"required": true,
-						"default": ""
-				}
-		}]`)),
-			PrePrompt: "{{query}}",
+						"default":  "",
+					},
+				},
+			},
 		},
 	},
-	model.CHAT: {
+	CHAT: {
 		App: App{
-			Mode:       string(model.CHAT),
+			Mode:       string(CHAT),
 			EnableSite: true,
 			EnableAPI:  true,
 		},
@@ -82,16 +89,16 @@ var DefaultAppTemplates = map[model.AppMode]AppTemplate{
 			},
 		},
 	},
-	model.ADVANCED_CHAT: {
+	ADVANCED_CHAT: {
 		App: App{
-			Mode:       string(model.ADVANCED_CHAT),
+			Mode:       string(ADVANCED_CHAT),
 			EnableSite: true,
 			EnableAPI:  true,
 		},
 	},
-	model.AGENT_CHAT: {
+	AGENT_CHAT: {
 		App: App{
-			Mode:       string(model.AGENT_CHAT),
+			Mode:       string(AGENT_CHAT),
 			EnableSite: true,
 			EnableAPI:  true,
 		},

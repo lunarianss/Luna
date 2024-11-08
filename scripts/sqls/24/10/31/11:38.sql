@@ -19,5 +19,5 @@ CREATE TABLE `providers`  (
     quota_used BIGINT,
     created_at int(10) NOT NULL,
     updated_at int(10) NOT NULL
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 

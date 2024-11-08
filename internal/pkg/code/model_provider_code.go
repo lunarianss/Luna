@@ -11,4 +11,6 @@ const (
 	ErrDefaultModelNotFound
 	// ErrModelSchemaNotFound - 500: Error occurred while attempt to index from predefined models using model name.
 	ErrModelSchemaNotFound
+	// ErrAllModelsEmpty - 500: Error occurred when all models are empty.
+	ErrAllModelsEmpty
 )

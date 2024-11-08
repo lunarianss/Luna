@@ -61,8 +61,8 @@ func (mpd *ModelProviderDomain) GetConfigurations(ctx context.Context, tenantId 
 		providerConfiguration := &model_provider.ProviderConfiguration{
 			TenantId:              tenantId,
 			Provider:              providerEntity,
-			UsingProviderType:     "system",
-			PreferredProviderType: "system",
+			UsingProviderType:     model.CUSTOM,
+			PreferredProviderType: model.CUSTOM,
 			CustomConfiguration:   customConfiguration,
 		}
 
@@ -132,6 +132,10 @@ func (mpd *ModelProviderDomain) GetFirstProviderFirstModel(ctx context.Context, 
 			return "", "", err
 		}
 		allModels = append(allModels, model...)
+	}
+
+	if len(allModels) == 0 {
+		return "", "", errors.WithCode(code.ErrAllModelsEmpty, fmt.Sprintf("tenant %s does not have any type of %s models", tenantID, modelType))
 	}
 
 	return allModels[0].Provider.Provider, allModels[0].Model, nil
@@ -268,7 +272,6 @@ func (mpd *ModelProviderDomain) getCustomProviderModels(modelTypes []base.ModelT
 
 		for _, AIModelEntity := range AIModelEntities {
 			var status model_provider.ModelStatus
-
 			if credentials != nil {
 				status = model_provider.ACTIVE
 			} else {

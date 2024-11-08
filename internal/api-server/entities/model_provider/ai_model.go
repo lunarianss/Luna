@@ -11,6 +11,7 @@ import (
 
 	"github.com/lunarianss/Luna/internal/api-server/entities/base"
 	"github.com/lunarianss/Luna/internal/pkg/code"
+	"github.com/lunarianss/Luna/internal/pkg/field"
 	"github.com/lunarianss/Luna/pkg/errors"
 	"gopkg.in/yaml.v3"
 )
@@ -36,18 +37,18 @@ type ParameterRule struct {
 	Min         float64          `json:"min" yaml:"min"`
 	Max         float64          `json:"max" yaml:"max"`
 	Precision   int              `json:"precision" yaml:"precision"`
-	Options     string           `json:"options" yaml:"options"`
+	Options     []string         `json:"options" yaml:"options"`
 }
 
 type PriceConfig struct {
-	Input    float64 `json:"input" yaml:"input"`
-	Output   float64 `json:"output" yaml:"output"`
-	Unit     float64 `json:"unit" yaml:"unit"`
-	Currency string  `json:"currency" yaml:"currency"`
+	Input    field.Float64 `json:"input" yaml:"input"`
+	Output   field.Float64 `json:"output" yaml:"output"`
+	Unit     field.Float64 `json:"unit" yaml:"unit"`
+	Currency string        `json:"currency" yaml:"currency"`
 }
 
 type AIModelEntity struct {
-	*ProviderModel
+	*ProviderModel `yaml:",inline"`
 	ParameterRules []*ParameterRule `json:"parameter_rules" yaml:"parameter_rules"`
 	Pricing        *PriceConfig     `json:"pricing" yaml:"pricing"`
 }
@@ -81,7 +82,7 @@ func (a *AIModel) PredefinedModels() ([]*AIModelEntity, error) {
 	}
 
 	for _, modelSchemaYamlPath := range modelSchemaYamlPath {
-		AIModelEntity := &AIModelEntity{}
+		AIModelEntity := &AIModelEntity{ProviderModel: &ProviderModel{}}
 
 		AIModelEntityContent, err := os.ReadFile(modelSchemaYamlPath)
 		if err != nil {
@@ -89,7 +90,7 @@ func (a *AIModel) PredefinedModels() ([]*AIModelEntity, error) {
 		}
 
 		if err := yaml.Unmarshal(AIModelEntityContent, AIModelEntity); err != nil {
-			return nil, errors.WithCode(code.ErrDecodingYaml, err.Error())
+			return nil, errors.WithCode(code.ErrDecodingYaml, fmt.Sprintf("when decoding model %s of path,  failed: %s", modelSchemaYamlPath, err.Error()))
 		}
 
 		AIModelEntities = append(AIModelEntities, AIModelEntity)

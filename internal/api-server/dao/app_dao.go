@@ -27,7 +27,7 @@ func (ad *AppDao) CreateApp(ctx context.Context, app *model.App) (*model.App, er
 	return app, nil
 }
 
-func (ad *AppDao) CreateAppWithConfig(ctx context.Context, app *model.App, appConfig *model.AppModelConfig, modelContents string) (*model.App, error) {
+func (ad *AppDao) CreateAppWithConfig(ctx context.Context, app *model.App, appConfig *model.AppModelConfig) (*model.App, error) {
 	tx := ad.db.Begin()
 	if err := tx.Create(app).Error; err != nil {
 		tx.Rollback()

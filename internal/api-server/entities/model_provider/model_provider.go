@@ -47,6 +47,7 @@ func (mp *ModelProvider) Models(modelType base.ModelType) ([]*AIModelEntity, err
 func (mp *ModelProvider) GetModelInstance(modelType base.ModelType) *AIModel {
 	providerName := filepath.Base(mp.ModelConfPath)
 	modelSchemaPath := fmt.Sprintf("%s/%s", mp.ModelConfPath, modelType)
+	mp.ModelInstanceMap = make(map[string]*AIModel)
 
 	if _, ok := mp.ModelInstanceMap[fmt.Sprintf("%s.%s", providerName, modelType)]; ok {
 		return mp.ModelInstanceMap[fmt.Sprintf("%s.%s", providerName, modelType)]

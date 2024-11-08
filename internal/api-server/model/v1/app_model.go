@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/google/uuid"
+	"github.com/lunarianss/Luna/internal/api-server/pkg/template"
 	"gorm.io/gorm"
 )
 
@@ -55,34 +56,34 @@ func (a *App) BeforeCreate(tx *gorm.DB) (err error) {
 }
 
 type AppModelConfig struct {
-	ID                            string `json:"id"`
-	AppID                         string `json:"app_id"`
-	Provider                      string `json:"provider"`
-	ModelID                       string `json:"model_id"`
-	Configs                       string `json:"configs"`
-	CreatedAt                     int64  `json:"created_at"`
-	UpdatedAt                     int64  `json:"updated_at"`
-	OpeningStatement              string `json:"opening_statement"`
-	SuggestedQuestions            string `json:"suggested_questions"`
-	SuggestedQuestionsAfterAnswer string `json:"suggested_questions_after_answer"`
-	MoreLikeThis                  string `json:"more_like_this"`
-	Model                         string `json:"model"`
-	UserInputForm                 string `json:"user_input_form"`
-	PrePrompt                     string `json:"pre_prompt"`
-	AgentMode                     string `json:"agent_mode"`
-	SpeechToText                  string `json:"speech_to_text"`
-	SensitiveWordAvoidance        string `json:"sensitive_word_avoidance"`
-	RetrieverResource             string `json:"retriever_resource"`
-	DatasetQueryVariable          string `json:"dataset_query_variable"`
-	PromptType                    string `json:"prompt_type"`
-	ChatPromptConfig              string `json:"chat_prompt_config"`
-	CompletionPromptConfig        string `json:"completion_prompt_config"`
-	DatasetConfigs                string `json:"dataset_configs"`
-	ExternalDataTools             string `json:"external_data_tools"`
-	FileUpload                    string `json:"file_upload"`
-	TextToSpeech                  string `json:"text_to_speech"`
-	CreatedBy                     string `json:"created_by"`
-	UpdatedBy                     string `json:"updated_by"`
+	ID                            string                              `json:"id" gorm:"column:id"`
+	AppID                         string                              `json:"app_id" gorm:"column:app_id"`
+	Provider                      string                              `json:"provider" gorm:"column:provider"`
+	ModelID                       string                              `json:"model_id" gorm:"column:model_id"`
+	Configs                       map[string]interface{}              `json:"configs" gorm:"column:configs;serializer:json"`
+	CreatedAt                     int64                               `json:"created_at" gorm:"column:created_at"`
+	UpdatedAt                     int64                               `json:"updated_at" gorm:"column:updated_at"`
+	OpeningStatement              map[string]interface{}              `json:"opening_statement" gorm:"column:opening_statement;serializer:json"`
+	SuggestedQuestions            []string                            `json:"suggested_questions" gorm:"column:suggested_questions;serializer:json"`
+	SuggestedQuestionsAfterAnswer map[string]interface{}              `json:"suggested_questions_after_answer" gorm:"column:suggested_questions_after_answer;serializer:json"`
+	MoreLikeThis                  map[string]interface{}              `json:"more_like_this" gorm:"column:more_like_this;serializer:json"`
+	Model                         template.Model                      `json:"model" gorm:"column:model;serializer:json"`
+	UserInputForm                 []map[string]map[string]interface{} `json:"user_input_form" gorm:"column:user_input_form;serializer:json"`
+	PrePrompt                     string                              `json:"pre_prompt" gorm:"column:pre_prompt;serializer:json"`
+	AgentMode                     map[string]interface{}              `json:"agent_mode" gorm:"column:agent_mode;serializer:json"`
+	SpeechToText                  map[string]interface{}              `json:"speech_to_text" gorm:"column:speech_to_text;serializer:json"`
+	SensitiveWordAvoidance        map[string]interface{}              `json:"sensitive_word_avoidance" gorm:"column:sensitive_word_avoidance;serializer:json"`
+	RetrieverResource             map[string]interface{}              `json:"retriever_resource" gorm:"column:retriever_resource;serializer:json"`
+	DatasetQueryVariable          map[string]interface{}              `json:"dataset_query_variable" gorm:"column:dataset_query_variable;serializer:json"`
+	PromptType                    string                              `json:"prompt_type" gorm:"column:prompt_type"`
+	ChatPromptConfig              map[string]interface{}              `json:"chat_prompt_config" gorm:"column:chat_prompt_config;serializer:json"`
+	CompletionPromptConfig        map[string]interface{}              `json:"completion_prompt_config" gorm:"column:completion_prompt_config;serializer:json"`
+	DatasetConfigs                map[string]interface{}              `json:"dataset_configs" gorm:"column:dataset_configs;serializer:json"`
+	ExternalDataTools             []string                            `json:"external_data_tools" gorm:"column:external_data_tools;serializer:json"`
+	FileUpload                    map[string]interface{}              `json:"file_upload" gorm:"column:file_upload;serializer:json"`
+	TextToSpeech                  map[string]interface{}              `json:"text_to_speech" gorm:"column:text_to_speech;serializer:json"`
+	CreatedBy                     string                              `json:"created_by" gorm:"column:created_by"`
+	UpdatedBy                     string                              `json:"updated_by" gorm:"column:updated_by"`
 }
 
 func (a *AppModelConfig) TableName() string {

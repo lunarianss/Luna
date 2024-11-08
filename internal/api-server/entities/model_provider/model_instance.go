@@ -20,6 +20,6 @@ type ModelInstance struct {
 	ProviderModelBundle *ProviderModelBundle `json:"provider_model_bundle"`
 	Model               string               `json:"model"`
 	Provider            string               `json:"provider"`
-	Credentials         map[string]any       `json:"credentials"`
+	Credentials         interface{}          `json:"credentials"`
 	ModelTypeInstance   *AIModel             `json:"model_type_instance"`
 }

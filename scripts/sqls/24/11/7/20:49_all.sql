@@ -84,8 +84,8 @@ CREATE TABLE `tenant_default_models` (
     provider_name VARCHAR(255) NOT NULL,
     model_type VARCHAR(40) NOT NULL,
     model_name VARCHAR(255) NOT NULL,
-    created_by CHAR(36),
-    updated_by CHAR(36)
+    created_at int(10) NOT NULL,
+    updated_at int(10) NOT NULL
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 

@@ -192,6 +192,9 @@ func (mpd *ModelProviderDomain) GetModelInstance(ctx context.Context, tenantId, 
 	return &model_provider.ModelInstance{
 		ProviderModelBundle: providerModelBundle,
 		Model:               model,
+		ModelTypeInstance:   providerModelBundle.ModelTypeInstance,
+		Provider:            providerModelBundle.Configuration.Provider.Provider,
+		Credentials:         providerModelBundle.Configuration.CustomConfiguration.Provider.Credentials,
 	}, nil
 }
 
@@ -290,7 +293,7 @@ func (mpd *ModelProviderDomain) GetDefaultModel(ctx context.Context, tenantId st
 
 }
 
-func (mpd *ModelProviderDomain) getCustomProviderModels(modelTypes []base.ModelType, providerInstance *model_provider.ModelProvider, modelSettingMap map[string]map[string]model_provider.ModelSettings, providerConfiguration model_provider.ProviderConfiguration) ([]*model_provider.ModelWithProviderEntity, error) {
+func (mpd *ModelProviderDomain) getCustomProviderModels(modelTypes []base.ModelType, providerInstance *model_provider.ModelProvider, modelSettingMap map[string]map[string]model_provider.ModelSettings, providerConfiguration *model_provider.ProviderConfiguration) ([]*model_provider.ModelWithProviderEntity, error) {
 
 	var (
 		providerModels []*model_provider.ModelWithProviderEntity
@@ -386,7 +389,7 @@ func (mpd *ModelProviderDomain) getProviderModels(ctx context.Context, providerC
 	}
 
 	if providerConfiguration.UsingProviderType == model.CUSTOM {
-		providerModels, err = mpd.getCustomProviderModels(modelTypes, providerInstance, modelSettingMap, *providerConfiguration)
+		providerModels, err = mpd.getCustomProviderModels(modelTypes, providerInstance, modelSettingMap, providerConfiguration)
 
 		if err != nil {
 			return nil, err

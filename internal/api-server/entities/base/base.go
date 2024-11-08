@@ -5,6 +5,13 @@ import (
 	"github.com/lunarianss/Luna/pkg/errors"
 )
 
+type LLMMode string
+
+const (
+	COMPLETION LLMMode = "completion"
+	CHAT       LLMMode = "chat"
+)
+
 type ModelType string
 
 const (

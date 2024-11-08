@@ -38,6 +38,7 @@ func (a *AppRoutes) Register(g *gin.Engine) error {
 	v1 := g.Group("/v1")
 	modelProviderV1 := v1.Group("/console/api")
 	modelProviderV1.POST("/apps", appController.Create)
+	modelProviderV1.POST("/apps/appID/chat-message", appController.ChatMessage)
 	return nil
 }
 

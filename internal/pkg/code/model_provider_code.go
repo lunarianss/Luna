@@ -15,4 +15,15 @@ const (
 	ErrAllModelsEmpty
 	// ErrAllModelsEmpty - 500: Error occurred when models haven't position definition.
 	ErrModelNotHavePosition
+	// ErrModelNotHaveEndPoint - 500: Error occurred when models haven't url endpoint.
+	ErrModelNotHaveEndPoint
+	// ErrModelUrlNotConvertUrl - 500: Error occurred when models url interface{} convert ot string .
+	ErrModelUrlNotConvertUrl
+	// ErrTypeOfPromptMessage - 500: When prompt type is user, the type of message is neither string or []*promptMessageContent.
+	ErrTypeOfPromptMessage
+	// ErrCallLargeLanguageModel - 500: Error occurred when call large language model post api.
+	ErrCallLargeLanguageModel
+
+	// ErrConvertDelimiterString - 500: Error occurred when convert delimiter to string.
+	ErrConvertDelimiterString
 )

@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
+	"sort"
 	"strings"
 
 	"github.com/lunarianss/Luna/internal/api-server/entities/base"
@@ -32,6 +33,46 @@ func NewModelProviderDomain(modelProviderRepo repo.ModelProviderRepo, modelRepo 
 		ModelProviderRepo: modelProviderRepo,
 		ModelRepo:         modelRepo,
 	}
+}
+
+// GetConfigurations Get all providers, models config for tenant
+func (mpd *ModelProviderDomain) GetSortedListConfigurations(ctx context.Context, tenantId string) ([]*model_provider.ProviderConfiguration, error) {
+	var (
+		providerListConfigurations []*model_provider.ProviderConfiguration
+	)
+	providerNameMapRecords, err := mpd.ModelProviderRepo.GetMapTenantModelProviders(ctx, tenantId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	providerNameMapEntities, err := mpd.ModelProviderRepo.GetSystemProviders(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, providerEntity := range providerNameMapEntities {
+		providerName := providerEntity.Provider
+		providerRecords := providerNameMapRecords[providerName]
+		customConfiguration := mpd.toCustomConfiguration(tenantId, providerEntity, providerRecords)
+
+		providerConfiguration := &model_provider.ProviderConfiguration{
+			TenantId:              tenantId,
+			Provider:              providerEntity,
+			UsingProviderType:     model.CUSTOM,
+			PreferredProviderType: model.CUSTOM,
+			CustomConfiguration:   customConfiguration,
+		}
+
+		providerListConfigurations = append(providerListConfigurations, providerConfiguration)
+	}
+
+	sort.Slice(providerListConfigurations, func(i, j int) bool {
+		return providerListConfigurations[i].Provider.Position < providerListConfigurations[j].Provider.Position
+	})
+
+	return providerListConfigurations, nil
 }
 
 // GetConfigurations Get all providers, models config for tenant
@@ -119,13 +160,13 @@ func (mpd *ModelProviderDomain) GetFirstProviderFirstModel(ctx context.Context, 
 
 	var allModels []*model_provider.ModelWithProviderEntity
 
-	providerConfigurations, err := mpd.GetConfigurations(ctx, tenantID)
+	providerConfigurations, err := mpd.GetSortedListConfigurations(ctx, tenantID)
 
 	if err != nil {
 		return "", "", err
 	}
 
-	for _, providerConfiguration := range providerConfigurations.Configurations {
+	for _, providerConfiguration := range providerConfigurations {
 		model, err := mpd.getProviderModels(ctx, providerConfiguration, base.ModelType(modelType), false)
 
 		if err != nil {

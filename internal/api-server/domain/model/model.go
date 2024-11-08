@@ -21,12 +21,6 @@ func NewModelDomain(modelRepo repo.ModelRepo) *ModelDomain {
 	}
 }
 
-func (mpd *ModelDomain) GetDefaultModelInstance(ctx context.Context, tenantID, modelType string) (*model_provider.ModelInstance, error) {
-
-	return nil, nil
-
-}
-
 func (mpd *ModelDomain) AddOrUpdateCustomModelCredentials(ctx context.Context, providerConfiguration *model_provider.ProviderConfiguration, credentialParam map[string]interface{}, modelType, modelName string) error {
 
 	modelRecord, credentials, err := mpd.validateProviderCredentials(ctx, providerConfiguration, credentialParam, modelType, modelName)

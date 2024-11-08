@@ -7,6 +7,7 @@ package model_provider
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/lunarianss/Luna/internal/api-server/entities/base"
@@ -51,6 +52,7 @@ type AIModelEntity struct {
 	*ProviderModel `yaml:",inline"`
 	ParameterRules []*ParameterRule `json:"parameter_rules" yaml:"parameter_rules"`
 	Pricing        *PriceConfig     `json:"pricing" yaml:"pricing"`
+	Position       int              `json:"position" yaml:"position"`
 }
 
 type AIModel struct {
@@ -58,6 +60,34 @@ type AIModel struct {
 	ModelSchemas  []*AIModelEntity `json:"model_schemas" yaml:"model_schemas"`
 	StartedAt     float64          `json:"started_at" yaml:"started_at"`
 	ModelConfPath string           `json:"model_conf_path" yaml:"model_conf_path"`
+}
+
+func (a *AIModel) GetModelPositionMap() (map[string]int, error) {
+	var positionMap = make(map[string]int)
+
+	var modelPosition []string
+	modelConfDir := a.ModelConfPath
+	positionFilePath := fmt.Sprintf("%s/_position.yaml", modelConfDir)
+
+	positionContext, err := os.ReadFile(positionFilePath)
+
+	if os.IsNotExist(err) {
+		return positionMap, nil
+	}
+
+	if err != nil {
+		return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+	}
+
+	if err := yaml.Unmarshal(positionContext, &modelPosition); err != nil {
+		return nil, errors.WithCode(code.ErrDecodingJSON, err.Error())
+	}
+
+	for i, v := range modelPosition {
+		positionMap[v] = i + 1
+	}
+
+	return positionMap, nil
 }
 
 func (a *AIModel) PredefinedModels() ([]*AIModelEntity, error) {
@@ -73,6 +103,11 @@ func (a *AIModel) PredefinedModels() ([]*AIModelEntity, error) {
 	if err != nil {
 		return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
 	}
+	modelPosition, err := a.GetModelPositionMap()
+
+	if err != nil {
+		return nil, err
+	}
 
 	for _, dirEntry := range dirEntries {
 		dirOrFileName := dirEntry.Name()
@@ -83,7 +118,6 @@ func (a *AIModel) PredefinedModels() ([]*AIModelEntity, error) {
 
 	for _, modelSchemaYamlPath := range modelSchemaYamlPath {
 		AIModelEntity := &AIModelEntity{ProviderModel: &ProviderModel{}}
-
 		AIModelEntityContent, err := os.ReadFile(modelSchemaYamlPath)
 		if err != nil {
 			return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
@@ -93,8 +127,14 @@ func (a *AIModel) PredefinedModels() ([]*AIModelEntity, error) {
 			return nil, errors.WithCode(code.ErrDecodingYaml, fmt.Sprintf("when decoding model %s of path,  failed: %s", modelSchemaYamlPath, err.Error()))
 		}
 
+		if v, ok := modelPosition[AIModelEntity.Model]; ok {
+			AIModelEntity.Position = v
+		}
 		AIModelEntities = append(AIModelEntities, AIModelEntity)
 	}
 
+	sort.Slice(AIModelEntities, func(i, j int) bool {
+		return AIModelEntities[i].Position < AIModelEntities[j].Position
+	})
 	return AIModelEntities, nil
 }

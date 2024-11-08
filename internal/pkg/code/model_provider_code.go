@@ -13,4 +13,6 @@ const (
 	ErrModelSchemaNotFound
 	// ErrAllModelsEmpty - 500: Error occurred when all models are empty.
 	ErrAllModelsEmpty
+	// ErrAllModelsEmpty - 500: Error occurred when models haven't position definition.
+	ErrModelNotHavePosition
 )

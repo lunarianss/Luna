@@ -14,7 +14,7 @@ import (
 
 	"github.com/lunarianss/Luna/internal/api-server/entities/base"
 	"github.com/lunarianss/Luna/internal/api-server/entities/model_provider"
-	model_providers "github.com/lunarianss/Luna/internal/api-server/model-runtime/model-providers"
+	model_providers "github.com/lunarianss/Luna/internal/api-server/model_runtime/model-providers"
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/api-server/repo"
 	"github.com/lunarianss/Luna/internal/pkg/code"

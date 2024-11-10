@@ -31,31 +31,23 @@ type PromptMessageContent struct {
 
 type PromptMessage struct {
 	Role    PromptMessageRole `json:"role"`
-	Content interface{}       `json:"content"`
+	Content any               `json:"content"`
 	Name    string            `json:"name"`
-}
-
-type AssistantPromptMessage struct {
-	*PromptMessage
-}
-
-func (msg *PromptMessage) IsEmpty() bool {
-	return msg.Content == ""
 }
 
 func (msg *PromptMessage) ConvertToRequestData() (map[string]interface{}, error) {
 	var requestData = make(map[string]interface{})
 
 	if msg.Role == USER {
-		switch v := msg.Content.(type) {
+		switch content := msg.Content.(type) {
 		case string:
 			requestData["role"] = "user"
-			requestData["content"] = v
+			requestData["content"] = content
 		case []*PromptMessageContent:
-			var subMessage []map[string]interface{}
-			for _, messageContent := range v {
+			var subMessage []map[string]string
+			for _, messageContent := range content {
 				if messageContent.Type == TEXT {
-					subMessageItem := map[string]interface{}{
+					subMessageItem := map[string]string{
 						"type": "text",
 						"text": messageContent.Data,
 					}
@@ -65,10 +57,29 @@ func (msg *PromptMessage) ConvertToRequestData() (map[string]interface{}, error)
 			requestData["role"] = "user"
 			requestData["content"] = subMessage
 		default:
-			return nil, errors.WithCode(code.ErrTypeOfPromptMessage, fmt.Sprintf("the type %T is neither string or []*promptMessageContent", v))
+			return nil, errors.WithCode(code.ErrTypeOfPromptMessage, fmt.Sprintf("value %T is not string or []*promptMessageContent type", msg.Content))
 		}
 	}
-
 	return requestData, nil
+}
 
+type AssistantPromptMessage struct {
+	*PromptMessage
+}
+
+func NewEmptyAssistantPromptMessage() *AssistantPromptMessage {
+	return &AssistantPromptMessage{
+		PromptMessage: &PromptMessage{
+			Content: "",
+		},
+	}
+}
+
+func NewAssistantPromptMessage(role PromptMessageRole, content interface{}) *AssistantPromptMessage {
+	return &AssistantPromptMessage{
+		PromptMessage: &PromptMessage{
+			Content: content,
+			Role:    role,
+		},
+	}
 }

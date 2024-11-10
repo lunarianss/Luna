@@ -11,29 +11,47 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lunarianss/Luna/internal/api-server/core/app/apps"
 	"github.com/lunarianss/Luna/internal/api-server/entities/base"
 	"github.com/lunarianss/Luna/internal/api-server/entities/llm"
 	"github.com/lunarianss/Luna/internal/api-server/entities/message"
+	"github.com/lunarianss/Luna/internal/api-server/model_runtime"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
 	"github.com/lunarianss/Luna/pkg/log"
 )
 
 type OpenApiCompactLargeLanguageModel struct {
+	*apps.AppRunner
+	*model_runtime.StreamGenerateQueue
+	FullAssistantContent string
+	Usage                interface{}
+	ChunkIndex           int
+	Delimiter            string
+	Model                string
+	Stream               bool
+	User                 string
+	Stop                 []string
+	Credentials          map[string]interface{}
+	PromptMessages       []*message.PromptMessage
+	ModelParameters      map[string]interface{}
 }
 
-func (oacll *OpenApiCompactLargeLanguageModel) Invoke(ctx context.Context, model string, credentials map[string]interface{}, promptMessages []*message.PromptMessage, modelParameters map[string]interface{}, stop []string, stream bool, user string) error {
-	return oacll.generate(ctx, model, credentials, modelParameters, stop, stream, user)
+func (m *OpenApiCompactLargeLanguageModel) Invoke(ctx context.Context, promptMessages []*message.PromptMessage, modelParameters map[string]interface{}, credentials map[string]interface{}) error {
+	m.Credentials = credentials
+	m.ModelParameters = modelParameters
+	m.PromptMessages = promptMessages
+
+	return m.generate(ctx)
 }
 
-func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context, model string, credentials map[string]interface{}, promptMessages []*message.PromptMessage, modelParameters map[string]interface{}, stop []string, stream bool, user string) error {
-
+func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context) error {
 	headers := map[string]string{
 		"Content-Type":   "application/json",
 		"Accept-Charset": "utf-8",
 	}
 
-	if extraHeaders, ok := credentials["extra_headers"]; ok {
+	if extraHeaders, ok := m.Credentials["extra_headers"]; ok {
 		if extraHeadersMap, ok := extraHeaders.(map[string]string); ok {
 			for k, v := range extraHeadersMap {
 				if _, ok := headers[k]; !ok {
@@ -43,20 +61,20 @@ func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context, model s
 		}
 	}
 
-	if apiKey, ok := credentials["api_key"]; ok {
+	if apiKey, ok := m.Credentials["api_key"]; ok {
 		headers["Authorization"] = fmt.Sprintf("Bearer %s", apiKey)
 	}
 
-	endpointUrl, ok := credentials["endpoint_url"]
+	endpointUrl, ok := m.Credentials["endpoint_url"]
 
 	if !ok || endpointUrl == "" {
-		return errors.WithCode(code.ErrModelNotHaveEndPoint, fmt.Sprintf("model %s not have endpoint url", model))
+		return errors.WithCode(code.ErrModelNotHaveEndPoint, fmt.Sprintf("model %s not have endpoint url", m.Model))
 	}
 
 	endpointUrlStr, ok := endpointUrl.(string)
 
 	if !ok {
-		return errors.WithCode(code.ErrModelNotHaveEndPoint, fmt.Sprintf("model %s not have endpoint url", model))
+		return errors.WithCode(code.ErrModelNotHaveEndPoint, fmt.Sprintf("model %s not have endpoint url", m.Model))
 	}
 
 	if !strings.HasSuffix(endpointUrlStr, "/") {
@@ -64,17 +82,17 @@ func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context, model s
 	}
 
 	requestData := map[string]interface{}{
-		"model":  model,
-		"stream": stream,
+		"model":  m.Model,
+		"stream": m.Stream,
 	}
 
-	for k, v := range modelParameters {
+	for k, v := range m.ModelParameters {
 		requestData[k] = v
 	}
 	messageItems := make([]map[string]interface{}, 0)
 
 	//todo util now is only support simple chat
-	completionType := credentials["model"]
+	completionType := m.Credentials["model"]
 	if completionType == base.CHAT {
 		endpointJoinUrl, err := url.JoinPath(endpointUrlStr, "chat/completions")
 
@@ -83,7 +101,7 @@ func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context, model s
 		}
 		endpointUrlStr = endpointJoinUrl
 
-		for _, promptMessage := range promptMessages {
+		for _, promptMessage := range m.PromptMessages {
 			messageItem, err := promptMessage.ConvertToRequestData()
 
 			if err != nil {
@@ -95,12 +113,12 @@ func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context, model s
 
 	requestData["message"] = messageItems
 
-	if stop != nil && len(stop) > 1 {
-		requestData["stop"] = stop
+	if len(m.Stop) > 1 {
+		requestData["stop"] = m.Stop
 	}
 
-	if user != "" {
-		requestData["user"] = user
+	if m.User != "" {
+		requestData["user"] = m.User
 	}
 
 	client := http.Client{
@@ -127,32 +145,73 @@ func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context, model s
 
 	response, err := client.Do(req)
 
-	defer response.Body.Close()
-
 	if err != nil {
 		return errors.WithCode(code.ErrCallLargeLanguageModel, err.Error())
 	}
 
-	if stream {
-		m.handleStreamResponse(model, credentials, promptMessages, response)
+	defer response.Body.Close()
+
+	if m.Stream {
+		m.handleStreamResponse(ctx, response)
 	}
 	return nil
 }
 
-func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(model string, credentials map[string]interface{}, promptMessages []*message.PromptMessage, response *http.Response) error {
+func (m *OpenApiCompactLargeLanguageModel) sendStreamChunkToQueue(ctx context.Context, messageId string, assistantPromptMessage *message.AssistantPromptMessage) {
+	streamResultChunk := &llm.LLMResultChunk{
+		ID:            messageId,
+		Model:         m.Model,
+		PromptMessage: m.PromptMessages,
+		Delta: &llm.LLMResultChunkDelta{
+			Index:   m.ChunkIndex,
+			Message: assistantPromptMessage,
+		},
+	}
+	m.AppRunner.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, false)
+}
 
-	var full_assistant_content string
-	var assistant_prompt_message *message.AssistantPromptMessage
+func (m *OpenApiCompactLargeLanguageModel) sendErrorChunkToQueue(ctx context.Context, code int, messageID string, errStr string) {
 
-	delimiter, ok := credentials["stream_mode_delimiter"]
+	finishErrReason := fmt.Sprintf("error ocurred when handle stream: %#+v", errors.WithCode(code, errStr))
+
+	log.Error(finishErrReason)
+
+	m.sendStreamFinalChunkToQueue(ctx, messageID, finishErrReason)
+}
+
+func (m *OpenApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx context.Context, messageId string, finalReason string) {
+	defer m.Close()
+
+	streamResultChunk := &llm.LLMResultChunk{
+		ID:            messageId,
+		Model:         m.Model,
+		PromptMessage: m.PromptMessages,
+		Delta: &llm.LLMResultChunkDelta{
+			Index:        m.ChunkIndex,
+			Message:      message.NewEmptyAssistantPromptMessage(),
+			FinishReason: finalReason,
+		},
+	}
+	m.AppRunner.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, true)
+}
+
+func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Context, response *http.Response) {
+
+	var (
+		messageID    string
+		finishReason string
+	)
+
+	delimiter, ok := m.Credentials["stream_mode_delimiter"]
 	if !ok {
 		delimiter = "\n\n"
 	}
 
-	delimiterStr, ok := delimiter.(string)
+	m.Delimiter, ok = delimiter.(string)
 
 	if !ok {
-		return errors.WithCode(code.ErrConvertDelimiterString, fmt.Sprintf("cannot convert delimiter %+v to string", delimiter))
+		m.sendErrorChunkToQueue(ctx, code.ErrConvertDelimiterString, messageID, fmt.Sprintf("cannot convert delimiter %+v to string", delimiter))
+		return
 	}
 
 	scanner := bufio.NewScanner(response.Body)
@@ -162,8 +221,8 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(model string, cr
 			return 0, nil, nil
 		}
 
-		if i := strings.Index(string(data), delimiterStr); i >= 0 {
-			return i + len(delimiterStr), data[0:i], nil
+		if i := strings.Index(string(data), m.Delimiter); i >= 0 {
+			return i + len(m.Delimiter), data[0:i], nil
 		}
 
 		if atEOF {
@@ -173,9 +232,10 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(model string, cr
 		return 0, nil, nil
 	})
 
-	chunkIndex := 0
-
 	for scanner.Scan() {
+		var (
+			assistantPromptMessage *message.AssistantPromptMessage
+		)
 		chunk := strings.TrimSpace(scanner.Text())
 
 		if chunk == "" || strings.HasPrefix(chunk, ":") {
@@ -186,11 +246,11 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(model string, cr
 		chunk = strings.TrimSpace(chunk)
 		var chunkJson map[string]interface{}
 
-		err := json.Unmarshal([]byte(chunk), chunkJson)
+		err := json.Unmarshal([]byte(chunk), &chunkJson)
 
 		if err != nil {
-			// 这里给结束消息，而不是只记得报错
-			return errors.WithCode(code.ErrDecodingJSON, err.Error())
+			m.sendErrorChunkToQueue(ctx, code.ErrEncodingJSON, messageID, fmt.Sprintf("JSON data %+v could not be decoded, failed: %+v", chunk, err.Error()))
+			return
 		}
 
 		var chunkChoice = make(map[string]interface{})
@@ -201,30 +261,26 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(model string, cr
 			}
 		}
 
-		messageId, ok := chunkChoice["id"].(string)
+		messageID, ok = chunkChoice["id"].(string)
 
 		if !ok {
-			messageId = ""
+			messageID = ""
 		}
 
-		// finishReason := chunkChoice["finish_reason"]
+		finishReason, ok = chunkChoice["finish_reason"].(string)
 
-		chunkIndex += 1
+		if !ok {
+			finishReason = "finish_reason doesn't convert to string"
+		}
+
+		m.ChunkIndex += 1
 
 		if delta, ok := chunkChoice["delta"]; ok {
 			if deltaMap, ok := delta.(map[string]interface{}); ok {
-
 				deltaContent := deltaMap["content"]
-
-				assistant_prompt_message = &message.AssistantPromptMessage{
-					PromptMessage: &message.PromptMessage{
-						Role:    message.ASSISTANT,
-						Content: deltaContent,
-					},
-				}
-
+				assistantPromptMessage = message.NewAssistantPromptMessage(message.ASSISTANT, deltaContent)
 				if deltaContentStr, ok := deltaContent.(string); ok {
-					full_assistant_content += deltaContentStr
+					m.FullAssistantContent += deltaContentStr
 				}
 			}
 		} else {
@@ -232,23 +288,13 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(model string, cr
 			continue
 		}
 
-		streamResultChunk := &llm.LLMResultChunk{
-			ID:            messageId,
-			Model:         model,
-			PromptMessage: promptMessages,
-			Delta: &llm.LLMResultChunkDelta{
-				Index:   chunkIndex,
-				Message: assistant_prompt_message,
-			},
-		}
-
-		// 将 chunk 处理
-
+		m.sendStreamChunkToQueue(ctx, messageID, assistantPromptMessage)
 	}
 
 	if err := scanner.Err(); err != nil {
-		return errors.WithCode(code.ErrRunTimeCaller, err.Error())
+		m.sendErrorChunkToQueue(ctx, code.ErrRunTimeCaller, messageID, err.Error())
+		return
 	}
 
-	return nil
+	m.sendStreamFinalChunkToQueue(ctx, messageID, finishReason)
 }

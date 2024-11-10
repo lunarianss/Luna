@@ -1,78 +1,46 @@
-// Copyright 2024 Benjamin Lee <cyan0908@163.com>. All rights reserved.
-// Use of this source code is governed by a MIT style
-// license that can be found in the LICENSE file.
-
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-
-	"github.com/lunarianss/Luna/internal/pkg/code"
-	"github.com/lunarianss/Luna/pkg/errors"
+	"time"
 )
 
-type ModelType string
-
-const (
-	LLM            ModelType = "llm"
-	TEXT_EMBEDDING ModelType = "text-embedding"
-	RERANK         ModelType = "rerank"
-	SPEECH2TEXT    ModelType = "speech2text"
-	MODERATION     ModelType = "moderation"
-	TTS            ModelType = "tts"
-	TEXT2IMG       ModelType = "text2img"
-)
-
-func (m ModelType) ToOriginModelType() (string, error) {
-	var originType string
-
-	switch m {
-	case LLM:
-		originType = "text-generation"
-	case TEXT_EMBEDDING:
-		originType = "embeddings"
-	case RERANK:
-		originType = "reranking"
-	case SPEECH2TEXT:
-		originType = "speech2text"
-	case TTS:
-		originType = "tts"
-	case MODERATION:
-		originType = "moderation"
-	case TEXT2IMG:
-		originType = "text2img"
-	default:
-		return "", errors.WithCode(code.ErrToOriginModelType, "unknown model type %s", m)
+func producer(ch chan int) {
+	for i := 0; i < 5; i++ {
+		ch <- i
 	}
-	return originType, nil
+	close(ch) // 关闭通道，通知消费者数据已发送完毕
+	fmt.Println("关闭了通道")
 }
 
-func get() (string, error) {
-	return "134", nil
-}
-
-func DeepCopyUsingJSON[T interface{}](src, dst T) error {
-	data, err := json.Marshal(src)
-	if err != nil {
-		return err
+func consumer(ch chan int, done chan struct{}) {
+	for {
+		select {
+		case value, ok := <-ch:
+			time.Sleep(2 * time.Second)
+			if !ok {
+				// 通道已关闭且无数据，退出消费者循环5
+				fmt.Println("Channel closed, consumer exiting")
+				done <- struct{}{} // 通知主协程消费者已完成
+				return
+			}
+			time.Sleep(2 * time.Second)
+			fmt.Println("Received:", value)
+		}
 	}
-	return json.Unmarshal(data, dst)
-}
-
-type A struct {
-	Name string `json:"name" yaml:"name"`
-}
-
-type App struct {
-	A
 }
 
 func main() {
-	var a map[string]interface{} = make(map[string]interface{})
+	ch := make(chan int)
+	done := make(chan struct{})
 
-	c, _ := json.Marshal(a)
+	// 启动生产者
+	go producer(ch)
 
-	fmt.Println(string(c))
+	// 启动消费者
+	go consumer(ch, done)
 
+	// 等待消费者处理完所有数据
+	<-done
+	fmt.Println("All data processed, main exiting")
 }

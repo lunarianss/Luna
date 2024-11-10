@@ -31,3 +31,13 @@ type LLMResultChunk struct {
 	SystemFingerprint string                   `json:"system_fingerprint"`
 	Delta             *LLMResultChunkDelta     `json:"delta"`
 }
+
+type LLMResult struct {
+	ID                string                          `json:"id"`
+	Model             string                          `json:"model"`
+	Message           *message.AssistantPromptMessage `json:"message"`
+	PromptMessage     []*message.PromptMessage        `json:"prompt_message"`
+	Usage             *LLMUsage                       `json:"usage"`
+	SystemFingerprint string                          `json:"system_fingerprint"`
+	Reason            string                          `json:"reason"`
+}

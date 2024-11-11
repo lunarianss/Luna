@@ -92,8 +92,8 @@ func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context) error {
 	messageItems := make([]map[string]interface{}, 0)
 
 	//todo util now is only support simple chat
-	completionType := m.Credentials["model"]
-	if completionType == base.CHAT {
+	completionType := m.Credentials["mode"]
+	if completionType == string(base.CHAT) {
 		endpointJoinUrl, err := url.JoinPath(endpointUrlStr, "chat/completions")
 
 		if err != nil {
@@ -111,7 +111,7 @@ func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context) error {
 		}
 	}
 
-	requestData["message"] = messageItems
+	requestData["messages"] = messageItems
 
 	if len(m.Stop) > 1 {
 		requestData["stop"] = m.Stop
@@ -144,7 +144,6 @@ func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context) error {
 	}
 
 	response, err := client.Do(req)
-
 	if err != nil {
 		return errors.WithCode(code.ErrCallLargeLanguageModel, err.Error())
 	}
@@ -170,9 +169,9 @@ func (m *OpenApiCompactLargeLanguageModel) sendStreamChunkToQueue(ctx context.Co
 	m.AppRunner.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, false)
 }
 
-func (m *OpenApiCompactLargeLanguageModel) sendErrorChunkToQueue(ctx context.Context, code int, messageID string, errStr string) {
+func (m *OpenApiCompactLargeLanguageModel) sendErrorChunkToQueue(ctx context.Context, code error, messageID string) {
 
-	finishErrReason := fmt.Sprintf("error ocurred when handle stream: %#+v", errors.WithCode(code, errStr))
+	finishErrReason := fmt.Sprintf("error ocurred when handle stream: %#+v", code)
 
 	log.Error(finishErrReason)
 
@@ -210,7 +209,7 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 	m.Delimiter, ok = delimiter.(string)
 
 	if !ok {
-		m.sendErrorChunkToQueue(ctx, code.ErrConvertDelimiterString, messageID, fmt.Sprintf("cannot convert delimiter %+v to string", delimiter))
+		m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrConvertDelimiterString, fmt.Sprintf("cannot convert delimiter %+v to string", delimiter)), messageID)
 		return
 	}
 
@@ -244,20 +243,26 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 
 		chunk = strings.TrimPrefix(chunk, "data: ")
 		chunk = strings.TrimSpace(chunk)
+
+		if chunk == "[DONE]" {
+			continue
+		}
+
 		var chunkJson map[string]interface{}
 
 		err := json.Unmarshal([]byte(chunk), &chunkJson)
 
 		if err != nil {
-			m.sendErrorChunkToQueue(ctx, code.ErrEncodingJSON, messageID, fmt.Sprintf("JSON data %+v could not be decoded, failed: %+v", chunk, err.Error()))
-			return
+			m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrEncodingJSON, fmt.Sprintf("JSON data %+v could not be decoded, failed: %+v", chunk, err.Error())), messageID)
 		}
 
 		var chunkChoice = make(map[string]interface{})
 
 		if chunkChoices, ok := chunkJson["choices"]; ok {
-			if v, ok := chunkChoices.([]map[string]interface{}); ok {
-				chunkChoice = v[0]
+			if v, ok := chunkChoices.([]interface{}); ok {
+				if vv, ok := v[0].(map[string]interface{}); ok {
+					chunkChoice = vv
+				}
 			}
 		}
 
@@ -292,9 +297,11 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 	}
 
 	if err := scanner.Err(); err != nil {
-		m.sendErrorChunkToQueue(ctx, code.ErrRunTimeCaller, messageID, err.Error())
+		m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrRunTimeCaller, err.Error()), messageID)
 		return
 	}
+
+	log.Infof("full answer %s", m.FullAssistantContent)
 
 	m.sendStreamFinalChunkToQueue(ctx, messageID, finishReason)
 }

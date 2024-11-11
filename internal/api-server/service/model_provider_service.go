@@ -15,7 +15,7 @@ import (
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/provider"
 	"github.com/lunarianss/Luna/internal/api-server/entities/base"
 	"github.com/lunarianss/Luna/internal/api-server/entities/model_provider"
-	model_providers "github.com/lunarianss/Luna/internal/api-server/model_runtime/model-providers"
+	model_providers "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
 )

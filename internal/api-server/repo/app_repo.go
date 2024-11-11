@@ -9,4 +9,5 @@ import (
 type AppRepo interface {
 	CreateApp(ctx context.Context, app *model.App) (*model.App, error)
 	CreateAppWithConfig(ctx context.Context, app *model.App, appConfig *model.AppModelConfig) (*model.App, error)
+	GetAppByID(ctx context.Context, appID string) (*model.App, error)
 }

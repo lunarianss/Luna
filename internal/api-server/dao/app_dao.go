@@ -43,3 +43,12 @@ func (ad *AppDao) CreateAppWithConfig(ctx context.Context, app *model.App, appCo
 
 	return app, tx.Commit().Error
 }
+
+func (ad *AppDao) GetAppByID(ctx context.Context, appID string) (*model.App, error) {
+	var app model.App
+
+	if err := ad.db.First(&app, "id = ?", appID).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return &app, nil
+}

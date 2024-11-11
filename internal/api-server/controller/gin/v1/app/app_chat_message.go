@@ -2,7 +2,8 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	dto "github.com/lunarianss/Luna/internal/api-server/dto/app"
+	"github.com/lunarianss/Luna/internal/api-server/core/app/apps/entities"
+	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 	"github.com/lunarianss/Luna/internal/pkg/core"
 )
 
@@ -20,5 +21,7 @@ func (ac *AppController) ChatMessage(c *gin.Context) {
 		return
 	}
 
-	core.WriteResponse(c, nil, nil)
+	if err := ac.ChatService.Generate(c, paramsUrl.AppID, paramsUrl.AppID, params, entities.DEBUGGER, true); err != nil {
+		core.WriteResponse(c, err, nil)
+	}
 }

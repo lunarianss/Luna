@@ -2,6 +2,8 @@ package model_runtime
 
 import (
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/entities"
+	appEntities "github.com/lunarianss/Luna/internal/api-server/core/app/apps/entities"
+	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 )
 
 const (
@@ -17,14 +19,28 @@ type StreamGenerateQueue struct {
 	// Output
 	OutStreamResultChunkQueue chan entities.IQueueEvent
 	OutStreamFinalChunkQueue  chan entities.IQueueEvent
+
+	// Message Info
+	TaskID         string
+	UserID         string
+	ConversationID string
+	MessageID      string
+	AppMode        model.AppMode
+	InvokeFrom     appEntities.InvokeForm
 }
 
-func NewStreamGenerateQueue(streamResultChan chan entities.IQueueEvent, streamFinalChan chan entities.IQueueEvent) *StreamGenerateQueue {
+func NewStreamGenerateQueue(streamResultChan chan entities.IQueueEvent, streamFinalChan chan entities.IQueueEvent, taskID, userID, conversationID, messageId string, appMode model.AppMode, invokeFrom appEntities.InvokeForm) *StreamGenerateQueue {
 	return &StreamGenerateQueue{
 		StreamResultChunkQueue:    make(chan entities.IQueueEvent, STREAM_BUFFER_SIZE),
 		StreamFinalChunkQueue:     make(chan entities.IQueueEvent, STREAM_BUFFER_SIZE),
 		OutStreamResultChunkQueue: streamResultChan,
 		OutStreamFinalChunkQueue:  streamFinalChan,
+		TaskID:                    taskID,
+		UserID:                    userID,
+		ConversationID:            conversationID,
+		MessageID:                 messageId,
+		AppMode:                   appMode,
+		InvokeFrom:                invokeFrom,
 	}
 }
 

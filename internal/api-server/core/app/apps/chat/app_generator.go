@@ -2,6 +2,7 @@ package chat
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -56,7 +57,7 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user
 		}
 
 		msg := &message.PromptMessage{
-			Content: "Explain the importance of fast language models",
+			Content: "用中文阐述一下 AI 的发展史",
 			Role:    "user",
 		}
 
@@ -82,7 +83,6 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user
 
 	for v := range StreamResultChunkQueue {
 		if cm, ok := v.(*entities.QueueLLMChunkEvent); ok {
-			log.Info("event %s, answer %+v", cm.Event, cm.Chunk.Delta)
 			// 将事件格式化为 SSE 格式发送给客户端
 			fmt.Fprintf(c.(*gin.Context).Writer, "data: {answer: %s}\n\n", cm.Chunk.Delta.Message.Content)
 			flusher.Flush() // 确保数据立即发送到客户端
@@ -91,12 +91,15 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user
 
 	for v := range StreamFinalChunkQueue {
 		if mc, ok := v.(*entities.QueueLLMChunkEvent); ok {
-			log.Info("event %s, answer %+v", mc.Event, mc.Chunk.Delta)
+			chunkByte, _ := json.Marshal(mc.Chunk)
+			log.Info("event %s, answer %s", mc.Event, string(chunkByte))
 			// 将事件格式化为 SSE 格式发送给客户端
 			fmt.Fprintf(c.(*gin.Context).Writer, "data: %s\n\n", mc.Chunk.Delta.Message.Content)
 			flusher.Flush() // 确保数据立即发送到客户端
 		} else if mc, ok := v.(*entities.QueueMessageEndEvent); ok {
-			log.Info("event %s, end %+v", mc.Event, mc.LLMResult)
+			if mc.Level == entities.QueueMessageEndError {
+				log.Errorf("queue message ended with error %s", mc.LLMResult.Reason)
+			}
 		}
 	}
 

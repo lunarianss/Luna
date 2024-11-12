@@ -11,12 +11,13 @@ import (
 
 type AppRunner struct{}
 
-func (runner *AppRunner) HandleInvokeResultStream(ctx context.Context, invokeResult *llm.LLMResultChunk, streamGenerator *model_runtime.StreamGenerateQueue, end bool) {
+func (runner *AppRunner) HandleInvokeResultStream(ctx context.Context, invokeResult *llm.LLMResultChunk, streamGenerator *model_runtime.StreamGenerateQueue, end bool, isError bool) {
 
 	var (
 		model         string
 		promptMessage []*message.PromptMessage
 		text          string
+		level         entities.QueueMessageEndLevel
 	)
 
 	event := entities.NewAppQueueEvent(entities.LLMChunk)
@@ -34,6 +35,12 @@ func (runner *AppRunner) HandleInvokeResultStream(ctx context.Context, invokeRes
 
 	promptMessage = invokeResult.PromptMessage
 
+	if isError {
+		level = entities.QueueMessageEndError
+	}
+
+	level = entities.QueueMessageEndInfo
+
 	if end {
 		llmResult := &llm.LLMResult{
 			Model:         model,
@@ -50,6 +57,7 @@ func (runner *AppRunner) HandleInvokeResultStream(ctx context.Context, invokeRes
 		streamGenerator.Final(&entities.QueueMessageEndEvent{
 			AppQueueEvent: event,
 			LLMResult:     llmResult,
+			Level:         level,
 		})
 	}
 

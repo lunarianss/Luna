@@ -62,7 +62,15 @@ type QueueTextChunkEvent struct {
 	InIterationID        *string   `json:"in_iteration_id,omitempty"`
 }
 
+type QueueMessageEndLevel string
+
+const (
+	QueueMessageEndInfo  = "info"
+	QueueMessageEndError = "error"
+)
+
 type QueueMessageEndEvent struct {
 	*AppQueueEvent
-	LLMResult *llm.LLMResult `json:"llm_result"`
+	LLMResult *llm.LLMResult       `json:"llm_result"`
+	Level     QueueMessageEndLevel `json:"level"`
 }

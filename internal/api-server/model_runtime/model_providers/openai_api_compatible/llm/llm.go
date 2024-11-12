@@ -91,7 +91,6 @@ func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context) error {
 	}
 	messageItems := make([]map[string]interface{}, 0)
 
-	//todo util now is only support simple chat
 	completionType := m.Credentials["mode"]
 	if completionType == string(base.CHAT) {
 		endpointJoinUrl, err := url.JoinPath(endpointUrlStr, "chat/completions")
@@ -166,7 +165,7 @@ func (m *OpenApiCompactLargeLanguageModel) sendStreamChunkToQueue(ctx context.Co
 			Message: assistantPromptMessage,
 		},
 	}
-	m.AppRunner.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, false)
+	m.AppRunner.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, false, false)
 }
 
 func (m *OpenApiCompactLargeLanguageModel) sendErrorChunkToQueue(ctx context.Context, code error, messageID string) {
@@ -175,10 +174,10 @@ func (m *OpenApiCompactLargeLanguageModel) sendErrorChunkToQueue(ctx context.Con
 
 	log.Error(finishErrReason)
 
-	m.sendStreamFinalChunkToQueue(ctx, messageID, finishErrReason)
+	m.sendStreamFinalChunkToQueue(ctx, messageID, finishErrReason, true)
 }
 
-func (m *OpenApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx context.Context, messageId string, finalReason string) {
+func (m *OpenApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx context.Context, messageId string, finalReason string, isError bool) {
 	defer m.Close()
 
 	streamResultChunk := &llm.LLMResultChunk{
@@ -191,7 +190,7 @@ func (m *OpenApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx conte
 			FinishReason: finalReason,
 		},
 	}
-	m.AppRunner.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, true)
+	m.AppRunner.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, true, isError)
 }
 
 func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Context, response *http.Response) {
@@ -256,6 +255,23 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 			m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrEncodingJSON, fmt.Sprintf("JSON data %+v could not be decoded, failed: %+v", chunk, err.Error())), messageID)
 		}
 
+		// groq 返回 error
+		if apiError, ok := chunkJson["error"]; ok {
+			if apiMapErr, ok := apiError.(map[string]interface{}); ok {
+				if ok {
+					apiByteErr, err := json.Marshal(apiMapErr)
+
+					if err != nil {
+						m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrEncodingJSON, err.Error()), messageID)
+						return
+					}
+
+					m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrCallLargeLanguageModel, string(apiByteErr)), messageID)
+					return
+				}
+			}
+		}
+
 		var chunkChoice = make(map[string]interface{})
 
 		if chunkChoices, ok := chunkJson["choices"]; ok {
@@ -303,5 +319,5 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 
 	log.Infof("full answer %s", m.FullAssistantContent)
 
-	m.sendStreamFinalChunkToQueue(ctx, messageID, finishReason)
+	m.sendStreamFinalChunkToQueue(ctx, messageID, finishReason, false)
 }

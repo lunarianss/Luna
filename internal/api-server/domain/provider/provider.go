@@ -127,7 +127,7 @@ func (mpd *ModelProviderDomain) GetModelSchema(ctx context.Context, model string
 	return nil, errors.WithCode(code.ErrModelSchemaNotFound, fmt.Sprintf("schema of model %s not found", model))
 }
 
-func (mpd *ModelProviderDomain) getProviderModelBundle(ctx context.Context, tenantId, provider string, modelType base.ModelType) (*model_provider.ProviderModelBundle, error) {
+func (mpd *ModelProviderDomain) GetProviderModelBundle(ctx context.Context, tenantId, provider string, modelType base.ModelType) (*model_provider.ProviderModelBundle, error) {
 	providerConfigurations, err := mpd.GetConfigurations(ctx, tenantId)
 
 	if err != nil {
@@ -167,7 +167,7 @@ func (mpd *ModelProviderDomain) GetFirstProviderFirstModel(ctx context.Context, 
 	}
 
 	for _, providerConfiguration := range providerConfigurations {
-		model, err := mpd.getProviderModels(ctx, providerConfiguration, base.ModelType(modelType), false)
+		model, err := mpd.GetProviderModels(ctx, providerConfiguration, base.ModelType(modelType), false)
 
 		if err != nil {
 			return "", "", err
@@ -183,7 +183,7 @@ func (mpd *ModelProviderDomain) GetFirstProviderFirstModel(ctx context.Context, 
 }
 
 func (mpd *ModelProviderDomain) GetModelInstance(ctx context.Context, tenantId, provider, model string, modelType base.ModelType) (*model_provider.ModelInstance, error) {
-	providerModelBundle, err := mpd.getProviderModelBundle(ctx, tenantId, provider, modelType)
+	providerModelBundle, err := mpd.GetProviderModelBundle(ctx, tenantId, provider, modelType)
 
 	if err != nil {
 		return nil, err
@@ -229,7 +229,7 @@ func (mpd *ModelProviderDomain) GetDefaultModel(ctx context.Context, tenantId st
 		}
 
 		for _, providerConfiguration := range providerConfigurations.Configurations {
-			availableModels, err := mpd.getProviderModels(ctx, providerConfiguration, modelType, true)
+			availableModels, err := mpd.GetProviderModels(ctx, providerConfiguration, modelType, true)
 
 			if err != nil {
 				return nil, err
@@ -358,7 +358,7 @@ func (mpd *ModelProviderDomain) getCustomProviderModels(modelTypes []base.ModelT
 	return providerModels, nil
 }
 
-func (mpd *ModelProviderDomain) getProviderModels(ctx context.Context, providerConfiguration *model_provider.ProviderConfiguration, modelType base.ModelType, onlyActive bool) ([]*model_provider.ModelWithProviderEntity, error) {
+func (mpd *ModelProviderDomain) GetProviderModels(ctx context.Context, providerConfiguration *model_provider.ProviderConfiguration, modelType base.ModelType, onlyActive bool) ([]*model_provider.ModelWithProviderEntity, error) {
 
 	var (
 		providerModels []*model_provider.ModelWithProviderEntity

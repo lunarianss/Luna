@@ -11,16 +11,24 @@ import (
 
 type AppRunner struct{}
 
-func (runner *AppRunner) HandleInvokeResultStream(ctx context.Context, invokeResult *llm.LLMResultChunk, streamGenerator *model_runtime.StreamGenerateQueue, end bool, isError bool) {
+func (runner *AppRunner) HandleInvokeResultStream(ctx context.Context, invokeResult *llm.LLMResultChunk, streamGenerator *model_runtime.StreamGenerateQueue, end bool, err error) {
+
+	if err != nil && invokeResult == nil {
+		streamGenerator.Final(&entities.QueueErrorEvent{
+			AppQueueEvent: entities.NewAppQueueEvent(entities.Error),
+			Err:           err,
+		})
+		return
+	}
 
 	var (
 		model         string
 		promptMessage []*message.PromptMessage
 		text          string
-		level         entities.QueueMessageEndLevel
+		event         *entities.AppQueueEvent
 	)
 
-	event := entities.NewAppQueueEvent(entities.LLMChunk)
+	event = entities.NewAppQueueEvent(entities.LLMChunk)
 	streamGenerator.Push(&entities.QueueLLMChunkEvent{
 		AppQueueEvent: event,
 		Chunk:         invokeResult})
@@ -35,12 +43,6 @@ func (runner *AppRunner) HandleInvokeResultStream(ctx context.Context, invokeRes
 
 	promptMessage = invokeResult.PromptMessage
 
-	if isError {
-		level = entities.QueueMessageEndError
-	}
-
-	level = entities.QueueMessageEndInfo
-
 	if end {
 		llmResult := &llm.LLMResult{
 			Model:         model,
@@ -54,10 +56,10 @@ func (runner *AppRunner) HandleInvokeResultStream(ctx context.Context, invokeRes
 		}
 
 		event := entities.NewAppQueueEvent(entities.MessageEnd)
+
 		streamGenerator.Final(&entities.QueueMessageEndEvent{
 			AppQueueEvent: event,
 			LLMResult:     llmResult,
-			Level:         level,
 		})
 	}
 

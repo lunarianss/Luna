@@ -165,21 +165,18 @@ func (m *OpenApiCompactLargeLanguageModel) sendStreamChunkToQueue(ctx context.Co
 			Message: assistantPromptMessage,
 		},
 	}
-	m.AppRunner.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, false, false)
+	m.AppRunner.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, false, nil)
 }
 
-func (m *OpenApiCompactLargeLanguageModel) sendErrorChunkToQueue(ctx context.Context, code error, messageID string) {
-
-	finishErrReason := fmt.Sprintf("error ocurred when handle stream: %#+v", code)
-
-	log.Error(finishErrReason)
-
-	m.sendStreamFinalChunkToQueue(ctx, messageID, finishErrReason, true)
-}
-
-func (m *OpenApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx context.Context, messageId string, finalReason string, isError bool) {
+func (m *OpenApiCompactLargeLanguageModel) sendErrorChunkToQueue(ctx context.Context, code error) {
 	defer m.Close()
+	err := errors.WithMessage(code, "error ocurred when handle stream: %#+v")
+	log.Error(err)
+	m.AppRunner.HandleInvokeResultStream(ctx, nil, m.StreamGenerateQueue, false, err)
+}
 
+func (m *OpenApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx context.Context, messageId string, finalReason string) {
+	defer m.Close()
 	streamResultChunk := &llm.LLMResultChunk{
 		ID:            messageId,
 		Model:         m.Model,
@@ -190,7 +187,7 @@ func (m *OpenApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx conte
 			FinishReason: finalReason,
 		},
 	}
-	m.AppRunner.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, true, isError)
+	m.AppRunner.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, true, nil)
 }
 
 func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Context, response *http.Response) {
@@ -208,7 +205,7 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 	m.Delimiter, ok = delimiter.(string)
 
 	if !ok {
-		m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrConvertDelimiterString, fmt.Sprintf("cannot convert delimiter %+v to string", delimiter)), messageID)
+		m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrConvertDelimiterString, fmt.Sprintf("cannot convert delimiter %+v to string", delimiter)))
 		return
 	}
 
@@ -252,7 +249,8 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 		err := json.Unmarshal([]byte(chunk), &chunkJson)
 
 		if err != nil {
-			m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrEncodingJSON, fmt.Sprintf("JSON data %+v could not be decoded, failed: %+v", chunk, err.Error())), messageID)
+			m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrEncodingJSON, fmt.Sprintf("JSON data %+v could not be decoded, failed: %+v", chunk, err.Error())))
+			break
 		}
 
 		// groq 返回 error
@@ -262,12 +260,12 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 					apiByteErr, err := json.Marshal(apiMapErr)
 
 					if err != nil {
-						m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrEncodingJSON, err.Error()), messageID)
-						return
+						m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrEncodingJSON, err.Error()))
+						break
 					}
 
-					m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrCallLargeLanguageModel, string(apiByteErr)), messageID)
-					return
+					m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrCallLargeLanguageModel, string(apiByteErr)))
+					break
 				}
 			}
 		}
@@ -313,11 +311,9 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 	}
 
 	if err := scanner.Err(); err != nil {
-		m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrRunTimeCaller, err.Error()), messageID)
+		m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrRunTimeCaller, err.Error()))
 		return
 	}
 
-	log.Infof("full answer %s", m.FullAssistantContent)
-
-	m.sendStreamFinalChunkToQueue(ctx, messageID, finishReason, false)
+	m.sendStreamFinalChunkToQueue(ctx, messageID, finishReason)
 }

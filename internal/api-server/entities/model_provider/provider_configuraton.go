@@ -5,6 +5,7 @@
 package model_provider
 
 import (
+	"github.com/lunarianss/Luna/internal/api-server/entities/base"
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 )
 
@@ -16,6 +17,27 @@ type ProviderConfiguration struct {
 	SystemConfiguration   *SystemConfiguration `json:"system_configuration"`
 	CustomConfiguration   *CustomConfiguration `json:"custom_configuration"`
 	ModelSettings         []*ModelSettings     `json:"model_settings"`
+}
+
+func (c *ProviderConfiguration) GetCurrentCredentials(modelType base.ModelType, model string) (interface{}, error) {
+
+	var credentials interface{}
+
+	if c.CustomConfiguration.Models != nil {
+		for _, modelConfiguration := range c.CustomConfiguration.Models {
+			if modelConfiguration.ModelType == string(modelType) && modelConfiguration.Model == model {
+				credentials = modelConfiguration.Credentials
+				break
+			}
+		}
+
+		if credentials == nil {
+			credentials = c.CustomConfiguration.Provider.Credentials
+		}
+	}
+
+	return credentials, nil
+
 }
 
 type ProviderConfigurations struct {

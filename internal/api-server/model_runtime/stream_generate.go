@@ -13,12 +13,12 @@ const (
 
 type StreamGenerateQueue struct {
 	// Input
-	StreamResultChunkQueue chan entities.IQueueEvent
-	StreamFinalChunkQueue  chan entities.IQueueEvent
+	StreamResultChunkQueue chan *entities.MessageQueueMessage
+	StreamFinalChunkQueue  chan *entities.MessageQueueMessage
 
 	// Output
-	OutStreamResultChunkQueue chan entities.IQueueEvent
-	OutStreamFinalChunkQueue  chan entities.IQueueEvent
+	OutStreamResultChunkQueue chan *entities.MessageQueueMessage
+	OutStreamFinalChunkQueue  chan *entities.MessageQueueMessage
 
 	// Message Info
 	TaskID         string
@@ -29,10 +29,14 @@ type StreamGenerateQueue struct {
 	InvokeFrom     appEntities.InvokeForm
 }
 
-func NewStreamGenerateQueue(streamResultChan chan entities.IQueueEvent, streamFinalChan chan entities.IQueueEvent, taskID, userID, conversationID, messageId string, appMode model.AppMode, invokeFrom appEntities.InvokeForm) *StreamGenerateQueue {
+func NewStreamGenerateQueue(taskID, userID, conversationID, messageId string, appMode model.AppMode, invokeFrom appEntities.InvokeForm) (*StreamGenerateQueue, chan *entities.MessageQueueMessage, chan *entities.MessageQueueMessage) {
+
+	streamResultChan := make(chan *entities.MessageQueueMessage, STREAM_BUFFER_SIZE)
+	streamFinalChan := make(chan *entities.MessageQueueMessage, STREAM_BUFFER_SIZE)
+
 	return &StreamGenerateQueue{
-		StreamResultChunkQueue:    make(chan entities.IQueueEvent, STREAM_BUFFER_SIZE),
-		StreamFinalChunkQueue:     make(chan entities.IQueueEvent, STREAM_BUFFER_SIZE),
+		StreamResultChunkQueue:    make(chan *entities.MessageQueueMessage, STREAM_BUFFER_SIZE),
+		StreamFinalChunkQueue:     make(chan *entities.MessageQueueMessage, STREAM_BUFFER_SIZE),
 		OutStreamResultChunkQueue: streamResultChan,
 		OutStreamFinalChunkQueue:  streamFinalChan,
 		TaskID:                    taskID,
@@ -41,15 +45,38 @@ func NewStreamGenerateQueue(streamResultChan chan entities.IQueueEvent, streamFi
 		MessageID:                 messageId,
 		AppMode:                   appMode,
 		InvokeFrom:                invokeFrom,
-	}
+	}, streamResultChan, streamFinalChan
+}
+
+func (sgq *StreamGenerateQueue) PushErr(err error) {
+	defer sgq.Close()
+	defer sgq.CloseOut()
+
+	errEvent := entities.NewAppQueueEvent(entities.Error)
+
+	sgq.Final(&entities.QueueErrorEvent{
+		AppQueueEvent: errEvent,
+		Err:           err,
+	})
 }
 
 func (sgq *StreamGenerateQueue) Push(chunk entities.IQueueEvent) {
-	sgq.StreamResultChunkQueue <- chunk
+
+	sgq.StreamResultChunkQueue <- sgq.constructMessageQueue(chunk)
 }
 
 func (sgq *StreamGenerateQueue) Final(chunk entities.IQueueEvent) {
-	sgq.StreamFinalChunkQueue <- chunk
+	sgq.StreamFinalChunkQueue <- sgq.constructMessageQueue(chunk)
+}
+
+func (sgq *StreamGenerateQueue) constructMessageQueue(chunk entities.IQueueEvent) *entities.MessageQueueMessage {
+	return &entities.MessageQueueMessage{
+		Event:          chunk,
+		TaskID:         sgq.TaskID,
+		ConversationID: sgq.ConversationID,
+		MessageID:      sgq.MessageID,
+		AppMode:        string(sgq.AppMode),
+	}
 }
 
 func (sgq *StreamGenerateQueue) Close() {

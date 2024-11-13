@@ -50,6 +50,11 @@ func (e *AppQueueEvent) GetEventType() QueueEvent {
 	return e.Event
 }
 
+type QueueErrorEvent struct {
+	*AppQueueEvent
+	Err error
+}
+
 type QueueLLMChunkEvent struct {
 	*AppQueueEvent
 	Chunk *llm.LLMResultChunk `json:"chunk"`
@@ -62,15 +67,21 @@ type QueueTextChunkEvent struct {
 	InIterationID        *string   `json:"in_iteration_id,omitempty"`
 }
 
-type QueueMessageEndLevel string
-
-const (
-	QueueMessageEndInfo  = "info"
-	QueueMessageEndError = "error"
-)
-
 type QueueMessageEndEvent struct {
 	*AppQueueEvent
-	LLMResult *llm.LLMResult       `json:"llm_result"`
-	Level     QueueMessageEndLevel `json:"level"`
+	LLMResult *llm.LLMResult `json:"llm_result"`
+}
+
+type QueueMessage struct {
+	TaskID  string      `json:"task_id"`
+	AppMode string      `json:"app_mode"`
+	Event   IQueueEvent `json:"event"`
+}
+
+type MessageQueueMessage struct {
+	TaskID         string      `json:"task_id"`
+	AppMode        string      `json:"app_mode"`
+	Event          IQueueEvent `json:"event"`
+	MessageID      string      `json:"message_id"`
+	ConversationID string      `json:"conversation_id"`
 }

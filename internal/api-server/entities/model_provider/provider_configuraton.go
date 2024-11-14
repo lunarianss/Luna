@@ -19,9 +19,9 @@ type ProviderConfiguration struct {
 	ModelSettings         []*ModelSettings     `json:"model_settings"`
 }
 
-func (c *ProviderConfiguration) GetCurrentCredentials(modelType base.ModelType, model string) (interface{}, error) {
+func (c *ProviderConfiguration) GetCurrentCredentials(modelType base.ModelType, model string) (map[string]interface{}, error) {
 
-	var credentials interface{}
+	var credentials map[string]interface{}
 
 	if c.CustomConfiguration.Models != nil {
 		for _, modelConfiguration := range c.CustomConfiguration.Models {
@@ -30,12 +30,11 @@ func (c *ProviderConfiguration) GetCurrentCredentials(modelType base.ModelType, 
 				break
 			}
 		}
-
-		if credentials == nil {
-			credentials = c.CustomConfiguration.Provider.Credentials
-		}
 	}
 
+	if credentials == nil {
+		credentials, _ = c.CustomConfiguration.Provider.Credentials.(map[string]interface{})
+	}
 	return credentials, nil
 
 }

@@ -2,36 +2,38 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"sync"
 )
 
-func writeMap(m map[string]interface{}) {
-	m["1"] = 2
+func a() {
+
+	// 模拟 panic
+	fmt.Println("Goroutine is going to panic")
+	panic("Something went wrong in goroutine")
 }
 
-func writeSlice(s *[]string) {
-	*s = append(*s, "13")
-	log.Println(s)
-}
+func safeGoroutine(wg *sync.WaitGroup) {
+	defer wg.Done()
 
-func get() (string, error) {
-	return "1", nil
-}
-
-func aaa() {
-	fmt.Println("aaa")
-}
-func generateGoRoutine() {
-
+	// 使用 defer 和 recover 捕获 panic
 	defer func() {
-		fmt.Println("msg ---- 111")
+		if r := recover(); r != nil {
+			fmt.Println("Recovered from panic:", r)
+		}
 	}()
 
-	aaa()
+	a()
+
 }
 
 func main() {
+	var wg sync.WaitGroup
 
-	generateGoRoutine()
+	wg.Add(1)
+	go safeGoroutine(&wg)
 
+	// 等待 goroutine 完成
+	wg.Wait()
+
+	fmt.Println("Main program continues execution")
 }

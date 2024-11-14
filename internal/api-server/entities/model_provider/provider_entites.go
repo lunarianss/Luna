@@ -76,7 +76,7 @@ type CustomConfiguration struct {
 type CustomModelConfiguration struct {
 	Model       string
 	ModelType   string
-	Credentials interface{}
+	Credentials map[string]interface{}
 }
 
 type ModelSettings struct {

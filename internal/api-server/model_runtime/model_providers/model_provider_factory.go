@@ -12,9 +12,9 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/lunarianss/Luna/internal/api-server/entities/model_provider"
 	"gopkg.in/yaml.v3"
 
-	"github.com/lunarianss/Luna/internal/api-server/entities/model_provider"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
 )

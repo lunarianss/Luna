@@ -50,7 +50,6 @@ func NewStreamGenerateQueue(taskID, userID, conversationID, messageId string, ap
 
 func (sgq *StreamGenerateQueue) PushErr(err error) {
 	defer sgq.Close()
-	defer sgq.CloseOut()
 
 	errEvent := entities.NewAppQueueEvent(entities.Error)
 
@@ -79,6 +78,12 @@ func (sgq *StreamGenerateQueue) constructMessageQueue(chunk entities.IQueueEvent
 	}
 }
 
+func (sgq *StreamGenerateQueue) IsClose() bool {
+	_, ok := <-sgq.StreamResultChunkQueue
+	_, ok1 := <-sgq.StreamFinalChunkQueue
+	return ok && ok1
+}
+
 func (sgq *StreamGenerateQueue) Close() {
 	close(sgq.StreamResultChunkQueue)
 	close(sgq.StreamFinalChunkQueue)
@@ -99,5 +104,4 @@ func (sgq *StreamGenerateQueue) Listen() {
 	for v := range sgq.StreamFinalChunkQueue {
 		sgq.OutStreamFinalChunkQueue <- v
 	}
-
 }

@@ -13,4 +13,6 @@ const (
 	ErrRequiredCorrectModel
 	// ErrRequiredOverrideConfig - 500: config_from is ARGS that override_config_dict is required
 	ErrRequiredOverrideConfig
+	// ErrNotFoundModelRegistry - 500: model registry is not found in the model registry  list
+	ErrNotFoundModelRegistry
 )

@@ -32,7 +32,7 @@ func (a *AppRoutes) Register(g *gin.Engine) error {
 
 	// service
 	appService := service.NewAppService(appDomain, modelDomain, providerDomain)
-	chatService := service.NewChatService(appDomain)
+	chatService := service.NewChatService(appDomain, providerDomain)
 	appController := controller.NewAppController(appService, chatService)
 
 	v1 := g.Group("/v1")

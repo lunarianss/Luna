@@ -1,60 +1,128 @@
 package entities
 
 import (
-	"github.com/lunarianss/Luna/internal/api-server/core/app/file"
-	"github.com/lunarianss/Luna/internal/api-server/entities/message"
-	"github.com/lunarianss/Luna/internal/api-server/model/v1"
+	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config"
+	"github.com/lunarianss/Luna/internal/api-server/entities/model_provider"
 )
 
-// ModelConfigEntity represents the model configuration
+// Define types for your enums
+type InvokeFrom string
+
+const (
+	ServiceAPI InvokeFrom = "service-api"
+	WebApp     InvokeFrom = "web-app"
+	Explore    InvokeFrom = "explore"
+	Debugger   InvokeFrom = "debugger"
+)
+
+// ModelConfigWithCredentialsEntity struct
+type ModelConfigWithCredentialsEntity struct {
+	Provider            string                              `json:"provider"`
+	Model               string                              `json:"model"`
+	ModelSchema         *model_provider.AIModelEntity       `json:"model_schema"`
+	Mode                string                              `json:"mode"`
+	ProviderModelBundle *model_provider.ProviderModelBundle `json:"provider_model_bundle"`
+	Credentials         interface{}                         `json:"credentials"`
+	Parameters          map[string]interface{}              `json:"parameters"`
+	Stop                []string                            `json:"stop"`
+}
+
+// AppGenerateEntity struct
+type AppGenerateEntity struct {
+	TaskID     string                 `json:"task_id"`
+	AppConfig  *AppConfig             `json:"app_config"`
+	Inputs     map[string]interface{} `json:"inputs"`
+	UserID     string                 `json:"user_id"`
+	Stream     bool                   `json:"stream"`
+	InvokeFrom InvokeFrom             `json:"invoke_from"`
+	CallDepth  int                    `json:"call_depth"`
+	Extras     map[string]interface{} `json:"extras"`
+}
+
+// EasyUIBasedAppGenerateEntity struct
+type EasyUIBasedAppGenerateEntity struct {
+	*AppGenerateEntity
+	AppConfig *app_config.EasyUIBasedAppConfig  `json:"app_config"`
+	ModelConf *ModelConfigWithCredentialsEntity `json:"model_conf"`
+	Query     string                            `json:"query"`
+}
+
+// ConversationAppGenerateEntity struct
+type ConversationAppGenerateEntity struct {
+	*AppGenerateEntity
+	ConversationID  *string `json:"conversation_id"`
+	ParentMessageID *string `json:"parent_message_id"`
+}
+
+// ChatAppGenerateEntity struct
+type ChatAppGenerateEntity struct {
+	*EasyUIBasedAppGenerateEntity
+	ConversationID  *string `json:"conversation_id"`
+	ParentMessageID *string `json:"parent_message_id"`
+}
+
+type CreatedByRole string
+
+const (
+	CreatedByRoleAccount CreatedByRole = "account"
+	CreatedByRoleEndUser CreatedByRole = "end_user"
+)
+
+type PromptType string
+
+const (
+	SIMPLE   PromptType = "simple"
+	ADVANCED PromptType = "advanced"
+)
+
+type UserFrom string
+
+const (
+	UserFromAccount UserFrom = "account"
+	UserFromEndUser UserFrom = "end-user"
+)
+
+type WorkflowRunTriggeredFrom string
+
+const (
+	WorkflowRunTriggeredFromDebugging WorkflowRunTriggeredFrom = "debugging"
+	WorkflowRunTriggeredFromAppRun    WorkflowRunTriggeredFrom = "app-run"
+)
+
 type ModelConfigEntity struct {
 	Provider   string                 `json:"provider"`
 	Model      string                 `json:"model"`
-	Mode       string                 `json:"mode,omitempty"`
+	Mode       string                 `json:"mode"`
 	Parameters map[string]interface{} `json:"parameters"`
 	Stop       []string               `json:"stop"`
 }
 
-// AdvancedChatMessageEntity represents an advanced chat message
 type AdvancedChatMessageEntity struct {
-	Text string                     `json:"text"`
-	Role *message.PromptMessageRole `json:"role"`
+	Text string `json:"text"`
+	Role string `json:"role"` // Assuming PromptMessageRole is defined as string
 }
 
-// AdvancedChatPromptTemplateEntity holds messages for a chat prompt template
 type AdvancedChatPromptTemplateEntity struct {
-	Messages []AdvancedChatMessageEntity `json:"messages"`
+	Messages []*AdvancedChatMessageEntity `json:"messages"`
 }
 
-// AdvancedCompletionPromptTemplateEntity holds a prompt template and optional role prefix
-type AdvancedCompletionPromptTemplateEntity struct {
-	Prompt     string
-	RolePrefix *RolePrefixEntity `json:"role_prefix,omitempty"`
-}
-
-// RolePrefixEntity represents user and assistant prefixes
 type RolePrefixEntity struct {
 	User      string `json:"user"`
 	Assistant string `json:"assistant"`
 }
 
-// PromptTemplateEntity represents a prompt template with simple and advanced options
-type PromptTemplateEntity struct {
-	PromptType                       PromptType                              `json:"prompt_type"`
-	SimplePromptTemplate             string                                  `json:"simple_prompt_template,omitempty"`
-	AdvancedChatPromptTemplate       *AdvancedChatPromptTemplateEntity       `json:"advanced_chat_prompt_template,omitempty"`
-	AdvancedCompletionPromptTemplate *AdvancedCompletionPromptTemplateEntity `json:"advanced_completion_prompt_template,omitempty"`
+type AdvancedCompletionPromptTemplateEntity struct {
+	Prompt     string            `json:"prompt"`
+	RolePrefix *RolePrefixEntity `json:"role_prefix"`
 }
 
-// PromptType enum values
-type PromptType string
+type PromptTemplateEntity struct {
+	PromptType                       string                                  `json:"prompt_type"`
+	SimplePromptTemplate             string                                  `json:"simple_prompt_template"`
+	AdvancedChatPromptTemplate       *AdvancedChatPromptTemplateEntity       `json:"advanced_chat_prompt_template"`
+	AdvancedCompletionPromptTemplate *AdvancedCompletionPromptTemplateEntity `json:"advanced_completion_prompt_template"`
+}
 
-const (
-	SimplePromptType   PromptType = "simple"
-	AdvancedPromptType PromptType = "advanced"
-)
-
-// VariableEntityType enum values
 type VariableEntityType string
 
 const (
@@ -67,40 +135,25 @@ const (
 	FileList         VariableEntityType = "file-list"
 )
 
-// VariableEntity represents a variable configuration
 type VariableEntity struct {
-	Variable                 string                    `json:"variable"`
-	Label                    string                    `json:"label"`
-	Description              string                    `json:"description"`
-	Type                     VariableEntityType        `json:"type"`
-	Required                 bool                      `json:"required"`
-	MaxLength                int                       `json:"max_length,omitempty"`
-	Options                  []string                  `json:"options"`
-	AllowedFileTypes         []file.FileType           `json:"allowed_file_types"`
-	AllowedFileExtensions    []string                  `json:"allowed_file_extensions"`
-	AllowedFileUploadMethods []file.FileTransferMethod `json:"allowed_file_upload_methods"`
+	Variable                 string             `json:"variable"`
+	Label                    string             `json:"label"`
+	Description              string             `json:"description"`
+	Type                     VariableEntityType `json:"type"`
+	Required                 bool               `json:"required"`
+	MaxLength                int                `json:"max_length"`
+	Options                  []string           `json:"options"`
+	AllowedFileTypes         []string           `json:"allowed_file_types"`
+	AllowedFileExtensions    []string           `json:"allowed_file_extensions"`
+	AllowedFileUploadMethods []string           `json:"allowed_file_upload_methods"`
 }
 
-// ExternalDataVariableEntity represents an external data variable
 type ExternalDataVariableEntity struct {
 	Variable string                 `json:"variable"`
 	Type     string                 `json:"type"`
 	Config   map[string]interface{} `json:"config"`
 }
 
-// DatasetRetrieveConfigEntity represents configuration for dataset retrieval
-type DatasetRetrieveConfigEntity struct {
-	QueryVariable    *string                 `json:"query_variable,omitempty"`
-	RetrieveStrategy RetrieveStrategy        `json:"retrieve_strategy"`
-	TopK             *int                    `json:"top_k,omitempty"`
-	ScoreThreshold   *float64                `json:"score_threshold,omitempty"`
-	RerankMode       *string                 `json:"rerank_mode,omitempty"`
-	RerankingModel   *map[string]interface{} `json:"reranking_model,omitempty"`
-	Weights          *map[string]interface{} `json:"weights,omitempty"`
-	RerankingEnabled *bool                   `json:"reranking_enabled,omitempty"`
-}
-
-// RetrieveStrategy enum values
 type RetrieveStrategy string
 
 const (
@@ -108,50 +161,83 @@ const (
 	Multiple RetrieveStrategy = "multiple"
 )
 
-// DatasetEntity represents a dataset configuration
+type DatasetRetrieveConfigEntity struct {
+	QueryVariable    string                 `json:"query_variable"`
+	RetrieveStrategy RetrieveStrategy       `json:"retrieve_strategy"`
+	TopK             int                    `json:"top_k"`
+	ScoreThreshold   float64                `json:"score_threshold"`
+	RerankMode       string                 `json:"rerank_mode"`
+	RerankingModel   map[string]interface{} `json:"reranking_model"`
+	Weights          map[string]interface{} `json:"weights"`
+	RerankingEnabled bool                   `json:"reranking_enabled"`
+}
+
 type DatasetEntity struct {
 	DatasetIDs     []string                    `json:"dataset_ids"`
 	RetrieveConfig DatasetRetrieveConfigEntity `json:"retrieve_config"`
 }
 
-// SensitiveWordAvoidanceEntity represents configuration for sensitive word avoidance
 type SensitiveWordAvoidanceEntity struct {
 	Type   string                 `json:"type"`
 	Config map[string]interface{} `json:"config"`
 }
 
-// TextToSpeechEntity represents configuration for text-to-speech features
 type TextToSpeechEntity struct {
-	Enabled  bool    `json:"enabled"`
-	Voice    *string `json:"voice,omitempty"`
-	Language *string `json:"language,omitempty"`
+	Enabled  bool   `json:"enabled"`
+	Voice    string `json:"voice"`
+	Language string `json:"language"`
 }
 
-// TracingConfigEntity represents tracing configuration
 type TracingConfigEntity struct {
 	Enabled         bool   `json:"enabled"`
 	TracingProvider string `json:"tracing_provider"`
 }
 
-// AppAdditionalFeatures represents additional application features
 type AppAdditionalFeatures struct {
-	FileUpload                    *file.FileExtraConfig `json:"file_upload,omitempty"`
-	OpeningStatement              string                `json:"opening_statement,omitempty"`
-	SuggestedQuestions            []string              `json:"suggested_questions"`
-	SuggestedQuestionsAfterAnswer bool                  `json:"suggested_questions_after_answer"`
-	ShowRetrieveSource            bool                  `json:"show_retrieve_source"`
-	MoreLikeThis                  bool                  `json:"more_like_this"`
-	SpeechToText                  bool                  `json:"speech_to_text"`
-	TextToSpeech                  *TextToSpeechEntity   `json:"text_to_speech,omitempty"`
-	TraceConfig                   *TracingConfigEntity  `json:"trace_config,omitempty"`
+	FileUpload                    string               `json:"file_upload"`
+	OpeningStatement              string               `json:"opening_statement"`
+	SuggestedQuestions            []string             `json:"suggested_questions"`
+	SuggestedQuestionsAfterAnswer bool                 `json:"suggested_questions_after_answer"`
+	ShowRetrieveSource            bool                 `json:"show_retrieve_source"`
+	MoreLikeThis                  bool                 `json:"more_like_this"`
+	SpeechToText                  bool                 `json:"speech_to_text"`
+	TextToSpeech                  *TextToSpeechEntity  `json:"text_to_speech"`
+	TraceConfig                   *TracingConfigEntity `json:"trace_config"`
 }
 
-// AppConfig represents the main configuration for an application
 type AppConfig struct {
 	TenantID               string                        `json:"tenant_id"`
 	AppID                  string                        `json:"app_id"`
-	AppMode                model.AppMode                 `json:"app_mode"`
+	AppMode                string                        `json:"app_mode"` // Assuming AppMode is defined as string
 	AdditionalFeatures     *AppAdditionalFeatures        `json:"additional_features"`
 	Variables              []*VariableEntity             `json:"variables"`
-	SensitiveWordAvoidance *SensitiveWordAvoidanceEntity `json:"sensitive_word_avoidance,omitempty"`
+	SensitiveWordAvoidance *SensitiveWordAvoidanceEntity `json:"sensitive_word_avoidance"`
+}
+
+type EasyUIBasedAppModelConfigFrom string
+
+const (
+	Args                       EasyUIBasedAppModelConfigFrom = "args"
+	AppLatestConfig            EasyUIBasedAppModelConfigFrom = "app-latest-config"
+	ConversationSpecificConfig EasyUIBasedAppModelConfigFrom = "conversation-specific-config"
+)
+
+type EasyUIBasedAppConfig struct {
+	*AppConfig
+	AppModelConfigFrom    EasyUIBasedAppModelConfigFrom `json:"app_model_config_from"`
+	AppModelConfigID      string                        `json:"app_model_config_id"`
+	AppModelConfigDict    map[string]interface{}        `json:"app_model_config_dict"`
+	Model                 *ModelConfigEntity            `json:"model"`
+	PromptTemplate        *PromptTemplateEntity         `json:"prompt_template"`
+	Dataset               *DatasetEntity                `json:"dataset"`
+	ExternalDataVariables []ExternalDataVariableEntity  `json:"external_data_variables"`
+}
+
+type WorkflowUIBasedAppConfig struct {
+	*AppConfig
+	WorkflowID string `json:"workflow_id"`
+}
+
+type ChatAppConfig struct {
+	*EasyUIBasedAppConfig
 }

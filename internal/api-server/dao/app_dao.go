@@ -54,6 +54,13 @@ func (ad *AppDao) CreateAppWithConfig(ctx context.Context, app *model.App, appCo
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())
 	}
 
+	app.AppModelConfigID = appConfig.ID
+
+	if err := tx.Model(app).Update("app_model_config_id", appConfig.ID).Error; err != nil {
+		tx.Rollback()
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+
 	return app, tx.Commit().Error
 }
 

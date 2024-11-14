@@ -143,6 +143,6 @@ func (m *ModelConfigManager) Convert(ctx context.Context, config map[string]inte
 	return &app_config.ModelConfigEntity{
 		Provider: modelConfig["provider"].(string),
 		Model:    modelConfig["name"].(string),
-		Mode:     config["mode"].(string),
+		Mode:     modelConfig["mode"].(string),
 	}, nil
 }

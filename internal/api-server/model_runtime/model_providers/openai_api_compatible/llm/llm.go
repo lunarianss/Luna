@@ -16,6 +16,7 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/entities/llm"
 	"github.com/lunarianss/Luna/internal/api-server/entities/message"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime"
+
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
 	"github.com/lunarianss/Luna/pkg/log"
@@ -37,15 +38,17 @@ type OpenApiCompactLargeLanguageModel struct {
 	ModelParameters      map[string]interface{}
 }
 
-func (m *OpenApiCompactLargeLanguageModel) Invoke(ctx context.Context, promptMessages []*message.PromptMessage, modelParameters map[string]interface{}, credentials map[string]interface{}) error {
+func (m *OpenApiCompactLargeLanguageModel) Invoke(ctx context.Context, promptMessages []*message.PromptMessage, modelParameters map[string]interface{}, credentials map[string]interface{}, queueManager *model_runtime.StreamGenerateQueue) {
 	m.Credentials = credentials
+	m.AppRunner = &apps.AppRunner{}
 	m.ModelParameters = modelParameters
 	m.PromptMessages = promptMessages
+	m.StreamGenerateQueue = queueManager
 
-	return m.generate(ctx)
+	m.generate(ctx)
 }
 
-func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context) error {
+func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context) {
 	headers := map[string]string{
 		"Content-Type":   "application/json",
 		"Accept-Charset": "utf-8",
@@ -68,13 +71,15 @@ func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context) error {
 	endpointUrl, ok := m.Credentials["endpoint_url"]
 
 	if !ok || endpointUrl == "" {
-		return errors.WithCode(code.ErrModelNotHaveEndPoint, fmt.Sprintf("model %s not have endpoint url", m.Model))
+		m.PushErr(errors.WithCode(code.ErrModelNotHaveEndPoint, fmt.Sprintf("Model %s not have endpoint url", m.Model)))
+		return
 	}
 
 	endpointUrlStr, ok := endpointUrl.(string)
 
 	if !ok {
-		return errors.WithCode(code.ErrModelNotHaveEndPoint, fmt.Sprintf("model %s not have endpoint url", m.Model))
+		m.PushErr(errors.WithCode(code.ErrModelNotHaveEndPoint, fmt.Sprintf("Model %s not have endpoint url", m.Model)))
+		return
 	}
 
 	if !strings.HasSuffix(endpointUrlStr, "/") {
@@ -96,7 +101,8 @@ func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context) error {
 		endpointJoinUrl, err := url.JoinPath(endpointUrlStr, "chat/completions")
 
 		if err != nil {
-			return errors.WithCode(code.ErrRunTimeCaller, err.Error())
+			m.PushErr(errors.WithCode(code.ErrRunTimeCaller, err.Error()))
+			return
 		}
 		endpointUrlStr = endpointJoinUrl
 
@@ -104,7 +110,8 @@ func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context) error {
 			messageItem, err := promptMessage.ConvertToRequestData()
 
 			if err != nil {
-				return err
+				m.PushErr(err)
+				return
 			}
 			messageItems = append(messageItems, messageItem)
 		}
@@ -127,13 +134,15 @@ func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context) error {
 	requestBodyData, err := json.Marshal(requestData)
 
 	if err != nil {
-		return errors.WithCode(code.ErrEncodingJSON, err.Error())
+		m.PushErr(errors.WithCode(code.ErrEncodingJSON, err.Error()))
+		return
 	}
 
 	req, err := http.NewRequest("POST", endpointUrlStr, bytes.NewReader(requestBodyData))
 
 	if err != nil {
-		return errors.WithCode(code.ErrRunTimeCaller, err.Error())
+		m.PushErr(errors.WithCode(code.ErrRunTimeCaller, err.Error()))
+		return
 	}
 
 	if len(headers) > 0 {
@@ -144,7 +153,8 @@ func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context) error {
 
 	response, err := client.Do(req)
 	if err != nil {
-		return errors.WithCode(code.ErrCallLargeLanguageModel, err.Error())
+		m.PushErr(errors.WithCode(code.ErrCallLargeLanguageModel, err.Error()))
+		return
 	}
 
 	defer response.Body.Close()
@@ -152,7 +162,6 @@ func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context) error {
 	if m.Stream {
 		m.handleStreamResponse(ctx, response)
 	}
-	return nil
 }
 
 func (m *OpenApiCompactLargeLanguageModel) sendStreamChunkToQueue(ctx context.Context, messageId string, assistantPromptMessage *message.AssistantPromptMessage) {
@@ -170,8 +179,7 @@ func (m *OpenApiCompactLargeLanguageModel) sendStreamChunkToQueue(ctx context.Co
 
 func (m *OpenApiCompactLargeLanguageModel) sendErrorChunkToQueue(ctx context.Context, code error) {
 	defer m.Close()
-	err := errors.WithMessage(code, "error ocurred when handle stream: %#+v")
-	log.Error(err)
+	err := errors.WithMessage(code, fmt.Sprintf("Error ocurred when handle stream: %#+v", code))
 	m.AppRunner.HandleInvokeResultStream(ctx, nil, m.StreamGenerateQueue, false, err)
 }
 
@@ -205,7 +213,7 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 	m.Delimiter, ok = delimiter.(string)
 
 	if !ok {
-		m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrConvertDelimiterString, fmt.Sprintf("cannot convert delimiter %+v to string", delimiter)))
+		m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrConvertDelimiterString, fmt.Sprintf("Can't convert delimiter %+v to string", delimiter)))
 		return
 	}
 
@@ -250,7 +258,7 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 
 		if err != nil {
 			m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrEncodingJSON, fmt.Sprintf("JSON data %+v could not be decoded, failed: %+v", chunk, err.Error())))
-			break
+			return
 		}
 
 		// groq 返回 error
@@ -261,11 +269,11 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 
 					if err != nil {
 						m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrEncodingJSON, err.Error()))
-						break
+						return
 					}
 
 					m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrCallLargeLanguageModel, string(apiByteErr)))
-					break
+					return
 				}
 			}
 		}
@@ -289,7 +297,7 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 		finishReason, ok = chunkChoice["finish_reason"].(string)
 
 		if !ok {
-			finishReason = "finish_reason doesn't convert to string"
+			finishReason = "Finish_reason doesn't convert to string"
 		}
 
 		m.ChunkIndex += 1
@@ -303,7 +311,7 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 				}
 			}
 		} else {
-			log.Warn("this chunk not property of delta and text")
+			log.Warn("This chunk not property of delta and text")
 			continue
 		}
 

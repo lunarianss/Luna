@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/lunarianss/Luna/internal/api-server/entities/base"
+
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/internal/pkg/field"
 	"github.com/lunarianss/Luna/pkg/errors"
@@ -138,3 +139,4 @@ func (a *AIModel) PredefinedModels() ([]*AIModelEntity, error) {
 	})
 	return AIModelEntities, nil
 }
+

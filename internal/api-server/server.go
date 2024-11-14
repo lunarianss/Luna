@@ -6,6 +6,8 @@ package master
 
 import (
 	"github.com/lunarianss/Luna/internal/api-server/config"
+
+	_ "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers"
 	_ "github.com/lunarianss/Luna/internal/api-server/route"
 	_ "github.com/lunarianss/Luna/internal/api-server/validation"
 	"github.com/lunarianss/Luna/internal/pkg/mysql"

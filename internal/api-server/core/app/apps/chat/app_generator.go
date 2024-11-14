@@ -12,6 +12,7 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/entities"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/model_config"
+	"github.com/lunarianss/Luna/internal/api-server/core/app/apps"
 	appEntities "github.com/lunarianss/Luna/internal/api-server/core/app/apps/entities"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
@@ -41,7 +42,6 @@ func (g *ChatAppGenerator) getAppModelConfig(ctx context.Context, appModel *mode
 	if conversation == nil {
 		if appModel.AppModelConfigID == "" {
 			return nil, errors.WithCode(code.ErrAppNotFoundRelatedConfig, fmt.Sprintf("app %s not found related config", appModel.Name))
-
 		}
 
 		return g.AppDomain.AppRepo.GetAppModelConfigById(ctx, appModel.AppModelConfigID)
@@ -61,8 +61,8 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user
 
 	query := args.Query
 	inputs := args.Inputs
-	role := model.AccountCreatedByRole
-
+	// role := model.AccountCreatedByRole
+	extras = make(map[string]interface{})
 	if args.AutoGenerateConversationName == nil {
 		extras["auto_generate_conversation_name"] = true
 	} else {
@@ -78,7 +78,7 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user
 	modelConfigManager := NewChatAppConfigManager(g.ProviderDomain)
 	if args.ModelConfig != nil {
 		if invokeFrom != appEntities.DEBUGGER {
-			return errors.WithCode(code.ErrOnlyOverrideConfigInDebugger, fmt.Sprintf("mode %s is not debugger, so it cannot override"))
+			return errors.WithCode(code.ErrOnlyOverrideConfigInDebugger, fmt.Sprintf("mode %s is not debugger, so it cannot override", invokeFrom))
 		}
 
 		overrideModelConfigMap, err := modelConfigManager.ConfigValidate(c, appModel.TenantID, args.ModelConfig)
@@ -122,7 +122,7 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user
 				TaskID:     uuid.NewString(),
 				AppConfig:  appConfig.AppConfig,
 				Stream:     stream,
-				Inputs:     conversationRecord.Inputs,
+				Inputs:     inputs,
 				UserID:     "",
 				InvokeFrom: app.InvokeFrom(invokeFrom),
 				Extras:     extras,
@@ -150,6 +150,7 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user
 	go g.ListenQueue(queueManager)
 
 	g.handleMessageQueueEvent(c, streamResultChunkQueue, streamFinalChunkQueue)
+	return nil
 }
 
 func (g *ChatAppGenerator) ListenQueue(queueManager *model_runtime.StreamGenerateQueue) {
@@ -180,21 +181,27 @@ func (g *ChatAppGenerator) handleMessageQueueEvent(c context.Context, streamResu
 	for v := range streamFinalChunkQueue {
 		if mc, ok := v.Event.(*entities.QueueLLMChunkEvent); ok {
 			chunkByte, _ := json.Marshal(mc.Chunk)
-			log.Info("event %s, answer %s", mc.Event, string(chunkByte))
+			log.Infof("Event type: %s, Answer: %s", mc.Event, string(chunkByte))
 			// 将事件格式化为 SSE 格式发送给客户端
 			fmt.Fprintf(c.(*gin.Context).Writer, "data: %s\n\n", mc.Chunk.Delta.Message.Content)
 			flusher.Flush() // 确保数据立即发送到客户端
 		} else if mc, ok := v.Event.(*entities.QueueMessageEndEvent); ok {
-			if mc.Event == entities.Error {
-				log.Errorf("queue message ended with error %s", mc.LLMResult.Reason)
-			}
+			log.Infof("Event type: %s, End LLM Result %+v", mc.Event, mc.LLMResult)
+		} else if mc, ok := v.Event.(*entities.QueueErrorEvent); ok {
+			log.Errorf("Event type: %s, Err: %s", mc.Event, mc.Err.Error())
 		}
 	}
 }
 
 func (g *ChatAppGenerator) generateGoRoutine(ctx context.Context, applicationGenerateEntity *app.ChatAppGenerateEntity, conversationID string, messageID string, queueManager *model_runtime.StreamGenerateQueue) {
 
-	appRunner := &AppRunner{}
+	defer func() {
+		if r := recover(); r != nil {
+			log.Errorf("Recovered from generateGoRoutine panic: %v", r)
+		}
+	}()
+
+	appRunner := &apps.AppRunner{}
 
 	message, err := g.AppDomain.AppRepo.GetMessageByID(ctx, messageID)
 
@@ -210,8 +217,7 @@ func (g *ChatAppGenerator) generateGoRoutine(ctx context.Context, applicationGen
 		return
 	}
 
-	appRunner.Run(ctx, applicationGenerateEntity, message, conversation)
-
+	appRunner.Run(ctx, applicationGenerateEntity, message, conversation, queueManager)
 }
 
 func (g *ChatAppGenerator) InitGenerateRecords(ctx context.Context, chatAppGenerateEntity *app.ChatAppGenerateEntity, conversation *model.Conversation) (*model.Conversation, *model.Message, error) {

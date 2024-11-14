@@ -65,7 +65,7 @@ type Message struct {
 	FromAccountID           string                   `gorm:"column:from_account_id" json:"from_account_id"`
 	CreatedAt               int64                    `gorm:"column:created_at" json:"created_at"`
 	UpdatedAt               int64                    `gorm:"column:updated_at" json:"updated_at"`
-	AgentBased              bool                     `gorm:"column:agent_based" json:"agent_based"`
+	AgentBased              field.BitBool            `gorm:"column:agent_based" json:"agent_based"`
 	MessagePriceUnit        float64                  `gorm:"column:message_price_unit" json:"message_price_unit"`
 	AnswerPriceUnit         float64                  `gorm:"column:answer_price_unit" json:"answer_price_unit"`
 	WorkflowRunID           string                   `gorm:"column:workflow_run_id" json:"workflow_run_id"`

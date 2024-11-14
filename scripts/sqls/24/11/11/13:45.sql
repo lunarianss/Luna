@@ -1,7 +1,8 @@
 -- ----------------------------
 -- Table structure for conversation
 -- ----------------------------
-CREATE TABLE `conversation` (
+DROP TABLE IF EXISTS `conversations`;
+CREATE TABLE `conversations` (
     id CHAR(36) NOT NULL PRIMARY KEY,
     app_id CHAR(36) NOT NULL,
     app_model_config_id CHAR(36),
@@ -32,6 +33,7 @@ CREATE TABLE `conversation` (
 -- ----------------------------
 -- Table structure for message
 -- ----------------------------
+DROP TABLE IF EXISTS `messages`;
 CREATE TABLE `messages` (
     id CHAR(36) NOT NULL PRIMARY KEY,
     app_id CHAR(36) NOT NULL,

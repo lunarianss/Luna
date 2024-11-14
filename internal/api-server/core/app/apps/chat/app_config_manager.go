@@ -58,7 +58,7 @@ func (m *ChatAppConfigManager) getAppConfig(ctx context.Context, appModel *model
 	}
 
 	if configFrom != app_config.Args {
-		appModelByte, err := json.Marshal(appModel)
+		appModelByte, err := json.Marshal(appModelConfig)
 
 		if err != nil {
 			return nil, err

@@ -6,6 +6,7 @@ import (
 
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/model_config"
+	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/prompt_template"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/pkg/code"
@@ -71,10 +72,20 @@ func (m *ChatAppConfigManager) getAppConfig(ctx context.Context, appModel *model
 		if overrideConfigDict == nil {
 			return nil, errors.WithCode(code.ErrRequiredOverrideConfig, "override_config_dict is required when config_from is ARGS")
 		}
+
+		configDict = overrideConfigDict
 	}
 
 	modelConfigManager := model_config.NewModelConfigManager(m.ProviderDomain)
 	modelConfigEntity, err := modelConfigManager.Convert(ctx, configDict)
+
+	if err != nil {
+		return nil, err
+	}
+
+	promptTemplateConfigManager := prompt_template.PromptTemplateConfigManager{}
+
+	promptTemplate, err := promptTemplateConfigManager.Convert(configDict)
 
 	if err != nil {
 		return nil, err
@@ -93,7 +104,7 @@ func (m *ChatAppConfigManager) getAppConfig(ctx context.Context, appModel *model
 			AppModelConfigFrom: configFrom,
 			AppModelConfigID:   appModelConfig.ID,
 			Model:              modelConfigEntity,
-			PromptTemplate:     nil,
+			PromptTemplate:     promptTemplate,
 			Dataset:            nil,
 		},
 	}, nil

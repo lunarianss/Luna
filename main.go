@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"sync"
 )
 
@@ -28,6 +29,16 @@ func safeGoroutine(wg *sync.WaitGroup) {
 
 func main() {
 	var wg sync.WaitGroup
+	a := make(map[string]interface{})
+
+	fmt.Println(a["name"])
+
+	_, err := os.ReadFile("./11/1.jj")
+
+	if err != nil {
+		// fmt.Printf("error %+v", err)
+		fmt.Printf("error %s", err)
+	}
 
 	wg.Add(1)
 	go safeGoroutine(&wg)

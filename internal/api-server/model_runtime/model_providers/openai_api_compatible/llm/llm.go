@@ -131,6 +131,7 @@ func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context) {
 		Timeout: time.Duration(300) * time.Second,
 	}
 
+	log.Infof("Invoke llm request body %+v", requestData)
 	requestBodyData, err := json.Marshal(requestData)
 
 	if err != nil {
@@ -322,6 +323,8 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 		m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrRunTimeCaller, err.Error()))
 		return
 	}
+
+	log.Infof("Full Answer From AI: %s", m.FullAssistantContent)
 
 	m.sendStreamFinalChunkToQueue(ctx, messageID, finishReason)
 }

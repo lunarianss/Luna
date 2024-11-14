@@ -78,12 +78,6 @@ func (sgq *StreamGenerateQueue) constructMessageQueue(chunk entities.IQueueEvent
 	}
 }
 
-func (sgq *StreamGenerateQueue) IsClose() bool {
-	_, ok := <-sgq.StreamResultChunkQueue
-	_, ok1 := <-sgq.StreamFinalChunkQueue
-	return ok && ok1
-}
-
 func (sgq *StreamGenerateQueue) Close() {
 	close(sgq.StreamResultChunkQueue)
 	close(sgq.StreamFinalChunkQueue)

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"runtime/debug"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -81,7 +82,7 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user
 			return errors.WithCode(code.ErrOnlyOverrideConfigInDebugger, fmt.Sprintf("mode %s is not debugger, so it cannot override", invokeFrom))
 		}
 
-		overrideModelConfigMap, err := modelConfigManager.ConfigValidate(c, appModel.TenantID, args.ModelConfig)
+		overrideModelConfigMap, err = modelConfigManager.ConfigValidate(c, appModel.TenantID, args.ModelConfig)
 		if err != nil {
 			return err
 		}
@@ -188,7 +189,7 @@ func (g *ChatAppGenerator) handleMessageQueueEvent(c context.Context, streamResu
 		} else if mc, ok := v.Event.(*entities.QueueMessageEndEvent); ok {
 			log.Infof("Event type: %s, End LLM Result %+v", mc.Event, mc.LLMResult)
 		} else if mc, ok := v.Event.(*entities.QueueErrorEvent); ok {
-			log.Errorf("Event type: %s, Err: %s", mc.Event, mc.Err.Error())
+			log.Errorf("Event type: %s, Err: %#+v", mc.Event, mc.Err)
 		}
 	}
 }
@@ -197,11 +198,14 @@ func (g *ChatAppGenerator) generateGoRoutine(ctx context.Context, applicationGen
 
 	defer func() {
 		if r := recover(); r != nil {
-			log.Errorf("Recovered from generateGoRoutine panic: %v", r)
+			log.Errorf("Recovered from generateGoRoutine panic: %+v", r)
+			log.Errorf("Stack trace: %s", debug.Stack())
 		}
 	}()
 
-	appRunner := &apps.AppRunner{}
+	appRunner := &apps.AppRunner{
+		AppDomain: g.AppDomain,
+	}
 
 	message, err := g.AppDomain.AppRepo.GetMessageByID(ctx, messageID)
 

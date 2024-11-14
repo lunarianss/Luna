@@ -15,4 +15,6 @@ const (
 	ErrRequiredOverrideConfig
 	// ErrNotFoundModelRegistry - 500: model registry is not found in the model registry  list
 	ErrNotFoundModelRegistry
+	// ErrRequiredPromptMessage - 500: prompt type is required when convert to prompt template
+	ErrRequiredPromptType
 )

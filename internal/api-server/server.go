@@ -11,6 +11,7 @@ import (
 	_ "github.com/lunarianss/Luna/internal/api-server/route"
 	_ "github.com/lunarianss/Luna/internal/api-server/validation"
 	"github.com/lunarianss/Luna/internal/pkg/mysql"
+	"github.com/lunarianss/Luna/internal/pkg/redis"
 	"github.com/lunarianss/Luna/internal/pkg/server"
 	"github.com/lunarianss/Luna/internal/pkg/validation"
 	"github.com/lunarianss/Luna/pkg/log"
@@ -26,6 +27,10 @@ type LunaApiServer struct {
 func (s *LunaApiServer) Run() error {
 	// Register the module of master router and validator
 	if err := validation.InitAppValidator(); err != nil {
+		return err
+	}
+
+	if _, err := redis.GetRedisIns(s.AppRuntimeConfig.RedisOptions); err != nil {
 		return err
 	}
 

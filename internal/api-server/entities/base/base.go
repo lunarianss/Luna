@@ -94,3 +94,5 @@ func (o *I18nObject) PatchZh() {
 		o.Zh_Hans = o.En_US
 	}
 }
+
+

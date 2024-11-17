@@ -207,6 +207,7 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 	)
 
 	delimiter, ok := m.Credentials["stream_mode_delimiter"]
+
 	if !ok {
 		delimiter = "\n\n"
 	}

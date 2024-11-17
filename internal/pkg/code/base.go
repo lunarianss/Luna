@@ -19,9 +19,6 @@ const (
 	// ErrValidation - 400: Validation failed.
 	ErrValidation
 
-	// ErrTokenInvalid - 401: Token invalid.
-	ErrTokenInvalid
-
 	// ErrPageNotFound - 404: Page not found.
 	ErrPageNotFound
 
@@ -94,4 +91,23 @@ const (
 
 	// ErrDecodingYaml - 500: Yaml data could not be decoded.
 	ErrDecodingYaml
+)
+
+const (
+	// ErrTokenInvalid - 500: Error occurred when Token generate.
+	ErrTokenGenerate int = iota + 100401
+	// ErrTokenExpired - 500: Error occurred when Token expired.
+	ErrTokenExpired
+	// ErrTokenInvalid - 401: Token invalid.
+	ErrTokenInvalid
+	// ErrTokenMethodErr - 500: Unexpected signing method.
+	ErrTokenMethodErr
+)
+
+const (
+	// ErrRedisSetKey - 500: Error occurred when set key, value to redis.
+	ErrRedisSetKey int = iota + 100501
+
+	// ErrRedisSetExpire - 500: Error occurred when set expire  to redis.
+	ErrRedisSetExpire
 )

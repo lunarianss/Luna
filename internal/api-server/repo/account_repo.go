@@ -8,5 +8,4 @@ import (
 
 type AccountRepo interface {
 	GetAccountByEmail(context context.Context, email string) (*model.Account, error)
-	SetSendCodeToken(context context.Context, key, value string) error
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/account"
@@ -19,13 +20,13 @@ const (
 
 type AccountService struct {
 	AccountDomain *domain.AccountDomain
-	Redis         *redis.Client
+	redis         *redis.Client
 }
 
 func NewAccountService(accountDomain *domain.AccountDomain, redis *redis.Client) *AccountService {
 	return &AccountService{
 		AccountDomain: accountDomain,
-		Redis:         redis,
+		redis:         redis,
 	}
 }
 
@@ -53,10 +54,26 @@ func (s *AccountService) SetEmailCode(ctx context.Context, params *dto.SendEmail
 
 	account, err := s.AccountDomain.AccountRepo.GetAccountByEmail(ctx, params.Email)
 
+	if account.ID != "" {
+
+	}
+
 	if err != nil {
 		return nil, err
 	}
 
+	tokenUUID, err := s.SendEmailCodeLoginEmail(ctx, params.Email, language)
+	if err != nil {
+		return nil, err
+	}
+
+	go func() {
+		
+	}()
+
+	return &dto.SendEmailCodeResponse{
+		Data: tokenUUID,
+	}, nil
 }
 
 func (s *AccountService) GetEmailCodeToken(email string, tokenType string, code string) (string, string, error) {
@@ -71,17 +88,17 @@ func (s *AccountService) GetEmailCodeToken(email string, tokenType string, code 
 	tokenByte, err := json.Marshal(tokenData)
 
 	if err != nil {
-		return "", nil
+		return "", "", nil
 	}
 
 	return string(tokenByte), token, nil
 }
 
 func (s *AccountService) GetEmailTokenKey(token, tokenType string) string {
-	fmt.Sprintf("%s:token:%s", tokenType, token)
+	return fmt.Sprintf("%s:token:%s", tokenType, token)
 }
 
-func (s *AccountService) SendEmailCodeLoginEmail(email string, language string) (string, error) {
+func (s *AccountService) SendEmailCodeLoginEmail(ctx context.Context, email string, language string) (string, error) {
 
 	code := util.GenerateRandomNumber()
 
@@ -93,4 +110,9 @@ func (s *AccountService) SendEmailCodeLoginEmail(email string, language string) 
 
 	tokenKey := s.GetEmailTokenKey(tokenUUID, EMAIL_CODE_TOKEN)
 
+	if err := s.redis.Set(ctx, tokenKey, tokenData, 5*time.Minute).Err(); err != nil {
+		return "", err
+	}
+
+	return tokenUUID, redis.Nil
 }

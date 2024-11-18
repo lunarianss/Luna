@@ -28,7 +28,7 @@ email:
   SMTP-server: smtp.163.com
   SMTP-port: 465
   SMTP-username: cyan0908@163.com
-  SMTP-password: xxxx
+  SMTP-password: CTNCZDAEGGGKBCVV
   SMTP-from-email: cyan0908@163.com
   template-dir: /Users/max/Documents/coding/Backend/Golang/Personal/Luna/internal/api-server/templates
 

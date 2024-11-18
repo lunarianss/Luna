@@ -124,3 +124,5 @@ CREATE TABLE `app_model_configs` (
     created_by CHAR(36),
     updated_by CHAR(36)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+ALTER TABLE apps ADD INDEX idx_tenant_id (tenant_id);

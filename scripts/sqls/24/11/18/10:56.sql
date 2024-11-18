@@ -52,3 +52,19 @@ CREATE TABLE tenants (
     updated_at int(10) NOT NULL,
     custom_config TEXT,
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
+
+/* 
+-- 为 tenant_id 创建普通索引
+CREATE INDEX idx_tenant_id ON tenant_account_joins (tenant_id);
+
+-- 为 account_id 创建普通索引
+CREATE INDEX idx_account_id ON tenant_account_joins (account_id); */
+
+ALTER TABLE tenant_account_joins ADD INDEX idx_tenant_id (tenant_id);
+ALTER TABLE tenant_account_joins ADD INDEX idx_account_id (account_id);
+
+/* 
+CREATE UNIQUE INDEX unique_tenant_account ON tenant_account_joins (tenant_id, account_id); */
+
+ALTER TABLE tenant_account_joins ADD UNIQUE INDEX unique_tenant_account (tenant_id, account_id);

@@ -35,12 +35,12 @@ type RedisClusterStorageManager struct {
 }
 
 // NewRedisClusterPool returns a redis cluster client.
-func NewRedisClusterPool(forceReconnect bool, config *options.RedisOptions) redis.UniversalClient {
+func NewRedisClusterPool(forceReconnect bool, config *options.RedisOptions) (redis.UniversalClient, error) {
 	if !forceReconnect {
 		if redisClusterSingleton != nil {
 			log.Debug("Redis pool already INITIALIZED")
 
-			return redisClusterSingleton
+			return redisClusterSingleton, nil
 		}
 	} else {
 		if redisClusterSingleton != nil {
@@ -93,8 +93,14 @@ func NewRedisClusterPool(forceReconnect bool, config *options.RedisOptions) redi
 		client = redis.NewClient(opts.simple())
 	}
 
+	_, err := client.Ping(context.Background()).Result()
+
+	if err != nil {
+		return nil, err
+	}
+
 	redisClusterSingleton = client
-	return client
+	return client, nil
 }
 
 func getRedisAddrs(config *options.RedisOptions) (addrs []string) {
@@ -231,8 +237,7 @@ func (r *RedisClusterStorageManager) Init(config interface{}) error {
 func (r *RedisClusterStorageManager) Connect() bool {
 	if r.db == nil {
 		log.Debug("Connecting to redis cluster")
-		r.db = NewRedisClusterPool(false, r.Config)
-
+		r.db, _ = NewRedisClusterPool(false, r.Config)
 		return true
 	}
 

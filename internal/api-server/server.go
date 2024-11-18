@@ -10,6 +10,7 @@ import (
 	_ "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers"
 	_ "github.com/lunarianss/Luna/internal/api-server/route"
 	_ "github.com/lunarianss/Luna/internal/api-server/validation"
+	"github.com/lunarianss/Luna/internal/pkg/email"
 	"github.com/lunarianss/Luna/internal/pkg/mysql"
 	"github.com/lunarianss/Luna/internal/pkg/redis"
 	"github.com/lunarianss/Luna/internal/pkg/server"
@@ -35,6 +36,10 @@ func (s *LunaApiServer) Run() error {
 	}
 
 	if _, err := mysql.GetMySQLIns(s.AppRuntimeConfig.MySQLOptions); err != nil {
+		return err
+	}
+
+	if _, err := email.GetEmailSMTPIns(s.AppRuntimeConfig.EmailOptions); err != nil {
 		return err
 	}
 

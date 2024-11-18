@@ -10,7 +10,9 @@ type AuthController struct {
 	AuthService *service.AccountService
 }
 
-func NewAppController() *AuthController {
-	return &AuthController{}
+func NewAuthController(accountService *service.AccountService) *AuthController {
+	return &AuthController{
+		AuthService: accountService,
+	}
 }
 

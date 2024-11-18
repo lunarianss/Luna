@@ -15,6 +15,12 @@ func (ac *AuthController) SendEmailCode(c *gin.Context) {
 		return
 	}
 
-	ac.AuthService.GetUserThroughEmails(c, params.Email)
+	sendResp, err := ac.AuthService.SendEmailCode(c, params)
 
+	if err != nil {
+		core.WriteResponse(c, err, nil)
+		return
+	}
+
+	core.WriteResponse(c, nil, sendResp)
 }

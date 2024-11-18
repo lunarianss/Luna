@@ -24,6 +24,14 @@ feature:
   enable-metrics: true # 开启 metrics, router:  /metrics
   profiling: true # 开启性能分析, 可以通过 <host>:<port>/debug/pprof/地址查看程序栈、线程等系统信息，默认值为 true
 
+email:
+  SMTP-server: smtp.163.com
+  SMTP-port: 465
+  SMTP-username: cyan0908@163.com
+  SMTP-password: xxxx
+  SMTP-from-email: cyan0908@163.com
+  template-dir: /Users/max/Documents/coding/Backend/Golang/Personal/Luna/internal/api-server/templates
+
 server:
   mode: debug # server mode: release, debug, test，默认 release
   healthz: true # 是否开启健康检查，如果开启会安装 /healthz 路由，默认 true
@@ -74,17 +82,16 @@ redis:
   host: 127.0.0.1 # redis 地址，默认 127.0.0.1:6379
   port: 6379 # redis 端口，默认 6379
   password: 123456 # redis 密码
-
-  #addrs:
-  #master-name: # redis 集群 master 名称
-  #username: # redis 登录用户名
-  #database: # redis 数据库
-  #optimisation-max-idle:  # redis 连接池中的最大空闲连接数
-  #optimisation-max-active: # 最大活跃连接数
-  #timeout: # 连接 redis 时的超时时间
-  #enable-cluster: # 是否开启集群模式
-  #use-ssl: # 是否启用 TLS
-  #ssl-insecure-skip-verify: # 当连接 redis 时允许使用自签名证书
+  addrs:
+  master-name: # redis 集群 master 名称
+  username: # redis 登录用户名
+  database: 0 # redis 数据库
+  optimisation-max-idle: 2000 # redis 连接池中的最大空闲连接数
+  optimisation-max-active: 4000 # 最大活跃连接数
+  timeout: 0 # 连接 redis 时的超时时间
+  enable-cluster: false # 是否开启集群模式
+  use-ssl: false # 是否启用 TLS
+  ssl-insecure-skip-verify: false # 当连接 redis 时允许使用自签名证书
 
 # JWT 配置
 jwt:

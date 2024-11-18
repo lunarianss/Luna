@@ -7,10 +7,13 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lunarianss/Luna/internal/api-server/config"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/account"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/auth"
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/pkg/util"
+	_email "github.com/lunarianss/Luna/pkg/email"
+	"github.com/lunarianss/Luna/pkg/log"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -21,12 +24,16 @@ const (
 type AccountService struct {
 	AccountDomain *domain.AccountDomain
 	redis         *redis.Client
+	email         *_email.Mail
+	runtimeConfig *config.Config
 }
 
-func NewAccountService(accountDomain *domain.AccountDomain, redis *redis.Client) *AccountService {
+func NewAccountService(accountDomain *domain.AccountDomain, redis *redis.Client, config *config.Config, email *_email.Mail) *AccountService {
 	return &AccountService{
 		AccountDomain: accountDomain,
 		redis:         redis,
+		runtimeConfig: config,
+		email:         email,
 	}
 }
 
@@ -40,35 +47,43 @@ func (s *AccountService) GetUserThroughEmails(ctx context.Context, email string)
 	return s.AccountDomain.AccountRepo.GetAccountByEmail(ctx, email)
 }
 
-func (s *AccountService) SetEmailCode(ctx context.Context, params *dto.SendEmailCodeRequest) (*dto.SendEmailCodeResponse, error) {
+func (s *AccountService) SendEmailCode(ctx context.Context, params *dto.SendEmailCodeRequest) (*dto.SendEmailCodeResponse, error) {
 
 	var (
-		language string
+		language     string
+		templatePath string
 	)
 
 	if params.Language == "zh-Hans" {
 		language = "zh-Hans"
+	} else {
+		language = "en-US"
 	}
 
-	language = "en-US"
+	// account, err := s.AccountDomain.AccountRepo.GetAccountByEmail(ctx, params.Email)
 
-	account, err := s.AccountDomain.AccountRepo.GetAccountByEmail(ctx, params.Email)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	if account.ID != "" {
-
-	}
-
+	tokenUUID, emailCode, err := s.SendEmailCodeLoginEmail(ctx, params.Email, language)
 	if err != nil {
 		return nil, err
 	}
-
-	tokenUUID, err := s.SendEmailCodeLoginEmail(ctx, params.Email, language)
-	if err != nil {
-		return nil, err
+	if language == "en-US" {
+		templatePath = fmt.Sprintf("%s/%s", s.runtimeConfig.EmailOptions.TemplateDir, "email_code_login_mail_template_en-US.html")
+	} else {
+		templatePath = fmt.Sprintf("%s/%s", s.runtimeConfig.EmailOptions.TemplateDir, "email_code_login_mail_template_zh-CN.html")
 	}
 
 	go func() {
-		
+		err := s.email.Send(params.Email, "Email Code", templatePath, map[string]interface{}{
+			"Code": emailCode,
+		}, "")
+
+		if err != nil {
+			log.Errorf("Send email failed: %v", err)
+		}
 	}()
 
 	return &dto.SendEmailCodeResponse{
@@ -98,21 +113,21 @@ func (s *AccountService) GetEmailTokenKey(token, tokenType string) string {
 	return fmt.Sprintf("%s:token:%s", tokenType, token)
 }
 
-func (s *AccountService) SendEmailCodeLoginEmail(ctx context.Context, email string, language string) (string, error) {
+func (s *AccountService) SendEmailCodeLoginEmail(ctx context.Context, email string, language string) (string, string, error) {
 
 	code := util.GenerateRandomNumber()
 
 	tokenData, tokenUUID, err := s.GetEmailCodeToken(email, EMAIL_CODE_TOKEN, code)
 
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	tokenKey := s.GetEmailTokenKey(tokenUUID, EMAIL_CODE_TOKEN)
 
 	if err := s.redis.Set(ctx, tokenKey, tokenData, 5*time.Minute).Err(); err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return tokenUUID, redis.Nil
+	return tokenUUID, code, nil
 }

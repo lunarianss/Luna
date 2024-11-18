@@ -22,6 +22,7 @@ type Options struct {
 	EtcdOptions             *options.EtcdOptions            `json:"etcd"     mapstructure:"etcd"`
 	Log                     *log.Options                    `json:"log"      mapstructure:"log"`
 	FeatureOptions          *options.FeatureOptions         `json:"feature"  mapstructure:"feature"`
+	EmailOptions            *options.EmailOptions           `json:"email" mapstructure:"email"`
 }
 
 // NewOptions creates a new Options object with default parameters.
@@ -35,6 +36,7 @@ func NewOptions() *Options {
 		RedisOptions:            options.NewRedisOptions(),
 		Log:                     log.NewOption(),
 		FeatureOptions:          options.NewFeatureOptions(),
+		EmailOptions:            options.NewEmailOptions(),
 	}
 
 	return &o
@@ -50,6 +52,7 @@ func (o *Options) Flags() (fss app.NamedFlagSets) {
 	o.InsecureServing.AddFlags(fss.FlagSet("insecure serving"))
 	o.SecureServing.AddFlags(fss.FlagSet("secure serving"))
 	o.Log.AddFlags(fss.FlagSet("logs"))
+	o.EmailOptions.AddFlags(fss.FlagSet("email"))
 
 	return fss
 }

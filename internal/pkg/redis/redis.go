@@ -19,12 +19,16 @@ func GetRedisIns(opt *options.RedisOptions) (*redis.Client, error) {
 		return nil, fmt.Errorf("failed to get redis store factory")
 	}
 
+	var err error
+	var redisClient redis.UniversalClient
+
 	once.Do(func() {
-		RedisIns = db.NewRedisClusterPool(true, opt).(*redis.Client)
+		redisClient, err = db.NewRedisClusterPool(true, opt)
+		RedisIns, _ = redisClient.(*redis.Client)
 	})
 
-	if RedisIns == nil {
-		return nil, fmt.Errorf("failed to get redis store factory option is %+v", opt)
+	if RedisIns == nil || err != nil {
+		return nil, fmt.Errorf("failed to get redis store factory option is %+v: error: %s", opt, err.Error())
 	}
 	return RedisIns, nil
 }

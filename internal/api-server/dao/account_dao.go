@@ -14,6 +14,10 @@ type AccountDao struct {
 	db *gorm.DB
 }
 
+func NewAccountDao(db *gorm.DB) *AccountDao {
+	return &AccountDao{db: db}
+}
+
 var _ repo.AccountRepo = (*AccountDao)(nil)
 
 func (ad *AccountDao) GetAccountByEmail(context context.Context, email string) (*model.Account, error) {

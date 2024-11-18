@@ -29,8 +29,17 @@ func (ad *AccountDao) GetAccountByEmail(context context.Context, email string) (
 	return &account, nil
 }
 
-func (ad *AccountDao) CreateAccount(context context.Context, account *model.Account) (*model.Account, error) {
-	if err := ad.db.Create(account).Error; err != nil {
+func (ad *AccountDao) CreateAccount(context context.Context, account *model.Account, isTransaction bool, tx *gorm.DB) (*model.Account, error) {
+
+	var dbIns *gorm.DB
+
+	if isTransaction && tx != nil {
+		dbIns = tx
+	} else {
+		dbIns = ad.db
+	}
+
+	if err := dbIns.Create(account).Error; err != nil {
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())
 	}
 	return account, nil

@@ -50,7 +50,7 @@ func (a *AuthRoutes) Register(g *gin.Engine) error {
 	tenantDomain := tenantDomain.NewTenantDomain(tenantDao)
 
 	// service
-	accountService := service.NewAccountService(accountDomain, tenantDomain)
+	accountService := service.NewAccountService(accountDomain, tenantDomain, gormIns)
 	accountController := controller.NewAuthController(accountService)
 
 	v1 := g.Group("/v1")

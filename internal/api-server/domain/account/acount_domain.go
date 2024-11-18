@@ -18,6 +18,7 @@ import (
 	"github.com/lunarianss/Luna/pkg/errors"
 	"github.com/lunarianss/Luna/pkg/log"
 	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
 )
 
 const (
@@ -174,6 +175,7 @@ func (ad *AccountDomain) SendEmailHtml(ctx context.Context, language string, ema
 
 func (ad *AccountDomain) Login(ctx context.Context, account *model.Account, ipAddress string) (*TokenPair, error) {
 
+	log.Info(ipAddress, "ip")
 	if ipAddress != "" {
 		account.LastLoginIP = ipAddress
 		now := time.Now().UTC().Unix()
@@ -259,7 +261,27 @@ func (ad *AccountDomain) CreateAccount(ctx context.Context, email, name, interfa
 		Timezone:          timezone,
 	}
 
-	return ad.AccountRepo.CreateAccount(ctx, account)
+	return ad.AccountRepo.CreateAccount(ctx, account, false, nil)
+}
+
+func (ad *AccountDomain) CreateAccountTx(ctx context.Context, tx *gorm.DB, email, name, interfaceLanguage, interfaceTheme, password string, isSetup bool) (*model.Account, error) {
+	// todo 补充密码和 system feature
+	var timezone string
+	timezone, ok := util.LanguageMapping[interfaceLanguage]
+
+	if !ok {
+		timezone = "UTC"
+	}
+
+	account := &model.Account{
+		Email:             email,
+		Name:              name,
+		InterfaceLanguage: interfaceLanguage,
+		InterfaceTheme:    interfaceTheme,
+		Timezone:          timezone,
+	}
+
+	return ad.AccountRepo.CreateAccount(ctx, account, true, tx)
 }
 
 func (ad *AccountDomain) StoreRefreshToken(ctx context.Context, refreshToken string, accountID string) error {

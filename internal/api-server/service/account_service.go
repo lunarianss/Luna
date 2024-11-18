@@ -9,17 +9,20 @@ import (
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/auth"
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/pkg/util"
+	"gorm.io/gorm"
 )
 
 type AccountService struct {
 	AccountDomain *domain.AccountDomain
 	TenantDomain  *tenantDomain.TenantDomain
+	db            *gorm.DB
 }
 
-func NewAccountService(accountDomain *domain.AccountDomain, tenantDomain *tenantDomain.TenantDomain) *AccountService {
+func NewAccountService(accountDomain *domain.AccountDomain, tenantDomain *tenantDomain.TenantDomain, db *gorm.DB) *AccountService {
 	return &AccountService{
 		AccountDomain: accountDomain,
 		TenantDomain:  tenantDomain,
+		db:            db,
 	}
 }
 
@@ -66,7 +69,7 @@ func (s *AccountService) EmailCodeValidity(ctx context.Context, email, emailCode
 	}
 
 	if account.ID == "" {
-		if _, err := s.CreateAccountAndTenant(ctx, email, email, "zh-Hans", ""); err != nil {
+		if account, err = s.CreateAccountAndTenant(ctx, email, email, "zh-Hans", ""); err != nil {
 			return nil, err
 		}
 	}
@@ -82,14 +85,20 @@ func (s *AccountService) EmailCodeValidity(ctx context.Context, email, emailCode
 
 func (ad *AccountService) CreateAccountAndTenant(ctx context.Context, email, name, interfaceLanguage, password string) (*model.Account, error) {
 
-	account, err := ad.AccountDomain.CreateAccount(ctx, email, name, interfaceLanguage, "light", password, false)
+	tx := ad.db.Begin()
+	account, err := ad.AccountDomain.CreateAccountTx(ctx, tx, email, name, interfaceLanguage, "light", password, false)
 
 	if err != nil {
-		return nil, err
-	}
-	if err := ad.TenantDomain.CreateOwnerTenantIfNotExists(ctx, name, account, false); err != nil {
+		tx.Rollback()
 		return nil, err
 	}
 
-	return account, nil
+	err = ad.TenantDomain.CreateOwnerTenantIfNotExistsTx(ctx, tx, name, account, false)
+
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	return account, tx.Commit().Error
 }

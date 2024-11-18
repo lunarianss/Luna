@@ -40,17 +40,19 @@ type TokenPair struct {
 
 type AccountDomain struct {
 	AccountRepo repo.AccountRepo
+	TenantRepo  repo.TenantRepo
 	redis       *redis.Client
 	config      *config.Config
 	email       *_email.Mail
 }
 
-func NewAccountDomain(accountRepo repo.AccountRepo, redis *redis.Client, config *config.Config, email *_email.Mail) *AccountDomain {
+func NewAccountDomain(accountRepo repo.AccountRepo, redis *redis.Client, config *config.Config, email *_email.Mail, tenantRepo repo.TenantRepo) *AccountDomain {
 	return &AccountDomain{
 		AccountRepo: accountRepo,
 		redis:       redis,
 		config:      config,
 		email:       email,
+		TenantRepo:  tenantRepo,
 	}
 }
 
@@ -284,6 +286,19 @@ func (ad *AccountDomain) CreateAccountTx(ctx context.Context, tx *gorm.DB, email
 	return ad.AccountRepo.CreateAccount(ctx, account, true, tx)
 }
 
+func (ad *AccountDomain) DeleteRefreshToken(ctx context.Context, refreshToken string, accountID string) error {
+
+	if err := ad.redis.Del(ctx, ad.GetRefreshTokenKey(refreshToken)).Err(); err != nil {
+		return err
+	}
+
+	if err := ad.redis.Del(ctx, ad.GetAccountRefreshTokenKey(accountID)).Err(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (ad *AccountDomain) StoreRefreshToken(ctx context.Context, refreshToken string, accountID string) error {
 	if err := ad.redis.Set(ctx, ad.GetRefreshTokenKey(refreshToken), accountID, ad.config.JwtOptions.Refresh).Err(); err != nil {
 		return err
@@ -294,4 +309,100 @@ func (ad *AccountDomain) StoreRefreshToken(ctx context.Context, refreshToken str
 	}
 
 	return nil
+}
+
+func (ad *AccountDomain) LoadUser(ctx context.Context, userID string) (*model.Account, error) {
+	account, err := ad.AccountRepo.GetAccountByID(ctx, userID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if account.Status == string(model.BANNED) {
+		return nil, errors.WithCode(code.ErrAccountBanned, fmt.Sprintf("account %s, email %s, id %s is already banned", account.Name, account.Email, account.ID))
+	}
+
+	tenantJoin, err := ad.TenantRepo.FindCurrentTenantMemberByAccount(ctx, account)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if tenantJoin.ID == "" {
+		tenantJoin, err := ad.TenantRepo.FindTenantMemberByAccount(ctx, account)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if tenantJoin.ID == "" {
+			return nil, err
+		}
+
+		tenantJoin.Current = 1
+
+		_, err = ad.TenantRepo.UpdateCurrentTenantAccountJoin(ctx, tenantJoin)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if account.LastLoginAt != nil {
+		now := time.Now().UTC().Unix()
+		if now-*account.LastActiveAt > 10*60 {
+			account.LastActiveAt = &now
+			if err := ad.AccountRepo.UpdateAccountLastActive(ctx, account); err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return account, nil
+}
+
+func (ad *AccountDomain) RefreshToken(ctx context.Context, refreshToken string) (*TokenPair, error) {
+
+	v, err := ad.redis.Get(ctx, ad.GetRefreshTokenKey(refreshToken)).Result()
+
+	if errors.Is(err, redis.Nil) {
+		return nil, errors.WithCode(code.ErrRefreshTokenNotFound, fmt.Sprintf("refresh token %s not found", refreshToken))
+	} else if err != nil {
+		return nil, errors.WithCode(code.ErrRedisRuntime, err.Error())
+	}
+
+	account, err := ad.LoadUser(ctx, v)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if account == nil {
+		return nil, errors.WithCode(code.ErrRecordNotFound, fmt.Sprintf("account record %s not found", v))
+	}
+
+	newAccessToken, err := ad.GenerateToken(ctx, account)
+
+	if err != nil {
+		return nil, err
+	}
+
+	newRefreshToken, err := util.GenerateRefreshToken(64)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if err := ad.DeleteRefreshToken(ctx, refreshToken, account.ID); err != nil {
+		return nil, err
+	}
+
+	if err := ad.StoreRefreshToken(ctx, newRefreshToken, account.ID); err != nil {
+		return nil, err
+	}
+
+	return &TokenPair{
+		AccessToken:  newAccessToken,
+		RefreshToken: newRefreshToken,
+	}, nil
 }

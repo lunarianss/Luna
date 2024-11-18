@@ -7,4 +7,6 @@ const (
 	ErrTokenEmail
 	// ErrTenantAlreadyExist - 500: Error occurred when tenant is already exist.
 	ErrTenantAlreadyExist
+	// ErrAccountBanned - 500: Error occurred when user is banned but still to operate.
+	ErrAccountBanned
 )

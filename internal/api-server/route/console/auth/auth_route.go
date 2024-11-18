@@ -46,7 +46,7 @@ func (a *AuthRoutes) Register(g *gin.Engine) error {
 	tenantDao := dao.NewTenantDao(gormIns)
 
 	// domain
-	accountDomain := domain.NewAccountDomain(accountDao, redisIns, config, email)
+	accountDomain := domain.NewAccountDomain(accountDao, redisIns, config, email, tenantDao)
 	tenantDomain := tenantDomain.NewTenantDomain(tenantDao)
 
 	// service
@@ -57,6 +57,7 @@ func (a *AuthRoutes) Register(g *gin.Engine) error {
 	authV1 := v1.Group("/console/api")
 	authV1.POST("/email-code-login", accountController.SendEmailCode)
 	authV1.POST("/email-code-login/validity", accountController.EmailValidity)
+	authV1.POST("/refresh-token", accountController.RefreshToken)
 	return nil
 }
 

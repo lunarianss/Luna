@@ -28,6 +28,14 @@ func (ad *AccountDao) GetAccountByEmail(context context.Context, email string) (
 	}
 	return &account, nil
 }
+func (ad *AccountDao) GetAccountByID(context context.Context, ID string) (*model.Account, error) {
+	var account model.Account
+
+	if err := ad.db.First(&account, "id = ?", ID).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return &account, nil
+}
 
 func (ad *AccountDao) CreateAccount(context context.Context, account *model.Account, isTransaction bool, tx *gorm.DB) (*model.Account, error) {
 
@@ -54,6 +62,13 @@ func (ad *AccountDao) UpdateAccountIpAddress(context context.Context, account *m
 
 func (ad *AccountDao) UpdateAccountStatus(context context.Context, account *model.Account) error {
 	if err := ad.db.Model(account).Where("id = ?", account.ID).Update("status", account.Status).Error; err != nil {
+		return errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return nil
+}
+
+func (ad *AccountDao) UpdateAccountLastActive(context context.Context, account *model.Account) error {
+	if err := ad.db.Model(account).Where("id = ?", account.ID).Update("last_active_at", account.LastActiveAt).Error; err != nil {
 		return errors.WithCode(code.ErrDatabase, err.Error())
 	}
 	return nil

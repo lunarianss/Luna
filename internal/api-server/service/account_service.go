@@ -102,3 +102,8 @@ func (ad *AccountService) CreateAccountAndTenant(ctx context.Context, email, nam
 
 	return account, tx.Commit().Error
 }
+
+func (ad *AccountService) RefreshToken(ctx context.Context, refreshToken string) (*domain.TokenPair, error) {
+
+	return ad.AccountDomain.RefreshToken(ctx, refreshToken)
+}

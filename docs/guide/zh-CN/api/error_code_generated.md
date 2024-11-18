@@ -26,6 +26,7 @@ IAM 系统支持的错误码列表如下：
 | ErrEmailCode | 110301 | 500 | Error occurred when email code is incorrect |
 | ErrTokenEmail | 110302 | 500 | Error occurred when email is incorrect |
 | ErrTenantAlreadyExist | 110303 | 500 | Error occurred when tenant is already exist |
+| ErrAccountBanned | 110304 | 500 | Error occurred when user is banned but still to operate |
 | ErrSuccess | 100001 | 200 | OK |
 | ErrUnknown | 100002 | 500 | Internal server error |
 | ErrBind | 100003 | 400 | Error occurred while binding the request body to the struct |
@@ -57,6 +58,7 @@ IAM 系统支持的错误码列表如下：
 | ErrTokenInvalid | 100403 | 401 | Token invalid |
 | ErrTokenMethodErr | 100404 | 500 | Unexpected signing method |
 | ErrTokenInsNotFound | 100405 | 500 | Jwt instance is not found |
+| ErrRefreshTokenNotFound | 100406 | 500 | Refresh token is not found in redis |
 | ErrRedisSetKey | 100501 | 500 | Error occurred when set key, value to redis |
 | ErrRedisSetExpire | 100502 | 500 | Error occurred when set expire  to redis |
 | ErrRedisRuntime | 100503 | 500 | Error occurred when invoke redis api |

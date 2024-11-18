@@ -104,6 +104,8 @@ const (
 	ErrTokenMethodErr
 	// ErrTokenInsNotFound - 500: Jwt instance is not found.
 	ErrTokenInsNotFound
+	// ErrRefreshTokenNotFound - 500: Refresh token is not found in redis.
+	ErrRefreshTokenNotFound
 )
 
 const (

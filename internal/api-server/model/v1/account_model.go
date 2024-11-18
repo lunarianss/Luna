@@ -32,7 +32,7 @@ type Account struct {
 	InitializedAt     *int64 `json:"initialized_at" gorm:"column:initialized_at"`
 	CreatedAt         int64  `json:"created_at" gorm:"column:created_at"`
 	UpdatedAt         int64  `json:"updated_at" gorm:"column:updated_at"`
-	LastActiveAt      int64  `json:"last_active_at" gorm:"column:last_active_at;autoUpdateTime"`
+	LastActiveAt      *int64 `json:"last_active_at" gorm:"column:last_active_at;autoCreateTime"`
 }
 
 func (a *Account) TableName() string {

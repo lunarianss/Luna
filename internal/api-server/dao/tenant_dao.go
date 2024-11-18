@@ -5,6 +5,7 @@ import (
 
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/pkg/code"
+	"github.com/lunarianss/Luna/internal/pkg/mysql"
 	"github.com/lunarianss/Luna/pkg/errors"
 	"gorm.io/gorm"
 )
@@ -119,4 +120,30 @@ func (td *TenantDao) CreateTenantOfAccount(ctx context.Context, tenant *model.Te
 	}
 
 	return tenantAccountJoin, nil
+}
+
+func (td *TenantDao) FindTenantMemberByAccount(ctx context.Context, account *model.Account) (*model.TenantAccountJoin, error) {
+
+	var tenantAccountJoin model.TenantAccountJoin
+	if err := td.db.Scopes(mysql.IDDesc()).Limit(1).Find(&tenantAccountJoin, "account_id = ?", account.ID).Error; err != nil {
+		return nil, err
+	}
+	return &tenantAccountJoin, nil
+}
+
+func (td *TenantDao) FindCurrentTenantMemberByAccount(ctx context.Context, account *model.Account) (*model.TenantAccountJoin, error) {
+	var tenantAccountJoin model.TenantAccountJoin
+	if err := td.db.Scopes(mysql.IDDesc()).Limit(1).Find(&tenantAccountJoin, "account_id = ? AND current = ?", account.ID, 1).Error; err != nil {
+		return nil, err
+	}
+
+	return &tenantAccountJoin, nil
+}
+
+func (td *TenantDao) UpdateCurrentTenantAccountJoin(ctx context.Context, ta *model.TenantAccountJoin) (*model.TenantAccountJoin, error) {
+	if err := td.db.Model(ta).Update("current", 1).Error; err != nil {
+		return nil, err
+	}
+
+	return ta, nil
 }

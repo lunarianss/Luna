@@ -9,9 +9,9 @@ import (
 )
 
 type LunaClaims struct {
-	AccountId   int32
+	AccountId   string
 	NickName    string
-	AuthorityId int32
+	AuthorityId string
 	jwt.RegisteredClaims
 }
 

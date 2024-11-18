@@ -28,3 +28,24 @@ func (ad *AccountDao) GetAccountByEmail(context context.Context, email string) (
 	}
 	return &account, nil
 }
+
+func (ad *AccountDao) CreateAccount(context context.Context, account *model.Account) (*model.Account, error) {
+	if err := ad.db.Create(account).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return account, nil
+}
+
+func (ad *AccountDao) UpdateAccountIpAddress(context context.Context, account *model.Account) error {
+	if err := ad.db.Select("last_login_at", "last_login_ip").Updates(account).Error; err != nil {
+		return errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return nil
+}
+
+func (ad *AccountDao) UpdateAccountStatus(context context.Context, account *model.Account) error {
+	if err := ad.db.Update("status", account.Status).Error; err != nil {
+		return errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return nil
+}

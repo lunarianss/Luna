@@ -11,6 +11,7 @@ import (
 	_ "github.com/lunarianss/Luna/internal/api-server/route"
 	_ "github.com/lunarianss/Luna/internal/api-server/validation"
 	"github.com/lunarianss/Luna/internal/pkg/email"
+	"github.com/lunarianss/Luna/internal/pkg/jwt"
 	"github.com/lunarianss/Luna/internal/pkg/mysql"
 	"github.com/lunarianss/Luna/internal/pkg/redis"
 	"github.com/lunarianss/Luna/internal/pkg/server"
@@ -46,6 +47,7 @@ func (s *LunaApiServer) Run() error {
 	if err := s.APIServer.InitRouter(s.APIServer.Engine); err != nil {
 		return err
 	}
+	_ = jwt.NewJWT(s.AppRuntimeConfig.JwtOptions.Key)
 
 	if err := s.GracefulShutdown.Start(); err != nil {
 		log.Fatalf("start shutdown manager failed: %s", err.Error())

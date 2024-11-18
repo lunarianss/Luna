@@ -23,6 +23,7 @@ type Options struct {
 	Log                     *log.Options                    `json:"log"      mapstructure:"log"`
 	FeatureOptions          *options.FeatureOptions         `json:"feature"  mapstructure:"feature"`
 	EmailOptions            *options.EmailOptions           `json:"email" mapstructure:"email"`
+	JwtOptions              *options.JwtOptions             `json:"jwt" mapstructure:"jwt"`
 }
 
 // NewOptions creates a new Options object with default parameters.
@@ -37,6 +38,7 @@ func NewOptions() *Options {
 		Log:                     log.NewOption(),
 		FeatureOptions:          options.NewFeatureOptions(),
 		EmailOptions:            options.NewEmailOptions(),
+		JwtOptions:              options.NewJwtOptions(),
 	}
 
 	return &o
@@ -53,6 +55,7 @@ func (o *Options) Flags() (fss app.NamedFlagSets) {
 	o.SecureServing.AddFlags(fss.FlagSet("secure serving"))
 	o.Log.AddFlags(fss.FlagSet("logs"))
 	o.EmailOptions.AddFlags(fss.FlagSet("email"))
+	o.JwtOptions.AddFlags(fss.FlagSet("jwt"))
 
 	return fss
 }

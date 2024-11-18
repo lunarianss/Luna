@@ -97,5 +97,5 @@ redis:
 jwt:
   realm: JWT # jwt 标识
   key: dfVpOK8LZeJLZHYmHdb1VdyRrACKpqoo # 服务端密钥
-  timeout: 24h # token 过期时间(小时)
-  max-refresh: 24h # token 更新时间(小时)
+  timeout: 24 # access token 过期时间(小时)
+  refresh: 30 # refresh token 过期时间(天)

@@ -6,6 +6,7 @@ import (
 	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/auth"
 	"github.com/lunarianss/Luna/internal/api-server/dao"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/account"
+	tenantDomain "github.com/lunarianss/Luna/internal/api-server/domain/tenant"
 	"github.com/lunarianss/Luna/internal/api-server/service"
 	"github.com/lunarianss/Luna/internal/pkg/email"
 	"github.com/lunarianss/Luna/internal/pkg/mysql"
@@ -37,18 +38,21 @@ func (a *AuthRoutes) Register(g *gin.Engine) error {
 
 	// dao
 	accountDao := dao.NewAccountDao(gormIns)
+	tenantDao := dao.NewTenantDao(gormIns)
 
 	// domain
 	accountDomain := domain.NewAccountDomain(accountDao, redisIns)
+	tenantDomain := tenantDomain.NewTenantDomain(tenantDao)
 
 	// service
-	accountService := service.NewAccountService(accountDomain, config, email)
+	accountService := service.NewAccountService(accountDomain, config, email, tenantDomain)
 
 	accountController := controller.NewAuthController(accountService)
 
 	v1 := g.Group("/v1")
 	authV1 := v1.Group("/console/api")
 	authV1.POST("/email-code-login", accountController.SendEmailCode)
+	authV1.POST("/email-code-login/validity", accountController.EmailValidity)
 	return nil
 }
 

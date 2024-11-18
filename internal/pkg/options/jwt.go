@@ -5,16 +5,17 @@
 package options
 
 import (
+	"time"
+
 	"github.com/spf13/pflag"
 )
 
 // JwtOptions contains configuration items related to API server features.
 type JwtOptions struct {
-	Realm   string `json:"realm"       mapstructure:"realm"`
-	Key     string `json:"key"         mapstructure:"key"`
-	Timeout int    `json:"timeout"     mapstructure:"timeout"`
-	// unit day
-	Refresh int `json:"max-refresh" mapstructure:"refresh"`
+	Realm   string        `json:"realm"       mapstructure:"realm"`
+	Key     string        `json:"key"         mapstructure:"key"`
+	Timeout time.Duration `json:"timeout"     mapstructure:"timeout"`
+	Refresh time.Duration `json:"max-refresh" mapstructure:"refresh"`
 }
 
 // NewJwtOptions creates a JwtOptions object with default parameters.
@@ -22,8 +23,8 @@ func NewJwtOptions() *JwtOptions {
 
 	return &JwtOptions{
 		Realm:   "luna jwt",
-		Timeout: 24,
-		Refresh: 30,
+		Timeout: 24 * time.Hour,
+		Refresh: 30 * 24 * time.Hour,
 	}
 }
 

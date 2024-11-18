@@ -24,6 +24,7 @@ func (ts *TenantDomain) CreateOwnerTenantIfNotExists(ctx context.Context, name s
 	tenantJoin, err := ts.TenantRepo.FindTenantJoinByAccount(ctx, account)
 
 	if err != nil {
+
 		return err
 	}
 
@@ -73,7 +74,7 @@ func (ts *TenantDomain) CreateTenantMember(ctx context.Context, account *model.A
 		return nil, err
 	}
 
-	if tenantMember != nil {
+	if tenantMember.ID != "" {
 		tenantMember.Role = role
 		tenantMember, err := ts.TenantRepo.UpdateRoleTenantOfAccount(ctx, tenantMember)
 		if err != nil {

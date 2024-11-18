@@ -23,7 +23,7 @@ var _ repo.AccountRepo = (*AccountDao)(nil)
 func (ad *AccountDao) GetAccountByEmail(context context.Context, email string) (*model.Account, error) {
 	var account model.Account
 
-	if err := ad.db.First(&account, "email = ?", email).Error; err != nil {
+	if err := ad.db.Limit(1).Find(&account, "email = ?", email).Error; err != nil {
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())
 	}
 	return &account, nil
@@ -37,14 +37,14 @@ func (ad *AccountDao) CreateAccount(context context.Context, account *model.Acco
 }
 
 func (ad *AccountDao) UpdateAccountIpAddress(context context.Context, account *model.Account) error {
-	if err := ad.db.Select("last_login_at", "last_login_ip").Updates(account).Error; err != nil {
+	if err := ad.db.Model(account).Where("id = ?", account.ID).Select("last_login_at", "last_login_ip").Updates(account).Error; err != nil {
 		return errors.WithCode(code.ErrDatabase, err.Error())
 	}
 	return nil
 }
 
 func (ad *AccountDao) UpdateAccountStatus(context context.Context, account *model.Account) error {
-	if err := ad.db.Update("status", account.Status).Error; err != nil {
+	if err := ad.db.Model(account).Where("id = ?", account.ID).Update("status", account.Status).Error; err != nil {
 		return errors.WithCode(code.ErrDatabase, err.Error())
 	}
 	return nil

@@ -28,11 +28,11 @@ type Account struct {
 	Timezone          string `json:"timezone" gorm:"column:timezone"`
 	LastLoginIP       string `json:"last_login_ip" gorm:"column:last_login_ip"`
 	Status            string `json:"status" gorm:"column:status"`
-	LastLoginAt       int64  `json:"last_login_at" gorm:"column:last_login_at"`
-	InitializedAt     int64  `json:"initialized_at" gorm:"column:initialized_at"`
+	LastLoginAt       *int64 `json:"last_login_at" gorm:"column:last_login_at"`
+	InitializedAt     *int64 `json:"initialized_at" gorm:"column:initialized_at"`
 	CreatedAt         int64  `json:"created_at" gorm:"column:created_at"`
 	UpdatedAt         int64  `json:"updated_at" gorm:"column:updated_at"`
-	LastActiveAt      int64  `json:"last_active_at" gorm:"column:last_active_at"`
+	LastActiveAt      int64  `json:"last_active_at" gorm:"column:last_active_at;autoUpdateTime"`
 }
 
 func (a *Account) TableName() string {
@@ -70,8 +70,16 @@ func (a *TenantAccountJoin) TableName() string {
 
 func (a *TenantAccountJoin) BeforeCreate(tx *gorm.DB) (err error) {
 	a.ID = uuid.NewString()
+
 	return
 }
+
+type TenantStatus string
+
+const (
+	TNORMAL TenantStatus = "normal"
+	ARCHIVE TenantStatus = "archive"
+)
 
 type Tenant struct {
 	ID               string                 `json:"id" gorm:"column:id"`
@@ -79,8 +87,8 @@ type Tenant struct {
 	EncryptPublicKey string                 `json:"encrypt_public_key" gorm:"column:encrypt_public_key"`
 	Plan             string                 `json:"plan" gorm:"column:plan"`
 	Status           string                 `json:"status" gorm:"column:status"`
-	CreatedAt        string                 `json:"created_at" gorm:"column:created_at"`
-	UpdatedAt        string                 `json:"updated_at" gorm:"column:updated_at"`
+	CreatedAt        int64                  `json:"created_at" gorm:"column:created_at"`
+	UpdatedAt        int64                  `json:"updated_at" gorm:"column:updated_at"`
 	CustomConfig     map[string]interface{} `json:"custom_config" gorm:"column:custom_config;serializer:json"`
 }
 
@@ -90,5 +98,14 @@ func (a *Tenant) TableName() string {
 
 func (a *Tenant) BeforeCreate(tx *gorm.DB) (err error) {
 	a.ID = uuid.NewString()
+
+	if a.Plan == "" {
+		a.Plan = "basic"
+	}
+
+	if a.Status == "" {
+		a.Status = string(TNORMAL)
+	}
+
 	return
 }

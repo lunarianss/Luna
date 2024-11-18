@@ -11,10 +11,10 @@ const (
 	ErrRequiredModelName
 	// ErrRequiredCorrectModel - 500: Error occurred when model is not found or model isn't include in the model list.
 	ErrRequiredCorrectModel
-	// ErrRequiredOverrideConfig - 500: config_from is ARGS that override_config_dict is required
+	// ErrRequiredOverrideConfig - 500: Config_from is ARGS that override_config_dict is required.
 	ErrRequiredOverrideConfig
-	// ErrNotFoundModelRegistry - 500: model registry is not found in the model registry  list
+	// ErrNotFoundModelRegistry - 500: Model registry is not found in the model registry list.
 	ErrNotFoundModelRegistry
-	// ErrRequiredPromptMessage - 500: prompt type is required when convert to prompt template
+	// ErrRequiredPromptMessage - 500: Prompt type is required when convert to prompt template.
 	ErrRequiredPromptType
 )

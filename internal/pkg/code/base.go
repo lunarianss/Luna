@@ -102,7 +102,7 @@ const (
 	ErrTokenInvalid
 	// ErrTokenMethodErr - 500: Unexpected signing method.
 	ErrTokenMethodErr
-	// ErrTokenInsNotFound - 500: jwt instance is not found.
+	// ErrTokenInsNotFound - 500: Jwt instance is not found.
 	ErrTokenInsNotFound
 )
 

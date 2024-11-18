@@ -53,7 +53,7 @@ func (td *TenantDao) GetTenantOfAccount(ctx context.Context, tenant *model.Tenan
 
 func (td *TenantDao) UpdateRoleTenantOfAccount(ctx context.Context, ta *model.TenantAccountJoin) (*model.TenantAccountJoin, error) {
 
-	if err := td.db.Model(ta).Update("role", ta.Role).Error; err != nil {
+	if err := td.db.Model(ta).Where("id = ?", ta.ID).Update("role", ta.Role).Error; err != nil {
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())
 	}
 

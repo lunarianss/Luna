@@ -29,6 +29,11 @@ func (a *AuthRoutes) Register(g *gin.Engine) error {
 	}
 
 	email, err := email.GetEmailSMTPIns(nil)
+
+	if err != nil {
+		return err
+	}
+
 	// config
 	config, err := config.GetLunaRuntimeConfig()
 
@@ -41,12 +46,11 @@ func (a *AuthRoutes) Register(g *gin.Engine) error {
 	tenantDao := dao.NewTenantDao(gormIns)
 
 	// domain
-	accountDomain := domain.NewAccountDomain(accountDao, redisIns)
+	accountDomain := domain.NewAccountDomain(accountDao, redisIns, config, email)
 	tenantDomain := tenantDomain.NewTenantDomain(tenantDao)
 
 	// service
-	accountService := service.NewAccountService(accountDomain, config, email, tenantDomain)
-
+	accountService := service.NewAccountService(accountDomain, tenantDomain)
 	accountController := controller.NewAuthController(accountService)
 
 	v1 := g.Group("/v1")

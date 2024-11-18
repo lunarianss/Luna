@@ -14,7 +14,9 @@ import (
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/internal/pkg/jwt"
 	"github.com/lunarianss/Luna/internal/pkg/util"
+	_email "github.com/lunarianss/Luna/pkg/email"
 	"github.com/lunarianss/Luna/pkg/errors"
+	"github.com/lunarianss/Luna/pkg/log"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -39,12 +41,15 @@ type AccountDomain struct {
 	AccountRepo repo.AccountRepo
 	redis       *redis.Client
 	config      *config.Config
+	email       *_email.Mail
 }
 
-func NewAccountDomain(accountRepo repo.AccountRepo, redis *redis.Client) *AccountDomain {
+func NewAccountDomain(accountRepo repo.AccountRepo, redis *redis.Client, config *config.Config, email *_email.Mail) *AccountDomain {
 	return &AccountDomain{
 		AccountRepo: accountRepo,
 		redis:       redis,
+		config:      config,
+		email:       email,
 	}
 }
 
@@ -55,7 +60,7 @@ func (ad *AccountDomain) GetUserThroughEmails(ctx context.Context, email string)
 func (ad *AccountDomain) GetEmailTokenData(ctx context.Context, token string) (*EmailTokenData, error) {
 
 	var (
-		tokenData *EmailTokenData
+		tokenData EmailTokenData
 	)
 
 	tokenKey := ad.GetEmailTokenKey(token, EMAIL_CODE_TOKEN)
@@ -68,10 +73,10 @@ func (ad *AccountDomain) GetEmailTokenData(ctx context.Context, token string) (*
 		return nil, errors.WithCode(code.ErrRedisRuntime, err.Error())
 	}
 
-	if err := json.Unmarshal([]byte(v), tokenData); err != nil {
+	if err := json.Unmarshal([]byte(v), &tokenData); err != nil {
 		return nil, errors.WithCode(code.ErrDecodingJSON, err.Error())
 	}
-	return tokenData, nil
+	return &tokenData, nil
 }
 
 func (ad *AccountDomain) ValidateAndRevokeData(ctx context.Context, email, emailCode, token string, tokenData *EmailTokenData) error {
@@ -147,12 +152,32 @@ func (ad *AccountDomain) SendEmailCodeLoginEmail(ctx context.Context, email stri
 
 	return tokenUUID, code, nil
 }
+func (ad *AccountDomain) SendEmailHtml(ctx context.Context, language string, email, emailCode string) {
+	var templatePath string
+
+	if language == "en-US" {
+		templatePath = fmt.Sprintf("%s/%s", ad.config.EmailOptions.TemplateDir, "email_code_login_mail_template_en-US.html")
+	} else {
+		templatePath = fmt.Sprintf("%s/%s", ad.config.EmailOptions.TemplateDir, "email_code_login_mail_template_zh-CN.html")
+	}
+
+	go func() {
+		err := ad.email.Send(email, "Email Code", templatePath, map[string]interface{}{
+			"Code": emailCode,
+		}, "")
+
+		if err != nil {
+			log.Errorf("Send email failed: %v", err)
+		}
+	}()
+}
 
 func (ad *AccountDomain) Login(ctx context.Context, account *model.Account, ipAddress string) (*TokenPair, error) {
 
 	if ipAddress != "" {
 		account.LastLoginIP = ipAddress
-		account.LastLoginAt = time.Now().UTC().Unix()
+		now := time.Now().UTC().Unix()
+		account.LastLoginAt = &now
 		if err := ad.AccountRepo.UpdateAccountIpAddress(ctx, account); err != nil {
 			return nil, err
 		}
@@ -194,7 +219,7 @@ func (ad *AccountDomain) GenerateToken(ctx context.Context, account *model.Accou
 
 	claims := jwt.LunaClaims{
 		RegisteredClaims: jwtV5.RegisteredClaims{
-			ExpiresAt: jwtV5.NewNumericDate(time.Now().Add(ad.config.JwtOptions.Timeout * time.Hour)),
+			ExpiresAt: jwtV5.NewNumericDate(time.Now().Add(ad.config.JwtOptions.Timeout)),
 			IssuedAt:  jwtV5.NewNumericDate(time.Now()),
 			NotBefore: jwtV5.NewNumericDate(time.Now()),
 			Issuer:    ad.config.JwtOptions.Realm,
@@ -238,11 +263,11 @@ func (ad *AccountDomain) CreateAccount(ctx context.Context, email, name, interfa
 }
 
 func (ad *AccountDomain) StoreRefreshToken(ctx context.Context, refreshToken string, accountID string) error {
-	if err := ad.redis.Set(ctx, ad.GetRefreshTokenKey(refreshToken), accountID, ad.config.JwtOptions.Refresh*24*time.Hour).Err(); err != nil {
+	if err := ad.redis.Set(ctx, ad.GetRefreshTokenKey(refreshToken), accountID, ad.config.JwtOptions.Refresh).Err(); err != nil {
 		return err
 	}
 
-	if err := ad.redis.Set(ctx, ad.GetAccountRefreshTokenKey(accountID), refreshToken, ad.config.JwtOptions.Refresh*24*time.Hour).Err(); err != nil {
+	if err := ad.redis.Set(ctx, ad.GetAccountRefreshTokenKey(accountID), refreshToken, ad.config.JwtOptions.Refresh).Err(); err != nil {
 		return err
 	}
 

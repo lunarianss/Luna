@@ -15,4 +15,3 @@ func NewAuthController(accountService *service.AccountService) *AuthController {
 		AuthService: accountService,
 	}
 }
-

@@ -39,10 +39,10 @@ func (a *AuthRoutes) Register(g *gin.Engine) error {
 	accountDao := dao.NewAccountDao(gormIns)
 
 	// domain
-	accountDomain := domain.NewAccountDomain(accountDao)
+	accountDomain := domain.NewAccountDomain(accountDao, redisIns)
 
 	// service
-	accountService := service.NewAccountService(accountDomain, redisIns, config, email)
+	accountService := service.NewAccountService(accountDomain, config, email)
 
 	accountController := controller.NewAuthController(accountService)
 

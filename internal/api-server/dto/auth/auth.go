@@ -8,3 +8,9 @@ type SendEmailCodeRequest struct {
 type SendEmailCodeResponse struct {
 	Data string `json:"data"`
 }
+
+type EmailCodeValidityRequest struct {
+	Email string `json:"email" validate:"required"`
+	Code  string `json:"code" validate:"required"`
+	Token string `json:"token" validate:"required"`
+}

@@ -177,7 +177,6 @@ func (ad *AccountDomain) SendEmailHtml(ctx context.Context, language string, ema
 
 func (ad *AccountDomain) Login(ctx context.Context, account *model.Account, ipAddress string) (*TokenPair, error) {
 
-	log.Info(ipAddress, "ip")
 	if ipAddress != "" {
 		account.LastLoginIP = ipAddress
 		now := time.Now().UTC().Unix()
@@ -350,8 +349,8 @@ func (ad *AccountDomain) LoadUser(ctx context.Context, userID string) (*model.Ac
 
 	if account.LastLoginAt != nil {
 		now := time.Now().UTC().Unix()
-		if now-*account.LastActiveAt > 10*60 {
-			account.LastActiveAt = &now
+		if now-account.LastActiveAt > 10*60 {
+			account.LastActiveAt = now
 			if err := ad.AccountRepo.UpdateAccountLastActive(ctx, account); err != nil {
 				return nil, err
 			}

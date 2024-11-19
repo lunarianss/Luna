@@ -102,6 +102,22 @@ func (td *TenantDao) UpdateRoleTenantOfAccount(ctx context.Context, ta *model.Te
 	return ta, nil
 }
 
+func (td *TenantDao) UpdateEncryptPublicKey(ctx context.Context, ta *model.Tenant, isTransaction bool, tx *gorm.DB) (*model.Tenant, error) {
+
+	var dbIns *gorm.DB
+
+	if isTransaction && tx != nil {
+		dbIns = tx
+	} else {
+		dbIns = td.db
+	}
+	if err := dbIns.Model(ta).Where("id = ?", ta.ID).Update("encrypt_public_key", ta.EncryptPublicKey).Error; err != nil {
+		return nil, err
+	}
+
+	return ta, nil
+}
+
 func (td *TenantDao) CreateTenantOfAccount(ctx context.Context, tenant *model.Tenant, account *model.Account, role model.TenantAccountJoinRole, isTransaction bool, tx *gorm.DB) (*model.TenantAccountJoin, error) {
 	var dbIns *gorm.DB
 

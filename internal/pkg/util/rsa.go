@@ -13,6 +13,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
+	"runtime"
 )
 
 const PREFIX_LUNA_HYBRID = "LUNA_HYBRID:"
@@ -29,8 +31,22 @@ type Storage interface {
 // FileStorage implements the Storage interface for file-based storage
 type FileStorage struct{}
 
-func (fs *FileStorage) Save(filepath string, data []byte) error {
-	return os.WriteFile(filepath, data, 0600)
+func (fs *FileStorage) Save(filePath string, data []byte) error {
+
+	_, fullFilePath, _, ok := runtime.Caller(0)
+
+	if !ok {
+		return fmt.Errorf("fail to get runtime caller info")
+	}
+	fileLocateDir := filepath.Dir(filepath.Dir(filepath.Dir(filepath.Dir(fullFilePath))))
+
+	filePath = fmt.Sprintf("%s/%s", fileLocateDir, filePath)
+
+	if err := os.MkdirAll(filepath.Dir(filePath), 0700); err != nil {
+		return err
+	}
+
+	return os.WriteFile(filePath, data, 0700)
 }
 
 func (fs *FileStorage) Load(filepath string) ([]byte, error) {
@@ -50,7 +66,7 @@ func GenerateKeyPair(storage Storage, tenantID string) (string, error) {
 		Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
 	})
 
-	filepath := fmt.Sprintf("./private_keys/%s/private.pem", tenantID)
+	filepath := fmt.Sprintf("private_keys/%s/private.pem", tenantID)
 
 	if err := storage.Save(filepath, privateKeyPem); err != nil {
 		return "", err

@@ -19,4 +19,5 @@ type TenantRepo interface {
 
 	UpdateRoleTenantOfAccount(ctx context.Context, ta *model.TenantAccountJoin, isTransaction bool, tx *gorm.DB) (*model.TenantAccountJoin, error)
 	UpdateCurrentTenantAccountJoin(ctx context.Context, ta *model.TenantAccountJoin) (*model.TenantAccountJoin, error)
+	UpdateEncryptPublicKey(ctx context.Context, ta *model.Tenant, isTransaction bool, tx *gorm.DB) (*model.Tenant, error)
 }

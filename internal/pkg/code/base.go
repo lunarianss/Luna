@@ -119,3 +119,8 @@ const (
 	// ErrRedisDataExpire - 500: Error occurred when redis data is expired.
 	ErrRedisDataExpire
 )
+
+const (
+	// ErrRSAGenerate - 500: Error occurred when generate pair of rsa key.
+	ErrRSAGenerate int = iota + 100601
+)

@@ -51,7 +51,7 @@ func (g *ChatAppGenerator) getAppModelConfig(ctx context.Context, appModel *mode
 	}
 }
 
-func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user interface{}, args *dto.CreateChatMessageBody, invokeFrom appEntities.InvokeForm, stream bool) error {
+func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user *model.Account, args *dto.CreateChatMessageBody, invokeFrom appEntities.InvokeForm, stream bool) error {
 
 	var (
 		conversationRecord     *model.Conversation
@@ -124,7 +124,7 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user
 				AppConfig:  appConfig.AppConfig,
 				Stream:     stream,
 				Inputs:     inputs,
-				UserID:     "",
+				UserID:     user.ID,
 				InvokeFrom: app.InvokeFrom(invokeFrom),
 				Extras:     extras,
 			},

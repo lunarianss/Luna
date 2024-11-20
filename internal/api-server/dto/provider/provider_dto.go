@@ -117,3 +117,12 @@ type CreateModelCredentialBody struct {
 type GetAccountAvailableModelsRequest struct {
 	ModelType string `uri:"modelType" validate:"required"`
 }
+
+type ProviderWithModelsResponse struct {
+	Provider  string                                          `json:"provider"`
+	Label     *base.I18nObject                                `json:"label"`
+	IconSmall *base.I18nObject                                `json:"icon_small"`
+	IconLarge *base.I18nObject                                `json:"icon_large"`
+	Status    CustomConfigurationStatus                       `json:"status"`
+	Models    []*model_provider.ProviderModelWithStatusEntity `json:"models"`
+}

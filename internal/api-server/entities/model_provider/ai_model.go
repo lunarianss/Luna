@@ -119,6 +119,7 @@ func (a *AIModel) PredefinedModels() ([]*AIModelEntity, error) {
 
 	for _, modelSchemaYamlPath := range modelSchemaYamlPath {
 		AIModelEntity := &AIModelEntity{ProviderModel: &ProviderModel{}}
+		AIModelEntity.FetchFrom = base.PREDEFINED_MODEL_FROM
 		AIModelEntityContent, err := os.ReadFile(modelSchemaYamlPath)
 		if err != nil {
 			return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
@@ -139,4 +140,3 @@ func (a *AIModel) PredefinedModels() ([]*AIModelEntity, error) {
 	})
 	return AIModelEntities, nil
 }
-

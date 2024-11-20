@@ -62,8 +62,6 @@ type SystemConfiguration struct {
 	Credentials         interface{}
 }
 
-type CustomConfigurationStatus string
-
 type CustomProviderConfiguration struct {
 	Credentials interface{}
 }

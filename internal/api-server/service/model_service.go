@@ -7,9 +7,12 @@ package service
 import (
 	"context"
 
+	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/model"
 	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
+	dto "github.com/lunarianss/Luna/internal/api-server/dto/provider"
 	"github.com/lunarianss/Luna/internal/api-server/entities/base"
+	"github.com/lunarianss/Luna/internal/api-server/entities/model_provider"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
 )
@@ -17,10 +20,11 @@ import (
 type ModelService struct {
 	ModelDomain         *domain.ModelDomain
 	ModelProviderDomain *providerDomain.ModelProviderDomain
+	AccountDomain       *accountDomain.AccountDomain
 }
 
-func NewModelService(modelDomain *domain.ModelDomain, modelProviderDomain *providerDomain.ModelProviderDomain) *ModelService {
-	return &ModelService{ModelDomain: modelDomain, ModelProviderDomain: modelProviderDomain}
+func NewModelService(modelDomain *domain.ModelDomain, modelProviderDomain *providerDomain.ModelProviderDomain, accountDomain *accountDomain.AccountDomain) *ModelService {
+	return &ModelService{ModelDomain: modelDomain, ModelProviderDomain: modelProviderDomain, AccountDomain: accountDomain}
 }
 
 func (ms *ModelService) SaveModelCredentials(ctx context.Context, tenantId, model, modelTpe, provider string, credentials map[string]interface{}) error {
@@ -46,7 +50,75 @@ func (ms *ModelService) SaveModelCredentials(ctx context.Context, tenantId, mode
 	return nil
 }
 
-func (ms *ModelService) GetAccountAvailableModels(ctx context.Context, tenantID, modelType base.LLMMode) error {
-	// ms.ModelProviderDomain.GetConfigurations(ctx, tenantID)
-	return nil
+func (ms *ModelService) GetAccountAvailableModels(ctx context.Context, accountID string, modelType base.ModelType) ([]*dto.ProviderWithModelsResponse, error) {
+
+	tenantRecord, _, err := ms.AccountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+	providerConfigurations, err := ms.ModelProviderDomain.GetConfigurations(ctx, tenantRecord.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	activeModels, err := ms.ModelProviderDomain.GetModels(ctx, providerConfigurations, base.ModelType(modelType), true)
+
+	if err != nil {
+		return nil, err
+	}
+
+	providerModelsMap := make(map[string][]*model_provider.ModelWithProviderEntity)
+
+	for _, activeModel := range activeModels {
+		if _, ok := providerModelsMap[activeModel.Provider.Provider]; !ok {
+			providerModelsMap[activeModel.Provider.Provider] = make([]*model_provider.ModelWithProviderEntity, 0, 10)
+		}
+
+		if activeModel.Deprecated {
+			continue
+		}
+
+		if activeModel.Status != model_provider.ACTIVE {
+			continue
+		}
+
+		providerModelsMap[activeModel.Provider.Provider] = append(providerModelsMap[activeModel.Provider.Provider], activeModel)
+	}
+
+	providerResponses := make([]*dto.ProviderWithModelsResponse, 0, 2)
+
+	for providerName, providerModels := range providerModelsMap {
+		if len(providerModels) == 0 {
+			continue
+		}
+
+		providerModelStatus := make([]*model_provider.ProviderModelWithStatusEntity, 0, 10)
+		firstModel := providerModels[0]
+
+		for _, mapModel := range providerModels {
+			providerModelStatus = append(providerModelStatus, &model_provider.ProviderModelWithStatusEntity{
+				Status: mapModel.Status,
+				ProviderModel: &model_provider.ProviderModel{
+					Model:           mapModel.Model,
+					Label:           mapModel.Label,
+					ModelType:       mapModel.ModelType,
+					Features:        mapModel.Features,
+					FetchFrom:       mapModel.FetchFrom,
+					ModelProperties: mapModel.ModelProperties,
+				},
+			})
+		}
+
+		providerResponses = append(providerResponses, &dto.ProviderWithModelsResponse{
+			Provider:  providerName,
+			Label:     firstModel.Provider.Label,
+			IconSmall: firstModel.Provider.IconSmall,
+			IconLarge: firstModel.Provider.Label,
+			Status:    dto.ACTIVE,
+			Models:    providerModelStatus,
+		})
+
+	}
+	return providerResponses, nil
 }

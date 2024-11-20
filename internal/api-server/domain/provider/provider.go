@@ -358,6 +358,24 @@ func (mpd *ModelProviderDomain) getCustomProviderModels(modelTypes []base.ModelT
 	return providerModels, nil
 }
 
+func (mpd *ModelProviderDomain) GetModels(ctx context.Context, providerConfigurations *model_provider.ProviderConfigurations, modelType base.ModelType, onlyActive bool) ([]*model_provider.ModelWithProviderEntity, error) {
+	var (
+		providerModels []*model_provider.ModelWithProviderEntity
+	)
+
+	for _, providerConfiguration := range providerConfigurations.Configurations {
+		models, err := mpd.GetProviderModels(ctx, providerConfiguration, modelType, onlyActive)
+
+		if err != nil {
+			return nil, err
+		}
+
+		providerModels = append(providerModels, models...)
+	}
+
+	return providerModels, nil
+}
+
 func (mpd *ModelProviderDomain) GetProviderModels(ctx context.Context, providerConfiguration *model_provider.ProviderConfiguration, modelType base.ModelType, onlyActive bool) ([]*model_provider.ModelWithProviderEntity, error) {
 
 	var (

@@ -7,7 +7,8 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/dao"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/account"
 	tenantDomain "github.com/lunarianss/Luna/internal/api-server/domain/tenant"
-	"github.com/lunarianss/Luna/internal/api-server/middlewares"
+	"github.com/lunarianss/Luna/internal/api-server/middleware"
+
 	"github.com/lunarianss/Luna/internal/api-server/service"
 	"github.com/lunarianss/Luna/internal/pkg/email"
 	"github.com/lunarianss/Luna/internal/pkg/mysql"
@@ -59,7 +60,7 @@ func (a *AccountRoute) Register(g *gin.Engine) error {
 	v1 := g.Group("/v1")
 
 	authV1 := v1.Group("/console/api")
-	accountV1 := authV1.Group("/account").Use(middlewares.TokenAuthMiddleware())
+	accountV1 := authV1.Group("/account").Use(middleware.TokenAuthMiddleware())
 	accountV1.GET("/profile", accountController.GetAccountProfile)
 	return nil
 }

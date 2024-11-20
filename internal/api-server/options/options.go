@@ -24,6 +24,7 @@ type Options struct {
 	FeatureOptions          *options.FeatureOptions         `json:"feature"  mapstructure:"feature"`
 	EmailOptions            *options.EmailOptions           `json:"email" mapstructure:"email"`
 	JwtOptions              *options.JwtOptions             `json:"jwt" mapstructure:"jwt"`
+	SystemOptions           *options.SystemOptions          `json:"system" mapstructure:"system"`
 }
 
 // NewOptions creates a new Options object with default parameters.
@@ -39,6 +40,7 @@ func NewOptions() *Options {
 		FeatureOptions:          options.NewFeatureOptions(),
 		EmailOptions:            options.NewEmailOptions(),
 		JwtOptions:              options.NewJwtOptions(),
+		SystemOptions:           options.NewSystemOptions(),
 	}
 
 	return &o

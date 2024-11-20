@@ -7,7 +7,7 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/dao"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/account"
 	tenantDomain "github.com/lunarianss/Luna/internal/api-server/domain/tenant"
-	"github.com/lunarianss/Luna/internal/api-server/middlewares"
+	"github.com/lunarianss/Luna/internal/api-server/middleware"
 	"github.com/lunarianss/Luna/internal/api-server/service"
 	"github.com/lunarianss/Luna/internal/pkg/email"
 	"github.com/lunarianss/Luna/internal/pkg/mysql"
@@ -57,7 +57,7 @@ func (a *WorkspaceRoutes) Register(g *gin.Engine) error {
 	v1 := g.Group("/v1")
 	authV1 := v1.Group("/console/api")
 	workspaceV1 := authV1.Group("/workspaces")
-	workspaceV1.Use(middlewares.TokenAuthMiddleware())
+	workspaceV1.Use(middleware.TokenAuthMiddleware())
 
 	workspaceV1.GET("/current", workspaceController.GetTenantCurrentWorkspace)
 

@@ -20,7 +20,6 @@ type JwtOptions struct {
 
 // NewJwtOptions creates a JwtOptions object with default parameters.
 func NewJwtOptions() *JwtOptions {
-
 	return &JwtOptions{
 		Realm:   "luna jwt",
 		Timeout: 24 * time.Hour,

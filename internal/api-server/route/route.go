@@ -6,6 +6,7 @@ package route
 
 import (
 	authRoute "github.com/lunarianss/Luna/internal/api-server/route/console/auth"
+	featureRoute "github.com/lunarianss/Luna/internal/api-server/route/console/feature"
 	setupRoute "github.com/lunarianss/Luna/internal/api-server/route/console/setup"
 	consoleWorkSpaceRoute "github.com/lunarianss/Luna/internal/api-server/route/console/workspace"
 	"github.com/lunarianss/Luna/internal/pkg/server"
@@ -27,6 +28,9 @@ func init() {
 
 	// console/setup
 	server.RegisterRoute(&setupRoute.SetupRoutes{})
+
+	// console/feature
+	server.RegisterRoute(&featureRoute.FeatureRoutes{})
 
 	server.RegisterRoute(&staticRoute{})
 

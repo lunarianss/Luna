@@ -3,8 +3,21 @@
 # license that can be found in the LICENSE file.
 
 # Luna  全配置
-# RESTful 服务配置
-# 替换环境变量
+# 系统配置
+system:
+  app-base-path: "/Users/max/Documents/coding/Backend/Golang/Personal/Luna"
+  sso-enforced-for-signin: false
+  sso-enforced-for-signin-protocol: ""
+  sso-enforced-for-web: false
+  sso-enforced-for-web-protocol: ""
+  enable-web-sso-switch-component: false
+  enable-email-code-login: true
+  enable-email-password-login: false
+  enable-social-oauth-login: true
+  is-allow-register: true
+  is-allow-create-workspace: true
+
+# 日志配置
 log:
   debug-mode: true # 是否是debug模式。如果是debug模式，会对log.Debug 日志进行跟踪。
   format: text # 支持的日志输出格式，目前支持text和json两种。
@@ -28,7 +41,7 @@ email:
   SMTP-server: smtp.163.com
   SMTP-port: 465
   SMTP-username: cyan0908@163.com
-  SMTP-password: CTNCZDAEGGGKBCVV
+  SMTP-password: xxx
   SMTP-from-email: cyan0908@163.com
   template-dir: /Users/max/Documents/coding/Backend/Golang/Personal/Luna/internal/api-server/templates
 

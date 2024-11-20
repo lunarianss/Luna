@@ -94,7 +94,7 @@ func (ad *AccountService) CreateAccountAndTenant(ctx context.Context, email, nam
 		return nil, err
 	}
 
-	err = ad.TenantDomain.CreateOwnerTenantIfNotExistsTx(ctx, tx, name, account, false)
+	err = ad.TenantDomain.CreateOwnerTenantIfNotExistsTx(ctx, tx, account, false)
 
 	if err != nil {
 		tx.Rollback()

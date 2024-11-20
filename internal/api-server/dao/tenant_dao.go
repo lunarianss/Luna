@@ -33,6 +33,7 @@ func (td *TenantDao) CreateOwnerTenant(ctx context.Context, tenant *model.Tenant
 	}
 	return tenant, nil
 }
+
 func (td *TenantDao) FindTenantJoinByAccount(ctx context.Context, account *model.Account, isTransaction bool, tx *gorm.DB) (*model.TenantAccountJoin, error) {
 	var tenantJoin model.TenantAccountJoin
 
@@ -45,10 +46,19 @@ func (td *TenantDao) FindTenantJoinByAccount(ctx context.Context, account *model
 		dbIns = td.db
 	}
 
-	if err := dbIns.Find(&tenantJoin, "account_id = ?", account.ID).Error; err != nil {
+	if err := dbIns.Scopes(mysql.IDDesc()).Limit(1).Find(&tenantJoin, "account_id = ?", account.ID).Error; err != nil {
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())
 	}
 	return &tenantJoin, nil
+}
+
+func (td *TenantDao) GetTenantByID(ctx context.Context, ID string) (*model.Tenant, error) {
+	var tenant model.Tenant
+
+	if err := td.db.First(&tenant, "id = ?", ID).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return &tenant, nil
 }
 
 func (td *TenantDao) HasRoles(ctx context.Context, tenant *model.Tenant, roles []model.TenantAccountJoinRole, isTransaction bool, tx *gorm.DB) (bool, error) {
@@ -68,7 +78,16 @@ func (td *TenantDao) HasRoles(ctx context.Context, tenant *model.Tenant, roles [
 	return len(tenantMember) != 0, nil
 }
 
-func (td *TenantDao) GetTenantOfAccount(ctx context.Context, tenant *model.Tenant, account *model.Account, isTransaction bool, tx *gorm.DB) (*model.TenantAccountJoin, error) {
+func (td *TenantDao) FindCurrentTenantJoinByAccount(ctx context.Context, account *model.Account) (*model.TenantAccountJoin, error) {
+	var tenantAccountJoin model.TenantAccountJoin
+	if err := td.db.Scopes(mysql.IDDesc()).Limit(1).Find(&tenantAccountJoin, "account_id = ? AND current = ?", account.ID, 1).Error; err != nil {
+		return nil, err
+	}
+
+	return &tenantAccountJoin, nil
+}
+
+func (td *TenantDao) GetTenantJoinOfAccount(ctx context.Context, tenant *model.Tenant, account *model.Account, isTransaction bool, tx *gorm.DB) (*model.TenantAccountJoin, error) {
 
 	var dbIns *gorm.DB
 
@@ -77,6 +96,7 @@ func (td *TenantDao) GetTenantOfAccount(ctx context.Context, tenant *model.Tenan
 	} else {
 		dbIns = td.db
 	}
+
 	var tenantAccountJoin model.TenantAccountJoin
 
 	if err := dbIns.Find(&tenantAccountJoin, "account_id = ? AND tenant_id = ?", account.ID, tenant.ID).Error; err != nil {
@@ -118,7 +138,7 @@ func (td *TenantDao) UpdateEncryptPublicKey(ctx context.Context, ta *model.Tenan
 	return ta, nil
 }
 
-func (td *TenantDao) CreateTenantOfAccount(ctx context.Context, tenant *model.Tenant, account *model.Account, role model.TenantAccountJoinRole, isTransaction bool, tx *gorm.DB) (*model.TenantAccountJoin, error) {
+func (td *TenantDao) CreateCurrentTenantJoinOfAccount(ctx context.Context, tenant *model.Tenant, account *model.Account, role model.TenantAccountJoinRole, isTransaction bool, tx *gorm.DB) (*model.TenantAccountJoin, error) {
 	var dbIns *gorm.DB
 
 	if isTransaction && tx != nil {
@@ -128,7 +148,7 @@ func (td *TenantDao) CreateTenantOfAccount(ctx context.Context, tenant *model.Te
 	}
 
 	var tenantAccountJoin = &model.TenantAccountJoin{
-		AccountID: account.ID, TenantID: tenant.ID, Role: string(role),
+		AccountID: account.ID, TenantID: tenant.ID, Role: string(role), Current: 1,
 	}
 
 	if err := dbIns.Create(tenantAccountJoin).Error; err != nil {
@@ -136,24 +156,6 @@ func (td *TenantDao) CreateTenantOfAccount(ctx context.Context, tenant *model.Te
 	}
 
 	return tenantAccountJoin, nil
-}
-
-func (td *TenantDao) FindTenantMemberByAccount(ctx context.Context, account *model.Account) (*model.TenantAccountJoin, error) {
-
-	var tenantAccountJoin model.TenantAccountJoin
-	if err := td.db.Scopes(mysql.IDDesc()).Limit(1).Find(&tenantAccountJoin, "account_id = ?", account.ID).Error; err != nil {
-		return nil, err
-	}
-	return &tenantAccountJoin, nil
-}
-
-func (td *TenantDao) FindCurrentTenantMemberByAccount(ctx context.Context, account *model.Account) (*model.TenantAccountJoin, error) {
-	var tenantAccountJoin model.TenantAccountJoin
-	if err := td.db.Scopes(mysql.IDDesc()).Limit(1).Find(&tenantAccountJoin, "account_id = ? AND current = ?", account.ID, 1).Error; err != nil {
-		return nil, err
-	}
-
-	return &tenantAccountJoin, nil
 }
 
 func (td *TenantDao) UpdateCurrentTenantAccountJoin(ctx context.Context, ta *model.TenantAccountJoin) (*model.TenantAccountJoin, error) {

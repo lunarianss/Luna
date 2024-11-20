@@ -22,7 +22,7 @@ func NewTenantDomain(tenantRepo repo.TenantRepo) *TenantDomain {
 	}
 }
 
-func (ts *TenantDomain) CreateOwnerTenantIfNotExistsTx(ctx context.Context, tx *gorm.DB, name string, account *model.Account, isSetup bool) error {
+func (ts *TenantDomain) CreateOwnerTenantIfNotExistsTx(ctx context.Context, tx *gorm.DB, account *model.Account, isSetup bool) error {
 	tenantJoin, err := ts.TenantRepo.FindTenantJoinByAccount(ctx, account, true, tx)
 
 	if err != nil {
@@ -33,9 +33,7 @@ func (ts *TenantDomain) CreateOwnerTenantIfNotExistsTx(ctx context.Context, tx *
 		return nil
 	}
 
-	if name == "" {
-		name = fmt.Sprintf("%s's Workspace", account.Name)
-	}
+	name := fmt.Sprintf("%s's Workspace", account.Name)
 
 	tenant, err := ts.CreateTenantTx(ctx, tx, account, &model.Tenant{Name: name}, false)
 
@@ -60,6 +58,7 @@ func (ts *TenantDomain) CreateOwnerTenantIfNotExistsTx(ctx context.Context, tx *
 	if _, err := ts.CreateTenantMemberTx(ctx, tx, account, tenant, string(model.OWNER)); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -81,7 +80,7 @@ func (ts *TenantDomain) CreateTenantMemberTx(ctx context.Context, tx *gorm.DB, a
 		return nil, errors.WithCode(code.ErrTenantAlreadyExist, "tenant %s already exists role %s", tenant.Name, role)
 	}
 
-	tenantMember, err := ts.TenantRepo.GetTenantOfAccount(ctx, tenant, account, true, tx)
+	tenantMember, err := ts.TenantRepo.GetTenantJoinOfAccount(ctx, tenant, account, true, tx)
 
 	if err != nil {
 		return nil, err
@@ -96,7 +95,7 @@ func (ts *TenantDomain) CreateTenantMemberTx(ctx context.Context, tx *gorm.DB, a
 		return tenantMember, nil
 	}
 
-	if tenantAccountJoin, err = ts.TenantRepo.CreateTenantOfAccount(ctx, tenant, account, model.TenantAccountJoinRole(role), true, tx); err != nil {
+	if tenantAccountJoin, err = ts.TenantRepo.CreateCurrentTenantJoinOfAccount(ctx, tenant, account, model.TenantAccountJoinRole(role), true, tx); err != nil {
 		return nil, err
 	}
 

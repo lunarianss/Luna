@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 
+	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/app"
 	modelDomain "github.com/lunarianss/Luna/internal/api-server/domain/model"
 	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
@@ -25,17 +26,26 @@ type AppService struct {
 	AppDomain      *domain.AppDomain
 	ModelDomain    *modelDomain.ModelDomain
 	ProviderDomain *providerDomain.ModelProviderDomain
+	AccountDomain  *accountDomain.AccountDomain
 }
 
-func NewAppService(appDomain *domain.AppDomain, modelDomain *modelDomain.ModelDomain, providerDomain *providerDomain.ModelProviderDomain) *AppService {
-	return &AppService{AppDomain: appDomain, ModelDomain: modelDomain, ProviderDomain: providerDomain}
+func NewAppService(appDomain *domain.AppDomain, modelDomain *modelDomain.ModelDomain, providerDomain *providerDomain.ModelProviderDomain, accountDomain *accountDomain.AccountDomain) *AppService {
+	return &AppService{AppDomain: appDomain, ModelDomain: modelDomain, ProviderDomain: providerDomain, AccountDomain: accountDomain}
 }
 
-func (as *AppService) CreateApp(ctx context.Context, tenantID, accountID string, createAppRequest *dto.CreateAppRequest) (*dto.CreateAppResponse, error) {
+func (as *AppService) CreateApp(ctx context.Context, accountID string, createAppRequest *dto.CreateAppRequest) (*dto.CreateAppResponse, error) {
 
 	var (
 		retApp *model.App
 	)
+
+	tenantRecord, _, err := as.AccountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+	tenantID := tenantRecord.ID
+
 	appTemplate, ok := template.DefaultAppTemplates[template.AppMode(createAppRequest.Mode)]
 
 	if !ok {

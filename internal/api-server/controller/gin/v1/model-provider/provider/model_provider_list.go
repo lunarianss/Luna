@@ -7,13 +7,22 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 
+	"github.com/lunarianss/Luna/internal/api-server/pkg/util"
 	"github.com/lunarianss/Luna/internal/pkg/core"
 	"github.com/lunarianss/Luna/pkg/log"
 )
 
 func (bc *ModelProviderController) List(c *gin.Context) {
 	log.InfoL(c, "model provider list function called.")
-	providerLists, err := bc.modelProviderService.GetProviderList(c, "9ecdc361-cbc1-4c9b-8fb9-827dff4c145a", "")
+
+	userID, err := util.GetUserIDFromGin(c)
+
+	if err != nil {
+		core.WriteResponse(c, err, nil)
+		return
+	}
+
+	providerLists, err := bc.modelProviderService.GetProviderList(c, userID, "")
 
 	if err != nil {
 		core.WriteResponse(c, err, nil)

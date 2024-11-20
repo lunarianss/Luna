@@ -30,10 +30,16 @@ func NewModelProviderService(modelProviderDomain *domain.ModelProviderDomain, ac
 	return &ModelProviderService{ModelProviderDomain: modelProviderDomain, AccountDomain: accountDomain}
 }
 
-func (mpSrv *ModelProviderService) GetProviderList(ctx context.Context, tenantId string, modelType string) ([]*dto.ProviderResponse, error) {
+func (mpSrv *ModelProviderService) GetProviderList(ctx context.Context, accountID string, modelType string) ([]*dto.ProviderResponse, error) {
 	var customConfigurationStatus dto.CustomConfigurationStatus
 
-	providerConfigurations, err := mpSrv.ModelProviderDomain.GetConfigurations(ctx, tenantId)
+	tenantRecord, _, err := mpSrv.AccountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	providerConfigurations, err := mpSrv.ModelProviderDomain.GetConfigurations(ctx, tenantRecord.ID)
 	if err != nil {
 		return nil, err
 	}

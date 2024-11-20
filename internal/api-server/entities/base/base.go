@@ -24,6 +24,8 @@ const (
 	TEXT2IMG       ModelType = "text2img"
 )
 
+var ModelTypeEnums = []string{"llm", "text-embedding", "rerank", "speech2text", "moderation", "tts", "text2img"}
+
 func (m ModelType) ToOriginModelType() (string, error) {
 	var originType string
 
@@ -94,5 +96,3 @@ func (o *I18nObject) PatchZh() {
 		o.Zh_Hans = o.En_US
 	}
 }
-
-

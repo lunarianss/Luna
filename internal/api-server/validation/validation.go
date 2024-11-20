@@ -11,4 +11,5 @@ import (
 // validation unified registration portal
 func init() {
 	validation.RegisterValidator(&blogValidation{})
+	validation.RegisterValidator(&modelValidation{})
 }

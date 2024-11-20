@@ -115,7 +115,7 @@ type CreateModelCredentialBody struct {
 }
 
 type GetAccountAvailableModelsRequest struct {
-	ModelType string `uri:"modelType" validate:"required"`
+	ModelType string `uri:"modelType" validate:"required,valid_model_type" json:"model_type"`
 }
 
 type ProviderWithModelsResponse struct {

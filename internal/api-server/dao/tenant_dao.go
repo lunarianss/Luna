@@ -86,6 +86,15 @@ func (td *TenantDao) FindCurrentTenantJoinByAccount(ctx context.Context, account
 
 	return &tenantAccountJoin, nil
 }
+func (td *TenantDao) FindTenantsJoinByAccount(ctx context.Context, account *model.Account) ([]*model.TenantJoinResult, error) {
+	var tenantJoinResults []*model.TenantJoinResult
+
+	if err := td.db.Table("tenants").Select("tenants.id as tenant_id, tenant_account_joins.role as tenant_join_role, tenants.name as tenant_name, tenants.plan as tenant_plan, tenants.status as tenant_status, tenants.created_at as tenant_created_at, tenants.updated_at as tenant_updated_at, tenants.custom_config as tenants_custom_config").Joins("join tenant_account_joins on tenants.id = tenant_account_joins.tenant_id").Scan(&tenantJoinResults).Error; err != nil {
+		return nil, err
+	}
+
+	return tenantJoinResults, nil
+}
 
 func (td *TenantDao) GetTenantJoinOfAccount(ctx context.Context, tenant *model.Tenant, account *model.Account, isTransaction bool, tx *gorm.DB) (*model.TenantAccountJoin, error) {
 

@@ -17,6 +17,7 @@ type TenantRepo interface {
 
 	FindCurrentTenantJoinByAccount(ctx context.Context, account *model.Account) (*model.TenantAccountJoin, error)
 	FindTenantJoinByAccount(ctx context.Context, account *model.Account, isTransaction bool, tx *gorm.DB) (*model.TenantAccountJoin, error)
+	FindTenantsJoinByAccount(ctx context.Context, account *model.Account) ([]*model.TenantJoinResult, error)
 	GetTenantJoinOfAccount(ctx context.Context, tenant *model.Tenant, account *model.Account, isTransaction bool, tx *gorm.DB) (*model.TenantAccountJoin, error)
 	GetTenantByID(ctx context.Context, ID string) (*model.Tenant, error)
 	HasRoles(ctx context.Context, tenant *model.Tenant, roles []model.TenantAccountJoinRole, isTransaction bool, tx *gorm.DB) (bool, error)

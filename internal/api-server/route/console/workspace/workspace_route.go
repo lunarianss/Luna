@@ -56,10 +56,9 @@ func (a *WorkspaceRoutes) Register(g *gin.Engine) error {
 	workspaceController := controller.NewWorkspaceController(tenantService)
 	v1 := g.Group("/v1")
 	authV1 := v1.Group("/console/api")
-	workspaceV1 := authV1.Group("/workspaces")
-	workspaceV1.Use(middleware.TokenAuthMiddleware())
-
-	workspaceV1.GET("/current", workspaceController.GetTenantCurrentWorkspace)
+	authV1.Use(middleware.TokenAuthMiddleware())
+	authV1.GET("/workspaces", workspaceController.List)
+	authV1.GET("/workspaces/current", workspaceController.GetTenantCurrentWorkspace)
 
 	return nil
 }

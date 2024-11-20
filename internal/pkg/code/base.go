@@ -106,6 +106,8 @@ const (
 	ErrTokenInsNotFound
 	// ErrRefreshTokenNotFound - 500: Refresh token is not found in redis.
 	ErrRefreshTokenNotFound
+	// ErrTokenMissBearer - 500: Token miss a header of Bearer .
+	ErrTokenMissBearer
 )
 
 const (
@@ -123,4 +125,9 @@ const (
 const (
 	// ErrRSAGenerate - 500: Error occurred when generate pair of rsa key.
 	ErrRSAGenerate int = iota + 100601
+)
+
+const (
+	// ErrNotExistAccountInfo - 500: Error occurred when get account info from gin context.
+	ErrGinNotExistAccountInfo int = iota + 100701
 )

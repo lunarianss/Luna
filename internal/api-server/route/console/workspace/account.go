@@ -1,0 +1,69 @@
+package route
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/lunarianss/Luna/internal/api-server/config"
+	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/account"
+	"github.com/lunarianss/Luna/internal/api-server/dao"
+	domain "github.com/lunarianss/Luna/internal/api-server/domain/account"
+	tenantDomain "github.com/lunarianss/Luna/internal/api-server/domain/tenant"
+	"github.com/lunarianss/Luna/internal/api-server/middlewares"
+	"github.com/lunarianss/Luna/internal/api-server/service"
+	"github.com/lunarianss/Luna/internal/pkg/email"
+	"github.com/lunarianss/Luna/internal/pkg/mysql"
+	"github.com/lunarianss/Luna/internal/pkg/redis"
+)
+
+type AccountRoute struct {
+}
+
+func (a *AccountRoute) Register(g *gin.Engine) error {
+	gormIns, err := mysql.GetMySQLIns(nil)
+
+	if err != nil {
+		return err
+	}
+
+	redisIns, err := redis.GetRedisIns(nil)
+
+	if err != nil {
+		return err
+	}
+
+	email, err := email.GetEmailSMTPIns(nil)
+
+	if err != nil {
+		return err
+	}
+
+	// config
+	config, err := config.GetLunaRuntimeConfig()
+
+	if err != nil {
+		return err
+	}
+
+	// dao
+	accountDao := dao.NewAccountDao(gormIns)
+	tenantDao := dao.NewTenantDao(gormIns)
+
+	// domain
+	accountDomain := domain.NewAccountDomain(accountDao, redisIns, config, email, tenantDao)
+	tenantDomain := tenantDomain.NewTenantDomain(tenantDao)
+
+	// service
+	accountService := service.NewAccountService(accountDomain, tenantDomain, gormIns)
+
+	accountController := controller.NewAccountController(accountService)
+
+	v1 := g.Group("/v1")
+
+	authV1 := v1.Group("/console/api")
+	accountV1 := authV1.Group("/account").Use(middlewares.TokenAuthMiddleware())
+	accountV1.GET("/profile", accountController.GetAccountProfile)
+	return nil
+}
+
+func (r *AccountRoute) GetModule() string {
+	return "account"
+}

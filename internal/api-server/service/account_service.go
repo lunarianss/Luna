@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/account"
 	tenantDomain "github.com/lunarianss/Luna/internal/api-server/domain/tenant"
+	accountDto "github.com/lunarianss/Luna/internal/api-server/dto/account"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/auth"
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/pkg/util"
@@ -106,4 +107,20 @@ func (ad *AccountService) CreateAccountAndTenant(ctx context.Context, email, nam
 func (ad *AccountService) RefreshToken(ctx context.Context, refreshToken string) (*domain.TokenPair, error) {
 
 	return ad.AccountDomain.RefreshToken(ctx, refreshToken)
+}
+
+func (ad *AccountService) GetAccountProfile(ctx context.Context, accountID string) (*accountDto.GetAccountProfileResp, error) {
+	accountRecord, err := ad.AccountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp := accountDto.AccountConvertToProfile(accountRecord)
+
+	if accountRecord.Password != "" && accountRecord.PasswordSalt != "" {
+		resp.IsPasswordSet = true
+	}
+
+	return resp, nil
 }

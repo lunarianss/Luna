@@ -15,21 +15,21 @@ type LunaClaims struct {
 	jwt.RegisteredClaims
 }
 
-var JWTIns *JWT
+var jWTIns *JWT
 
 type JWT struct {
 	SignKey []byte
 }
 
 func NewJWT(signKey string) *JWT {
-	JWTIns = &JWT{
+	jWTIns = &JWT{
 		SignKey: []byte(signKey),
 	}
-	return JWTIns
+	return jWTIns
 }
 
 func GetJWTIns() *JWT {
-	return JWTIns
+	return jWTIns
 }
 
 func (j *JWT) GenerateJWT(claims LunaClaims) (string, error) {

@@ -1,11 +1,17 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"runtime"
 )
 
+type B struct {
+	Age int `json:"age"`
+}
+
 type A struct {
+	*B
 	Name string `json:"name"`
 }
 
@@ -15,5 +21,11 @@ func a() {
 }
 
 func main() {
-	a()
+	a := &A{
+		B: &B{Age: 13},
+	}
+
+	c, _ := json.Marshal(a)
+
+	fmt.Println(string(c))
 }

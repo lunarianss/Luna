@@ -19,6 +19,7 @@ func init() {
 	server.RegisterRoute(&consoleWorkSpaceRoute.ModelProviderRoutes{})
 	server.RegisterRoute(&consoleWorkSpaceRoute.ModelRoutes{})
 	server.RegisterRoute(&consoleWorkSpaceRoute.AppRoutes{})
+	server.RegisterRoute(&consoleWorkSpaceRoute.AccountRoute{})
 
 	// console/auth
 	server.RegisterRoute(&authRoute.AuthRoutes{})

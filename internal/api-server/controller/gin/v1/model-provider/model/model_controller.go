@@ -9,9 +9,9 @@ import (
 )
 
 type ModelController struct {
-	modelProviderService *service.ModelService
+	ModelProviderService *service.ModelService
 }
 
 func NewModelController(modelProviderSrv *service.ModelService) *ModelController {
-	return &ModelController{modelProviderService: modelProviderSrv}
+	return &ModelController{ModelProviderService: modelProviderSrv}
 }

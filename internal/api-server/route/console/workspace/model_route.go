@@ -32,9 +32,11 @@ func (r *ModelRoutes) Register(g *gin.Engine) error {
 	modelController := controller.NewModelController(modelService)
 
 	v1 := g.Group("/v1")
-	modelProviderV1 := v1.Group("/console/workspace/current")
+	modelProviderV1 := v1.Group("/console/api/workspaces/current")
 
 	modelProviderV1.POST("/model-providers/:provider/models", modelController.SaveModelCredential)
+
+	modelProviderV1.POST("/model-types/:modelType", modelController.GetAccountAvailableModels)
 
 	return nil
 }

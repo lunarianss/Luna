@@ -22,19 +22,7 @@ func NewTenantService(accountDomain *domain.AccountDomain, tenantDomain *tenantD
 
 func (s *TenantService) GetTenantCurrentWorkspace(ctx context.Context, accountID string) (*dto.CurrentTenantInfo, error) {
 
-	accountRecord, err := s.AccountDomain.AccountRepo.GetAccountByID(ctx, accountID)
-
-	if err != nil {
-		return nil, err
-	}
-
-	accountJoinRecord, err := s.TenantDomain.TenantRepo.FindCurrentTenantJoinByAccount(ctx, accountRecord)
-
-	if err != nil {
-		return nil, err
-	}
-
-	tenantRecord, err := s.TenantDomain.TenantRepo.GetTenantByID(ctx, accountJoinRecord.TenantID)
+	tenantRecord, accountJoinRecord, err := s.AccountDomain.GetCurrentTenantOfAccount(ctx, accountID)
 
 	if err != nil {
 		return nil, err

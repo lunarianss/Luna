@@ -405,3 +405,26 @@ func (ad *AccountDomain) RefreshToken(ctx context.Context, refreshToken string) 
 		RefreshToken: newRefreshToken,
 	}, nil
 }
+
+func (ad *AccountDomain) GetCurrentTenantOfAccount(ctx context.Context, accountID string) (*model.Tenant, *model.TenantAccountJoin, error) {
+
+	accountRecord, err := ad.AccountRepo.GetAccountByID(ctx, accountID)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	accountJoinRecord, err := ad.TenantRepo.FindCurrentTenantJoinByAccount(ctx, accountRecord)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	tenantRecord, err := ad.TenantRepo.GetTenantByID(ctx, accountJoinRecord.TenantID)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return tenantRecord, accountJoinRecord, nil
+}

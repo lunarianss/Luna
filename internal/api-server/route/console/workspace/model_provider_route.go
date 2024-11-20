@@ -9,7 +9,9 @@ import (
 
 	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/model-provider/provider"
 	"github.com/lunarianss/Luna/internal/api-server/dao"
+	"github.com/lunarianss/Luna/internal/api-server/domain/account"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
+	"github.com/lunarianss/Luna/internal/api-server/middleware"
 	"github.com/lunarianss/Luna/internal/api-server/service"
 	"github.com/lunarianss/Luna/internal/pkg/mysql"
 )
@@ -26,15 +28,21 @@ func (r *ModelProviderRoutes) Register(g *gin.Engine) error {
 	// dao
 	modelProviderDao := dao.NewModelProvider(gormIns)
 	modelDao := dao.NewModelDao(gormIns)
+	accountDao := dao.NewAccountDao(gormIns)
+	tenantDao := dao.NewTenantDao(gormIns)
+
 	// domain
 	modelProviderDomain := domain.NewModelProviderDomain(modelProviderDao, modelDao)
+	accountDomain := account.NewAccountDomain(accountDao, nil, nil, nil, tenantDao)
 
 	// service
-	modelProviderService := service.NewModelProviderService(modelProviderDomain)
+	modelProviderService := service.NewModelProviderService(modelProviderDomain, accountDomain)
 	modelProviderController := controller.NewModelProviderController(modelProviderService)
 
 	v1 := g.Group("/v1")
-	modelProviderV1 := v1.Group("/console/workspace/current")
+	modelProviderV1 := v1.Group("/console/api/workspaces/current")
+
+	modelProviderV1.Use(middleware.TokenAuthMiddleware())
 
 	modelProviderV1.GET("/model-providers", modelProviderController.List)
 	modelProviderV1.GET("/model-providers/:provider/:iconType/:lang", modelProviderController.ListIcons)

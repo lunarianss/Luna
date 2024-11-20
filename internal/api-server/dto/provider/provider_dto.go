@@ -113,3 +113,7 @@ type CreateModelCredentialBody struct {
 	ModelType   string                 `json:"model_type"  validate:"required"`
 	Credentials map[string]interface{} `json:"credentials"  validate:"required"`
 }
+
+type GetAccountAvailableModelsRequest struct {
+	ModelType string `uri:"modelType" validate:"required"`
+}

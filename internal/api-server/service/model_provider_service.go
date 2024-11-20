@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strings"
 
+	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/provider"
 	"github.com/lunarianss/Luna/internal/api-server/entities/base"
@@ -22,10 +23,11 @@ import (
 
 type ModelProviderService struct {
 	ModelProviderDomain *domain.ModelProviderDomain
+	AccountDomain       *accountDomain.AccountDomain
 }
 
-func NewModelProviderService(modelProviderDomain *domain.ModelProviderDomain) *ModelProviderService {
-	return &ModelProviderService{ModelProviderDomain: modelProviderDomain}
+func NewModelProviderService(modelProviderDomain *domain.ModelProviderDomain, accountDomain *accountDomain.AccountDomain) *ModelProviderService {
+	return &ModelProviderService{ModelProviderDomain: modelProviderDomain, AccountDomain: accountDomain}
 }
 
 func (mpSrv *ModelProviderService) GetProviderList(ctx context.Context, tenantId string, modelType string) ([]*dto.ProviderResponse, error) {
@@ -109,8 +111,15 @@ func (mpSrv *ModelProviderService) GetProviderIconPath(ctx context.Context, prov
 	return fmt.Sprintf("%s/%s/%s", providerPath, model_providers.ASSETS_DIR, iconName), nil
 }
 
-func (mpSrv *ModelProviderService) SaveProviderCredentials(ctx context.Context, tenantId string, provider string, credentials map[string]interface{}) error {
-	providerConfigurations, err := mpSrv.ModelProviderDomain.GetConfigurations(ctx, tenantId)
+func (mpSrv *ModelProviderService) SaveProviderCredentials(ctx context.Context, accountID string, provider string, credentials map[string]interface{}) error {
+
+	tenantRecord, _, err := mpSrv.AccountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+
+	if err != nil {
+		return err
+	}
+
+	providerConfigurations, err := mpSrv.ModelProviderDomain.GetConfigurations(ctx, tenantRecord.ID)
 
 	if err != nil {
 		return err

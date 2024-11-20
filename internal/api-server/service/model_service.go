@@ -9,6 +9,7 @@ import (
 
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/model"
 	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
+	"github.com/lunarianss/Luna/internal/api-server/entities/base"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
 )
@@ -42,5 +43,10 @@ func (ms *ModelService) SaveModelCredentials(ctx context.Context, tenantId, mode
 		return err
 	}
 
+	return nil
+}
+
+func (ms *ModelService) GetAccountAvailableModels(ctx context.Context, tenantID, modelType base.LLMMode) error {
+	// ms.ModelProviderDomain.GetConfigurations(ctx, tenantID)
 	return nil
 }

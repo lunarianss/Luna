@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/provider"
+	"github.com/lunarianss/Luna/internal/api-server/pkg/util"
 	"github.com/lunarianss/Luna/internal/pkg/core"
 )
 
@@ -20,7 +21,14 @@ func (mc *ModelProviderController) SaveProviderCredential(c *gin.Context) {
 		return
 	}
 
-	if err := mc.modelProviderService.SaveProviderCredentials(c, "9ecdc361-cbc1-4c9b-8fb9-827dff4c145a", paramsUri.Provider, paramsBody.Credentials); err != nil {
+	userID, err := util.GetUserIDFromGin(c)
+
+	if err != nil {
+		core.WriteResponse(c, err, nil)
+		return
+	}
+
+	if err := mc.modelProviderService.SaveProviderCredentials(c, userID, paramsUri.Provider, paramsBody.Credentials); err != nil {
 		core.WriteResponse(c, err, nil)
 		return
 	}

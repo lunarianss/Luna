@@ -32,7 +32,8 @@ func (c *ProviderConfiguration) GetCurrentCredentials(modelType base.ModelType, 
 		}
 	}
 
-	if credentials == nil {
+	if c.CustomConfiguration.Provider != nil && credentials == nil {
+
 		credentials, _ = c.CustomConfiguration.Provider.Credentials.(map[string]interface{})
 	}
 	return credentials, nil

@@ -49,7 +49,7 @@ func (md *ModelDao) CreateModel(ctx context.Context, model *model.ProviderModel)
 }
 
 func (md *ModelDao) GetTenantDefaultModel(ctx context.Context, tenantID, modelType string) (*model.TenantDefaultModel, error) {
-	var defaultModel *model.TenantDefaultModel
+	var defaultModel model.TenantDefaultModel
 	if err := md.db.Scopes(mysql.IDDesc()).Where("tenant_id = ? and model_type = ?", tenantID, modelType).First(&defaultModel).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -57,7 +57,7 @@ func (md *ModelDao) GetTenantDefaultModel(ctx context.Context, tenantID, modelTy
 			return nil, errors.WithCode(code.ErrDatabase, err.Error())
 		}
 	}
-	return defaultModel, nil
+	return &defaultModel, nil
 }
 
 func (md *ModelDao) CreateTenantDefaultModel(ctx context.Context, tenantDefaultModel *model.TenantDefaultModel) (*model.TenantDefaultModel, error) {

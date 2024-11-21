@@ -138,3 +138,38 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 		App:         retApp,
 	}, nil
 }
+
+func (as *AppService) ListTenantApps(ctx context.Context, params *dto.ListAppRequest, accountID string) (*dto.ListAppsResponse, error) {
+
+	tenantRecord, _, err := as.AccountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+	appRecords, appCount, err := as.AppDomain.AppRepo.FindTenantApps(ctx, tenantRecord, params.Page, params.PageSize)
+
+	if err != nil {
+		return nil, err
+	}
+
+	appItems := make([]*dto.ListAppItem, 0, 5)
+
+	for _, app := range appRecords {
+		appItems = append(appItems, dto.ListAppRecordToItem(app))
+	}
+
+	hasMore := 1
+
+	if len(appRecords) < params.PageSize {
+		hasMore = 0
+	}
+
+	return &dto.ListAppsResponse{
+		Page:     params.Page,
+		PageSize: params.PageSize,
+		Total:    appCount,
+		Data:     appItems,
+		HasMore:  hasMore,
+	}, nil
+
+}

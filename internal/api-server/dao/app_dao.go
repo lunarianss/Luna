@@ -6,6 +6,7 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/api-server/repo"
 	"github.com/lunarianss/Luna/internal/pkg/code"
+	"github.com/lunarianss/Luna/internal/pkg/mysql"
 	"github.com/lunarianss/Luna/pkg/errors"
 	"gorm.io/gorm"
 )
@@ -25,6 +26,16 @@ func (ad *AppDao) CreateApp(ctx context.Context, app *model.App) (*model.App, er
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())
 	}
 	return app, nil
+}
+
+func (ad *AppDao) FindTenantApps(ctx context.Context, tenant *model.Tenant, page, pageSize int) ([]*model.App, int64, error) {
+	var apps []*model.App
+	var appCount int64
+
+	if err := ad.db.Table("apps").Count(&appCount).Scopes(mysql.Paginate(page, pageSize)).Find(&apps, "tenant_id = ? AND is_universal = ?", tenant.ID, 0).Error; err != nil {
+		return nil, 0, err
+	}
+	return apps, appCount, nil
 }
 
 func (ad *AppDao) CreateConversation(ctx context.Context, conversation *model.Conversation) (*model.Conversation, error) {

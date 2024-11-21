@@ -321,7 +321,7 @@ func (ad *AccountDomain) LoadUser(ctx context.Context, userID string) (*model.Ac
 		return nil, errors.WithCode(code.ErrAccountBanned, fmt.Sprintf("account %s, email %s, id %s is already banned", account.Name, account.Email, account.ID))
 	}
 
-	tenantJoin, err := ad.TenantRepo.FindCurrentTenantJoinByAccount(ctx, account)
+	tenantJoin, err := ad.TenantRepo.GetCurrentTenantJoinByAccount(ctx, account)
 
 	if err != nil {
 		return nil, err
@@ -414,7 +414,7 @@ func (ad *AccountDomain) GetCurrentTenantOfAccount(ctx context.Context, accountI
 		return nil, nil, err
 	}
 
-	accountJoinRecord, err := ad.TenantRepo.FindCurrentTenantJoinByAccount(ctx, accountRecord)
+	accountJoinRecord, err := ad.TenantRepo.GetCurrentTenantJoinByAccount(ctx, accountRecord)
 
 	if err != nil {
 		return nil, nil, err

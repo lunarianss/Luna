@@ -44,6 +44,7 @@ func (a *AppRoutes) Register(g *gin.Engine) error {
 	modelProviderV1 := v1.Group("/console/api")
 	modelProviderV1.Use(middleware.TokenAuthMiddleware())
 	modelProviderV1.POST("/apps", appController.Create)
+	modelProviderV1.GET("/apps", appController.List)
 	modelProviderV1.POST("/apps/:appID/chat-messages", appController.ChatMessage)
 	return nil
 }

@@ -78,14 +78,14 @@ func (td *TenantDao) HasRoles(ctx context.Context, tenant *model.Tenant, roles [
 	return len(tenantMember) != 0, nil
 }
 
-func (td *TenantDao) FindCurrentTenantJoinByAccount(ctx context.Context, account *model.Account) (*model.TenantAccountJoin, error) {
+func (td *TenantDao) GetCurrentTenantJoinByAccount(ctx context.Context, account *model.Account) (*model.TenantAccountJoin, error) {
 	var tenantAccountJoin model.TenantAccountJoin
-	if err := td.db.Scopes(mysql.IDDesc()).Limit(1).Find(&tenantAccountJoin, "account_id = ? AND current = ?", account.ID, 1).Error; err != nil {
+	if err := td.db.First(&tenantAccountJoin, "account_id = ? AND current = ?", account.ID, 1).Error; err != nil {
 		return nil, err
 	}
-
 	return &tenantAccountJoin, nil
 }
+
 func (td *TenantDao) FindTenantsJoinByAccount(ctx context.Context, account *model.Account) ([]*model.TenantJoinResult, error) {
 	var tenantJoinResults []*model.TenantJoinResult
 

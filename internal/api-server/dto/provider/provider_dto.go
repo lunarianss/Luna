@@ -126,3 +126,7 @@ type ProviderWithModelsResponse struct {
 	Status    CustomConfigurationStatus                       `json:"status"`
 	Models    []*model_provider.ProviderModelWithStatusEntity `json:"models"`
 }
+
+type ParameterRulesQuery struct {
+	Model string `form:"model" validate:"required"`
+}

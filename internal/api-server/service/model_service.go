@@ -122,3 +122,46 @@ func (ms *ModelService) GetAccountAvailableModels(ctx context.Context, accountID
 	}
 	return providerResponses, nil
 }
+
+func (ms *ModelService) GetModelParameterRules(ctx context.Context, accountID string, provider string, model string) ([]*model_provider.ParameterRule, error) {
+	tenantRecord, _, err := ms.AccountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	providerConfigurations, err := ms.ModelProviderDomain.GetConfigurations(ctx, tenantRecord.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	providerConfiguration, err := ms.ModelProviderDomain.GetConfigurationByProvider(ctx, providerConfigurations, provider)
+
+	if err != nil {
+		return nil, err
+	}
+
+	credentials, err := providerConfiguration.GetCurrentCredentials(base.LLM, model)
+
+	if err != nil {
+		return nil, err
+	}
+
+	model_provider, err := ms.ModelProviderDomain.ModelProviderRepo.GetProviderInstance(ctx, provider)
+
+	if err != nil {
+		return nil, err
+	}
+
+	modelInstance := model_provider.GetModelInstance(base.LLM)
+
+	AIModelEntity, err := ms.ModelProviderDomain.GetModelSchema(ctx, model, credentials, modelInstance)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return AIModelEntity.ParameterRules, nil
+
+}

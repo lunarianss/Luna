@@ -113,6 +113,15 @@ func (mpd *ModelProviderDomain) GetConfigurations(ctx context.Context, tenantId 
 	return providerConfigurations, nil
 }
 
+func (mpd *ModelProviderDomain) GetConfigurationByProvider(ctx context.Context, configurations *model_provider.ProviderConfigurations, provider string) (*model_provider.ProviderConfiguration, error) {
+	for providerName, configuration := range configurations.Configurations {
+		if providerName == provider {
+			return configuration, nil
+		}
+	}
+	return nil, errors.WithCode(code.ErrRequiredCorrectProvider, fmt.Sprintf("provider %s not found", provider))
+}
+
 func (mpd *ModelProviderDomain) GetModelSchema(ctx context.Context, model string, credentials interface{}, AIModel *model_provider.AIModel) (*model_provider.AIModelEntity, error) {
 
 	AIModelEntities, err := AIModel.PredefinedModels()

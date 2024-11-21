@@ -25,7 +25,7 @@ const (
 	// ErrRestfulId - 400: Error occurred while parse restful id from url.
 	ErrRestfulId
 
-	// ErrRunTimeCaller - 500: Error occurred while call go inner function.
+	// ErrRunTimeCaller - 500: Error occurred while call a go system call.
 	ErrRunTimeCaller
 
 	// ErrRunTimeConfig - 500: Error occurred while runtime config is nil.

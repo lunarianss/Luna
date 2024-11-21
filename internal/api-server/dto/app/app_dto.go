@@ -188,5 +188,9 @@ func AppRecordToDetail(app *model.App, modelConfig *model.AppModelConfig) *AppDe
 		}
 	}
 
+	if appDetail.ModelConfig.UserInputForm == nil {
+		appDetail.ModelConfig.UserInputForm = []map[string]map[string]interface{}{}
+	}
+
 	return appDetail
 }

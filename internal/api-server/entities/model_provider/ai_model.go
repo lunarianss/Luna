@@ -29,17 +29,17 @@ const (
 )
 
 type ParameterRule struct {
-	Name        string           `json:"name" yaml:"name"`
-	UseTemplate string           `json:"use_template" yaml:"use_template"`
-	Label       *base.I18nObject `json:"label" yaml:"label"`
-	Type        ParameterType    `json:"type" yaml:"type"`
-	Help        *base.I18nObject `json:"help" yaml:"help"`
-	Required    bool             `json:"required" yaml:"required"`
-	Default     any              `json:"default" yaml:"default"`
-	Min         float64          `json:"min" yaml:"min"`
-	Max         float64          `json:"max" yaml:"max"`
-	Precision   int              `json:"precision" yaml:"precision"`
-	Options     []string         `json:"options" yaml:"options"`
+	Name        string          `json:"name" yaml:"name"`
+	UseTemplate string          `json:"use_template" yaml:"use_template"`
+	Label       base.I18nObject `json:"label" yaml:"label"`
+	Type        ParameterType   `json:"type" yaml:"type"`
+	Help        base.I18nObject `json:"help" yaml:"help"`
+	Required    bool            `json:"required" yaml:"required"`
+	Default     any             `json:"default" yaml:"default"`
+	Min         float64         `json:"min" yaml:"min"`
+	Max         float64         `json:"max" yaml:"max"`
+	Precision   int             `json:"precision" yaml:"precision"`
+	Options     []string        `json:"options" yaml:"options"`
 }
 
 type PriceConfig struct {
@@ -100,6 +100,10 @@ func (a *AIModel) PredefinedModels() ([]*AIModelEntity, error) {
 	modelConfDir := a.ModelConfPath
 
 	dirEntries, err := os.ReadDir(modelConfDir)
+
+	if os.IsNotExist(err) {
+		return nil, nil
+	}
 
 	if err != nil {
 		return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())

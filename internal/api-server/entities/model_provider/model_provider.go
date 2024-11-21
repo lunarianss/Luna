@@ -106,8 +106,8 @@ type SimpleModelProviderEntity struct {
 }
 
 type ProviderModelWithStatusEntity struct {
-	Status         ModelStatus `json:"status"`
-	*ProviderModel `json:"provider_model"`
+	Status ModelStatus `json:"status"`
+	*ProviderModel
 }
 
 type ModelWithProviderEntity struct {

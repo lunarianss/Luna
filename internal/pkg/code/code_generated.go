@@ -20,7 +20,7 @@ func init() {
 	errors.Enroll(ErrValidation, 400, "Validation failed")
 	errors.Enroll(ErrPageNotFound, 404, "Page not found")
 	errors.Enroll(ErrRestfulId, 400, "Error occurred while parse restful id from url")
-	errors.Enroll(ErrRunTimeCaller, 500, "Error occurred while call go inner function")
+	errors.Enroll(ErrRunTimeCaller, 500, "Error occurred while call a go system call")
 	errors.Enroll(ErrRunTimeConfig, 500, "Error occurred while runtime config is nil")
 	errors.Enroll(ErrDatabase, 500, "Database error")
 	errors.Enroll(ErrRecordNotFound, 500, "Database record not found")

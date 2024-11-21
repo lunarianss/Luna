@@ -174,7 +174,7 @@ func (g *ChatAppGenerator) handleMessageQueueEvent(c context.Context, streamResu
 	for v := range streamResultChunkQueue {
 		if cm, ok := v.Event.(*entities.QueueLLMChunkEvent); ok {
 			// 将事件格式化为 SSE 格式发送给客户端
-			fmt.Fprintf(c.(*gin.Context).Writer, "data: {answer: %s}\n\n", cm.Chunk.Delta.Message.Content)
+			fmt.Fprintf(c.(*gin.Context).Writer, "data: {\"answer\": \"%s\", \"event\": \"message\"}\n\n", cm.Chunk.Delta.Message.Content)
 			flusher.Flush() // 确保数据立即发送到客户端
 		}
 	}
@@ -184,9 +184,10 @@ func (g *ChatAppGenerator) handleMessageQueueEvent(c context.Context, streamResu
 			chunkByte, _ := json.Marshal(mc.Chunk)
 			log.Infof("Event type: %s, Answer: %s", mc.Event, string(chunkByte))
 			// 将事件格式化为 SSE 格式发送给客户端
-			fmt.Fprintf(c.(*gin.Context).Writer, "data: %s\n\n", mc.Chunk.Delta.Message.Content)
+			fmt.Fprintf(c.(*gin.Context).Writer, "data: {\"answer\": \"%s\", \"event\": \"message_end\"}\n\n", mc.Chunk.Delta.Message.Content)
 			flusher.Flush() // 确保数据立即发送到客户端
 		} else if mc, ok := v.Event.(*entities.QueueMessageEndEvent); ok {
+			fmt.Fprintf(c.(*gin.Context).Writer, "data: {\"event\": \"message_end\"}\n\n")
 			log.Infof("Event type: %s, End LLM Result %+v", mc.Event, mc.LLMResult)
 		} else if mc, ok := v.Event.(*entities.QueueErrorEvent); ok {
 			log.Errorf("Event type: %s, Err: %#+v", mc.Event, mc.Err)

@@ -14,6 +14,7 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/entities/base"
 	"github.com/lunarianss/Luna/internal/api-server/entities/model_provider"
 	"github.com/lunarianss/Luna/internal/pkg/code"
+	"github.com/lunarianss/Luna/internal/pkg/util"
 	"github.com/lunarianss/Luna/pkg/errors"
 )
 
@@ -119,6 +120,7 @@ func (ms *ModelService) GetAccountAvailableModels(ctx context.Context, accountID
 			Models:    providerModelStatus,
 		})
 
+		util.PatchI18nObject(providerResponses)
 	}
 	return providerResponses, nil
 }

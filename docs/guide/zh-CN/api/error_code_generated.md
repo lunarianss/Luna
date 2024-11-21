@@ -33,7 +33,7 @@ IAM 系统支持的错误码列表如下：
 | ErrValidation | 100004 | 400 | Validation failed |
 | ErrPageNotFound | 100005 | 404 | Page not found |
 | ErrRestfulId | 100006 | 400 | Error occurred while parse restful id from url |
-| ErrRunTimeCaller | 100007 | 500 | Error occurred while call go inner function |
+| ErrRunTimeCaller | 100007 | 500 | Error occurred while call a go system call |
 | ErrRunTimeConfig | 100008 | 500 | Error occurred while runtime config is nil |
 | ErrDatabase | 100101 | 500 | Database error |
 | ErrRecordNotFound | 100102 | 500 | Database record not found |

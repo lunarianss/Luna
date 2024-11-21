@@ -22,6 +22,7 @@ func init() {
 	server.RegisterRoute(&consoleWorkSpaceRoute.AppRoutes{})
 	server.RegisterRoute(&consoleWorkSpaceRoute.AccountRoute{})
 	server.RegisterRoute(&consoleWorkSpaceRoute.WorkspaceRoutes{})
+	server.RegisterRoute(&consoleWorkSpaceRoute.TagRoutes{})
 
 	// console/auth
 	server.RegisterRoute(&authRoute.AuthRoutes{})
@@ -31,7 +32,6 @@ func init() {
 
 	// console/feature
 	server.RegisterRoute(&featureRoute.FeatureRoutes{})
-
 	server.RegisterRoute(&staticRoute{})
 
 }

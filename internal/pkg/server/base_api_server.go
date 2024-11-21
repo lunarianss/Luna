@@ -74,9 +74,9 @@ func (s *BaseApiServer) Setup() {
 // InstallMiddlewares install generic middlewares.
 func (s *BaseApiServer) InstallMiddlewares() {
 	// necessary middlewares
-	s.Use(middleware.RequestID())
-	s.Use(middleware.Context())
 	s.Use(middleware.Recovery())
+	s.Use(middleware.Context())
+	s.Use(middleware.RequestID())
 
 	// install custom middlewares
 	for _, m := range s.middlewares {

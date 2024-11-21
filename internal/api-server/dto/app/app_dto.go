@@ -24,7 +24,7 @@ type CreateAppResponse struct {
 
 type ListAppRequest struct {
 	Page     int `form:"page" validate:"required,min=1"`
-	PageSize int `form:"page_size" validate:"required,min=1,max=100"`
+	PageSize int `form:"limit" validate:"required,min=1,max=100"`
 }
 type ListAppsResponse struct {
 	Page     int            `json:"page"`

@@ -15,6 +15,7 @@ type AppRepo interface {
 	FindTenantApps(ctx context.Context, tenant *model.Tenant, page, pageSize int) ([]*model.App, int64, error)
 	GetAppByID(ctx context.Context, appID string) (*model.App, error)
 	GetAppModelConfigById(ctx context.Context, appConfigID string) (*model.AppModelConfig, error)
+	GetAppModelConfigByAppID(ctx context.Context, appID string) (*model.AppModelConfig, error)
 	GetMessageByID(ctx context.Context, messageID string) (*model.Message, error)
 	GetConversationByID(ctx context.Context, conversationID string) (*model.Conversation, error)
 }

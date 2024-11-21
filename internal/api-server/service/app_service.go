@@ -173,3 +173,18 @@ func (as *AppService) ListTenantApps(ctx context.Context, params *dto.ListAppReq
 	}, nil
 
 }
+
+func (as AppService) AppDetail(ctx context.Context, appID string) (*dto.AppDetail, error) {
+
+	appRecord, err := as.AppDomain.AppRepo.GetAppByID(ctx, appID)
+	if err != nil {
+		return nil, err
+	}
+
+	appConfigRecord, err := as.AppDomain.AppRepo.GetAppModelConfigByAppID(ctx, appID)
+	if err != nil {
+		return nil, err
+	}
+
+	return dto.AppRecordToDetail(appRecord, appConfigRecord), nil
+}

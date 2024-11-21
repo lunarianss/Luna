@@ -109,3 +109,12 @@ func (ad *AppDao) GetAppModelConfigById(ctx context.Context, appConfigID string)
 	}
 	return &appConfig, nil
 }
+
+func (ad *AppDao) GetAppModelConfigByAppID(ctx context.Context, appID string) (*model.AppModelConfig, error) {
+	var appConfig model.AppModelConfig
+
+	if err := ad.db.First(&appConfig, "app_id = ?", appID).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return &appConfig, nil
+}

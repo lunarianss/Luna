@@ -70,3 +70,47 @@ func ListAppRecordToItem(app *model.App) *ListAppItem {
 	}
 
 }
+
+type AppDetailRequest struct {
+	AppID string `uri:"appID" validate:"required"`
+}
+
+type AppDetail struct {
+	ID                  string                 `json:"id"`
+	Name                string                 `json:"name"`
+	Description         string                 `json:"description"`
+	Mode                string                 `json:"mode"`
+	Icon                string                 `json:"icon"`
+	IconType            string                 `json:"icon_type"`
+	IconBackground      string                 `json:"icon_background"`
+	EnableSite          int                    `json:"enable_site"`
+	EnableApi           int                    `json:"enable_api"`
+	ModelConfig         *model.AppModelConfig  `json:"model_config"`
+	Workflow            map[string]interface{} `json:"workflow"`
+	Site                map[string]interface{} `json:"site"`
+	UseIconAsAnswerIcon int                    `json:"use_icon_as_answer_icon"`
+	APIBaseUrl          string                 `json:"api_base_url"`
+	CreatedAt           int                    `json:"created_at"`
+	UpdatedAt           int                    `json:"updated_at"`
+	CreatedBy           string                 `json:"created_by"`
+	UpdatedBy           string                 `json:"updated_by"`
+	DeletedTools        []interface{}          `json:"deleted_tools"`
+}
+
+func AppRecordToDetail(app *model.App, modelConfig *model.AppModelConfig) *AppDetail {
+	return &AppDetail{
+		ID:                  app.ID,
+		Name:                app.Name,
+		Mode:                app.Mode,
+		Icon:                app.Icon,
+		IconBackground:      app.IconBackground,
+		CreatedAt:           app.CreatedAt,
+		UpdatedAt:           app.UpdatedAt,
+		Description:         app.Description,
+		IconType:            app.IconType,
+		CreatedBy:           app.CreatedBy,
+		UpdatedBy:           app.UpdatedBy,
+		UseIconAsAnswerIcon: int(app.UseIconAsAnswerIcon),
+		ModelConfig:         modelConfig,
+	}
+}

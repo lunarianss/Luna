@@ -24,6 +24,7 @@ func (a *FeatureRoutes) Register(g *gin.Engine) error {
 	v1 := g.Group("/v1")
 	authV1 := v1.Group("/console/api")
 	authV1.GET("/system-features", middleware.TokenAuthMiddleware(), featureController.GetSystemConfigs)
+	authV1.GET("/features", middleware.TokenAuthMiddleware(), featureController.List)
 	return nil
 }
 

@@ -165,3 +165,34 @@ func (ms *ModelService) GetModelParameterRules(ctx context.Context, accountID st
 	return AIModelEntity.ParameterRules, nil
 
 }
+
+func (ms *ModelService) GetDefaultModelByType(ctx context.Context, accountID string, modelType string) (*dto.DefaultModelResponse, error) {
+
+	tenantRecord, _, err := ms.AccountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+	defaultModelEntity, err := ms.ModelProviderDomain.GetDefaultModel(ctx, tenantRecord.ID, base.ModelType(modelType))
+
+	if errors.IsCode(err, code.ErrDefaultModelNotFound) {
+		return nil, nil
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.DefaultModelResponse{
+		Model:     defaultModelEntity.Model,
+		ModelType: defaultModelEntity.ModelType,
+		Provider: &model_provider.SimpleProviderEntity{
+			Provider:            defaultModelEntity.Provider.Provider,
+			Label:               defaultModelEntity.Provider.Label,
+			IconSmall:           defaultModelEntity.Provider.IconSmall,
+			IconLarge:           defaultModelEntity.Provider.IconLarge,
+			SupportedModelTypes: defaultModelEntity.Provider.SupportedModelTypes,
+		},
+	}, nil
+
+}

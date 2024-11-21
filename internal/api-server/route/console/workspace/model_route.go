@@ -39,10 +39,12 @@ func (r *ModelRoutes) Register(g *gin.Engine) error {
 	v1 := g.Group("/v1")
 	modelProviderV1 := v1.Group("/console/api/workspaces/current")
 	modelProviderV1.Use(middleware.TokenAuthMiddleware())
+
 	modelProviderV1.POST("/model-providers/:provider/models", modelController.SaveModelCredential)
 	modelProviderV1.GET("/model-providers/:provider/models/parameter-rules", modelController.ParameterRules)
-
 	modelProviderV1.GET("/models/model-types/:modelType", modelController.GetAccountAvailableModels)
+
+	modelProviderV1.GET("/default-model", modelController.GetDefaultModelByType)
 
 	return nil
 }

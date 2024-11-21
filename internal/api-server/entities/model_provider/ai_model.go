@@ -131,6 +131,8 @@ func (a *AIModel) PredefinedModels() ([]*AIModelEntity, error) {
 
 		if v, ok := modelPosition[AIModelEntity.Model]; ok {
 			AIModelEntity.Position = v
+		} else {
+			AIModelEntity.Position = 999
 		}
 		AIModelEntities = append(AIModelEntities, AIModelEntity)
 	}
@@ -138,5 +140,6 @@ func (a *AIModel) PredefinedModels() ([]*AIModelEntity, error) {
 	sort.Slice(AIModelEntities, func(i, j int) bool {
 		return AIModelEntities[i].Position < AIModelEntities[j].Position
 	})
+
 	return AIModelEntities, nil
 }

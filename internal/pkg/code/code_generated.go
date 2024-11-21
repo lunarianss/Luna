@@ -64,7 +64,7 @@ func init() {
 	errors.Enroll(ErrProviderMapModel, 500, "Error occurred while attempt to index from providerMpa using provider")
 	errors.Enroll(ErrProviderNotHaveIcon, 500, "Error occurred while provider entity doesn't have icon property")
 	errors.Enroll(ErrToOriginModelType, 500, "Error occurred while convert to origin model type")
-	errors.Enroll(ErrDefaultModelNotFound, 500, "Error occurred while trying to convert default model to unknown")
+	errors.Enroll(ErrDefaultModelNotFound, 500, "Error occurred while default model is not exist")
 	errors.Enroll(ErrModelSchemaNotFound, 500, "Error occurred while attempt to index from predefined models using model name")
 	errors.Enroll(ErrAllModelsEmpty, 500, "Error occurred when all models are empty")
 	errors.Enroll(ErrModelNotHavePosition, 500, "Error occurred when models haven't position definition")

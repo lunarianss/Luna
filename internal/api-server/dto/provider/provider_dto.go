@@ -130,3 +130,13 @@ type ProviderWithModelsResponse struct {
 type ParameterRulesQuery struct {
 	Model string `form:"model" validate:"required"`
 }
+type DefaultModelByTypeQuery struct {
+	ModelType string `form:"model_type" validate:"required"`
+}
+
+// DefaultModelResponse represents the default model entity.
+type DefaultModelResponse struct {
+	Model     string                               `json:"model"`
+	ModelType string                               `json:"model_type"`
+	Provider  *model_provider.SimpleProviderEntity `json:"provider"`
+}

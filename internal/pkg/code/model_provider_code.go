@@ -7,7 +7,7 @@ const (
 	ErrProviderNotHaveIcon
 	// ErrToOriginModelType - 500: Error occurred while convert to origin model type.
 	ErrToOriginModelType
-	// ErrDefaultModelNotFound - 500: Error occurred while trying to convert default model to unknown.
+	// ErrDefaultModelNotFound - 500: Error occurred while default model is not exist.
 	ErrDefaultModelNotFound
 	// ErrModelSchemaNotFound - 500: Error occurred while attempt to index from predefined models using model name.
 	ErrModelSchemaNotFound

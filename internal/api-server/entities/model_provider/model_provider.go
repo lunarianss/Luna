@@ -121,3 +121,13 @@ const (
 	Custom_ACTIVE       = "active"
 	Custom_NO_CONFIGURE = "no-configure"
 )
+
+// SimpleProviderEntity represents a simple model for the provider.
+type SimpleProviderEntity struct {
+	Provider            string           `json:"provider"`
+	Label               *base.I18nObject `json:"label"`
+	IconSmall           *base.I18nObject `json:"icon_small"`
+	IconLarge           *base.I18nObject `json:"icon_large"`
+	SupportedModelTypes []base.ModelType `json:"supported_model_types"` // Assuming ModelType as string
+	Models              []*ProviderModel `json:"models"`
+}

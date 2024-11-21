@@ -77,7 +77,7 @@ IAM 系统支持的错误码列表如下：
 | ErrProviderMapModel | 110001 | 500 | Error occurred while attempt to index from providerMpa using provider |
 | ErrProviderNotHaveIcon | 110002 | 500 | Error occurred while provider entity doesn't have icon property |
 | ErrToOriginModelType | 110003 | 500 | Error occurred while convert to origin model type |
-| ErrDefaultModelNotFound | 110004 | 500 | Error occurred while trying to convert default model to unknown |
+| ErrDefaultModelNotFound | 110004 | 500 | Error occurred while default model is not exist |
 | ErrModelSchemaNotFound | 110005 | 500 | Error occurred while attempt to index from predefined models using model name |
 | ErrAllModelsEmpty | 110006 | 500 | Error occurred when all models are empty |
 | ErrModelNotHavePosition | 110007 | 500 | Error occurred when models haven't position definition |

@@ -98,7 +98,7 @@ type AppDetail struct {
 }
 
 func AppRecordToDetail(app *model.App, modelConfig *model.AppModelConfig) *AppDetail {
-	return &AppDetail{
+	appDetail := &AppDetail{
 		ID:                  app.ID,
 		Name:                app.Name,
 		Mode:                app.Mode,
@@ -113,4 +113,80 @@ func AppRecordToDetail(app *model.App, modelConfig *model.AppModelConfig) *AppDe
 		UseIconAsAnswerIcon: int(app.UseIconAsAnswerIcon),
 		ModelConfig:         modelConfig,
 	}
+
+	defaultDisable := map[string]any{
+		"enabled": 0,
+	}
+
+	defaultEnable := map[string]any{
+		"enabled": 1,
+	}
+
+	if appDetail.ModelConfig.SuggestedQuestionsAfterAnswer == nil {
+		appDetail.ModelConfig.SuggestedQuestionsAfterAnswer = defaultDisable
+	}
+
+	if appDetail.ModelConfig.SpeechToText == nil {
+		appDetail.ModelConfig.SpeechToText = defaultDisable
+	}
+
+	if appDetail.ModelConfig.TextToSpeech == nil {
+		appDetail.ModelConfig.TextToSpeech = defaultDisable
+	}
+
+	if appDetail.ModelConfig.RetrieverResource == nil {
+		appDetail.ModelConfig.RetrieverResource = defaultEnable
+	}
+
+	if appDetail.ModelConfig.MoreLikeThis == nil {
+		appDetail.ModelConfig.MoreLikeThis = defaultDisable
+	}
+
+	if appDetail.ModelConfig.SensitiveWordAvoidance == nil {
+		appDetail.ModelConfig.SensitiveWordAvoidance = map[string]any{
+			"enabled": 0,
+			"type":    "",
+			"configs": []any{},
+		}
+	}
+
+	if appDetail.ModelConfig.AgentMode == nil {
+		appDetail.ModelConfig.AgentMode = map[string]any{
+			"enabled":  0,
+			"strategy": nil,
+			"tools":    []any{},
+			"prompt":   nil,
+		}
+	}
+
+	if appDetail.ModelConfig.ChatPromptConfig == nil {
+		appDetail.ModelConfig.ChatPromptConfig = map[string]any{}
+	}
+
+	if appDetail.ModelConfig.CompletionPromptConfig == nil {
+		appDetail.ModelConfig.CompletionPromptConfig = map[string]any{}
+	}
+
+	if appDetail.ModelConfig.ExternalDataTools == nil {
+		appDetail.ModelConfig.ExternalDataTools = []string{}
+	}
+
+	if appDetail.ModelConfig.DatasetConfigs == nil {
+		appDetail.ModelConfig.DatasetConfigs = map[string]any{
+			"retrieval_model": "multiple",
+		}
+	}
+
+	if appDetail.ModelConfig.FileUpload == nil {
+		appDetail.ModelConfig.FileUpload = map[string]map[string]interface{}{
+			"image": {
+				"enabled":          false,
+				"number_limits":    3,
+				"detail":           "high",
+				"transfer_methods": []string{"remote_url", "local_file"},
+			},
+		}
+	}
+
+	return appDetail
 }

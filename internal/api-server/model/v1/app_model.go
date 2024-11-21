@@ -81,7 +81,7 @@ type AppModelConfig struct {
 	CompletionPromptConfig        map[string]interface{}              `json:"completion_prompt_config" gorm:"column:completion_prompt_config;serializer:json"`
 	DatasetConfigs                map[string]interface{}              `json:"dataset_configs" gorm:"column:dataset_configs;serializer:json"`
 	ExternalDataTools             []string                            `json:"external_data_tools" gorm:"column:external_data_tools;serializer:json"`
-	FileUpload                    map[string]interface{}              `json:"file_upload" gorm:"column:file_upload;serializer:json"`
+	FileUpload                    map[string]map[string]interface{}   `json:"file_upload" gorm:"column:file_upload;serializer:json"`
 	TextToSpeech                  map[string]interface{}              `json:"text_to_speech" gorm:"column:text_to_speech;serializer:json"`
 	CreatedBy                     string                              `json:"created_by" gorm:"column:created_by"`
 	UpdatedBy                     string                              `json:"updated_by" gorm:"column:updated_by"`

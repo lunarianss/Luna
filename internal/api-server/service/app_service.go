@@ -186,5 +186,6 @@ func (as AppService) AppDetail(ctx context.Context, appID string) (*dto.AppDetai
 		return nil, err
 	}
 
+	
 	return dto.AppRecordToDetail(appRecord, appConfigRecord), nil
 }

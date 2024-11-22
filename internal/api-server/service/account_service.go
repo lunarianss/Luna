@@ -14,15 +14,15 @@ import (
 )
 
 type AccountService struct {
-	AccountDomain *domain.AccountDomain
-	TenantDomain  *tenantDomain.TenantDomain
+	accountDomain *domain.AccountDomain
+	tenantDomain  *tenantDomain.TenantDomain
 	db            *gorm.DB
 }
 
 func NewAccountService(accountDomain *domain.AccountDomain, tenantDomain *tenantDomain.TenantDomain, db *gorm.DB) *AccountService {
 	return &AccountService{
-		AccountDomain: accountDomain,
-		TenantDomain:  tenantDomain,
+		accountDomain: accountDomain,
+		tenantDomain:  tenantDomain,
 		db:            db,
 	}
 }
@@ -39,13 +39,13 @@ func (s *AccountService) SendEmailCode(ctx context.Context, params *dto.SendEmai
 		language = "en-US"
 	}
 
-	tokenUUID, emailCode, err := s.AccountDomain.SendEmailCodeLoginEmail(ctx, params.Email, language)
+	tokenUUID, emailCode, err := s.accountDomain.SendEmailCodeLoginEmail(ctx, params.Email, language)
 
 	if err != nil {
 		return nil, err
 	}
 
-	go s.AccountDomain.SendEmailHtml(ctx, language, params.Email, emailCode)
+	go s.accountDomain.SendEmailHtml(ctx, language, params.Email, emailCode)
 
 	return &dto.SendEmailCodeResponse{
 		Data: tokenUUID,
@@ -53,17 +53,17 @@ func (s *AccountService) SendEmailCode(ctx context.Context, params *dto.SendEmai
 }
 
 func (s *AccountService) EmailCodeValidity(ctx context.Context, email, emailCode, token string) (*domain.TokenPair, error) {
-	tokenData, err := s.AccountDomain.GetEmailTokenData(ctx, token)
+	tokenData, err := s.accountDomain.GetEmailTokenData(ctx, token)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if err := s.AccountDomain.ValidateAndRevokeData(ctx, email, emailCode, token, tokenData); err != nil {
+	if err := s.accountDomain.ValidateAndRevokeData(ctx, email, emailCode, token, tokenData); err != nil {
 		return nil, err
 	}
 
-	account, err := s.AccountDomain.AccountRepo.GetAccountByEmail(ctx, email)
+	account, err := s.accountDomain.AccountRepo.GetAccountByEmail(ctx, email)
 
 	if err != nil {
 		return nil, err
@@ -75,7 +75,7 @@ func (s *AccountService) EmailCodeValidity(ctx context.Context, email, emailCode
 		}
 	}
 
-	tokenPair, err := s.AccountDomain.Login(ctx, account, util.ExtractRemoteIP(ctx.(*gin.Context)))
+	tokenPair, err := s.accountDomain.Login(ctx, account, util.ExtractRemoteIP(ctx.(*gin.Context)))
 
 	if err != nil {
 		return nil, err
@@ -87,14 +87,14 @@ func (s *AccountService) EmailCodeValidity(ctx context.Context, email, emailCode
 func (ad *AccountService) CreateAccountAndTenant(ctx context.Context, email, name, interfaceLanguage, password string) (*model.Account, error) {
 
 	tx := ad.db.Begin()
-	account, err := ad.AccountDomain.CreateAccount(ctx, tx, email, name, interfaceLanguage, "light", password, false)
+	account, err := ad.accountDomain.CreateAccount(ctx, tx, email, name, interfaceLanguage, "light", password, false)
 
 	if err != nil {
 		tx.Rollback()
 		return nil, err
 	}
 
-	err = ad.TenantDomain.CreateOwnerTenantIfNotExists(ctx, tx, account, false)
+	err = ad.tenantDomain.CreateOwnerTenantIfNotExists(ctx, tx, account, false)
 
 	if err != nil {
 		tx.Rollback()
@@ -106,11 +106,11 @@ func (ad *AccountService) CreateAccountAndTenant(ctx context.Context, email, nam
 
 func (ad *AccountService) RefreshToken(ctx context.Context, refreshToken string) (*domain.TokenPair, error) {
 
-	return ad.AccountDomain.RefreshToken(ctx, refreshToken)
+	return ad.accountDomain.RefreshToken(ctx, refreshToken)
 }
 
 func (ad *AccountService) GetAccountProfile(ctx context.Context, accountID string) (*accountDto.GetAccountProfileResp, error) {
-	accountRecord, err := ad.AccountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+	accountRecord, err := ad.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
 
 	if err != nil {
 		return nil, err

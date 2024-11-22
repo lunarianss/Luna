@@ -9,20 +9,20 @@ import (
 )
 
 type TenantService struct {
-	AccountDomain *domain.AccountDomain
-	TenantDomain  *tenantDomain.TenantDomain
+	accountDomain *domain.AccountDomain
+	tenantDomain  *tenantDomain.TenantDomain
 }
 
 func NewTenantService(accountDomain *domain.AccountDomain, tenantDomain *tenantDomain.TenantDomain) *TenantService {
 	return &TenantService{
-		AccountDomain: accountDomain,
-		TenantDomain:  tenantDomain,
+		accountDomain: accountDomain,
+		tenantDomain:  tenantDomain,
 	}
 }
 
 func (s *TenantService) GetTenantCurrentWorkspace(ctx context.Context, accountID string) (*dto.CurrentTenantInfo, error) {
 
-	tenantRecord, accountJoinRecord, err := s.AccountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+	tenantRecord, accountJoinRecord, err := s.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
 
 	if err != nil {
 		return nil, err
@@ -43,13 +43,13 @@ func (s *TenantService) GetTenantCurrentWorkspace(ctx context.Context, accountID
 
 func (s *TenantService) GetJoinTenants(ctx context.Context, accountID string) ([]*dto.CurrentTenantInfo, error) {
 
-	accountRecord, err := s.AccountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+	accountRecord, err := s.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	tenants, err := s.TenantDomain.TenantRepo.FindTenantsJoinByAccount(ctx, accountRecord)
+	tenants, err := s.tenantDomain.TenantRepo.FindTenantsJoinByAccount(ctx, accountRecord)
 
 	if err != nil {
 		return nil, err

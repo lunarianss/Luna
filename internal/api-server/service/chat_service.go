@@ -16,36 +16,36 @@ import (
 )
 
 type ChatService struct {
-	AppDomain      *domain.AppDomain
-	ProviderDomain *providerDomain.ModelProviderDomain
-	AccountDomain  *accountDomain.AccountDomain
+	appDomain      *domain.AppDomain
+	providerDomain *providerDomain.ModelProviderDomain
+	accountDomain  *accountDomain.AccountDomain
 }
 
 func NewChatService(appDomain *domain.AppDomain, providerDomain *providerDomain.ModelProviderDomain, accountDomain *accountDomain.AccountDomain) *ChatService {
 	return &ChatService{
-		AppDomain:      appDomain,
-		ProviderDomain: providerDomain,
-		AccountDomain:  accountDomain,
+		appDomain:      appDomain,
+		providerDomain: providerDomain,
+		accountDomain:  accountDomain,
 	}
 }
 
 func (s *ChatService) Generate(ctx context.Context, appID, accountID string, args *dto.CreateChatMessageBody, invokeFrom entities.InvokeForm, streaming bool) error {
 
-	appModel, err := s.AppDomain.AppRepo.GetAppByID(ctx, appID)
+	appModel, err := s.appDomain.AppRepo.GetAppByID(ctx, appID)
 
 	if err != nil {
 		return err
 	}
 
-	accountRecord, err := s.AccountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+	accountRecord, err := s.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
 
 	if err != nil {
 		return err
 	}
 
 	chatAppGenerator := &chat.ChatAppGenerator{
-		AppDomain:      s.AppDomain,
-		ProviderDomain: s.ProviderDomain,
+		AppDomain:      s.appDomain,
+		ProviderDomain: s.providerDomain,
 	}
 
 	if err := chatAppGenerator.Generate(ctx, appModel, accountRecord, args, invokeFrom, true); err != nil {

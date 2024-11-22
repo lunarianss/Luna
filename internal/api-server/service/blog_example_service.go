@@ -14,15 +14,15 @@ import (
 )
 
 type BlogService struct {
-	BlogDomain *domain.BlogDomain
+	blogDomain *domain.BlogDomain
 }
 
 func NewBlogService(blogDomain *domain.BlogDomain) *BlogService {
-	return &BlogService{BlogDomain: blogDomain}
+	return &BlogService{blogDomain: blogDomain}
 }
 
 func (s *BlogService) List(ctx context.Context, page, pageSize int) ([]*blogDto.Blog, int64, error) {
-	blogs, count, err := s.BlogDomain.BlogRepo.List(ctx, page, pageSize)
+	blogs, count, err := s.blogDomain.BlogRepo.List(ctx, page, pageSize)
 	blogsResponse := make([]*blogDto.Blog, 0, 10)
 
 	if err != nil {
@@ -39,7 +39,7 @@ func (s *BlogService) List(ctx context.Context, page, pageSize int) ([]*blogDto.
 
 func (s *BlogService) Get(ctx context.Context, id int64) (*blogDto.Blog, error) {
 
-	blog, err := s.BlogDomain.BlogRepo.Get(ctx, id)
+	blog, err := s.blogDomain.BlogRepo.Get(ctx, id)
 
 	if err != nil {
 		return nil, err
@@ -51,7 +51,7 @@ func (s *BlogService) Get(ctx context.Context, id int64) (*blogDto.Blog, error) 
 }
 
 func (s *BlogService) Delete(ctx context.Context, id int64) error {
-	return s.BlogDomain.BlogRepo.Delete(ctx, id)
+	return s.blogDomain.BlogRepo.Delete(ctx, id)
 }
 
 func (s *BlogService) Create(ctx context.Context, params *blogDto.CreateBlogRequest) (*model.Blog, error) {
@@ -68,7 +68,7 @@ func (s *BlogService) Create(ctx context.Context, params *blogDto.CreateBlogRequ
 		IsTop:       field.BitBool(params.IsTop),
 	}
 
-	return s.BlogDomain.BlogRepo.Create(ctx, blog)
+	return s.blogDomain.BlogRepo.Create(ctx, blog)
 }
 
 func (s *BlogService) Update(
@@ -90,5 +90,5 @@ func (s *BlogService) Update(
 		IsTop:       field.BitBool(params.IsTop),
 	}
 
-	return s.BlogDomain.BlogRepo.Update(ctx, blog)
+	return s.blogDomain.BlogRepo.Update(ctx, blog)
 }

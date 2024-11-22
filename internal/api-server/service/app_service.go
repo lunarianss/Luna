@@ -23,14 +23,14 @@ import (
 )
 
 type AppService struct {
-	AppDomain      *domain.AppDomain
-	ModelDomain    *modelDomain.ModelDomain
-	ProviderDomain *providerDomain.ModelProviderDomain
-	AccountDomain  *accountDomain.AccountDomain
+	appDomain      *domain.AppDomain
+	modelDomain    *modelDomain.ModelDomain
+	providerDomain *providerDomain.ModelProviderDomain
+	accountDomain  *accountDomain.AccountDomain
 }
 
 func NewAppService(appDomain *domain.AppDomain, modelDomain *modelDomain.ModelDomain, providerDomain *providerDomain.ModelProviderDomain, accountDomain *accountDomain.AccountDomain) *AppService {
-	return &AppService{AppDomain: appDomain, ModelDomain: modelDomain, ProviderDomain: providerDomain, AccountDomain: accountDomain}
+	return &AppService{appDomain: appDomain, modelDomain: modelDomain, providerDomain: providerDomain, accountDomain: accountDomain}
 }
 
 func (as *AppService) CreateApp(ctx context.Context, accountID string, createAppRequest *dto.CreateAppRequest) (*dto.CreateAppResponse, error) {
@@ -39,7 +39,7 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 		retApp *model.App
 	)
 
-	tenantRecord, _, err := as.AccountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+	tenantRecord, _, err := as.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
 
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 	util.DeepCopyUsingJSON(appTemplate.ModelConfig, defaultModelConfig)
 
 	if defaultModelConfig.Model.Name != "" {
-		modelInstance, err := as.ProviderDomain.GetDefaultModelInstance(ctx, tenantID, base.LLM)
+		modelInstance, err := as.providerDomain.GetDefaultModelInstance(ctx, tenantID, base.LLM)
 
 		if err != nil && errors.IsCode(err, code.ErrDefaultModelNotFound) {
 			log.Warnf("%s doesn't no default type of  %s model", tenantID, base.LLM)
@@ -67,7 +67,7 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 			if modelInstance.Model == defaultModelConfig.Model.Name && modelInstance.Provider == defaultModelConfig.Model.Provider {
 				defaultModel = &defaultModelConfig.Model
 			} else {
-				modelSchema, err := as.ProviderDomain.GetModelSchema(ctx, modelInstance.Model, modelInstance.Credentials, modelInstance.ModelTypeInstance)
+				modelSchema, err := as.providerDomain.GetModelSchema(ctx, modelInstance.Model, modelInstance.Credentials, modelInstance.ModelTypeInstance)
 				if err != nil {
 					return nil, err
 				}
@@ -81,7 +81,7 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 				defaultModel.CompletionParams = make(map[string]interface{})
 			}
 		} else {
-			provider, model, err := as.ProviderDomain.GetFirstProviderFirstModel(ctx, tenantID, string(base.LLM))
+			provider, model, err := as.providerDomain.GetFirstProviderFirstModel(ctx, tenantID, string(base.LLM))
 			if err != nil {
 				return nil, err
 			}
@@ -120,13 +120,13 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 	}
 
 	if defaultModelConfig.Model.Provider != "" && defaultModelConfig.Model.Name != "" {
-		app, err := as.AppDomain.AppRepo.CreateAppWithConfig(ctx, app, appConfig)
+		app, err := as.appDomain.AppRepo.CreateAppWithConfig(ctx, app, appConfig)
 		if err != nil {
 			return nil, err
 		}
 		retApp = app
 	} else {
-		app, err := as.AppDomain.AppRepo.CreateApp(ctx, app)
+		app, err := as.appDomain.AppRepo.CreateApp(ctx, app)
 		if err != nil {
 			return nil, err
 		}
@@ -141,12 +141,12 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 
 func (as *AppService) ListTenantApps(ctx context.Context, params *dto.ListAppRequest, accountID string) (*dto.ListAppsResponse, error) {
 
-	tenantRecord, _, err := as.AccountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+	tenantRecord, _, err := as.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
 
 	if err != nil {
 		return nil, err
 	}
-	appRecords, appCount, err := as.AppDomain.AppRepo.FindTenantApps(ctx, tenantRecord, params.Page, params.PageSize)
+	appRecords, appCount, err := as.appDomain.AppRepo.FindTenantApps(ctx, tenantRecord, params.Page, params.PageSize)
 
 	if err != nil {
 		return nil, err
@@ -176,16 +176,15 @@ func (as *AppService) ListTenantApps(ctx context.Context, params *dto.ListAppReq
 
 func (as AppService) AppDetail(ctx context.Context, appID string) (*dto.AppDetail, error) {
 
-	appRecord, err := as.AppDomain.AppRepo.GetAppByID(ctx, appID)
+	appRecord, err := as.appDomain.AppRepo.GetAppByID(ctx, appID)
 	if err != nil {
 		return nil, err
 	}
 
-	appConfigRecord, err := as.AppDomain.AppRepo.GetAppModelConfigByAppID(ctx, appID)
+	appConfigRecord, err := as.appDomain.AppRepo.GetAppModelConfigByAppID(ctx, appID)
 	if err != nil {
 		return nil, err
 	}
 
-	
 	return dto.AppRecordToDetail(appRecord, appConfigRecord), nil
 }

@@ -8,16 +8,16 @@ import (
 )
 
 type DatasetService struct {
-	DatasetDomain *domain.DatasetDomain
+	datasetDomain *domain.DatasetDomain
 }
 
 func NewDatasetService(domain *domain.DatasetDomain) *DatasetService {
 	return &DatasetService{
-		DatasetDomain: domain,
+		datasetDomain: domain,
 	}
 }
 
 func (s *DatasetService) GetFileUploadConfiguration(ctx context.Context) (*dto.FileUploadConfigurationResponse, error) {
-	return s.DatasetDomain.GetFileUploadConfiguration(ctx)
+	return s.datasetDomain.GetFileUploadConfiguration(ctx)
 
 }

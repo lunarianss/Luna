@@ -20,19 +20,19 @@ import (
 )
 
 type ModelService struct {
-	ModelDomain         *domain.ModelDomain
-	ModelProviderDomain *providerDomain.ModelProviderDomain
-	AccountDomain       *accountDomain.AccountDomain
+	modelDomain         *domain.ModelDomain
+	modelProviderDomain *providerDomain.ModelProviderDomain
+	accountDomain       *accountDomain.AccountDomain
 	config              *config.Config
 }
 
 func NewModelService(modelDomain *domain.ModelDomain, modelProviderDomain *providerDomain.ModelProviderDomain, accountDomain *accountDomain.AccountDomain, config *config.Config) *ModelService {
-	return &ModelService{ModelDomain: modelDomain, ModelProviderDomain: modelProviderDomain, AccountDomain: accountDomain, config: config}
+	return &ModelService{modelDomain: modelDomain, modelProviderDomain: modelProviderDomain, accountDomain: accountDomain, config: config}
 }
 
 func (ms *ModelService) SaveModelCredentials(ctx context.Context, tenantId, model, modelTpe, provider string, credentials map[string]interface{}) error {
 
-	providerConfigurations, err := ms.ModelProviderDomain.GetConfigurations(ctx, tenantId)
+	providerConfigurations, err := ms.modelProviderDomain.GetConfigurations(ctx, tenantId)
 
 	if err != nil {
 		return err
@@ -44,7 +44,7 @@ func (ms *ModelService) SaveModelCredentials(ctx context.Context, tenantId, mode
 		return errors.WithCode(code.ErrProviderMapModel, "provider %s not found in map provider configuration", provider)
 	}
 
-	err = ms.ModelDomain.AddOrUpdateCustomModelCredentials(ctx, providerConfiguration, credentials, modelTpe, model)
+	err = ms.modelDomain.AddOrUpdateCustomModelCredentials(ctx, providerConfiguration, credentials, modelTpe, model)
 
 	if err != nil {
 		return err
@@ -55,17 +55,17 @@ func (ms *ModelService) SaveModelCredentials(ctx context.Context, tenantId, mode
 
 func (ms *ModelService) GetAccountAvailableModels(ctx context.Context, accountID string, modelType base.ModelType) ([]*dto.ProviderWithModelsResponse, error) {
 
-	tenantRecord, _, err := ms.AccountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+	tenantRecord, _, err := ms.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
 
 	if err != nil {
 		return nil, err
 	}
-	providerConfigurations, err := ms.ModelProviderDomain.GetConfigurations(ctx, tenantRecord.ID)
+	providerConfigurations, err := ms.modelProviderDomain.GetConfigurations(ctx, tenantRecord.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	activeModels, err := ms.ModelProviderDomain.GetModels(ctx, providerConfigurations, base.ModelType(modelType), true)
+	activeModels, err := ms.modelProviderDomain.GetModels(ctx, providerConfigurations, base.ModelType(modelType), true)
 
 	if err != nil {
 		return nil, err
@@ -133,19 +133,19 @@ func (ms *ModelService) GetAccountAvailableModels(ctx context.Context, accountID
 }
 
 func (ms *ModelService) GetModelParameterRules(ctx context.Context, accountID string, provider string, model string) ([]*model_provider.ParameterRule, error) {
-	tenantRecord, _, err := ms.AccountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+	tenantRecord, _, err := ms.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	providerConfigurations, err := ms.ModelProviderDomain.GetConfigurations(ctx, tenantRecord.ID)
+	providerConfigurations, err := ms.modelProviderDomain.GetConfigurations(ctx, tenantRecord.ID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	providerConfiguration, err := ms.ModelProviderDomain.GetConfigurationByProvider(ctx, providerConfigurations, provider)
+	providerConfiguration, err := ms.modelProviderDomain.GetConfigurationByProvider(ctx, providerConfigurations, provider)
 
 	if err != nil {
 		return nil, err
@@ -157,7 +157,7 @@ func (ms *ModelService) GetModelParameterRules(ctx context.Context, accountID st
 		return nil, err
 	}
 
-	model_provider, err := ms.ModelProviderDomain.ModelProviderRepo.GetProviderInstance(ctx, provider)
+	model_provider, err := ms.modelProviderDomain.ModelProviderRepo.GetProviderInstance(ctx, provider)
 
 	if err != nil {
 		return nil, err
@@ -165,7 +165,7 @@ func (ms *ModelService) GetModelParameterRules(ctx context.Context, accountID st
 
 	modelInstance := model_provider.GetModelInstance(base.LLM)
 
-	AIModelEntity, err := ms.ModelProviderDomain.GetModelSchema(ctx, model, credentials, modelInstance)
+	AIModelEntity, err := ms.modelProviderDomain.GetModelSchema(ctx, model, credentials, modelInstance)
 
 	if err != nil {
 		return nil, err
@@ -177,12 +177,12 @@ func (ms *ModelService) GetModelParameterRules(ctx context.Context, accountID st
 
 func (ms *ModelService) GetDefaultModelByType(ctx context.Context, accountID string, modelType string) (*dto.DefaultModelResponse, error) {
 
-	tenantRecord, _, err := ms.AccountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+	tenantRecord, _, err := ms.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
 
 	if err != nil {
 		return nil, err
 	}
-	defaultModelEntity, err := ms.ModelProviderDomain.GetDefaultModel(ctx, tenantRecord.ID, base.ModelType(modelType))
+	defaultModelEntity, err := ms.modelProviderDomain.GetDefaultModel(ctx, tenantRecord.ID, base.ModelType(modelType))
 
 	if errors.IsCode(err, code.ErrDefaultModelNotFound) {
 		return nil, nil

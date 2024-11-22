@@ -23,25 +23,25 @@ import (
 )
 
 type ModelProviderService struct {
-	ModelProviderDomain *domain.ModelProviderDomain
-	AccountDomain       *accountDomain.AccountDomain
+	modelProviderDomain *domain.ModelProviderDomain
+	accountDomain       *accountDomain.AccountDomain
 	config              *config.Config
 }
 
 func NewModelProviderService(modelProviderDomain *domain.ModelProviderDomain, accountDomain *accountDomain.AccountDomain, config *config.Config) *ModelProviderService {
-	return &ModelProviderService{ModelProviderDomain: modelProviderDomain, AccountDomain: accountDomain, config: config}
+	return &ModelProviderService{modelProviderDomain: modelProviderDomain, accountDomain: accountDomain, config: config}
 }
 
 func (mpSrv *ModelProviderService) GetProviderList(ctx context.Context, accountID string, modelType string) ([]*dto.ProviderResponse, error) {
 	var customConfigurationStatus dto.CustomConfigurationStatus
 
-	tenantRecord, _, err := mpSrv.AccountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+	tenantRecord, _, err := mpSrv.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	providerConfigurations, err := mpSrv.ModelProviderDomain.GetConfigurations(ctx, tenantRecord.ID)
+	providerConfigurations, err := mpSrv.modelProviderDomain.GetConfigurations(ctx, tenantRecord.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -97,13 +97,13 @@ func (mpSrv *ModelProviderService) GetProviderList(ctx context.Context, accountI
 
 func (mpSrv *ModelProviderService) GetProviderIconPath(ctx context.Context, provider, iconType, lang string) (string, error) {
 
-	providerPath, err := mpSrv.ModelProviderDomain.ModelProviderRepo.GetProviderPath(ctx, provider)
+	providerPath, err := mpSrv.modelProviderDomain.ModelProviderRepo.GetProviderPath(ctx, provider)
 
 	if err != nil {
 		return "", err
 	}
 
-	providerEntity, err := mpSrv.ModelProviderDomain.ModelProviderRepo.GetProviderEntity(ctx, provider)
+	providerEntity, err := mpSrv.modelProviderDomain.ModelProviderRepo.GetProviderEntity(ctx, provider)
 
 	if err != nil {
 		return "", err
@@ -120,13 +120,13 @@ func (mpSrv *ModelProviderService) GetProviderIconPath(ctx context.Context, prov
 
 func (mpSrv *ModelProviderService) SaveProviderCredentials(ctx context.Context, accountID string, provider string, credentials map[string]interface{}) error {
 
-	tenantRecord, _, err := mpSrv.AccountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+	tenantRecord, _, err := mpSrv.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
 
 	if err != nil {
 		return err
 	}
 
-	providerConfigurations, err := mpSrv.ModelProviderDomain.GetConfigurations(ctx, tenantRecord.ID)
+	providerConfigurations, err := mpSrv.modelProviderDomain.GetConfigurations(ctx, tenantRecord.ID)
 
 	if err != nil {
 		return err
@@ -138,7 +138,7 @@ func (mpSrv *ModelProviderService) SaveProviderCredentials(ctx context.Context, 
 		return errors.WithCode(code.ErrProviderMapModel, fmt.Sprintf("when create %s provider credential for provider", provider))
 	}
 
-	if err := mpSrv.ModelProviderDomain.AddOrUpdateCustomProviderCredentials(ctx, providerConfiguration, credentials); err != nil {
+	if err := mpSrv.modelProviderDomain.AddOrUpdateCustomProviderCredentials(ctx, providerConfiguration, credentials); err != nil {
 		return err
 	}
 	return nil

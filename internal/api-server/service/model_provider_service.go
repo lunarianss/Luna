@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/lunarianss/Luna/internal/api-server/config"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/provider"
@@ -24,10 +25,11 @@ import (
 type ModelProviderService struct {
 	ModelProviderDomain *domain.ModelProviderDomain
 	AccountDomain       *accountDomain.AccountDomain
+	config              *config.Config
 }
 
-func NewModelProviderService(modelProviderDomain *domain.ModelProviderDomain, accountDomain *accountDomain.AccountDomain) *ModelProviderService {
-	return &ModelProviderService{ModelProviderDomain: modelProviderDomain, AccountDomain: accountDomain}
+func NewModelProviderService(modelProviderDomain *domain.ModelProviderDomain, accountDomain *accountDomain.AccountDomain, config *config.Config) *ModelProviderService {
+	return &ModelProviderService{ModelProviderDomain: modelProviderDomain, AccountDomain: accountDomain, config: config}
 }
 
 func (mpSrv *ModelProviderService) GetProviderList(ctx context.Context, accountID string, modelType string) ([]*dto.ProviderResponse, error) {
@@ -79,12 +81,11 @@ func (mpSrv *ModelProviderService) GetProviderList(ctx context.Context, accountI
 			},
 		}
 
-		if err := providerResponse.PatchIcon(); err != nil {
-			return nil, err
-		}
-
 		providerListResponse = append(providerListResponse, providerResponse)
+	}
 
+	for _, providerResponse := range providerListResponse {
+		providerResponse.PatchIcon(mpSrv.config)
 	}
 
 	sort.Slice(providerListResponse, func(i, j int) bool {

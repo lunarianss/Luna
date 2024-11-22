@@ -7,6 +7,7 @@ package service
 import (
 	"context"
 
+	"github.com/lunarianss/Luna/internal/api-server/config"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/model"
 	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
@@ -22,10 +23,11 @@ type ModelService struct {
 	ModelDomain         *domain.ModelDomain
 	ModelProviderDomain *providerDomain.ModelProviderDomain
 	AccountDomain       *accountDomain.AccountDomain
+	config              *config.Config
 }
 
-func NewModelService(modelDomain *domain.ModelDomain, modelProviderDomain *providerDomain.ModelProviderDomain, accountDomain *accountDomain.AccountDomain) *ModelService {
-	return &ModelService{ModelDomain: modelDomain, ModelProviderDomain: modelProviderDomain, AccountDomain: accountDomain}
+func NewModelService(modelDomain *domain.ModelDomain, modelProviderDomain *providerDomain.ModelProviderDomain, accountDomain *accountDomain.AccountDomain, config *config.Config) *ModelService {
+	return &ModelService{ModelDomain: modelDomain, ModelProviderDomain: modelProviderDomain, AccountDomain: accountDomain, config: config}
 }
 
 func (ms *ModelService) SaveModelCredentials(ctx context.Context, tenantId, model, modelTpe, provider string, credentials map[string]interface{}) error {
@@ -121,7 +123,12 @@ func (ms *ModelService) GetAccountAvailableModels(ctx context.Context, accountID
 		})
 
 		util.PatchI18nObject(providerResponses)
+
+		for _, p := range providerResponses {
+			p.PatchIcon(ms.config)
+		}
 	}
+
 	return providerResponses, nil
 }
 

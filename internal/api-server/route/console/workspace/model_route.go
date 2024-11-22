@@ -2,6 +2,7 @@ package route
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/lunarianss/Luna/internal/api-server/config"
 	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/model-provider/model"
 	"github.com/lunarianss/Luna/internal/api-server/dao"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account"
@@ -32,8 +33,15 @@ func (r *ModelRoutes) Register(g *gin.Engine) error {
 	modelProviderDomain := providerDomain.NewModelProviderDomain(modelProviderDao, modelDao)
 	accountDomain := accountDomain.NewAccountDomain(accountDao, nil, nil, nil, tenantDao)
 
+	// config
+	config, err := config.GetLunaRuntimeConfig()
+
+	if err != nil {
+		return err
+	}
 	// service
-	modelService := service.NewModelService(modelDomain, modelProviderDomain, accountDomain)
+	modelService := service.NewModelService(modelDomain, modelProviderDomain, accountDomain, config)
+
 	modelController := controller.NewModelController(modelService)
 
 	v1 := g.Group("/v1")

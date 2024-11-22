@@ -51,32 +51,28 @@ type ProviderResponse struct {
 	Position                 int                                      `json:"position"`
 }
 
-func (pr *ProviderResponse) PatchIcon() error {
-	runtimeConfig, err := config.GetLunaRuntimeConfig()
+func (pr *ProviderResponse) PatchIcon(runtimeConfig *config.Config) {
 
 	provider := pr.Provider
 
-	if err != nil {
-		return err
-	}
-
 	insecureAddress := fmt.Sprintf("%s:%d", runtimeConfig.InsecureServing.BindAddress, runtimeConfig.InsecureServing.BindPort)
 
-	urlPrefix := fmt.Sprintf("http://%s/%s/%s", insecureAddress, "v1/console/workspace/current/model-providers", provider)
+	urlPrefix := fmt.Sprintf("http://%s/%s/%s", insecureAddress, "v1/console/api/workspaces/current/model-providers", provider)
 
 	if pr.IconLarge != nil {
 		pr.IconLarge = &base.I18nObject{
 			Zh_Hans: fmt.Sprintf("%s/%s", urlPrefix, "icon_large/zh_Hans"),
 			En_US:   fmt.Sprintf("%s/%s", urlPrefix, "icon_large/en_US"),
 		}
-	} else if pr.IconSmall != nil {
+	}
+
+	if pr.IconSmall != nil {
 		pr.IconSmall = &base.I18nObject{
 			Zh_Hans: fmt.Sprintf("%s/%s", urlPrefix, "icon_small/zh_Hans"),
 			En_US:   fmt.Sprintf("%s/%s", urlPrefix, "icon_small/en_US"),
 		}
 	}
 
-	return nil
 }
 
 // --
@@ -125,6 +121,28 @@ type ProviderWithModelsResponse struct {
 	IconLarge *base.I18nObject                                `json:"icon_large"`
 	Status    CustomConfigurationStatus                       `json:"status"`
 	Models    []*model_provider.ProviderModelWithStatusEntity `json:"models"`
+}
+
+func (pr *ProviderWithModelsResponse) PatchIcon(runtimeConfig *config.Config) {
+
+	provider := pr.Provider
+	insecureAddress := fmt.Sprintf("%s:%d", runtimeConfig.InsecureServing.BindAddress, runtimeConfig.InsecureServing.BindPort)
+
+	urlPrefix := fmt.Sprintf("http://%s/%s/%s", insecureAddress, "v1/console/api/workspaces/current/model-providers", provider)
+
+	if pr.IconLarge != nil {
+		pr.IconLarge = &base.I18nObject{
+			Zh_Hans: fmt.Sprintf("%s/%s", urlPrefix, "icon_large/zh_Hans"),
+			En_US:   fmt.Sprintf("%s/%s", urlPrefix, "icon_large/en_US"),
+		}
+	}
+
+	if pr.IconSmall != nil {
+		pr.IconSmall = &base.I18nObject{
+			Zh_Hans: fmt.Sprintf("%s/%s", urlPrefix, "icon_small/zh_Hans"),
+			En_US:   fmt.Sprintf("%s/%s", urlPrefix, "icon_small/en_US"),
+		}
+	}
 }
 
 type ParameterRulesQuery struct {

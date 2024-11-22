@@ -23,6 +23,14 @@ func NewAppRunningDao(db *gorm.DB) *AppRunningDao {
 	}
 }
 
+func (ad *AppRunningDao) GetSiteByAppID(ctx context.Context, appID string) (*model.Site, error) {
+	var site model.Site
+	if err := ad.db.First(&site, "app_id = ?", appID).Error; err != nil {
+		return nil, err
+	}
+	return &site, nil
+}
+
 func (ad *AppRunningDao) GetSiteByCode(ctx context.Context, code string) (*model.Site, error) {
 	var site model.Site
 	if err := ad.db.First(&site, "code = ?", code).Error; err != nil {

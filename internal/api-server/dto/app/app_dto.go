@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"github.com/lunarianss/Luna/internal/api-server/config"
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 )
 
@@ -87,7 +88,6 @@ type AppDetail struct {
 	EnableApi           int                    `json:"enable_api"`
 	ModelConfig         *model.AppModelConfig  `json:"model_config"`
 	Workflow            map[string]interface{} `json:"workflow"`
-	Site                map[string]interface{} `json:"site"`
 	UseIconAsAnswerIcon int                    `json:"use_icon_as_answer_icon"`
 	APIBaseUrl          string                 `json:"api_base_url"`
 	CreatedAt           int                    `json:"created_at"`
@@ -95,9 +95,11 @@ type AppDetail struct {
 	CreatedBy           string                 `json:"created_by"`
 	UpdatedBy           string                 `json:"updated_by"`
 	DeletedTools        []interface{}          `json:"deleted_tools"`
+	SiteDetail          *SiteDetail            `json:"site"`
 }
 
-func AppRecordToDetail(app *model.App, modelConfig *model.AppModelConfig) *AppDetail {
+func AppRecordToDetail(app *model.App, config *config.Config, modelConfig *model.AppModelConfig, siteRecord *model.Site) *AppDetail {
+
 	appDetail := &AppDetail{
 		ID:                  app.ID,
 		Name:                app.Name,
@@ -112,6 +114,8 @@ func AppRecordToDetail(app *model.App, modelConfig *model.AppModelConfig) *AppDe
 		UpdatedBy:           app.UpdatedBy,
 		UseIconAsAnswerIcon: int(app.UseIconAsAnswerIcon),
 		ModelConfig:         modelConfig,
+		SiteDetail:          SiteRecordToSiteDetail(siteRecord, config),
+		APIBaseUrl:          config.SystemOptions.ApiBaseUrl,
 	}
 
 	defaultDisable := map[string]any{
@@ -193,4 +197,17 @@ func AppRecordToDetail(app *model.App, modelConfig *model.AppModelConfig) *AppDe
 	}
 
 	return appDetail
+}
+
+type SiteDetail struct {
+	*model.Site
+	AppBaseUrl string `json:"app_base_url"`
+}
+
+func SiteRecordToSiteDetail(sm *model.Site, config *config.Config) *SiteDetail {
+	return &SiteDetail{
+		Site:       sm,
+		AppBaseUrl: config.SystemOptions.ApiBaseUrl,
+	}
+
 }

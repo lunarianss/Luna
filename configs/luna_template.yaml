@@ -5,7 +5,7 @@
 # Luna  全配置
 # 系统配置
 system:
-  app-base-path: "/Users/max/Documents/coding/Backend/Golang/Personal/Luna"
+  app-base-path: "/Users/max/xxx/Luna"
   sso-enforced-for-signin: false
   sso-enforced-for-signin-protocol: ""
   sso-enforced-for-web: false
@@ -16,6 +16,8 @@ system:
   enable-social-oauth-login: true
   is-allow-register: true
   is-allow-create-workspace: true
+  app-web-url: "http://127.0.0.1:3000"
+  api-base-url: "http://127.0.0.1:8082/service/v1"
 
 # 日志配置
 log:
@@ -40,10 +42,10 @@ feature:
 email:
   SMTP-server: smtp.163.com
   SMTP-port: 465
-  SMTP-username: cyan0908@163.com
-  SMTP-password: CTNCZDAEGGGKBCVV
-  SMTP-from-email: cyan0908@163.com
-  template-dir: /Users/max/Documents/coding/Backend/Golang/Personal/Luna/internal/api-server/templates
+  SMTP-username: xxx@163.com
+  SMTP-password: xxxxx
+  SMTP-from-email: xxx@163.com
+  template-dir: /Users/max/Documents/xxx/templates
 
 server:
   mode: debug # server mode: release, debug, test，默认 release
@@ -77,9 +79,9 @@ secure:
 
 # MySQL 数据库相关配置
 mysql:
-  host: 127.0.0.1:3307 # MySQL 机器 ip 和端口，默认 127.0.0.1:3306
-  username: root # MySQL 用户名(建议授权最小权限集)
-  password: 123456 # MySQL 用户密码
+  host: 127.0.0.1:3306 # MySQL 机器 ip 和端口，默认 127.0.0.1:3306
+  username: xxx # MySQL 用户名(建议授权最小权限集)
+  password: xxx # MySQL 用户密码
   database: luna # iam 系统所用的数据库名
   max-idle-connections: 100 # MySQL 最大空闲连接数，默认 100
   max-open-connections: 100 # MySQL 最大打开的连接数，默认 100
@@ -94,7 +96,7 @@ mysql:
 redis:
   host: 127.0.0.1 # redis 地址，默认 127.0.0.1:6379
   port: 6379 # redis 端口，默认 6379
-  password: 123456 # redis 密码
+  password: xxxx # redis 密码
   addrs:
   master-name: # redis 集群 master 名称
   username: # redis 登录用户名
@@ -109,6 +111,6 @@ redis:
 # JWT 配置
 jwt:
   realm: JWT # jwt 标识
-  key: dfVpOK8LZeJLZHYmHdb1VdyRrACKpqoo # 服务端密钥
+  key: xxxx # 服务端密钥
   timeout: 24h # access token 过期时间(小时)
   refresh: 720h # refresh token 过期时间(天)

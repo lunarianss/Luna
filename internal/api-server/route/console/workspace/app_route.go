@@ -2,6 +2,7 @@ package route
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/lunarianss/Luna/internal/api-server/config"
 	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/app"
 	"github.com/lunarianss/Luna/internal/api-server/dao"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account"
@@ -22,6 +23,13 @@ func (a *AppRoutes) Register(g *gin.Engine) error {
 		return err
 	}
 
+	// config
+	config, err := config.GetLunaRuntimeConfig()
+
+	if err != nil {
+		return err
+	}
+
 	// dao
 	appDao := dao.NewAppDao(gormIns)
 	modelDao := dao.NewModelDao(gormIns)
@@ -37,7 +45,7 @@ func (a *AppRoutes) Register(g *gin.Engine) error {
 	accountDomain := accountDomain.NewAccountDomain(accountDao, nil, nil, nil, tenantDao)
 
 	// service
-	appService := service.NewAppService(appDomain, modelDomain, providerDomain, accountDomain, gormIns)
+	appService := service.NewAppService(appDomain, modelDomain, providerDomain, accountDomain, gormIns, config)
 	chatService := service.NewChatService(appDomain, providerDomain, accountDomain)
 	appController := controller.NewAppController(appService, chatService)
 

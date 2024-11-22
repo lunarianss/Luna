@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/lunarianss/Luna/internal/api-server/config"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/app"
 	modelDomain "github.com/lunarianss/Luna/internal/api-server/domain/model"
@@ -17,6 +18,7 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/api-server/pkg/template"
 	"github.com/lunarianss/Luna/internal/pkg/code"
+	"github.com/lunarianss/Luna/internal/pkg/field"
 	"github.com/lunarianss/Luna/internal/pkg/util"
 	"github.com/lunarianss/Luna/pkg/errors"
 	"github.com/lunarianss/Luna/pkg/log"
@@ -29,10 +31,11 @@ type AppService struct {
 	providerDomain *providerDomain.ModelProviderDomain
 	accountDomain  *accountDomain.AccountDomain
 	db             *gorm.DB
+	config         *config.Config
 }
 
-func NewAppService(appDomain *domain.AppDomain, modelDomain *modelDomain.ModelDomain, providerDomain *providerDomain.ModelProviderDomain, accountDomain *accountDomain.AccountDomain, db *gorm.DB) *AppService {
-	return &AppService{appDomain: appDomain, modelDomain: modelDomain, providerDomain: providerDomain, accountDomain: accountDomain, db: db}
+func NewAppService(appDomain *domain.AppDomain, modelDomain *modelDomain.ModelDomain, providerDomain *providerDomain.ModelProviderDomain, accountDomain *accountDomain.AccountDomain, db *gorm.DB, config *config.Config) *AppService {
+	return &AppService{appDomain: appDomain, modelDomain: modelDomain, providerDomain: providerDomain, accountDomain: accountDomain, db: db, config: config}
 }
 
 func (as *AppService) CreateApp(ctx context.Context, accountID string, createAppRequest *dto.CreateAppRequest) (*dto.CreateAppResponse, error) {
@@ -103,7 +106,9 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 	app := &model.App{
 		Name:           createAppRequest.Name,
 		Description:    createAppRequest.Description,
-		Mode:           createAppRequest.Mode,
+		Mode:           appTemplate.App.Mode,
+		EnableSite:     field.BitBool(appTemplate.App.EnableSite),
+		EnableAPI:      field.BitBool(appTemplate.App.EnableAPI),
 		Icon:           createAppRequest.Icon,
 		IconBackground: createAppRequest.IconBackground,
 		TenantID:       tenantID,
@@ -238,5 +243,11 @@ func (as AppService) AppDetail(ctx context.Context, appID string) (*dto.AppDetai
 		return nil, err
 	}
 
-	return dto.AppRecordToDetail(appRecord, appConfigRecord), nil
+	siteRecord, err := as.appDomain.AppRunningRepo.GetSiteByAppID(ctx, appID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return dto.AppRecordToDetail(appRecord, as.config, appConfigRecord, siteRecord), nil
 }

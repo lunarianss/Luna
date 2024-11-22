@@ -348,10 +348,7 @@ dist
 .note.md
 
 # config files, may contain sensitive information
-
-
-
-
 .vscode/
 TODO.md
-private_keys/
+private_keys/*
+configs/luna.yaml

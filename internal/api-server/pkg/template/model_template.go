@@ -14,8 +14,8 @@ const (
 // App holds the basic app configuration.
 type App struct {
 	Mode       string `json:"mode"`
-	EnableSite bool   `json:"enable_site"`
-	EnableAPI  bool   `json:"enable_api"`
+	EnableSite int    `json:"enable_site"`
+	EnableAPI  int    `json:"enable_api"`
 }
 
 // Model holds the model-specific configuration.
@@ -44,15 +44,15 @@ var DefaultAppTemplates = map[AppMode]AppTemplate{
 	WORKFLOW: {
 		App: App{
 			Mode:       string(WORKFLOW),
-			EnableSite: true,
-			EnableAPI:  true,
+			EnableSite: 1,
+			EnableAPI:  1,
 		},
 	},
 	COMPLETION: {
 		App: App{
 			Mode:       string(COMPLETION),
-			EnableSite: true,
-			EnableAPI:  true,
+			EnableSite: 1,
+			EnableAPI:  1,
 		},
 		ModelConfig: &ModelConfig{
 			Model: Model{
@@ -77,8 +77,8 @@ var DefaultAppTemplates = map[AppMode]AppTemplate{
 	CHAT: {
 		App: App{
 			Mode:       string(CHAT),
-			EnableSite: true,
-			EnableAPI:  true,
+			EnableSite: 1,
+			EnableAPI:  1,
 		},
 		ModelConfig: &ModelConfig{
 			Model: Model{
@@ -92,15 +92,15 @@ var DefaultAppTemplates = map[AppMode]AppTemplate{
 	ADVANCED_CHAT: {
 		App: App{
 			Mode:       string(ADVANCED_CHAT),
-			EnableSite: true,
-			EnableAPI:  true,
+			EnableSite: 1,
+			EnableAPI:  1,
 		},
 	},
 	AGENT_CHAT: {
 		App: App{
 			Mode:       string(AGENT_CHAT),
-			EnableSite: true,
-			EnableAPI:  true,
+			EnableSite: 1,
+			EnableAPI:  1,
 		},
 		ModelConfig: &ModelConfig{
 			Model: Model{

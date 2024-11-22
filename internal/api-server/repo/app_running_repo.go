@@ -12,4 +12,6 @@ type AppRunningRepo interface {
 	CreateInstallApp(ctx context.Context, site *model.InstalledApp, tx *gorm.DB) (*model.InstalledApp, error)
 	CreateEndUser(ctx context.Context, site *model.EndUser, tx *gorm.DB) (*model.EndUser, error)
 	GenerateUniqueCodeForSite(ctx context.Context) (string, error)
+
+	GetSiteByAppID(ctx context.Context, appID string) (*model.Site, error)
 }

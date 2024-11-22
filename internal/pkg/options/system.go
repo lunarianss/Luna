@@ -12,6 +12,8 @@ type SystemOptions struct {
 	EnableSocialOauthLogin       bool   `mapstructure:"enable-social-oauth-login"      json:"enable_social_oauth_login"`
 	IsAllowRegister              bool   `mapstructure:"is-allow-register"              json:"is_allow_register"`
 	IsAllowCreateWorkspace       bool   `mapstructure:"is-allow-create-workspace"      json:"is_allow_create_workspace"`
+	AppWebUrl                    string `mapstructure:"app-web-url" json:"app_web_url"`
+	ApiBaseUrl                   string `mapstructure:"api-base-url" json:"api_base_url"`
 }
 
 // NewJwtOptions creates a JwtOptions object with default parameters.

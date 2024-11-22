@@ -138,6 +138,26 @@ func (a *AIModel) PredefinedModels() ([]*AIModelEntity, error) {
 		} else {
 			AIModelEntity.Position = 999
 		}
+
+		for _, parameterRule := range AIModelEntity.ParameterRules {
+			if parameterRule.UseTemplate != "" {
+				prt, ok := ParameterRuleTemplates[parameterRule.UseTemplate]
+
+				if ok {
+					parameterRule.Type = ParameterType(prt.Type)
+					parameterRule.Label = prt.Label
+					parameterRule.Help = prt.Help
+					parameterRule.Required = prt.Required
+					parameterRule.Min = prt.Min
+					parameterRule.Max = prt.Max
+					parameterRule.Default = prt.Default
+					parameterRule.Precision = prt.Precision
+					parameterRule.Options = prt.Options
+				}
+
+			}
+		}
+
 		AIModelEntities = append(AIModelEntities, AIModelEntity)
 	}
 

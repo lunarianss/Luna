@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"runtime"
 )
@@ -13,6 +12,7 @@ type B struct {
 type A struct {
 	*B
 	Name string `json:"name"`
+	Ps   []*B   `json:"ps"`
 }
 
 func a() {
@@ -21,11 +21,14 @@ func a() {
 }
 
 func main() {
-	a := &A{
-		B: &B{Age: 13},
+	a := &A{}
+
+	fmt.Println(a.Ps == nil)
+
+	a.Ps = nil
+
+	for _, p := range a.Ps {
+		fmt.Println(p)
 	}
 
-	c, _ := json.Marshal(a)
-
-	fmt.Println(string(c))
 }

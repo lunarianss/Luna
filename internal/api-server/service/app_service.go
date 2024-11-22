@@ -20,6 +20,7 @@ import (
 	"github.com/lunarianss/Luna/internal/pkg/util"
 	"github.com/lunarianss/Luna/pkg/errors"
 	"github.com/lunarianss/Luna/pkg/log"
+	"gorm.io/gorm"
 )
 
 type AppService struct {
@@ -27,10 +28,11 @@ type AppService struct {
 	modelDomain    *modelDomain.ModelDomain
 	providerDomain *providerDomain.ModelProviderDomain
 	accountDomain  *accountDomain.AccountDomain
+	db             *gorm.DB
 }
 
-func NewAppService(appDomain *domain.AppDomain, modelDomain *modelDomain.ModelDomain, providerDomain *providerDomain.ModelProviderDomain, accountDomain *accountDomain.AccountDomain) *AppService {
-	return &AppService{appDomain: appDomain, modelDomain: modelDomain, providerDomain: providerDomain, accountDomain: accountDomain}
+func NewAppService(appDomain *domain.AppDomain, modelDomain *modelDomain.ModelDomain, providerDomain *providerDomain.ModelProviderDomain, accountDomain *accountDomain.AccountDomain, db *gorm.DB) *AppService {
+	return &AppService{appDomain: appDomain, modelDomain: modelDomain, providerDomain: providerDomain, accountDomain: accountDomain, db: db}
 }
 
 func (as *AppService) CreateApp(ctx context.Context, accountID string, createAppRequest *dto.CreateAppRequest) (*dto.CreateAppResponse, error) {
@@ -38,6 +40,12 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 	var (
 		retApp *model.App
 	)
+
+	accountRecord, err := as.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
 
 	tenantRecord, _, err := as.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
 
@@ -119,18 +127,62 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 		app.IconType = "emoji"
 	}
 
+	tx := as.db.Begin()
+
 	if defaultModelConfig.Model.Provider != "" && defaultModelConfig.Model.Name != "" {
-		app, err := as.appDomain.AppRepo.CreateAppWithConfig(ctx, app, appConfig)
+		app, err := as.appDomain.AppRepo.CreateAppWithConfig(ctx, tx, app, appConfig)
 		if err != nil {
+			tx.Rollback()
 			return nil, err
 		}
 		retApp = app
 	} else {
-		app, err := as.appDomain.AppRepo.CreateApp(ctx, app)
+		app, err := as.appDomain.AppRepo.CreateApp(ctx, tx, app)
 		if err != nil {
+			tx.Rollback()
 			return nil, err
 		}
 		retApp = app
+	}
+
+	installApp := &model.InstalledApp{
+		TenantID:         app.TenantID,
+		AppID:            app.ID,
+		AppOwnerTenantID: app.TenantID,
+	}
+
+	if _, err := as.appDomain.AppRunningRepo.CreateInstallApp(ctx, installApp, tx); err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	siteCode, err := as.appDomain.AppRunningRepo.GenerateUniqueCodeForSite(ctx)
+
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	site := &model.Site{
+		AppID:                  app.ID,
+		Title:                  app.Name,
+		IconType:               app.IconType,
+		Icon:                   app.Icon,
+		IconBackground:         app.IconBackground,
+		DefaultLanguage:        accountRecord.InterfaceLanguage,
+		CustomizeTokenStrategy: "not_allowed",
+		Code:                   siteCode,
+		CreatedBy:              app.CreatedBy,
+		UpdatedBy:              app.UpdatedBy,
+	}
+
+	if _, err := as.appDomain.AppRunningRepo.CreateSite(ctx, site, tx); err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return nil, err
 	}
 
 	return &dto.CreateAppResponse{

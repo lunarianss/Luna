@@ -28,15 +28,16 @@ func (a *AppRoutes) Register(g *gin.Engine) error {
 	providerDao := dao.NewModelProvider(gormIns)
 	accountDao := dao.NewAccountDao(gormIns)
 	tenantDao := dao.NewTenantDao(gormIns)
+	appRunningDao := dao.NewAppRunningDao(gormIns)
 
 	// domain
-	appDomain := domain.NewAppDomain(appDao)
+	appDomain := domain.NewAppDomain(appDao, appRunningDao)
 	modelDomain := modelDomain.NewModelDomain(modelDao)
 	providerDomain := providerDomain.NewModelProviderDomain(providerDao, modelDao)
 	accountDomain := accountDomain.NewAccountDomain(accountDao, nil, nil, nil, tenantDao)
 
 	// service
-	appService := service.NewAppService(appDomain, modelDomain, providerDomain, accountDomain)
+	appService := service.NewAppService(appDomain, modelDomain, providerDomain, accountDomain, gormIns)
 	chatService := service.NewChatService(appDomain, providerDomain, accountDomain)
 	appController := controller.NewAppController(appService, chatService)
 

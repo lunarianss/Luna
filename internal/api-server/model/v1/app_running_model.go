@@ -40,7 +40,7 @@ type InstalledApp struct {
 }
 
 func (a *InstalledApp) TableName() string {
-	return "install_apps"
+	return "installed_apps"
 }
 
 func (a *InstalledApp) BeforeCreate(tx *gorm.DB) (err error) {

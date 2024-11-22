@@ -1,5 +1,4 @@
 
-
 -- ----------------------------
 -- Table structure for end_users
 -- ----------------------------
@@ -68,9 +67,10 @@ CREATE TABLE sites (
     status VARCHAR(255) NOT NULL DEFAULT 'normal',
     created_by CHAR(36),
     created_at int(10) NOT NULL,
-    updated_by CHAR(36),CHAR(36),
+    updated_by CHAR(36),
     updated_at int(10) NOT NULL,
-    code VARCHAR(255)
+    code VARCHAR(255),
+    UNIQUE (code)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 ALTER TABLE sites ADD INDEX site_app_id_idx (app_id);

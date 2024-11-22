@@ -4,11 +4,12 @@ import (
 	"context"
 
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
+	"gorm.io/gorm"
 )
 
 type AppRepo interface {
-	CreateApp(ctx context.Context, app *model.App) (*model.App, error)
-	CreateAppWithConfig(ctx context.Context, app *model.App, appConfig *model.AppModelConfig) (*model.App, error)
+	CreateApp(ctx context.Context, tx *gorm.DB, app *model.App) (*model.App, error)
+	CreateAppWithConfig(ctx context.Context, tx *gorm.DB, app *model.App, appConfig *model.AppModelConfig) (*model.App, error)
 	CreateConversation(ctx context.Context, app *model.Conversation) (*model.Conversation, error)
 	CreateMessage(ctx context.Context, message *model.Message) (*model.Message, error)
 

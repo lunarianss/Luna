@@ -6,6 +6,7 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/api-server/repo"
 	"github.com/lunarianss/Luna/internal/pkg/code"
+	"github.com/lunarianss/Luna/internal/pkg/util"
 	"github.com/lunarianss/Luna/pkg/errors"
 	"gorm.io/gorm"
 )
@@ -19,6 +20,32 @@ var _ repo.AppRunningRepo = (*AppRunningDao)(nil)
 func NewAppRunningDao(db *gorm.DB) *AppRunningDao {
 	return &AppRunningDao{
 		db: db,
+	}
+}
+
+func (ad *AppRunningDao) GetSiteByCode(ctx context.Context, code string) (*model.Site, error) {
+	var site model.Site
+	if err := ad.db.First(&site, "code = ?", code).Error; err != nil {
+		return nil, err
+	}
+	return &site, nil
+}
+
+func (ad *AppRunningDao) GenerateUniqueCodeForSite(ctx context.Context) (string, error) {
+
+	siteCode, err := util.GenerateRandomString(16)
+
+	if err != nil {
+		return "", errors.WithCode(code.ErrRunTimeCaller, err.Error())
+	}
+
+	for {
+		siteRecord, err := ad.GetSiteByCode(ctx, siteCode)
+		if errors.Is(err, gorm.ErrRecordNotFound) && siteRecord == nil {
+			return siteCode, nil
+		} else if err != nil {
+			return "", err
+		}
 	}
 }
 

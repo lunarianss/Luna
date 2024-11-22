@@ -8,7 +8,7 @@ import (
 )
 
 type AccountRepo interface {
-	CreateAccount(context context.Context, account *model.Account, isTransaction bool, tx *gorm.DB) (*model.Account, error)
+	CreateAccount(context context.Context, account *model.Account, tx *gorm.DB) (*model.Account, error)
 
 	GetAccountByEmail(context context.Context, email string) (*model.Account, error)
 	GetAccountByID(context context.Context, ID string) (*model.Account, error)

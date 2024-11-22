@@ -245,7 +245,7 @@ func (ad *AccountDomain) GenerateToken(ctx context.Context, account *model.Accou
 	}
 	return jwtToken, nil
 }
-func (ad *AccountDomain) CreateAccount(ctx context.Context, email, name, interfaceLanguage, interfaceTheme, password string, isSetup bool) (*model.Account, error) {
+func (ad *AccountDomain) CreateAccount(ctx context.Context, tx *gorm.DB, email, name, interfaceLanguage, interfaceTheme, password string, isSetup bool) (*model.Account, error) {
 	// todo 补充密码和 system feature
 	var timezone string
 	timezone, ok := util.LanguageMapping[interfaceLanguage]
@@ -262,27 +262,7 @@ func (ad *AccountDomain) CreateAccount(ctx context.Context, email, name, interfa
 		Timezone:          timezone,
 	}
 
-	return ad.AccountRepo.CreateAccount(ctx, account, false, nil)
-}
-
-func (ad *AccountDomain) CreateAccountTx(ctx context.Context, tx *gorm.DB, email, name, interfaceLanguage, interfaceTheme, password string, isSetup bool) (*model.Account, error) {
-	// todo 补充密码和 system feature
-	var timezone string
-	timezone, ok := util.LanguageMapping[interfaceLanguage]
-
-	if !ok {
-		timezone = "UTC"
-	}
-
-	account := &model.Account{
-		Email:             email,
-		Name:              name,
-		InterfaceLanguage: interfaceLanguage,
-		InterfaceTheme:    interfaceTheme,
-		Timezone:          timezone,
-	}
-
-	return ad.AccountRepo.CreateAccount(ctx, account, true, tx)
+	return ad.AccountRepo.CreateAccount(ctx, account, tx)
 }
 
 func (ad *AccountDomain) DeleteRefreshToken(ctx context.Context, refreshToken string, accountID string) error {
@@ -328,7 +308,7 @@ func (ad *AccountDomain) LoadUser(ctx context.Context, userID string) (*model.Ac
 	}
 
 	if tenantJoin.ID == "" {
-		tenantJoin, err := ad.TenantRepo.FindTenantJoinByAccount(ctx, account, false, nil)
+		tenantJoin, err := ad.TenantRepo.FindTenantJoinByAccount(ctx, account, nil)
 
 		if err != nil {
 			return nil, err

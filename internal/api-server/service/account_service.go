@@ -87,14 +87,14 @@ func (s *AccountService) EmailCodeValidity(ctx context.Context, email, emailCode
 func (ad *AccountService) CreateAccountAndTenant(ctx context.Context, email, name, interfaceLanguage, password string) (*model.Account, error) {
 
 	tx := ad.db.Begin()
-	account, err := ad.AccountDomain.CreateAccountTx(ctx, tx, email, name, interfaceLanguage, "light", password, false)
+	account, err := ad.AccountDomain.CreateAccount(ctx, tx, email, name, interfaceLanguage, "light", password, false)
 
 	if err != nil {
 		tx.Rollback()
 		return nil, err
 	}
 
-	err = ad.TenantDomain.CreateOwnerTenantIfNotExistsTx(ctx, tx, account, false)
+	err = ad.TenantDomain.CreateOwnerTenantIfNotExists(ctx, tx, account, false)
 
 	if err != nil {
 		tx.Rollback()

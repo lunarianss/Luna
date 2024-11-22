@@ -37,11 +37,11 @@ func (ad *AccountDao) GetAccountByID(context context.Context, ID string) (*model
 	return &account, nil
 }
 
-func (ad *AccountDao) CreateAccount(context context.Context, account *model.Account, isTransaction bool, tx *gorm.DB) (*model.Account, error) {
+func (ad *AccountDao) CreateAccount(context context.Context, account *model.Account, tx *gorm.DB) (*model.Account, error) {
 
 	var dbIns *gorm.DB
 
-	if isTransaction && tx != nil {
+	if tx != nil {
 		dbIns = tx
 	} else {
 		dbIns = ad.db

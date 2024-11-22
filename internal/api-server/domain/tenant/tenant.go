@@ -22,8 +22,8 @@ func NewTenantDomain(tenantRepo repo.TenantRepo) *TenantDomain {
 	}
 }
 
-func (ts *TenantDomain) CreateOwnerTenantIfNotExistsTx(ctx context.Context, tx *gorm.DB, account *model.Account, isSetup bool) error {
-	tenantJoin, err := ts.TenantRepo.FindTenantJoinByAccount(ctx, account, true, tx)
+func (ts *TenantDomain) CreateOwnerTenantIfNotExists(ctx context.Context, tx *gorm.DB, account *model.Account, isSetup bool) error {
+	tenantJoin, err := ts.TenantRepo.FindTenantJoinByAccount(ctx, account, tx)
 
 	if err != nil {
 		return err
@@ -35,7 +35,7 @@ func (ts *TenantDomain) CreateOwnerTenantIfNotExistsTx(ctx context.Context, tx *
 
 	name := fmt.Sprintf("%s's Workspace", account.Name)
 
-	tenant, err := ts.CreateTenantTx(ctx, tx, account, &model.Tenant{Name: name}, false)
+	tenant, err := ts.CreateTenant(ctx, tx, account, &model.Tenant{Name: name}, false)
 
 	if err != nil {
 		return err
@@ -49,28 +49,28 @@ func (ts *TenantDomain) CreateOwnerTenantIfNotExistsTx(ctx context.Context, tx *
 
 	tenant.EncryptPublicKey = encryptPublicKey
 
-	tenant, err = ts.TenantRepo.UpdateEncryptPublicKey(ctx, tenant, true, tx)
+	tenant, err = ts.TenantRepo.UpdateEncryptPublicKey(ctx, tenant, tx)
 
 	if err != nil {
 		return err
 	}
 
-	if _, err := ts.CreateTenantMemberTx(ctx, tx, account, tenant, string(model.OWNER)); err != nil {
+	if _, err := ts.CreateTenantMember(ctx, tx, account, tenant, string(model.OWNER)); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (ts *TenantDomain) CreateTenantTx(ctx context.Context, tx *gorm.DB, account *model.Account, tenant *model.Tenant, isSetup bool) (*model.Tenant, error) {
-	return ts.TenantRepo.CreateOwnerTenant(ctx, tenant, account, true, tx)
+func (ts *TenantDomain) CreateTenant(ctx context.Context, tx *gorm.DB, account *model.Account, tenant *model.Tenant, isSetup bool) (*model.Tenant, error) {
+	return ts.TenantRepo.CreateOwnerTenant(ctx, tenant, account, tx)
 }
 
-func (ts *TenantDomain) CreateTenantMemberTx(ctx context.Context, tx *gorm.DB, account *model.Account, tenant *model.Tenant, role string) (*model.TenantAccountJoin, error) {
+func (ts *TenantDomain) CreateTenantMember(ctx context.Context, tx *gorm.DB, account *model.Account, tenant *model.Tenant, role string) (*model.TenantAccountJoin, error) {
 	var (
 		tenantAccountJoin *model.TenantAccountJoin
 	)
-	hasRole, err := ts.TenantRepo.HasRoles(ctx, tenant, []model.TenantAccountJoinRole{model.OWNER}, true, tx)
+	hasRole, err := ts.TenantRepo.HasRoles(ctx, tenant, []model.TenantAccountJoinRole{model.OWNER}, tx)
 
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func (ts *TenantDomain) CreateTenantMemberTx(ctx context.Context, tx *gorm.DB, a
 		return nil, errors.WithCode(code.ErrTenantAlreadyExist, "tenant %s already exists role %s", tenant.Name, role)
 	}
 
-	tenantMember, err := ts.TenantRepo.GetTenantJoinOfAccount(ctx, tenant, account, true, tx)
+	tenantMember, err := ts.TenantRepo.GetTenantJoinOfAccount(ctx, tenant, account, tx)
 
 	if err != nil {
 		return nil, err
@@ -88,14 +88,14 @@ func (ts *TenantDomain) CreateTenantMemberTx(ctx context.Context, tx *gorm.DB, a
 
 	if tenantMember.ID != "" {
 		tenantMember.Role = role
-		tenantMember, err := ts.TenantRepo.UpdateRoleTenantOfAccount(ctx, tenantMember, true, tx)
+		tenantMember, err := ts.TenantRepo.UpdateRoleTenantOfAccount(ctx, tenantMember, tx)
 		if err != nil {
 			return nil, err
 		}
 		return tenantMember, nil
 	}
 
-	if tenantAccountJoin, err = ts.TenantRepo.CreateCurrentTenantJoinOfAccount(ctx, tenant, account, model.TenantAccountJoinRole(role), true, tx); err != nil {
+	if tenantAccountJoin, err = ts.TenantRepo.CreateCurrentTenantJoinOfAccount(ctx, tenant, account, model.TenantAccountJoinRole(role), tx); err != nil {
 		return nil, err
 	}
 

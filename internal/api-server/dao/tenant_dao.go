@@ -18,11 +18,11 @@ func NewTenantDao(db *gorm.DB) *TenantDao {
 	return &TenantDao{db: db}
 }
 
-func (td *TenantDao) CreateOwnerTenant(ctx context.Context, tenant *model.Tenant, account *model.Account, isTransaction bool, tx *gorm.DB) (*model.Tenant, error) {
+func (td *TenantDao) CreateOwnerTenant(ctx context.Context, tenant *model.Tenant, account *model.Account, tx *gorm.DB) (*model.Tenant, error) {
 
 	var dbIns *gorm.DB
 
-	if isTransaction && tx != nil {
+	if tx != nil {
 		dbIns = tx
 	} else {
 		dbIns = td.db
@@ -34,13 +34,12 @@ func (td *TenantDao) CreateOwnerTenant(ctx context.Context, tenant *model.Tenant
 	return tenant, nil
 }
 
-func (td *TenantDao) FindTenantJoinByAccount(ctx context.Context, account *model.Account, isTransaction bool, tx *gorm.DB) (*model.TenantAccountJoin, error) {
+func (td *TenantDao) FindTenantJoinByAccount(ctx context.Context, account *model.Account, tx *gorm.DB) (*model.TenantAccountJoin, error) {
 	var tenantJoin model.TenantAccountJoin
 
 	var dbIns *gorm.DB
 
-	if isTransaction && tx != nil {
-
+	if tx != nil {
 		dbIns = tx
 	} else {
 		dbIns = td.db
@@ -61,10 +60,10 @@ func (td *TenantDao) GetTenantByID(ctx context.Context, ID string) (*model.Tenan
 	return &tenant, nil
 }
 
-func (td *TenantDao) HasRoles(ctx context.Context, tenant *model.Tenant, roles []model.TenantAccountJoinRole, isTransaction bool, tx *gorm.DB) (bool, error) {
+func (td *TenantDao) HasRoles(ctx context.Context, tenant *model.Tenant, roles []model.TenantAccountJoinRole, tx *gorm.DB) (bool, error) {
 	var dbIns *gorm.DB
 
-	if isTransaction && tx != nil {
+	if tx != nil {
 		dbIns = tx
 	} else {
 		dbIns = td.db
@@ -96,11 +95,11 @@ func (td *TenantDao) FindTenantsJoinByAccount(ctx context.Context, account *mode
 	return tenantJoinResults, nil
 }
 
-func (td *TenantDao) GetTenantJoinOfAccount(ctx context.Context, tenant *model.Tenant, account *model.Account, isTransaction bool, tx *gorm.DB) (*model.TenantAccountJoin, error) {
+func (td *TenantDao) GetTenantJoinOfAccount(ctx context.Context, tenant *model.Tenant, account *model.Account, tx *gorm.DB) (*model.TenantAccountJoin, error) {
 
 	var dbIns *gorm.DB
 
-	if isTransaction && tx != nil {
+	if tx != nil {
 		dbIns = tx
 	} else {
 		dbIns = td.db
@@ -115,10 +114,10 @@ func (td *TenantDao) GetTenantJoinOfAccount(ctx context.Context, tenant *model.T
 	return &tenantAccountJoin, nil
 }
 
-func (td *TenantDao) UpdateRoleTenantOfAccount(ctx context.Context, ta *model.TenantAccountJoin, isTransaction bool, tx *gorm.DB) (*model.TenantAccountJoin, error) {
+func (td *TenantDao) UpdateRoleTenantOfAccount(ctx context.Context, ta *model.TenantAccountJoin, tx *gorm.DB) (*model.TenantAccountJoin, error) {
 	var dbIns *gorm.DB
 
-	if isTransaction && tx != nil {
+	if tx != nil {
 		dbIns = tx
 	} else {
 		dbIns = td.db
@@ -131,15 +130,16 @@ func (td *TenantDao) UpdateRoleTenantOfAccount(ctx context.Context, ta *model.Te
 	return ta, nil
 }
 
-func (td *TenantDao) UpdateEncryptPublicKey(ctx context.Context, ta *model.Tenant, isTransaction bool, tx *gorm.DB) (*model.Tenant, error) {
+func (td *TenantDao) UpdateEncryptPublicKey(ctx context.Context, ta *model.Tenant, tx *gorm.DB) (*model.Tenant, error) {
 
 	var dbIns *gorm.DB
 
-	if isTransaction && tx != nil {
+	if tx != nil {
 		dbIns = tx
 	} else {
 		dbIns = td.db
 	}
+
 	if err := dbIns.Model(ta).Where("id = ?", ta.ID).Update("encrypt_public_key", ta.EncryptPublicKey).Error; err != nil {
 		return nil, err
 	}
@@ -147,10 +147,10 @@ func (td *TenantDao) UpdateEncryptPublicKey(ctx context.Context, ta *model.Tenan
 	return ta, nil
 }
 
-func (td *TenantDao) CreateCurrentTenantJoinOfAccount(ctx context.Context, tenant *model.Tenant, account *model.Account, role model.TenantAccountJoinRole, isTransaction bool, tx *gorm.DB) (*model.TenantAccountJoin, error) {
+func (td *TenantDao) CreateCurrentTenantJoinOfAccount(ctx context.Context, tenant *model.Tenant, account *model.Account, role model.TenantAccountJoinRole, tx *gorm.DB) (*model.TenantAccountJoin, error) {
 	var dbIns *gorm.DB
 
-	if isTransaction && tx != nil {
+	if tx != nil {
 		dbIns = tx
 	} else {
 		dbIns = td.db
@@ -171,6 +171,5 @@ func (td *TenantDao) UpdateCurrentTenantAccountJoin(ctx context.Context, ta *mod
 	if err := td.db.Model(ta).Update("current", 1).Error; err != nil {
 		return nil, err
 	}
-
 	return ta, nil
 }

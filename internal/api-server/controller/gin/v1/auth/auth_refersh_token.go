@@ -15,7 +15,7 @@ func (ac *AuthController) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	sendResp, err := ac.AuthService.RefreshToken(c, params.RefreshToken)
+	sendResp, err := ac.authService.RefreshToken(c, params.RefreshToken)
 
 	if err != nil {
 		core.WriteResponse(c, err, nil)

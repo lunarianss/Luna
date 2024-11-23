@@ -9,10 +9,10 @@ import (
 )
 
 type AppController struct {
-	AppService  *service.AppService
-	ChatService *service.ChatService
+	appService  *service.AppService
+	chatService *service.ChatService
 }
 
 func NewAppController(appSrv *service.AppService, chatSrv *service.ChatService) *AppController {
-	return &AppController{AppService: appSrv, ChatService: chatSrv}
+	return &AppController{appService: appSrv, chatService: chatSrv}
 }

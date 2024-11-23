@@ -29,7 +29,7 @@ func (ac *AppController) ChatMessage(c *gin.Context) {
 		return
 	}
 
-	if err := ac.ChatService.Generate(c, paramsUrl.AppID, userID, params, entities.DEBUGGER, true); err != nil {
+	if err := ac.chatService.Generate(c, paramsUrl.AppID, userID, params, entities.DEBUGGER, true); err != nil {
 		core.WriteResponse(c, err, nil)
 	}
 }

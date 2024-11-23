@@ -15,7 +15,7 @@ func (ac *AccountController) GetAccountProfile(c *gin.Context) {
 		return
 	}
 
-	accountProfile, err := ac.AccountService.GetAccountProfile(c, userID)
+	accountProfile, err := ac.accountService.GetAccountProfile(c, userID)
 
 	if err != nil {
 		core.WriteResponse(c, err, nil)

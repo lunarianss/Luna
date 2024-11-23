@@ -23,7 +23,7 @@ func (mc *ModelController) GetDefaultModelByType(c *gin.Context) {
 		return
 	}
 
-	defaultModel, err := mc.ModelProviderService.GetDefaultModelByType(c, userID, paramsQuery.ModelType)
+	defaultModel, err := mc.modelProviderService.GetDefaultModelByType(c, userID, paramsQuery.ModelType)
 
 	if err != nil {
 		core.WriteResponse(c, err, nil)

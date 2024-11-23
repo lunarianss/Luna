@@ -20,7 +20,7 @@ func (mc *ModelController) SaveModelCredential(c *gin.Context) {
 		return
 	}
 
-	if err := mc.ModelProviderService.SaveModelCredentials(c, "9ecdc361-cbc1-4c9b-8fb9-827dff4c145a", paramsBody.Model, paramsBody.ModelType, paramsUri.Provider, paramsBody.Credentials); err != nil {
+	if err := mc.modelProviderService.SaveModelCredentials(c, "9ecdc361-cbc1-4c9b-8fb9-827dff4c145a", paramsBody.Model, paramsBody.ModelType, paramsUri.Provider, paramsBody.Credentials); err != nil {
 		core.WriteResponse(c, err, nil)
 		return
 	}

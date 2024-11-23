@@ -6,7 +6,7 @@ import (
 )
 
 func (fc *FeatureController) List(c *gin.Context) {
-	features, err := fc.FeatureService.ListFeatures()
+	features, err := fc.featureService.ListFeatures()
 
 	if err != nil {
 		core.WriteResponse(c, err, nil)

@@ -15,7 +15,7 @@ func (wc *WorkspaceController) GetTenantCurrentWorkspace(c *gin.Context) {
 		return
 	}
 
-	currentTenant, err := wc.TenantService.GetTenantCurrentWorkspace(c, accountID)
+	currentTenant, err := wc.tenantService.GetTenantCurrentWorkspace(c, accountID)
 
 	if err != nil {
 		core.WriteResponse(c, err, nil)

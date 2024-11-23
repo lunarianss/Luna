@@ -15,7 +15,7 @@ func (ac *AuthController) SendEmailCode(c *gin.Context) {
 		return
 	}
 
-	sendResp, err := ac.AuthService.SendEmailCode(c, params)
+	sendResp, err := ac.authService.SendEmailCode(c, params)
 
 	if err != nil {
 		core.WriteResponse(c, err, nil)

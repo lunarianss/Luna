@@ -14,7 +14,7 @@ func (ac *AuthController) EmailValidity(c *gin.Context) {
 		return
 	}
 
-	tokenPair, err := ac.AuthService.EmailCodeValidity(c, params.Email, params.Code, params.Token)
+	tokenPair, err := ac.authService.EmailCodeValidity(c, params.Email, params.Code, params.Token)
 
 	if err != nil {
 		core.WriteResponse(c, err, nil)

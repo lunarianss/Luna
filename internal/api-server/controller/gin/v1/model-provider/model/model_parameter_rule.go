@@ -28,7 +28,7 @@ func (mc *ModelController) ParameterRules(c *gin.Context) {
 		return
 	}
 
-	parameterRules, err := mc.ModelProviderService.GetModelParameterRules(c, userID, paramsUri.Provider, paramsQuery.Model)
+	parameterRules, err := mc.modelProviderService.GetModelParameterRules(c, userID, paramsUri.Provider, paramsQuery.Model)
 
 	if err != nil {
 		core.WriteResponse(c, err, nil)

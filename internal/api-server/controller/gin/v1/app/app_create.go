@@ -23,7 +23,7 @@ func (ac *AppController) Create(c *gin.Context) {
 		return
 	}
 
-	app, err := ac.AppService.CreateApp(c, userID, params)
+	app, err := ac.appService.CreateApp(c, userID, params)
 
 	if err != nil {
 		core.WriteResponse(c, err, nil)

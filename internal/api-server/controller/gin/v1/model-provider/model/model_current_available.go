@@ -23,7 +23,7 @@ func (mc *ModelController) GetAccountAvailableModels(c *gin.Context) {
 		return
 	}
 
-	availableModels, err := mc.ModelProviderService.GetAccountAvailableModels(c, userID, base.ModelType(params.ModelType))
+	availableModels, err := mc.modelProviderService.GetAccountAvailableModels(c, userID, base.ModelType(params.ModelType))
 
 	if err != nil {
 		core.WriteResponse(c, err, nil)

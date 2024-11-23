@@ -6,7 +6,7 @@ import (
 )
 
 func (fc *FeatureController) GetSystemConfigs(c *gin.Context) {
-	systemConfig, err := fc.FeatureService.GetSystemConfig()
+	systemConfig, err := fc.featureService.GetSystemConfig()
 
 	if err != nil {
 		core.WriteResponse(c, err, nil)

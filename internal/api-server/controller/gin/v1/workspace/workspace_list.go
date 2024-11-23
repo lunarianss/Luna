@@ -14,7 +14,7 @@ func (wc *WorkspaceController) List(c *gin.Context) {
 		return
 	}
 
-	tenantsInfo, err := wc.TenantService.GetJoinTenants(c, accountID)
+	tenantsInfo, err := wc.tenantService.GetJoinTenants(c, accountID)
 
 	if err != nil {
 		core.WriteResponse(c, err, nil)

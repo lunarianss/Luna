@@ -23,7 +23,7 @@ func (ac *AppController) List(c *gin.Context) {
 		return
 	}
 
-	appList, err := ac.AppService.ListTenantApps(c, params, userID)
+	appList, err := ac.appService.ListTenantApps(c, params, userID)
 
 	if err != nil {
 		core.WriteResponse(c, err, nil)

@@ -7,11 +7,11 @@ package controller
 import "github.com/lunarianss/Luna/internal/api-server/service"
 
 type AuthController struct {
-	AuthService *service.AccountService
+	authService *service.AccountService
 }
 
 func NewAuthController(accountService *service.AccountService) *AuthController {
 	return &AuthController{
-		AuthService: accountService,
+		authService: accountService,
 	}
 }

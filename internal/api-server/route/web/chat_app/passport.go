@@ -29,8 +29,11 @@ func (a *PassportRoutes) Register(g *gin.Engine) error {
 		return err
 	}
 
-	jwt := jwt.GetJWTIns()
+	jwt, err := jwt.GetJWTIns()
 
+	if err != nil {
+		return err
+	}
 	// dao
 	appDao := dao.NewAppDao(gormIns)
 	appRunningDao := dao.NewAppRunningDao(gormIns)

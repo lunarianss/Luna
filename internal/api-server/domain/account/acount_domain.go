@@ -232,10 +232,10 @@ func (ad *AccountDomain) GenerateToken(ctx context.Context, account *model.Accou
 		AccountId: account.ID,
 	}
 
-	jwt := jwt.GetJWTIns()
+	jwt, err := jwt.GetJWTIns()
 
-	if jwt == nil {
-		return jwtToken, errors.WithCode(code.ErrTokenInsNotFound, "")
+	if err != nil {
+		return jwtToken, err
 	}
 
 	jwtToken, err = jwt.GenerateJWT(claims)

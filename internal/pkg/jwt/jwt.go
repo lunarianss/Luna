@@ -21,8 +21,13 @@ func NewJWT(signKey string) *JWT {
 	return jWTIns
 }
 
-func GetJWTIns() *JWT {
-	return jWTIns
+func GetJWTIns() (*JWT, error) {
+
+	if jWTIns == nil {
+		return nil, errors.WithCode(code.ErrTokenInsNotFound, "token instance not found")
+	}
+
+	return jWTIns, nil
 }
 
 func (j *JWT) GenerateJWT(claims jwt.Claims) (string, error) {

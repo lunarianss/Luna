@@ -23,7 +23,13 @@ func TokenAuthMiddleware() gin.HandlerFunc {
 		// 截取 Bearer 前缀，获取 token
 		tokenString = tokenString[7:]
 
-		jwtIns := jwt.GetJWTIns()
+		jwtIns, err := jwt.GetJWTIns()
+
+		if err != nil {
+			core.WriteResponse(c, err, nil)
+			c.Abort()
+			return
+		}
 
 		lunaClaims, err := jwtIns.ParseLunaClaimsJWT(tokenString)
 

@@ -10,6 +10,8 @@ import "github.com/lunarianss/Luna/pkg/errors" // init register error codes defi
 func init() {
 	errors.Enroll(ErrAppMapMode, 500, "Error occurred while attempt to index from appTemplate using mode")
 	errors.Enroll(ErrAppNotFoundRelatedConfig, 500, "Error occurred while attempt to find app related config")
+	errors.Enroll(ErrAppStatusNotNormal, 500, "App is not active")
+	errors.Enroll(ErrAppCodeNotFound, 500, "App code not found")
 	errors.Enroll(ErrEmailCode, 500, "Error occurred when email code is incorrect")
 	errors.Enroll(ErrTokenEmail, 500, "Error occurred when email is incorrect")
 	errors.Enroll(ErrTenantAlreadyExist, 500, "Error occurred when tenant is already exist")

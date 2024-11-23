@@ -226,7 +226,7 @@ func (ad *AccountDomain) GenerateToken(ctx context.Context, account *model.Accou
 			IssuedAt:  jwtV5.NewNumericDate(time.Now()),
 			NotBefore: jwtV5.NewNumericDate(time.Now()),
 			Issuer:    ad.config.JwtOptions.Realm,
-			Subject:   "Admin",
+			Subject:   "Console API Token",
 			Audience:  []string{"not yet"},
 		},
 		AccountId: account.ID,

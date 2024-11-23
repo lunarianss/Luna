@@ -2,7 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"runtime"
+
+	"github.com/lunarianss/Luna/internal/pkg/code"
+	"github.com/lunarianss/Luna/pkg/errors"
 )
 
 type B struct {
@@ -31,4 +35,5 @@ func main() {
 		fmt.Println(p)
 	}
 
+	log.Printf("%#+v", errors.WithCode(code.ErrAccountBanned, ""))
 }

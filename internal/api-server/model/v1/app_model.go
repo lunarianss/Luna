@@ -27,7 +27,7 @@ type App struct {
 	Icon                string        `gorm:"column:icon" json:"icon"`
 	IconBackground      string        `gorm:"column:icon_background" json:"icon_background"`
 	AppModelConfigID    string        `gorm:"column:app_model_config_id" json:"app_model_config_id"`
-	Status              string        `gorm:"column:status" json:"status"`
+	Status              string        `gorm:"column:status;default:normal" json:"status"`
 	EnableSite          field.BitBool `gorm:"column:enable_site" json:"enable_site"`
 	EnableAPI           field.BitBool `gorm:"column:enable_api" json:"enable_api"`
 	APIRpm              int           `gorm:"column:api_rpm" json:"api_rpm"`

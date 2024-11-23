@@ -3,6 +3,7 @@ package dao
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/api-server/repo"
 	"github.com/lunarianss/Luna/internal/pkg/code"
@@ -33,10 +34,32 @@ func (ad *AppRunningDao) GetSiteByAppID(ctx context.Context, appID string) (*mod
 
 func (ad *AppRunningDao) GetSiteByCode(ctx context.Context, code string) (*model.Site, error) {
 	var site model.Site
-	if err := ad.db.First(&site, "code = ?", code).Error; err != nil {
+	if err := ad.db.First(&site, "code = ? AND status = ?", code, "normal").Error; err != nil {
 		return nil, err
 	}
 	return &site, nil
+}
+
+func (ad *AppRunningDao) GetEndUserBySession(ctx context.Context, sessionID string) (*model.EndUser, error) {
+	var endUser model.EndUser
+	if err := ad.db.First(&endUser, "session_id = ?", sessionID).Error; err != nil {
+		return nil, err
+	}
+	return &endUser, nil
+}
+
+func (ad *AppRunningDao) GenerateSessionForEndUser(ctx context.Context) (string, error) {
+
+	sessionID := uuid.NewString()
+
+	for {
+		endUserRecord, err := ad.GetEndUserBySession(ctx, sessionID)
+		if errors.Is(err, gorm.ErrRecordNotFound) && endUserRecord == nil {
+			return sessionID, nil
+		} else if err != nil {
+			return "", err
+		}
+	}
 }
 
 func (ad *AppRunningDao) GenerateUniqueCodeForSite(ctx context.Context) (string, error) {

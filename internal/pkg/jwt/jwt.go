@@ -8,13 +8,6 @@ import (
 	"github.com/lunarianss/Luna/pkg/errors"
 )
 
-type LunaClaims struct {
-	AccountId   string
-	NickName    string
-	AuthorityId string
-	jwt.RegisteredClaims
-}
-
 var jWTIns *JWT
 
 type JWT struct {
@@ -32,7 +25,7 @@ func GetJWTIns() *JWT {
 	return jWTIns
 }
 
-func (j *JWT) GenerateJWT(claims LunaClaims) (string, error) {
+func (j *JWT) GenerateJWT(claims jwt.Claims) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	tokenStr, err := token.SignedString(j.SignKey)
@@ -42,7 +35,26 @@ func (j *JWT) GenerateJWT(claims LunaClaims) (string, error) {
 	return tokenStr, nil
 }
 
-func (j *JWT) ParseJWT(tokenStr string) (*LunaClaims, error) {
+func (j *JWT) ParseLunaPassportClaimsJWT(tokenStr string) (*LunaPassportClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &LunaPassportClaims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.WithCode(code.ErrTokenMethodErr, fmt.Sprintf("Unexpected signing method: %v", token.Header["alg"]))
+		}
+		return j.SignKey, nil
+	})
+
+	if err != nil || !token.Valid {
+		return nil, errors.WithCode(code.ErrTokenInvalid, err.Error())
+	}
+
+	if claims, ok := token.Claims.(*LunaPassportClaims); ok {
+		return claims, nil
+	} else {
+		return nil, errors.WithCode(code.ErrTokenInvalid, fmt.Sprintf("token %s can not be parse as a LunaPassportClaims", tokenStr))
+	}
+}
+
+func (j *JWT) ParseLunaClaimsJWT(tokenStr string) (*LunaClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &LunaClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.WithCode(code.ErrTokenMethodErr, fmt.Sprintf("Unexpected signing method: %v", token.Header["alg"]))

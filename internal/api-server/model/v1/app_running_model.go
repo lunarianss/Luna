@@ -13,7 +13,7 @@ type EndUser struct {
 	Type           string        `json:"type" gorm:"column:type"`
 	ExternalUserID string        `json:"external_user_id" gorm:"column:external_user_id"`
 	Name           string        `json:"name" gorm:"column:name"`
-	IsAnonymous    field.BitBool `json:"is_anonymous" gorm:"column:is_anonymous"`
+	IsAnonymous    field.BitBool `json:"is_anonymous" gorm:"column:is_anonymous;default:1"`
 	SessionID      string        `json:"session_id" gorm:"column:session_id"`
 	CreatedAt      int64         `json:"created_at" gorm:"column:created_at"`
 	UpdatedAt      int64         `json:"updated_at" gorm:"column:updated_at"`
@@ -61,13 +61,13 @@ type Site struct {
 	ChatColorThemeInverted field.BitBool `json:"chat_color_theme_inverted" gorm:"column:chat_color_theme_inverted"`
 	Copyright              string        `json:"copyright" gorm:"column:copyright"`
 	PrivacyPolicy          string        `json:"privacy_policy" gorm:"column:privacy_policy"`
-	ShowWorkflowSteps      field.BitBool `json:"show_workflow_steps" gorm:"column:show_workflow_steps"`
+	ShowWorkflowSteps      field.BitBool `json:"show_workflow_steps" gorm:"column:show_workflow_steps;default:1"`
 	UseIconAsAnswerIcon    field.BitBool `json:"use_icon_as_answer_icon" gorm:"column:use_icon_as_answer_icon"`
 	CustomDisclaimer       string        `json:"custom_disclaimer" gorm:"column:custom_disclaimer"`
 	CustomizeDomain        string        `json:"customize_domain" gorm:"column:customize_domain"`
 	CustomizeTokenStrategy string        `json:"customize_token_strategy" gorm:"column:customize_token_strategy"`
 	PromptPublic           field.BitBool `json:"prompt_public" gorm:"column:prompt_public"`
-	Status                 string        `json:"status" gorm:"column:status"`
+	Status                 string        `json:"status" gorm:"column:status;default:normal"`
 	CreatedBy              string        `json:"created_by" gorm:"column:created_by"`
 	CreatedAt              int64         `json:"created_at" gorm:"column:created_at"`
 	UpdatedBy              string        `json:"updated_by" gorm:"column:updated_by"`

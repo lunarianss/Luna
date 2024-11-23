@@ -302,7 +302,8 @@ CREATE TABLE end_users (
     is_anonymous bit(1) NOT NULL DEFAULT 1,
     session_id VARCHAR(255) NOT NULL,
     created_at int(10) NOT NULL,
-    updated_at int(10) NOT NULL
+    updated_at int(10) NOT NULL,
+    UNIQUE (session_id)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 ALTER TABLE end_users ADD INDEX end_user_session_id_idx (session_id, type);

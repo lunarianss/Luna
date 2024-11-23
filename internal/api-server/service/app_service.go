@@ -111,6 +111,7 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 		EnableAPI:      field.BitBool(appTemplate.App.EnableAPI),
 		Icon:           createAppRequest.Icon,
 		IconBackground: createAppRequest.IconBackground,
+		IconType:       createAppRequest.IconType,
 		TenantID:       tenantID,
 		CreatedBy:      accountID,
 		UpdatedBy:      accountID,

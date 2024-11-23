@@ -25,7 +25,7 @@ func TokenAuthMiddleware() gin.HandlerFunc {
 
 		jwtIns := jwt.GetJWTIns()
 
-		lunaClaims, err := jwtIns.ParseJWT(tokenString)
+		lunaClaims, err := jwtIns.ParseLunaClaimsJWT(tokenString)
 
 		if err != nil {
 			core.WriteResponse(c, err, nil)

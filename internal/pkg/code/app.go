@@ -5,4 +5,8 @@ const (
 	ErrAppMapMode int = iota + 110101
 	// ErrAppNotFoundRelatedConfig - 500: Error occurred while attempt to find app related config.
 	ErrAppNotFoundRelatedConfig
+	// ErrAppStatusNotNormal - 500: App is not active.
+	ErrAppStatusNotNormal
+	// ErrAppCodeNotFound - 500: App code not found.
+	ErrAppCodeNotFound
 )

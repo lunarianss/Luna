@@ -109,6 +109,8 @@ func AppRecordToDetail(app *model.App, config *config.Config, modelConfig *model
 		CreatedAt:           app.CreatedAt,
 		UpdatedAt:           app.UpdatedAt,
 		Description:         app.Description,
+		EnableSite:          int(app.EnableSite),
+		EnableApi:           int(app.EnableAPI),
 		IconType:            app.IconType,
 		CreatedBy:           app.CreatedBy,
 		UpdatedBy:           app.UpdatedBy,

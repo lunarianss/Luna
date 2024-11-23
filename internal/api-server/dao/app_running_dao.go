@@ -40,6 +40,14 @@ func (ad *AppRunningDao) GetSiteByCode(ctx context.Context, code string) (*model
 	return &site, nil
 }
 
+func (ad *AppRunningDao) GetEndUserByID(ctx context.Context, endUserID string) (*model.EndUser, error) {
+	var endUser model.EndUser
+	if err := ad.db.First(&endUser, "id = ?", endUserID).Error; err != nil {
+		return nil, err
+	}
+	return &endUser, nil
+}
+
 func (ad *AppRunningDao) GetEndUserBySession(ctx context.Context, sessionID string) (*model.EndUser, error) {
 	var endUser model.EndUser
 	if err := ad.db.First(&endUser, "session_id = ?", sessionID).Error; err != nil {

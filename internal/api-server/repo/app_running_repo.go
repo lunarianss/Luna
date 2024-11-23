@@ -17,4 +17,5 @@ type AppRunningRepo interface {
 	GetSiteByAppID(ctx context.Context, appID string) (*model.Site, error)
 	GetSiteByCode(ctx context.Context, code string) (*model.Site, error)
 	GetEndUserBySession(ctx context.Context, sessionID string) (*model.EndUser, error)
+	GetEndUserByID(ctx context.Context, endUserID string) (*model.EndUser, error)
 }

@@ -61,13 +61,14 @@ IAM 系统支持的错误码列表如下：
 | ErrTokenMethodErr | 100404 | 500 | Unexpected signing method |
 | ErrTokenInsNotFound | 100405 | 500 | Jwt instance is not found |
 | ErrRefreshTokenNotFound | 100406 | 500 | Refresh token is not found in redis |
-| ErrTokenMissBearer | 100407 | 401 | Token miss a header of Bearer  |
+| ErrTokenMissBearer | 100407 | 401 | The token does not conform to the format |
 | ErrRedisSetKey | 100501 | 500 | Error occurred when set key, value to redis |
 | ErrRedisSetExpire | 100502 | 500 | Error occurred when set expire  to redis |
 | ErrRedisRuntime | 100503 | 500 | Error occurred when invoke redis api |
 | ErrRedisDataExpire | 100504 | 500 | Error occurred when redis data is expired |
 | ErrRSAGenerate | 100601 | 500 | Error occurred when generate pair of rsa key |
 | ErrGinNotExistAccountInfo | 100701 | 400 | Error occurred when get account info from gin context |
+| ErrGinNotExistAppSiteInfo | 100702 | 400 | Error occurred when get app site info from gin context |
 | ErrOnlyOverrideConfigInDebugger | 110201 | 500 | Error occurred while attempt to override config in non-debug mode |
 | ErrModelEmptyInConfig | 110202 | 500 | Error occurred while attempt to index model from config |
 | ErrRequiredCorrectProvider | 110203 | 500 | Error occurred when provider is not found or provider isn't include in the provider list |

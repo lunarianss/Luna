@@ -58,7 +58,6 @@ func (ps *PassportService) AcquirePassport(c *gin.Context, appCode string) (*dto
 
 	jwtClaims := jwt.LunaPassportClaims{
 		RegisteredClaims: jwtV5.RegisteredClaims{
-			ExpiresAt: jwtV5.NewNumericDate(time.Now().Add(ps.config.JwtOptions.Timeout)),
 			IssuedAt:  jwtV5.NewNumericDate(time.Now()),
 			NotBefore: jwtV5.NewNumericDate(time.Now()),
 			Issuer:    ps.config.JwtOptions.Realm,

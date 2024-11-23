@@ -21,3 +21,23 @@ func GetUserIDFromGin(g *gin.Context) (string, error) {
 
 	return userIDStr, nil
 }
+
+func GetWebAppFromGin(g *gin.Context) (string, string, string, error) {
+	appID, exist := g.Get("appID")
+	appCode, appCodeExist := g.Get("appCode")
+	endUser, endUserIDExist := g.Get("endUserID")
+
+	if !exist || !appCodeExist || !endUserIDExist {
+		return "", "", "", errors.WithCode(code.ErrGinNotExistAppSiteInfo, "")
+	}
+
+	appIDStr, ok := appID.(string)
+	appCodeStr, appCodeOk := appCode.(string)
+	endUserStr, endUserOk := endUser.(string)
+
+	if !ok || !appCodeOk || !endUserOk {
+		return "", "", "", errors.WithCode(code.ErrGinNotExistAppSiteInfo, "")
+	}
+
+	return appIDStr, appCodeStr, endUserStr, nil
+}

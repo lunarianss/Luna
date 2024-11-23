@@ -28,9 +28,9 @@ type CustomConfigurationResponse struct {
 }
 
 type SystemConfigurationResponse struct {
-	Enabled             bool                               `json:"enabled"`
-	CurrentQuotaType    model.ProviderQuotaType            `json:"current_quota_type"`
-	QuotaConfigurations *model_provider.QuotaConfiguration `json:"quota_configurations"`
+	Enabled             bool                                 `json:"enabled"`
+	CurrentQuotaType    model.ProviderQuotaType              `json:"current_quota_type"`
+	QuotaConfigurations []*model_provider.QuotaConfiguration `json:"quota_configurations"`
 }
 
 type ProviderResponse struct {
@@ -42,7 +42,7 @@ type ProviderResponse struct {
 	Background               string                                   `json:"background"`                 // Background color or image
 	Help                     *model_provider.ProviderHelpEntity       `json:"help"`                       // Help information
 	SupportedModelTypes      []base.ModelType                         `json:"supported_model_types"`      // Supported model types
-	ConfigurationMethods     []model_provider.ConfigurationMethod     `json:"configuration_methods"`      // Configuration methods                    // Models offered by the provider
+	ConfigurationMethods     []model_provider.ConfigurationMethod     `json:"configurate_methods"`        // Configuration methods                    // Models offered by the provider
 	ProviderCredentialSchema *model_provider.ProviderCredentialSchema `json:"provider_credential_schema"` // Schema for provider credentials
 	ModelCredentialSchema    *model_provider.ModelCredentialSchema    `json:"model_credential_schema"`    // Schema for model credentials
 	PreferredProviderType    model.ProviderType                       `json:"preferred_provider_type"`    //

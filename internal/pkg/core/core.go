@@ -33,7 +33,7 @@ type ErrResponse struct {
 
 func GetSuccessResponse() map[string]string {
 	return map[string]string{
-		"message": "success",
+		"result": "success",
 	}
 }
 

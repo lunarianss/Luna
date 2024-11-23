@@ -89,8 +89,14 @@ type ProviderHelpEntity struct {
 }
 
 type FormShowOnObject struct {
-	Variable string `json:"variable"`
-	Value    string `json:"value"`
+	Variable string `json:"variable" yaml:"variable"`
+	Value    string `json:"value" yaml:"value"`
+}
+
+type FormOptions struct {
+	Label  *base.I18nObject    `json:"label" yaml:"label"`
+	Value  string              `json:"value" yaml:"value"`
+	ShowOn []*FormShowOnObject `json:"show_on" yaml:"show_on"`
 }
 
 type CredentialFormSchema struct {
@@ -101,16 +107,17 @@ type CredentialFormSchema struct {
 	DefaultValue string              `json:"default"    yaml:"default"`    // Default value
 	MaxLength    int                 `json:"max_length" yaml:"max_length"` // Maximum length
 	ShowOn       []*FormShowOnObject `json:"show_on"    yaml:"show_on"`    // Conditions to show the field
+	Options      []*FormOptions      `json:"options" yaml:"options"`
 }
 
 type FieldModelSchema struct {
-	Label       *base.I18nObject `json:"label"`
-	PlaceHolder *base.I18nObject `json:"place_holder"`
+	Label       *base.I18nObject `json:"label" yaml:"label"`
+	PlaceHolder *base.I18nObject `json:"place_holder" yaml:"place_holder"`
 }
 
 type ModelCredentialSchema struct {
-	Model                 FieldModelSchema        `json:"model"`
-	CredentialFormSchemas []*CredentialFormSchema `json:"credential_form"`
+	Model                 FieldModelSchema        `json:"model" yaml:"model"`
+	CredentialFormSchemas []*CredentialFormSchema `json:"credential_form_schemas" yaml:"credential_form_schemas"`
 }
 
 type ProviderCredentialSchema struct {
@@ -126,7 +133,7 @@ type ProviderEntity struct {
 	Background               string                    `json:"background"                 yaml:"background"`                 // Background color or image
 	Help                     *ProviderHelpEntity       `json:"help"                       yaml:"help"`                       // Help information
 	SupportedModelTypes      []base.ModelType          `json:"supported_model_types"      yaml:"supported_model_types"`      // Supported model types
-	ConfigurationMethods     []ConfigurationMethod     `json:"configuration_methods"      yaml:"configuration_methods"`      // Configuration methods
+	ConfigurationMethods     []ConfigurationMethod     `json:"configurate_methods"      yaml:"configurate_methods"`          // Configuration methods
 	Models                   []ProviderModel           `json:"models"                     yaml:"models"`                     // Models offered by the provider
 	ProviderCredentialSchema *ProviderCredentialSchema `json:"provider_credential_schema" yaml:"provider_credential_schema"` // Schema for provider credentials
 	ModelCredentialSchema    *ModelCredentialSchema    `json:"model_credential_schema"    yaml:"model_credential_schema"`    // Schema for model credentials

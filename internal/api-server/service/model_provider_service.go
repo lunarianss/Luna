@@ -79,6 +79,10 @@ func (mpSrv *ModelProviderService) GetProviderList(ctx context.Context, accountI
 			CustomConfiguration: &dto.CustomConfigurationResponse{
 				Status: customConfigurationStatus,
 			},
+			SystemConfiguration: &dto.SystemConfigurationResponse{
+				Enabled:             false,
+				QuotaConfigurations: make([]*model_provider.QuotaConfiguration, 0),
+			},
 		}
 
 		providerListResponse = append(providerListResponse, providerResponse)

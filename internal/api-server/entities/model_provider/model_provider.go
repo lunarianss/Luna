@@ -79,6 +79,22 @@ func (mp *ModelProvider) GetProviderSchema() (*ProviderEntity, error) {
 		return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
 	}
 
+	if provider.ModelCredentialSchema != nil {
+		for _, c := range provider.ModelCredentialSchema.CredentialFormSchemas {
+			if c.ShowOn == nil {
+				c.ShowOn = []*FormShowOnObject{}
+			}
+		}
+	}
+
+	if provider.ProviderCredentialSchema != nil {
+		for _, c := range provider.ProviderCredentialSchema.CredentialFormSchemas {
+			if c.ShowOn == nil {
+				c.ShowOn = []*FormShowOnObject{}
+			}
+		}
+	}
+
 	provider.PatchI18nObject()
 	return provider, nil
 }

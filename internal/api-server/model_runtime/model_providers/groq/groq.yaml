@@ -23,7 +23,7 @@ help:
 supported_model_types:
   - llm
   - speech2text
-configuration_methods:
+configurate_methods:
   - predefined-model
 provider_credential_schema:
   credential_form_schemas:

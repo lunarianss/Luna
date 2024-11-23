@@ -13,6 +13,7 @@ func (pc *PassportController) Acquire(c *gin.Context) {
 
 	if appCode == "" {
 		core.WriteResponse(c, errors.WithCode(code.ErrAppCodeNotFound, "app code not exist in X-App-Code http header"), nil)
+		return
 	}
 
 	passport, err := pc.passportService.AcquirePassport(c, appCode)

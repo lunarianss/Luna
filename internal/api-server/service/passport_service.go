@@ -34,7 +34,6 @@ func NewPassportService(appRunningDomain *domain.AppRunningDomain,
 }
 
 func (ps *PassportService) AcquirePassport(c *gin.Context, appCode string) (*dto.AcquirePassportResponse, error) {
-
 	siteRecord, err := ps.appRunningDomain.AppRunningRepo.GetSiteByCode(c, appCode)
 
 	if err != nil {

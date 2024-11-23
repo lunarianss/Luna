@@ -44,10 +44,11 @@ func (s *LunaApiServer) Run() error {
 		return err
 	}
 
+	_ = jwt.NewJWT(s.AppRuntimeConfig.JwtOptions.Key)
+
 	if err := s.APIServer.InitRouter(s.APIServer.Engine); err != nil {
 		return err
 	}
-	_ = jwt.NewJWT(s.AppRuntimeConfig.JwtOptions.Key)
 
 	if err := s.GracefulShutdown.Start(); err != nil {
 		log.Fatalf("start shutdown manager failed: %s", err.Error())

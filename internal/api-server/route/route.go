@@ -10,6 +10,7 @@ import (
 	featureRoute "github.com/lunarianss/Luna/internal/api-server/route/console/feature"
 	setupRoute "github.com/lunarianss/Luna/internal/api-server/route/console/setup"
 	consoleWorkSpaceRoute "github.com/lunarianss/Luna/internal/api-server/route/console/workspace"
+	chatAppRoute "github.com/lunarianss/Luna/internal/api-server/route/web/chat_app"
 	"github.com/lunarianss/Luna/internal/pkg/server"
 )
 
@@ -37,5 +38,8 @@ func init() {
 	// console/feature
 	server.RegisterRoute(&featureRoute.FeatureRoutes{})
 	server.RegisterRoute(&staticRoute{})
+
+	// web
+	server.RegisterRoute(&chatAppRoute.PassportRoutes{})
 
 }

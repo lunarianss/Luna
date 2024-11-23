@@ -6,19 +6,21 @@ import (
 	"github.com/lunarianss/Luna/internal/pkg/core"
 )
 
-func (s *WebSiteController) Retrieve(c *gin.Context) {
-	appID, appCode, endUserID, err := util.GetWebAppFromGin(c)
+func (ac *WebAppController) AppParameters(c *gin.Context) {
+	appID, _, _, err := util.GetWebAppFromGin(c)
 
 	if err != nil {
 		core.WriteResponse(c, err, nil)
 		return
 	}
 
-	wenSite, err := s.webSiteService.GetSiteByWebToken(c, appID, endUserID, appCode)
+	appConfig, err := ac.webAppService.GetWebAppParameters(c, appID)
 
 	if err != nil {
 		core.WriteResponse(c, err, nil)
 		return
 	}
-	core.WriteResponse(c, nil, wenSite)
+
+	core.WriteResponse(c, nil, appConfig)
+
 }

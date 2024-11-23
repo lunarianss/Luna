@@ -14,6 +14,12 @@ type SystemOptions struct {
 	IsAllowCreateWorkspace       bool   `mapstructure:"is-allow-create-workspace"      json:"is_allow_create_workspace"`
 	AppWebUrl                    string `mapstructure:"app-web-url" json:"app_web_url"`
 	ApiBaseUrl                   string `mapstructure:"api-base-url" json:"api_base_url"`
+	UploadFileSizeLimit          int    `mapstructure:"upload-file-size-limit" json:"upload_file_size_limit"`
+	UploadFileBatchLimit         int    `mapstructure:"upload-file-batch-limit" json:"upload_file_batch_limit"`
+	UploadImageFileSizeLimit     int    `mapstructure:"upload-image-file-size-limit" json:"upload_image_file_size_limit"`
+	UploadVideoFileSizeLimit     int    `mapstructure:"upload-video-file-size-limit" json:"upload_video_file_size_limit"`
+	UploadAudioFileSizeLimit     int    `mapstructure:"upload-audio-file-size-limit" json:"upload_audio_file_size_limit"`
+	BatchUploadLimit             int    `mapstructure:"batch-upload-limit" json:"batch_upload_limit"`
 }
 
 // NewJwtOptions creates a JwtOptions object with default parameters.

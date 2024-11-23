@@ -45,7 +45,6 @@ type FeatureModel struct {
 	DatasetOperatorEnabled    bool            `json:"dataset_operator_enabled"`
 }
 
-// 初始化 FeatureModel 的函数，相当于 Python 中的默认值
 func NewFeatureModel() *FeatureModel {
 	return &FeatureModel{
 		Billing: BillingModel{

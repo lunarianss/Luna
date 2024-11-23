@@ -1,4 +1,4 @@
-package site
+package controller
 
 import "github.com/lunarianss/Luna/internal/api-server/service"
 

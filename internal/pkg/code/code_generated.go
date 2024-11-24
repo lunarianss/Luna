@@ -18,7 +18,7 @@ func init() {
 	errors.Enroll(ErrAccountBanned, 500, "Error occurred when user is banned but still to operate")
 	errors.Enroll(ErrSuccess, 200, "OK")
 	errors.Enroll(ErrUnknown, 500, "Internal server error")
-	errors.Enroll(ErrBind, 400, "Error occurred while binding the request body to the struct")
+	errors.Enroll(ErrBind, 400, "Error occurred while request body is not incorrect")
 	errors.Enroll(ErrValidation, 400, "Validation failed")
 	errors.Enroll(ErrPageNotFound, 404, "Page not found")
 	errors.Enroll(ErrRestfulId, 400, "Error occurred while parse restful id from url")

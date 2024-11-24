@@ -3,6 +3,7 @@ package dto
 import (
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
+	"github.com/lunarianss/Luna/internal/api-server/pkg/template"
 )
 
 // Create App Input Dto
@@ -214,4 +215,25 @@ func SiteRecordToSiteDetail(sm *model.Site, config *config.Config) *SiteDetail {
 		AccessToken: sm.Code,
 	}
 
+}
+
+type UpdateModelConfig struct {
+	AgentMode                     map[string]interface{}              `json:"agent_mode"`
+	ChatPromptConfig              map[string]interface{}              `json:"chat_prompt_config"`
+	CompletionPromptConfig        map[string]interface{}              `json:"completion_prompt_config"`
+	DatasetConfigs                map[string]interface{}              `json:"dataset_configs"`
+	FileUpload                    any                                 `json:"file_upload"`
+	Model                         template.Model                      `json:"model" validate:"required"`
+	MoreLikeThis                  map[string]interface{}              `json:"more_like_this"`
+	SensitiveWordAvoidance        map[string]interface{}              `json:"sensitive_word_avoidance"`
+	RetrieverResource             map[string]interface{}              `json:"retriever_resource"`
+	SpeechToText                  map[string]interface{}              `json:"speech_to_text"`
+	SuggestedQuestions            []string                            `json:"suggested_questions"`
+	SuggestedQuestionsAfterAnswer map[string]interface{}              `json:"suggested_questions_after_answer"`
+	TextToSpeech                  map[string]interface{}              `json:"text_to_speech"`
+	UserInputForm                 []map[string]map[string]interface{} `json:"user_input_form"`
+	OpeningStatement              string                              `json:"opening_statement"`
+	PrePrompt                     string                              `json:"pre_prompt"`
+	DatasetQueryVariable          string                              `json:"dataset_query_variable"`
+	PromptType                    string                              `json:"prompt_type"`
 }

@@ -36,6 +36,28 @@ func (ad *AppDao) CreateApp(ctx context.Context, tx *gorm.DB, app *model.App) (*
 	return app, nil
 }
 
+func (ad *AppDao) CreateAppConfig(ctx context.Context, tx *gorm.DB, appConfig *model.AppModelConfig) (*model.AppModelConfig, error) {
+	var dbIns *gorm.DB
+
+	if tx != nil {
+		dbIns = tx
+	} else {
+		dbIns = ad.db
+	}
+
+	if err := dbIns.Create(appConfig).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return appConfig, nil
+}
+
+func (ad *AppDao) UpdateAppConfigID(ctx context.Context, app *model.App) error {
+	if err := ad.db.Model(app).Where("id = ?", app.ID).Update("app_model_config_id", app.AppModelConfigID).Error; err != nil {
+		return errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return nil
+}
+
 func (ad *AppDao) FindTenantApps(ctx context.Context, tenant *model.Tenant, page, pageSize int) ([]*model.App, int64, error) {
 	var apps []*model.App
 	var appCount int64

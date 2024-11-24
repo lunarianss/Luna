@@ -252,3 +252,34 @@ func (as AppService) AppDetail(ctx context.Context, appID string) (*dto.AppDetai
 
 	return dto.AppRecordToDetail(appRecord, as.config, appConfigRecord, siteRecord), nil
 }
+
+func (as *AppService) UpdateAppModelConfig(ctx context.Context, modelConfig *dto.UpdateModelConfig, appID string, accountID string) error {
+	appConfig := &model.AppModelConfig{
+		AppID:      appID,
+		CreatedBy:  accountID,
+		UpdatedBy:  accountID,
+		Model:      modelConfig.Model,
+		Provider:   modelConfig.Model.Provider,
+		PromptType: "simple",
+	}
+
+	appConfigRecord, err := as.appDomain.AppRepo.CreateAppConfig(ctx, nil, appConfig)
+
+	if err != nil {
+		return err
+	}
+
+	appRecord, err := as.appDomain.AppRepo.GetAppByID(ctx, appID)
+
+	if err != nil {
+		return err
+	}
+
+	appRecord.AppModelConfigID = appConfigRecord.ID
+
+	if err := as.appDomain.AppRepo.UpdateAppConfigID(ctx, appRecord); err != nil {
+		return err
+	}
+
+	return nil
+}

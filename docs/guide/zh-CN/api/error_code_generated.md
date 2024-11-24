@@ -31,7 +31,7 @@ IAM 系统支持的错误码列表如下：
 | ErrAccountBanned | 110304 | 500 | Error occurred when user is banned but still to operate |
 | ErrSuccess | 100001 | 200 | OK |
 | ErrUnknown | 100002 | 500 | Internal server error |
-| ErrBind | 100003 | 400 | Error occurred while binding the request body to the struct |
+| ErrBind | 100003 | 400 | Error occurred while request body is not incorrect |
 | ErrValidation | 100004 | 400 | Validation failed |
 | ErrPageNotFound | 100005 | 404 | Page not found |
 | ErrRestfulId | 100006 | 400 | Error occurred while parse restful id from url |

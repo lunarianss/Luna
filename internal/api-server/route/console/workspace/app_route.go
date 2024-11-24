@@ -55,6 +55,7 @@ func (a *AppRoutes) Register(g *gin.Engine) error {
 	modelProviderV1.POST("/apps", appController.Create)
 	modelProviderV1.GET("/apps", appController.List)
 	modelProviderV1.GET("/apps/:appID", appController.Detail)
+	modelProviderV1.POST("/apps/:appID/model-config", appController.UpdateModelConfig)
 	modelProviderV1.POST("/apps/:appID/chat-messages", appController.ChatMessage)
 	return nil
 }

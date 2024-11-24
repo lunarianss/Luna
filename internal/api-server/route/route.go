@@ -43,5 +43,5 @@ func init() {
 	server.RegisterRoute(&chatAppRoute.PassportRoutes{})
 	server.RegisterRoute(&chatAppRoute.WebSiteRoutes{})
 	server.RegisterRoute(&chatAppRoute.WebAppRoutes{})
-
+	server.RegisterRoute(&chatAppRoute.WebChatRoutes{})
 }

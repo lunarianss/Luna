@@ -16,6 +16,19 @@ const (
 	CLOSED        AccountStatus = "closed"
 )
 
+type BaseAccount interface {
+	GetAccountType() string
+	GetAccountID() string
+}
+
+func (*Account) GetAccountType() string {
+	return "account"
+}
+
+func (a *Account) GetAccountID() string {
+	return a.ID
+}
+
 type Account struct {
 	ID                string `json:"id" gorm:"column:id"`
 	Name              string `json:"name" gorm:"column:name"`

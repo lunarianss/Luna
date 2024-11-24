@@ -51,7 +51,7 @@ func (g *ChatAppGenerator) getAppModelConfig(ctx context.Context, appModel *mode
 	}
 }
 
-func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user *model.Account, args *dto.CreateChatMessageBody, invokeFrom appEntities.InvokeForm, stream bool) error {
+func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user model.BaseAccount, args *dto.CreateChatMessageBody, invokeFrom appEntities.InvokeForm, stream bool) error {
 
 	var (
 		conversationRecord     *model.Conversation
@@ -64,6 +64,7 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user
 	inputs := args.Inputs
 	// role := model.AccountCreatedByRole
 	extras = make(map[string]interface{})
+
 	if args.AutoGenerateConversationName == nil {
 		extras["auto_generate_conversation_name"] = true
 	} else {
@@ -124,7 +125,7 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user
 				AppConfig:  appConfig.AppConfig,
 				Stream:     stream,
 				Inputs:     inputs,
-				UserID:     user.ID,
+				UserID:     user.GetAccountID(),
 				InvokeFrom: app.InvokeFrom(invokeFrom),
 				Extras:     extras,
 			},
@@ -254,9 +255,7 @@ func (g *ChatAppGenerator) InitGenerateRecords(ctx context.Context, chatAppGener
 	modelID = chatAppGenerateEntity.ModelConf.Model
 
 	if appConfig.AppModelConfigFrom == app_config.Args && (appConfig.AppMode == string(model.CHAT) || appConfig.AppMode == string(model.AGENT_CHAT) || appConfig.AppMode == string(model.COMPLETION)) {
-
 		overrideModelConfig = appConfig.AppModelConfigDict
-
 	}
 
 	if conversation == nil {

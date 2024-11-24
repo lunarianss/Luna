@@ -7,9 +7,11 @@ package server
 import (
 	"fmt"
 
+	"github.com/fatih/color"
 	"github.com/gin-gonic/gin"
 
 	"github.com/lunarianss/Luna/pkg/errors"
+	"github.com/lunarianss/Luna/pkg/log"
 )
 
 type Router interface {
@@ -28,6 +30,9 @@ func (s *BaseApiServer) InitRouter(r *gin.Engine) error {
 		if err := router.Register(r); err != nil {
 			return errors.WithMessage(err, fmt.Sprintf("route module %s error", router.GetModule()))
 		}
+
+		log.Info(color.GreenString("Route %s init successfully.", router.GetModule()))
 	}
+
 	return nil
 }

@@ -203,13 +203,15 @@ func AppRecordToDetail(app *model.App, config *config.Config, modelConfig *model
 
 type SiteDetail struct {
 	*model.Site
-	AppBaseUrl string `json:"app_base_url"`
+	AccessToken string `json:"access_token"`
+	AppBaseUrl  string `json:"app_base_url"`
 }
 
 func SiteRecordToSiteDetail(sm *model.Site, config *config.Config) *SiteDetail {
 	return &SiteDetail{
-		Site:       sm,
-		AppBaseUrl: config.SystemOptions.ApiBaseUrl,
+		Site:        sm,
+		AppBaseUrl:  config.SystemOptions.AppWebUrl,
+		AccessToken: sm.Code,
 	}
 
 }

@@ -19,6 +19,14 @@ type EndUser struct {
 	UpdatedAt      int64         `json:"updated_at" gorm:"column:updated_at"`
 }
 
+func (*EndUser) GetAccountType() string {
+	return "end_user"
+}
+
+func (a *EndUser) GetAccountID() string {
+	return a.ID
+}
+
 func (a *EndUser) TableName() string {
 	return "end_users"
 }

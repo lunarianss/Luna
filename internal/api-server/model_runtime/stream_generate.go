@@ -84,8 +84,8 @@ func (sgq *StreamGenerateQueue) Close() {
 }
 
 func (sgq *StreamGenerateQueue) CloseOut() {
-	close(sgq.OutStreamFinalChunkQueue)
 	close(sgq.OutStreamResultChunkQueue)
+	close(sgq.OutStreamFinalChunkQueue)
 }
 
 func (sgq *StreamGenerateQueue) Listen() {

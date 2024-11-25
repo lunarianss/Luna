@@ -57,7 +57,10 @@ func (s *StreamResponse) GetTaskID() string {
 // ErrorStreamResponse entity
 type ErrorStreamResponse struct {
 	*StreamResponse
-	Err string `json:"err"`
+	Err     string `json:"err"`
+	Message string `json:"err"`
+	Status  int    `json:"status"`
+	Code    string `json:"code"`
 }
 
 // MessageStreamResponse entity

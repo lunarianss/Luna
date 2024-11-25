@@ -83,10 +83,6 @@ func (tpp *ChatAppTaskPipeline) setFlush(c context.Context) bool {
 	tpp.sender = ginContext.Writer
 	flusher := ginContext.Writer.(http.Flusher)
 
-	if !ok {
-		return false
-	}
-
 	tpp.flusher = flusher
 	return true
 }
@@ -127,7 +123,12 @@ func (tpp *ChatAppTaskPipeline) process_stream_end_chunk_queue(c context.Context
 				tpp.sendFallBackMessageEnd()
 			}
 		} else if mc, ok := v.Event.(*appConfigEntities.QueueErrorEvent); ok {
-			tpp.messageErrToStreamResponse(mc.Err)
+			log.Errorf("found queue error event: %v", mc.Err)
+
+			if err := tpp.messageErrToStreamResponse(c, mc.Err); err != nil {
+				log.Errorf("failed to flush err message to stream response: %v", err)
+				tpp.sendFallBackMessageEnd()
+			}
 		}
 	}
 }
@@ -163,7 +164,7 @@ func (tpp *ChatAppTaskPipeline) messageChunkToStreamResponse(answer string) erro
 	return nil
 }
 
-func (tpp *ChatAppTaskPipeline) messageErrToStreamResponse(err error) error {
+func (tpp *ChatAppTaskPipeline) messageErrToStreamResponse(ctx context.Context, err error) error {
 
 	var errStr = "Internal Server Error, please contact support."
 
@@ -171,12 +172,28 @@ func (tpp *ChatAppTaskPipeline) messageErrToStreamResponse(err error) error {
 		errStr = "Your quota for Luna Hosted Model Provider has been exhausted. Please go to Settings -> Model Provider to complete your own provider credentials."
 	}
 
+	messageRecord, err := tpp.MessageRepo.GetMessageByID(ctx, tpp.Message.ID)
+
+	if err != nil {
+		return err
+	}
+
+	messageRecord.Status = "error"
+	messageRecord.Error = errStr
+
+	if err := tpp.MessageRepo.UpdateMessage(ctx, messageRecord); err != nil {
+		return err
+	}
+
 	messageErrResponse := &entities.ErrorStreamResponse{
 		StreamResponse: &entities.StreamResponse{
 			TaskID: tpp.ApplicationGenerateEntity.TaskID,
 			Event:  entities.StreamEventError,
 		},
-		Err: errStr,
+		Err:     errStr,
+		Code:    errStr,
+		Message: errStr,
+		Status:  500,
 	}
 
 	chatBotResponse := entities.NewChatBotAppErrStreamResponse(tpp.ApplicationGenerateEntity.ConversationID, tpp.Message.ID, tpp.Message.CreatedAt, messageErrResponse)

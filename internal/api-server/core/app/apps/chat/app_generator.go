@@ -161,43 +161,6 @@ func (g *ChatAppGenerator) ListenQueue(queueManager *model_runtime.StreamGenerat
 	queueManager.Listen()
 }
 
-// func (g *ChatAppGenerator) handleMessageQueueEvent(c context.Context, streamResultChunkQueue chan *entities.MessageQueueMessage, streamFinalChunkQueue chan *entities.MessageQueueMessage) {
-// 	// 确保 Gin 使用 HTTP 流式传输
-// 	c.(*gin.Context).Writer.Header().Set("Content-Type", "text/event-stream")
-// 	c.(*gin.Context).Writer.Header().Set("Cache-Control", "no-cache")
-// 	c.(*gin.Context).Writer.Header().Set("Connection", "keep-alive")
-
-// 	// 确保 c.Writer 实现了 http.Flusher 接口
-// 	flusher, ok := c.(*gin.Context).Writer.(http.Flusher)
-// 	if !ok {
-// 		c.(*gin.Context).String(http.StatusInternalServerError, "Streaming unsupported!")
-// 		return
-// 	}
-
-// 	for v := range streamResultChunkQueue {
-// 		if cm, ok := v.Event.(*entities.QueueLLMChunkEvent); ok {
-// 			// 将事件格式化为 SSE 格式发送给客户端
-// 			fmt.Fprintf(c.(*gin.Context).Writer, "data: {\"answer\": \"%s\", \"event\": \"message\"}\n\n", cm.Chunk.Delta.Message.Content)
-// 			flusher.Flush() // 确保数据立即发送到客户端
-// 		}
-// 	}
-
-// 	for v := range streamFinalChunkQueue {
-// 		if mc, ok := v.Event.(*entities.QueueLLMChunkEvent); ok {
-// 			chunkByte, _ := json.Marshal(mc.Chunk)
-// 			log.Infof("Event type: %s, Answer: %s", mc.Event, string(chunkByte))
-// 			// 将事件格式化为 SSE 格式发送给客户端
-// 			fmt.Fprintf(c.(*gin.Context).Writer, "data: {\"answer\": \"%s\", \"event\": \"message\"}\n\n", mc.Chunk.Delta.Message.Content)
-// 			flusher.Flush() // 确保数据立即发送到客户端
-// 		} else if mc, ok := v.Event.(*entities.QueueMessageEndEvent); ok {
-// 			fmt.Fprintf(c.(*gin.Context).Writer, "data: {\"event\": \"message_end\"}\n\n")
-// 			log.Infof("Event type: %s, End LLM Result %+v", mc.LLMResult.Message.Content, mc.LLMResult)
-// 		} else if mc, ok := v.Event.(*entities.QueueErrorEvent); ok {
-// 			log.Errorf("Event type: %s, Err: %#+v", mc.Event, mc.Err)
-// 		}
-// 	}
-// }
-
 func (g *ChatAppGenerator) generateGoRoutine(ctx context.Context, applicationGenerateEntity *app.ChatAppGenerateEntity, conversationID string, messageID string, queueManager *model_runtime.StreamGenerateQueue) {
 
 	defer func() {

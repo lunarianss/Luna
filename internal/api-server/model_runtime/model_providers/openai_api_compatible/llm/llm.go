@@ -307,9 +307,9 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 		if delta, ok := chunkChoice["delta"]; ok {
 			if deltaMap, ok := delta.(map[string]interface{}); ok {
 				deltaContent := deltaMap["content"]
-				assistantPromptMessage = message.NewAssistantPromptMessage(message.ASSISTANT, deltaContent)
 				if deltaContentStr, ok := deltaContent.(string); ok {
 					m.FullAssistantContent += deltaContentStr
+					assistantPromptMessage = message.NewAssistantPromptMessage(message.ASSISTANT, deltaContentStr)
 				}
 			}
 		} else {
@@ -317,7 +317,9 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 			continue
 		}
 
-		m.sendStreamChunkToQueue(ctx, messageID, assistantPromptMessage)
+		if assistantPromptMessage != nil {
+			m.sendStreamChunkToQueue(ctx, messageID, assistantPromptMessage)
+		}
 	}
 
 	if err := scanner.Err(); err != nil {

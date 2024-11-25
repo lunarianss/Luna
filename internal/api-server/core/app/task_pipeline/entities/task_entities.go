@@ -58,7 +58,7 @@ func (s *StreamResponse) GetTaskID() string {
 type ErrorStreamResponse struct {
 	*StreamResponse
 	Err     string `json:"err"`
-	Message string `json:"err"`
+	Message string `json:"message"`
 	Status  int    `json:"status"`
 	Code    string `json:"code"`
 }

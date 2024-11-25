@@ -149,7 +149,7 @@ func (tpp *ChatAppTaskPipeline) messageChunkToStreamResponse(answer string) erro
 		},
 	}
 
-	chatBotResponse := entities.NewChatBotAppStreamResponse(tpp.ApplicationGenerateEntity.ConversationID, tpp.Message.ID, tpp.Message.CreatedAt, messageChunkResponse)
+	chatBotResponse := entities.NewChatBotAppStreamResponse(tpp.ConversationID, tpp.Message.ID, tpp.Message.CreatedAt, messageChunkResponse)
 
 	streamBytes, err := json.Marshal(chatBotResponse)
 
@@ -196,7 +196,7 @@ func (tpp *ChatAppTaskPipeline) messageErrToStreamResponse(ctx context.Context, 
 		Status:  500,
 	}
 
-	chatBotResponse := entities.NewChatBotAppErrStreamResponse(tpp.ApplicationGenerateEntity.ConversationID, tpp.Message.ID, tpp.Message.CreatedAt, messageErrResponse)
+	chatBotResponse := entities.NewChatBotAppErrStreamResponse(tpp.ConversationID, tpp.Message.ID, tpp.Message.CreatedAt, messageErrResponse)
 
 	errorStreamBytes, err := json.Marshal(chatBotResponse)
 

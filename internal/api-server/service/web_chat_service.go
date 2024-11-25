@@ -9,6 +9,7 @@ import (
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/app_running"
+	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat"
 	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 )
@@ -17,17 +18,19 @@ type WebChatService struct {
 	appRunningDomain *domain.AppRunningDomain
 	accountDomain    *accountDomain.AccountDomain
 	appDomain        *appDomain.AppDomain
+	chatDomain       *chatDomain.ChatDomain
 	providerDomain   *providerDomain.ModelProviderDomain
 	config           *config.Config
 }
 
-func NewWebChatService(appRunningDomain *domain.AppRunningDomain, accountDomain *accountDomain.AccountDomain, appDomain *appDomain.AppDomain, config *config.Config, providerDomain *providerDomain.ModelProviderDomain) *WebChatService {
+func NewWebChatService(appRunningDomain *domain.AppRunningDomain, accountDomain *accountDomain.AccountDomain, appDomain *appDomain.AppDomain, config *config.Config, providerDomain *providerDomain.ModelProviderDomain, chatDomain *chatDomain.ChatDomain) *WebChatService {
 	return &WebChatService{
 		appRunningDomain: appRunningDomain,
 		accountDomain:    accountDomain,
 		appDomain:        appDomain,
 		config:           config,
 		providerDomain:   providerDomain,
+		chatDomain:       chatDomain,
 	}
 }
 
@@ -45,10 +48,7 @@ func (s *WebChatService) Chat(ctx context.Context, appID, endUserID string, args
 		return err
 	}
 
-	chatAppGenerator := &chat.ChatAppGenerator{
-		AppDomain:      s.appDomain,
-		ProviderDomain: s.providerDomain,
-	}
+	chatAppGenerator := chat.NewChatAppGenerator(s.appDomain, s.providerDomain, s.chatDomain)
 
 	if err := chatAppGenerator.Generate(ctx, appModel, endUserRecord, args, invokeFrom, true); err != nil {
 		return err

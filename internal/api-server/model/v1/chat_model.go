@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/google/uuid"
+	"github.com/lunarianss/Luna/internal/api-server/entities/message"
 	"github.com/lunarianss/Luna/internal/pkg/field"
 	"gorm.io/gorm"
 )
@@ -51,7 +52,7 @@ type Message struct {
 	ConversationID          string                   `gorm:"column:conversation_id" json:"conversation_id"`
 	Inputs                  map[string]interface{}   `gorm:"column:inputs;serializer:json" json:"inputs"`
 	Query                   string                   `gorm:"column:query" json:"query"`
-	Message                 []map[string]interface{} `gorm:"column:message;serializer:json" json:"message"`
+	Message                 []*message.PromptMessage `gorm:"column:message;serializer:json" json:"message"`
 	MessageTokens           int                      `gorm:"column:message_tokens" json:"message_tokens"`
 	MessageUnitPrice        float64                  `gorm:"column:message_unit_price" json:"message_unit_price"`
 	Answer                  string                   `gorm:"column:answer" json:"answer"`
@@ -73,7 +74,7 @@ type Message struct {
 	Error                   string                   `gorm:"column:error" json:"error"`
 	MessageMetadata         map[string]interface{}   `gorm:"column:message_metadata;serializer:json" json:"message_metadata"`
 	InvokeFrom              string                   `gorm:"column:invoke_from" json:"invoke_from"`
-	ParentMessageID         *string                  `gorm:"column:parent_message_id" json:"parent_message_id"`
+	ParentMessageID         string                   `gorm:"column:parent_message_id" json:"parent_message_id"`
 }
 
 func (a *Message) TableName() string {

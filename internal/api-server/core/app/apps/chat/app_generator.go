@@ -2,22 +2,21 @@ package chat
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"runtime/debug"
 
-	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/lunarianss/Luna/internal/api-server/core/app"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config"
-	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/entities"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/model_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/apps"
 	appEntities "github.com/lunarianss/Luna/internal/api-server/core/app/apps/entities"
+	"github.com/lunarianss/Luna/internal/api-server/core/app/task_pipeline"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app"
+	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
+	"github.com/lunarianss/Luna/internal/api-server/entities/message"
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime"
 	"github.com/lunarianss/Luna/internal/pkg/code"
@@ -28,13 +27,15 @@ import (
 type ChatAppGenerator struct {
 	AppDomain      *appDomain.AppDomain
 	ProviderDomain *domain.ModelProviderDomain
+	chatDomain     *chatDomain.ChatDomain
 }
 
-func NewChatAppGenerator(appDomain *appDomain.AppDomain, providerDomain *domain.ModelProviderDomain) *ChatAppGenerator {
+func NewChatAppGenerator(appDomain *appDomain.AppDomain, providerDomain *domain.ModelProviderDomain, chatDomain *chatDomain.ChatDomain) *ChatAppGenerator {
 
 	return &ChatAppGenerator{
 		AppDomain:      appDomain,
 		ProviderDomain: providerDomain,
+		chatDomain:     chatDomain,
 	}
 
 }
@@ -65,10 +66,10 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user
 	// role := model.AccountCreatedByRole
 	extras = make(map[string]interface{})
 
-	if args.AutoGenerateConversationName == nil {
+	if !args.AutoGenerateConversationName {
 		extras["auto_generate_conversation_name"] = true
 	} else {
-		extras["auto_generate_conversation_name"] = *args.AutoGenerateConversationName
+		extras["auto_generate_conversation_name"] = args.AutoGenerateConversationName
 	}
 
 	appModelConfig, err := g.getAppModelConfig(c, appModel, conversationRecord)
@@ -99,11 +100,11 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user
 		return err
 	}
 
-	var conversationID *string
+	var conversationID string
 
 	if conversationRecord != nil {
 		if conversationRecord.ID != "" {
-			conversationID = &conversationRecord.ID
+			conversationID = conversationRecord.ID
 		}
 	}
 
@@ -116,7 +117,7 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user
 
 	applicationGenerateEntity := &app.ChatAppGenerateEntity{
 		ConversationID:  conversationID,
-		ParentMessageID: &args.ParentMessageId,
+		ParentMessageID: args.ParentMessageId,
 		EasyUIBasedAppGenerateEntity: &app.EasyUIBasedAppGenerateEntity{
 			AppConfig: appConfig.EasyUIBasedAppConfig,
 			ModelConf: modelConf,
@@ -151,7 +152,8 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user
 
 	go g.ListenQueue(queueManager)
 
-	g.handleMessageQueueEvent(c, streamResultChunkQueue, streamFinalChunkQueue)
+	task_pipeline.NewChatAppTaskPipeline(applicationGenerateEntity, streamResultChunkQueue, streamFinalChunkQueue, g.chatDomain.MessageRepo, messageRecord, conversationRecord.ID).Process(c, true)
+
 	return nil
 }
 
@@ -159,42 +161,42 @@ func (g *ChatAppGenerator) ListenQueue(queueManager *model_runtime.StreamGenerat
 	queueManager.Listen()
 }
 
-func (g *ChatAppGenerator) handleMessageQueueEvent(c context.Context, streamResultChunkQueue chan *entities.MessageQueueMessage, streamFinalChunkQueue chan *entities.MessageQueueMessage) {
-	// 确保 Gin 使用 HTTP 流式传输
-	c.(*gin.Context).Writer.Header().Set("Content-Type", "text/event-stream")
-	c.(*gin.Context).Writer.Header().Set("Cache-Control", "no-cache")
-	c.(*gin.Context).Writer.Header().Set("Connection", "keep-alive")
+// func (g *ChatAppGenerator) handleMessageQueueEvent(c context.Context, streamResultChunkQueue chan *entities.MessageQueueMessage, streamFinalChunkQueue chan *entities.MessageQueueMessage) {
+// 	// 确保 Gin 使用 HTTP 流式传输
+// 	c.(*gin.Context).Writer.Header().Set("Content-Type", "text/event-stream")
+// 	c.(*gin.Context).Writer.Header().Set("Cache-Control", "no-cache")
+// 	c.(*gin.Context).Writer.Header().Set("Connection", "keep-alive")
 
-	// 确保 c.Writer 实现了 http.Flusher 接口
-	flusher, ok := c.(*gin.Context).Writer.(http.Flusher)
-	if !ok {
-		c.(*gin.Context).String(http.StatusInternalServerError, "Streaming unsupported!")
-		return
-	}
+// 	// 确保 c.Writer 实现了 http.Flusher 接口
+// 	flusher, ok := c.(*gin.Context).Writer.(http.Flusher)
+// 	if !ok {
+// 		c.(*gin.Context).String(http.StatusInternalServerError, "Streaming unsupported!")
+// 		return
+// 	}
 
-	for v := range streamResultChunkQueue {
-		if cm, ok := v.Event.(*entities.QueueLLMChunkEvent); ok {
-			// 将事件格式化为 SSE 格式发送给客户端
-			fmt.Fprintf(c.(*gin.Context).Writer, "data: {\"answer\": \"%s\", \"event\": \"message\"}\n\n", cm.Chunk.Delta.Message.Content)
-			flusher.Flush() // 确保数据立即发送到客户端
-		}
-	}
+// 	for v := range streamResultChunkQueue {
+// 		if cm, ok := v.Event.(*entities.QueueLLMChunkEvent); ok {
+// 			// 将事件格式化为 SSE 格式发送给客户端
+// 			fmt.Fprintf(c.(*gin.Context).Writer, "data: {\"answer\": \"%s\", \"event\": \"message\"}\n\n", cm.Chunk.Delta.Message.Content)
+// 			flusher.Flush() // 确保数据立即发送到客户端
+// 		}
+// 	}
 
-	for v := range streamFinalChunkQueue {
-		if mc, ok := v.Event.(*entities.QueueLLMChunkEvent); ok {
-			chunkByte, _ := json.Marshal(mc.Chunk)
-			log.Infof("Event type: %s, Answer: %s", mc.Event, string(chunkByte))
-			// 将事件格式化为 SSE 格式发送给客户端
-			fmt.Fprintf(c.(*gin.Context).Writer, "data: {\"answer\": \"%s\", \"event\": \"message\"}\n\n", mc.Chunk.Delta.Message.Content)
-			flusher.Flush() // 确保数据立即发送到客户端
-		} else if mc, ok := v.Event.(*entities.QueueMessageEndEvent); ok {
-			fmt.Fprintf(c.(*gin.Context).Writer, "data: {\"event\": \"message_end\"}\n\n")
-			log.Infof("Event type: %s, End LLM Result %+v", mc.LLMResult.Message.Content, mc.LLMResult)
-		} else if mc, ok := v.Event.(*entities.QueueErrorEvent); ok {
-			log.Errorf("Event type: %s, Err: %#+v", mc.Event, mc.Err)
-		}
-	}
-}
+// 	for v := range streamFinalChunkQueue {
+// 		if mc, ok := v.Event.(*entities.QueueLLMChunkEvent); ok {
+// 			chunkByte, _ := json.Marshal(mc.Chunk)
+// 			log.Infof("Event type: %s, Answer: %s", mc.Event, string(chunkByte))
+// 			// 将事件格式化为 SSE 格式发送给客户端
+// 			fmt.Fprintf(c.(*gin.Context).Writer, "data: {\"answer\": \"%s\", \"event\": \"message\"}\n\n", mc.Chunk.Delta.Message.Content)
+// 			flusher.Flush() // 确保数据立即发送到客户端
+// 		} else if mc, ok := v.Event.(*entities.QueueMessageEndEvent); ok {
+// 			fmt.Fprintf(c.(*gin.Context).Writer, "data: {\"event\": \"message_end\"}\n\n")
+// 			log.Infof("Event type: %s, End LLM Result %+v", mc.LLMResult.Message.Content, mc.LLMResult)
+// 		} else if mc, ok := v.Event.(*entities.QueueErrorEvent); ok {
+// 			log.Errorf("Event type: %s, Err: %#+v", mc.Event, mc.Err)
+// 		}
+// 	}
+// }
 
 func (g *ChatAppGenerator) generateGoRoutine(ctx context.Context, applicationGenerateEntity *app.ChatAppGenerateEntity, conversationID string, messageID string, queueManager *model_runtime.StreamGenerateQueue) {
 
@@ -293,7 +295,7 @@ func (g *ChatAppGenerator) InitGenerateRecords(ctx context.Context, chatAppGener
 		ConversationID:          conversationRecord.ID,
 		Inputs:                  chatAppGenerateEntity.Inputs,
 		Query:                   chatAppGenerateEntity.Query,
-		Message:                 make([]map[string]interface{}, 0),
+		Message:                 make([]*message.PromptMessage, 0),
 		MessageTokens:           0,
 		MessageUnitPrice:        0,
 		MessagePriceUnit:        0,

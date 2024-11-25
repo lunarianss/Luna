@@ -184,15 +184,19 @@ func (m *OpenApiCompactLargeLanguageModel) sendErrorChunkToQueue(ctx context.Con
 	m.AppRunner.HandleInvokeResultStream(ctx, nil, m.StreamGenerateQueue, false, err)
 }
 
-func (m *OpenApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx context.Context, messageId string, finalReason string) {
+func (m *OpenApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx context.Context, messageId string, finalReason string, fullAssistant string) {
 	defer m.Close()
 	streamResultChunk := &llm.LLMResultChunk{
 		ID:            messageId,
 		Model:         m.Model,
 		PromptMessage: m.PromptMessages,
 		Delta: &llm.LLMResultChunkDelta{
-			Index:        m.ChunkIndex,
-			Message:      message.NewEmptyAssistantPromptMessage(),
+			Index: m.ChunkIndex,
+			Message: &message.AssistantPromptMessage{
+				PromptMessage: &message.PromptMessage{
+					Content: fullAssistant,
+				},
+			},
 			FinishReason: finalReason,
 		},
 	}
@@ -327,7 +331,5 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 		return
 	}
 
-	log.Infof("Full Answer From AI: %s", m.FullAssistantContent)
-
-	m.sendStreamFinalChunkToQueue(ctx, messageID, finishReason)
+	m.sendStreamFinalChunkToQueue(ctx, messageID, finishReason, m.FullAssistantContent)
 }

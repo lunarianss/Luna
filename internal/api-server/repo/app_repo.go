@@ -13,6 +13,7 @@ type AppRepo interface {
 	CreateAppConfig(ctx context.Context, tx *gorm.DB, appConfig *model.AppModelConfig) (*model.AppModelConfig, error)
 	CreateConversation(ctx context.Context, app *model.Conversation) (*model.Conversation, error)
 	CreateMessage(ctx context.Context, message *model.Message) (*model.Message, error)
+
 	UpdateAppConfigID(ctx context.Context, app *model.App) error
 	FindTenantApps(ctx context.Context, tenant *model.Tenant, page, pageSize int) ([]*model.App, int64, error)
 	GetAppByID(ctx context.Context, appID string) (*model.App, error)

@@ -64,6 +64,7 @@ func init() {
 	errors.Enroll(ErrRequiredOverrideConfig, 500, "Config_from is ARGS that override_config_dict is required")
 	errors.Enroll(ErrNotFoundModelRegistry, 500, "Model registry is not found in the model registry list")
 	errors.Enroll(ErrRequiredPromptType, 500, "Prompt type is required when convert to prompt template")
+	errors.Enroll(ErrQuotaExceed, 500, "Your quota for Luna Hosted Model Provider has been exhausted,Please go to Settings -> Model Provider to complete your own provider credentials")
 	errors.Enroll(ErrProviderMapModel, 500, "Error occurred while attempt to index from providerMpa using provider")
 	errors.Enroll(ErrProviderNotHaveIcon, 500, "Error occurred while provider entity doesn't have icon property")
 	errors.Enroll(ErrToOriginModelType, 500, "Error occurred while convert to origin model type")

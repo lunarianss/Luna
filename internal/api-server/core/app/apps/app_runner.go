@@ -29,47 +29,30 @@ func (runner *AppRunner) HandleInvokeResultStream(ctx context.Context, invokeRes
 		return
 	}
 
-	var (
-		model         string
-		promptMessage []*message.PromptMessage
-		text          string
-		event         *entities.AppQueueEvent
-	)
-
-	event = entities.NewAppQueueEvent(entities.LLMChunk)
-	streamGenerator.Push(&entities.QueueLLMChunkEvent{
-		AppQueueEvent: event,
-		Chunk:         invokeResult})
-
-	if contentStr, ok := invokeResult.Delta.Message.Content.(string); ok {
-		text += contentStr
-	}
-
-	if model == "" {
-		model = invokeResult.Model
-	}
-
-	promptMessage = invokeResult.PromptMessage
-
 	if end {
 		llmResult := &llm.LLMResult{
-			Model:         model,
-			PromptMessage: promptMessage,
+			Model:         invokeResult.Model,
+			PromptMessage: invokeResult.PromptMessage,
 			Reason:        invokeResult.Delta.FinishReason,
 			Message: &message.AssistantPromptMessage{
 				PromptMessage: &message.PromptMessage{
-					Content: text,
+					Content: invokeResult.Delta.Message.Content,
 				},
 			},
 		}
 
 		event := entities.NewAppQueueEvent(entities.MessageEnd)
-
 		streamGenerator.Final(&entities.QueueMessageEndEvent{
 			AppQueueEvent: event,
 			LLMResult:     llmResult,
 		})
+		return
 	}
+
+	event := entities.NewAppQueueEvent(entities.LLMChunk)
+	streamGenerator.Push(&entities.QueueLLMChunkEvent{
+		AppQueueEvent: event,
+		Chunk:         invokeResult})
 
 }
 

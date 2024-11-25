@@ -41,3 +41,10 @@ type LLMResult struct {
 	SystemFingerprint string                          `json:"system_fingerprint"`
 	Reason            string                          `json:"reason"`
 }
+
+func NewEmptyLLMResult() *LLMResult {
+	return &LLMResult{
+		Message:       message.NewEmptyAssistantPromptMessage(),
+		PromptMessage: make([]*message.PromptMessage, 0),
+	}
+}

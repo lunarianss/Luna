@@ -17,4 +17,6 @@ const (
 	ErrNotFoundModelRegistry
 	// ErrRequiredPromptMessage - 500: Prompt type is required when convert to prompt template.
 	ErrRequiredPromptType
+	// ErrQuotaExceed - 500: Your quota for Luna Hosted Model Provider has been exhausted,Please go to Settings -> Model Provider to complete your own provider credentials.
+	ErrQuotaExceed
 )

@@ -77,6 +77,7 @@ IAM 系统支持的错误码列表如下：
 | ErrRequiredOverrideConfig | 110206 | 500 | Config_from is ARGS that override_config_dict is required |
 | ErrNotFoundModelRegistry | 110207 | 500 | Model registry is not found in the model registry list |
 | ErrRequiredPromptType | 110208 | 500 | Prompt type is required when convert to prompt template |
+| ErrQuotaExceed | 110209 | 500 | Your quota for Luna Hosted Model Provider has been exhausted,Please go to Settings -> Model Provider to complete your own provider credentials |
 | ErrProviderMapModel | 110001 | 500 | Error occurred while attempt to index from providerMpa using provider |
 | ErrProviderNotHaveIcon | 110002 | 500 | Error occurred while provider entity doesn't have icon property |
 | ErrToOriginModelType | 110003 | 500 | Error occurred while convert to origin model type |

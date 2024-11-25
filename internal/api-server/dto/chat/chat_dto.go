@@ -13,5 +13,5 @@ type CreateChatMessageBody struct {
 	Inputs                       map[string]interface{} `json:"inputs" `
 	ModelConfig                  map[string]interface{} `json:"model_config"`
 	ParentMessageId              string                 `json:"parent_message_id"`
-	AutoGenerateConversationName *bool                  `json:"auto_generate_conversation_name"`
+	AutoGenerateConversationName bool                   `json:"auto_generate_conversation_name"`
 }

@@ -50,13 +50,13 @@ type EasyUIBasedAppGenerateEntity struct {
 // ConversationAppGenerateEntity struct
 type ConversationAppGenerateEntity struct {
 	*AppGenerateEntity
-	ConversationID  *string `json:"conversation_id"`
-	ParentMessageID *string `json:"parent_message_id"`
+	ConversationID  string `json:"conversation_id"`
+	ParentMessageID string `json:"parent_message_id"`
 }
 
 // ChatAppGenerateEntity struct
 type ChatAppGenerateEntity struct {
 	*EasyUIBasedAppGenerateEntity
-	ConversationID  *string `json:"conversation_id"`
-	ParentMessageID *string `json:"parent_message_id"`
+	ConversationID  string `json:"conversation_id"`
+	ParentMessageID string `json:"parent_message_id"`
 }

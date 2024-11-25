@@ -11,6 +11,7 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/core/app/apps/entities"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/app"
+	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat"
 	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 )
@@ -19,13 +20,15 @@ type ChatService struct {
 	appDomain      *domain.AppDomain
 	providerDomain *providerDomain.ModelProviderDomain
 	accountDomain  *accountDomain.AccountDomain
+	chatDomain     *chatDomain.ChatDomain
 }
 
-func NewChatService(appDomain *domain.AppDomain, providerDomain *providerDomain.ModelProviderDomain, accountDomain *accountDomain.AccountDomain) *ChatService {
+func NewChatService(appDomain *domain.AppDomain, providerDomain *providerDomain.ModelProviderDomain, accountDomain *accountDomain.AccountDomain, chatDomain *chatDomain.ChatDomain) *ChatService {
 	return &ChatService{
 		appDomain:      appDomain,
 		providerDomain: providerDomain,
 		accountDomain:  accountDomain,
+		chatDomain:     chatDomain,
 	}
 }
 
@@ -43,10 +46,7 @@ func (s *ChatService) Generate(ctx context.Context, appID, accountID string, arg
 		return err
 	}
 
-	chatAppGenerator := &chat.ChatAppGenerator{
-		AppDomain:      s.appDomain,
-		ProviderDomain: s.providerDomain,
-	}
+	chatAppGenerator := chat.NewChatAppGenerator(s.appDomain, s.providerDomain, s.chatDomain)
 
 	if err := chatAppGenerator.Generate(ctx, appModel, accountRecord, args, invokeFrom, true); err != nil {
 		return err

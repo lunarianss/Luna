@@ -9,7 +9,7 @@ package code
 import "github.com/lunarianss/Luna/pkg/errors" // init register error codes defines in this source code to `github.com/lunarianss/Luna/pkg/errors
 func init() {
 	errors.Enroll(ErrAppMapMode, 500, "Error occurred while attempt to index from appTemplate using mode")
-	errors.Enroll(ErrAppNotFoundRelatedConfig, 500, "Error occurred while attempt to find app related config")
+	errors.Enroll(ErrAppNotFoundRelatedConfig, 500, "App config is not found")
 	errors.Enroll(ErrAppStatusNotNormal, 500, "App is not active")
 	errors.Enroll(ErrAppCodeNotFound, 500, "App code not found")
 	errors.Enroll(ErrEmailCode, 500, "Error occurred when email code is incorrect")

@@ -22,7 +22,7 @@ IAM 系统支持的错误码列表如下：
 | Identifier | Code | HTTP Code | Description |
 | ---------- | ---- | --------- | ----------- |
 | ErrAppMapMode | 110101 | 500 | Error occurred while attempt to index from appTemplate using mode |
-| ErrAppNotFoundRelatedConfig | 110102 | 500 | Error occurred while attempt to find app related config |
+| ErrAppNotFoundRelatedConfig | 110102 | 500 | App config is not found |
 | ErrAppStatusNotNormal | 110103 | 500 | App is not active |
 | ErrAppCodeNotFound | 110104 | 500 | App code not found |
 | ErrEmailCode | 110301 | 500 | Error occurred when email code is incorrect |

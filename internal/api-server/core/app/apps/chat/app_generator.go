@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"runtime/debug"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/lunarianss/Luna/internal/api-server/core/app"
@@ -48,7 +49,10 @@ func (g *ChatAppGenerator) getAppModelConfig(ctx context.Context, appModel *mode
 
 		return g.AppDomain.AppRepo.GetAppModelConfigById(ctx, appModel.AppModelConfigID)
 	} else {
-		return nil, errors.New("todo")
+		if appModel.AppModelConfigID == "" {
+			return nil, errors.WithCode(code.ErrAppNotFoundRelatedConfig, fmt.Sprintf("conversation %s not found related config", appModel.Name))
+		}
+		return g.AppDomain.AppRepo.GetAppModelConfigById(ctx, conversation.AppModelConfigID)
 	}
 }
 
@@ -59,6 +63,8 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user
 		messageRecord          *model.Message
 		extras                 map[string]interface{}
 		overrideModelConfigMap map[string]interface{}
+		conversationID         string
+		err                    error
 	)
 
 	query := args.Query
@@ -70,6 +76,14 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user
 		extras["auto_generate_conversation_name"] = true
 	} else {
 		extras["auto_generate_conversation_name"] = args.AutoGenerateConversationName
+	}
+
+	if args.ConversationID != "" {
+		conversationRecord, err = g.chatDomain.MessageRepo.GetConversationByUser(c, appModel.ID, args.ConversationID, user)
+
+		if err != nil {
+			return err
+		}
 	}
 
 	appModelConfig, err := g.getAppModelConfig(c, appModel, conversationRecord)
@@ -100,12 +114,8 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user
 		return err
 	}
 
-	var conversationID string
-
 	if conversationRecord != nil {
-		if conversationRecord.ID != "" {
-			conversationID = conversationRecord.ID
-		}
+		conversationID = conversationRecord.ID
 	}
 
 	modelConverter := model_config.NewModelConfigConverter(g.ProviderDomain)
@@ -152,7 +162,7 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user
 
 	go g.ListenQueue(queueManager)
 
-	task_pipeline.NewChatAppTaskPipeline(applicationGenerateEntity, streamResultChunkQueue, streamFinalChunkQueue, g.chatDomain.MessageRepo, messageRecord, conversationRecord.ID).Process(c, true)
+	task_pipeline.NewChatAppTaskPipeline(applicationGenerateEntity, streamResultChunkQueue, streamFinalChunkQueue, g.chatDomain.MessageRepo, messageRecord).Process(c, true)
 
 	return nil
 }
@@ -174,14 +184,14 @@ func (g *ChatAppGenerator) generateGoRoutine(ctx context.Context, applicationGen
 		AppDomain: g.AppDomain,
 	}
 
-	message, err := g.AppDomain.AppRepo.GetMessageByID(ctx, messageID)
+	message, err := g.AppDomain.MessageRepo.GetMessageByID(ctx, messageID)
 
 	if err != nil {
 		queueManager.PushErr(err)
 		return
 	}
 
-	conversation, err := g.AppDomain.AppRepo.GetConversationByID(ctx, conversationID)
+	conversation, err := g.AppDomain.MessageRepo.GetConversationByID(ctx, conversationID)
 
 	if err != nil {
 		queueManager.PushErr(err)
@@ -243,9 +253,16 @@ func (g *ChatAppGenerator) InitGenerateRecords(ctx context.Context, chatAppGener
 			FromEndUserID:           endUserID,
 			FromAccountID:           accountID,
 		}
-		conversationRecord, err = g.AppDomain.AppRepo.CreateConversation(ctx, conversationRecord)
+		conversationRecord, err = g.AppDomain.MessageRepo.CreateConversation(ctx, conversationRecord)
 
 		if err != nil {
+			return nil, nil, err
+		}
+		chatAppGenerateEntity.ConversationID = conversationRecord.ID
+	} else {
+		conversationRecord = conversation
+		conversation.UpdatedAt = time.Now().UTC().Unix()
+		if err := g.AppDomain.MessageRepo.UpdateConversationUpdateAt(ctx, conversation.AppID, conversation); err != nil {
 			return nil, nil, err
 		}
 	}
@@ -276,7 +293,7 @@ func (g *ChatAppGenerator) InitGenerateRecords(ctx context.Context, chatAppGener
 		FromAccountID:           accountID,
 	}
 
-	messageRecord, err := g.AppDomain.AppRepo.CreateMessage(ctx, message)
+	messageRecord, err := g.AppDomain.MessageRepo.CreateMessage(ctx, message)
 
 	if err != nil {
 		return nil, nil, err

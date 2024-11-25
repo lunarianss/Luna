@@ -58,3 +58,29 @@ func (md *MessageDao) GetConversationByID(ctx context.Context, conversationID st
 	}
 	return &conversation, nil
 }
+
+func (md *MessageDao) GetConversationByUser(ctx context.Context, appID, conversationID string, user model.BaseAccount) (*model.Conversation, error) {
+	var conversation model.Conversation
+
+	var db *gorm.DB
+
+	if _, ok := user.(*model.EndUser); ok {
+		db = md.db.Where("from_end_user_id = ?", user.GetAccountID())
+	}
+
+	if _, ok := user.(*model.Account); ok {
+		db = md.db.Where("from_account_id = ?", user.GetAccountID())
+	}
+
+	if err := db.Where("id = ? AND status = ? AND app_id = ?", conversationID, "normal", appID).First(&conversation).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return &conversation, nil
+}
+
+func (md *MessageDao) UpdateConversationUpdateAt(ctx context.Context, appID string, conversation *model.Conversation) error {
+	if err := md.db.Model(conversation).Where("id = ? AND status = ? AND app_id = ?", conversation.ID, "normal", appID).Update("updated_at", conversation.UpdatedAt).Error; err != nil {
+		return errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return nil
+}

@@ -37,9 +37,10 @@ func (a *PassportRoutes) Register(g *gin.Engine) error {
 	// dao
 	appDao := dao.NewAppDao(gormIns)
 	appRunningDao := dao.NewAppRunningDao(gormIns)
+	messageDao := dao.NewMessageDao(gormIns)
 
 	// domain
-	appDomain := domain.NewAppDomain(appDao, appRunningDao)
+	appDomain := domain.NewAppDomain(appDao, appRunningDao, messageDao)
 	appRunningDomain := appRunningDomain.NewAppRunningDomain(appRunningDao)
 
 	passportService := service.NewPassportService(appRunningDomain, appDomain, config, jwt)

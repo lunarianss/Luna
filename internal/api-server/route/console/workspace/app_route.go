@@ -41,7 +41,7 @@ func (a *AppRoutes) Register(g *gin.Engine) error {
 	messageDao := dao.NewMessageDao(gormIns)
 
 	// domain
-	appDomain := domain.NewAppDomain(appDao, appRunningDao)
+	appDomain := domain.NewAppDomain(appDao, appRunningDao, messageDao)
 	modelDomain := modelDomain.NewModelDomain(modelDao)
 	providerDomain := providerDomain.NewModelProviderDomain(providerDao, modelDao)
 	accountDomain := accountDomain.NewAccountDomain(accountDao, nil, nil, nil, tenantDao)
@@ -50,6 +50,7 @@ func (a *AppRoutes) Register(g *gin.Engine) error {
 	// service
 	appService := service.NewAppService(appDomain, modelDomain, providerDomain, accountDomain, gormIns, config)
 	chatService := service.NewChatService(appDomain, providerDomain, accountDomain, chatDomain)
+
 	appController := controller.NewAppController(appService, chatService)
 
 	v1 := g.Group("/v1")

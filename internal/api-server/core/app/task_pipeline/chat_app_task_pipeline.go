@@ -24,7 +24,6 @@ type ChatAppTaskPipeline struct {
 	StreamResultChunkQueue    chan *appConfigEntities.MessageQueueMessage
 	StreamFinalChunkQueue     chan *appConfigEntities.MessageQueueMessage
 	Message                   *model.Message
-	ConversationID            string
 	MessageRepo               repo.MessageRepo
 	flusher                   http.Flusher
 	sender                    io.Writer
@@ -35,7 +34,7 @@ func NewChatAppTaskPipeline(
 	applicationGenerateEntity *app.ChatAppGenerateEntity,
 	streamResultChunkQueue chan *appConfigEntities.MessageQueueMessage,
 	streamFinalChunkQueue chan *appConfigEntities.MessageQueueMessage,
-	messageRepo repo.MessageRepo, message *model.Message, conversationID string) *ChatAppTaskPipeline {
+	messageRepo repo.MessageRepo, message *model.Message) *ChatAppTaskPipeline {
 	return &ChatAppTaskPipeline{
 		ApplicationGenerateEntity: applicationGenerateEntity,
 		StreamResultChunkQueue:    streamResultChunkQueue,
@@ -45,7 +44,6 @@ func NewChatAppTaskPipeline(
 		taskState: &entities.ChatAppTaskState{
 			LLMResult: llm.NewEmptyLLMResult(),
 		},
-		ConversationID: conversationID,
 	}
 }
 
@@ -149,7 +147,7 @@ func (tpp *ChatAppTaskPipeline) messageChunkToStreamResponse(answer string) erro
 		},
 	}
 
-	chatBotResponse := entities.NewChatBotAppStreamResponse(tpp.ConversationID, tpp.Message.ID, tpp.Message.CreatedAt, messageChunkResponse)
+	chatBotResponse := entities.NewChatBotAppStreamResponse(tpp.ApplicationGenerateEntity.ConversationID, tpp.Message.ID, tpp.Message.CreatedAt, messageChunkResponse)
 
 	streamBytes, err := json.Marshal(chatBotResponse)
 
@@ -196,7 +194,7 @@ func (tpp *ChatAppTaskPipeline) messageErrToStreamResponse(ctx context.Context, 
 		Status:  500,
 	}
 
-	chatBotResponse := entities.NewChatBotAppErrStreamResponse(tpp.ConversationID, tpp.Message.ID, tpp.Message.CreatedAt, messageErrResponse)
+	chatBotResponse := entities.NewChatBotAppErrStreamResponse(tpp.ApplicationGenerateEntity.ConversationID, tpp.Message.ID, tpp.Message.CreatedAt, messageErrResponse)
 
 	errorStreamBytes, err := json.Marshal(chatBotResponse)
 

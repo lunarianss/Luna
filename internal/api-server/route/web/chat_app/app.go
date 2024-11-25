@@ -49,9 +49,10 @@ func (a *WebAppRoutes) Register(g *gin.Engine) error {
 	appRunningDao := dao.NewAppRunningDao(gormIns)
 	accountDao := dao.NewAccountDao(gormIns)
 	tenantDao := dao.NewTenantDao(gormIns)
+	messageDao := dao.NewMessageDao(gormIns)
 
 	// domain
-	appDomain := domain.NewAppDomain(appDao, appRunningDao)
+	appDomain := domain.NewAppDomain(appDao, appRunningDao, messageDao)
 	appRunningDomain := appRunningDomain.NewAppRunningDomain(appRunningDao)
 	accountDomain := accountDomain.NewAccountDomain(accountDao, redisIns, config, email, tenantDao)
 

@@ -33,11 +33,11 @@ func AppConfigRecordToParameter(appConfig *model.AppModelConfig) *WebAppParamete
 	}
 
 	defaultDisable := map[string]any{
-		"enabled": 0,
+		"enabled": false,
 	}
 
 	defaultEnable := map[string]any{
-		"enabled": 1,
+		"enabled": true,
 	}
 
 	if parameterDetail.SuggestedQuestionsAfterAnswer == nil {
@@ -62,7 +62,7 @@ func AppConfigRecordToParameter(appConfig *model.AppModelConfig) *WebAppParamete
 
 	if parameterDetail.SensitiveWordAvoidance == nil {
 		parameterDetail.SensitiveWordAvoidance = map[string]any{
-			"enabled": 0,
+			"enabled": false,
 			"type":    "",
 			"configs": []any{},
 		}

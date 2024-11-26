@@ -122,11 +122,11 @@ func AppRecordToDetail(app *model.App, config *config.Config, modelConfig *model
 	}
 
 	defaultDisable := map[string]any{
-		"enabled": 0,
+		"enabled": false,
 	}
 
 	defaultEnable := map[string]any{
-		"enabled": 1,
+		"enabled": true,
 	}
 
 	if appDetail.ModelConfig.SuggestedQuestionsAfterAnswer == nil {
@@ -151,7 +151,7 @@ func AppRecordToDetail(app *model.App, config *config.Config, modelConfig *model
 
 	if appDetail.ModelConfig.SensitiveWordAvoidance == nil {
 		appDetail.ModelConfig.SensitiveWordAvoidance = map[string]any{
-			"enabled": 0,
+			"enabled": false,
 			"type":    "",
 			"configs": []any{},
 		}
@@ -159,7 +159,7 @@ func AppRecordToDetail(app *model.App, config *config.Config, modelConfig *model
 
 	if appDetail.ModelConfig.AgentMode == nil {
 		appDetail.ModelConfig.AgentMode = map[string]any{
-			"enabled":  0,
+			"enabled":  false,
 			"strategy": nil,
 			"tools":    []any{},
 			"prompt":   nil,

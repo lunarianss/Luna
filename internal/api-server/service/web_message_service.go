@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/apps/entities"
@@ -206,4 +207,28 @@ func (s *WebMessageService) DeleteConversation(ctx context.Context, appID, endUs
 		return err
 	}
 	return nil
+}
+
+func (s *WebMessageService) RenameConversation(ctx context.Context, appID, endUserID, conversationID string, params *dto.RenameConversationRequest) error {
+	endUser, err := s.appRunningDomain.AppRunningRepo.GetEndUserByID(ctx, endUserID)
+
+	if err != nil {
+		return err
+	}
+
+	conversationRecord, err := s.chatDomain.MessageRepo.GetConversationByUser(ctx, appID, conversationID, endUser)
+
+	if err != nil {
+		return err
+	}
+
+	if !params.AutoGenerate {
+		conversationRecord.Name = params.Name
+		conversationRecord.UpdatedAt = time.Now().UTC().Unix()
+		if err := s.chatDomain.MessageRepo.UpdateConversationName(ctx, conversationRecord); err != nil {
+			return err
+		}
+	}
+
+	return err
 }

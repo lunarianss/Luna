@@ -57,6 +57,19 @@ func (md *MessageDao) UpdateMessage(ctx context.Context, message *model.Message)
 	return nil
 }
 
+func (md *MessageDao) UpdateConversationUpdateAt(ctx context.Context, appID string, conversation *model.Conversation) error {
+	if err := md.db.Model(conversation).Where("id = ? AND status = ? AND app_id = ?", conversation.ID, "normal", appID).Update("updated_at", conversation.UpdatedAt).Error; err != nil {
+		return errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return nil
+}
+func (md *MessageDao) UpdateConversationName(ctx context.Context, conversation *model.Conversation) error {
+	if err := md.db.Model(conversation).Where("id = ?", conversation.ID).Select("name", "updated_at").Updates(conversation).Error; err != nil {
+		return errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return nil
+}
+
 func (md *MessageDao) GetMessageByID(ctx context.Context, messageID string) (*model.Message, error) {
 	var message model.Message
 
@@ -103,13 +116,6 @@ func (md *MessageDao) GetPinnedConversationByConversation(ctx context.Context, a
 	}
 
 	return &conversation, nil
-}
-
-func (md *MessageDao) UpdateConversationUpdateAt(ctx context.Context, appID string, conversation *model.Conversation) error {
-	if err := md.db.Model(conversation).Where("id = ? AND status = ? AND app_id = ?", conversation.ID, "normal", appID).Update("updated_at", conversation.UpdatedAt).Error; err != nil {
-		return errors.WithCode(code.ErrDatabase, err.Error())
-	}
-	return nil
 }
 
 func (md *MessageDao) FindPinnedConversationByUser(ctx context.Context, appID string, user model.BaseAccount) ([]*model.PinnedConversation, error) {

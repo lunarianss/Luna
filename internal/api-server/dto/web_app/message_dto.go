@@ -98,3 +98,14 @@ type ListMessageQuery struct {
 type ConversationIDUrl struct {
 	ConversationID string `json:"conversationID" form:"conversationID" uri:"conversationID" validate:"required"`
 }
+
+type RenameConversationRequest struct {
+	Name         string `json:"name" form:"name"`
+	AutoGenerate bool   `json:"auto_generate" form:"auto_generate"`
+}
+
+func NewRenameConversationRequest() *RenameConversationRequest {
+	return &RenameConversationRequest{
+		AutoGenerate: false,
+	}
+}

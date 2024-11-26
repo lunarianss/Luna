@@ -191,3 +191,12 @@ func (md *MessageDao) FindEndUserMessages(ctx context.Context, appID string, use
 	return historyMessages, count, nil
 
 }
+
+func (md *MessageDao) LogicalDeleteConversation(ctx context.Context, conversation *model.Conversation) error {
+
+	if err := md.db.Model(conversation).Where("id = ?", conversation.ID).Update("is_deleted", 1).Error; err != nil {
+		return err
+	}
+
+	return nil
+}

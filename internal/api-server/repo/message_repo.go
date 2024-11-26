@@ -12,6 +12,7 @@ type MessageRepo interface {
 	CreatePinnedConversation(ctx context.Context, pinnedConversation *model.PinnedConversation) (*model.PinnedConversation, error)
 
 	DeletePinnedConversation(ctx context.Context, pinnedConversationID string) error
+	LogicalDeleteConversation(ctx context.Context, conversation *model.Conversation) error
 
 	UpdateMessage(ctx context.Context, message *model.Message) error
 	UpdateConversationUpdateAt(ctx context.Context, appID string, conversation *model.Conversation) error

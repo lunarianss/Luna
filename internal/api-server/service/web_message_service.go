@@ -187,3 +187,23 @@ func (s *WebMessageService) PinnedConversation(ctx context.Context, appID, endUs
 
 	return nil
 }
+
+func (s *WebMessageService) DeleteConversation(ctx context.Context, appID, endUserID, conversationID string) error {
+
+	endUser, err := s.appRunningDomain.AppRunningRepo.GetEndUserByID(ctx, endUserID)
+
+	if err != nil {
+		return err
+	}
+
+	conversationRecord, err := s.chatDomain.MessageRepo.GetConversationByUser(ctx, appID, conversationID, endUser)
+
+	if err != nil {
+		return err
+	}
+
+	if err := s.chatDomain.MessageRepo.LogicalDeleteConversation(ctx, conversationRecord); err != nil {
+		return err
+	}
+	return nil
+}

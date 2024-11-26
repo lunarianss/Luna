@@ -1,6 +1,8 @@
 package dto
 
-import "github.com/lunarianss/Luna/internal/api-server/model/v1"
+import (
+	"github.com/lunarianss/Luna/internal/api-server/model/v1"
+)
 
 type ListConversationQuery struct {
 	Limit  int    `json:"limit" form:"limit" validate:"required"`
@@ -16,13 +18,48 @@ func NewListConversationQuery() *ListConversationQuery {
 }
 
 type WebConversationDetail struct {
-	ID           string                 `gorm:"column:id" json:"id"`
-	Name         string                 `gorm:"column:name" json:"name"`
-	Inputs       map[string]interface{} `gorm:"column:inputs;serializer:json" json:"inputs"`
-	Introduction string                 `gorm:"column:introduction" json:"introduction"`
-	Status       string                 `gorm:"column:status" json:"status"`
-	CreatedAt    int64                  `gorm:"column:created_at" json:"created_at"`
-	UpdatedAt    int64                  `gorm:"column:updated_at" json:"updated_at"`
+	ID           string                 `json:"id"`
+	Name         string                 `json:"name"`
+	Inputs       map[string]interface{} `json:"inputs"`
+	Introduction string                 `json:"introduction"`
+	Status       string                 `json:"status"`
+	CreatedAt    int64                  `json:"created_at"`
+	UpdatedAt    int64                  `json:"updated_at"`
+}
+
+type WebMessageDetail struct {
+	ID                 string                 `json:"id"`
+	ConversationID     string                 `json:"conversation_id"`
+	ParentMessageID    string                 `json:"parent_message_id"`
+	Inputs             map[string]interface{} `json:"inputs"`
+	Query              string                 `json:"query"`
+	Answer             string                 `json:"answer"`
+	Status             string                 `json:"status"`
+	Error              string                 `json:"error"`
+	MessageFiles       []string               `json:"message_files"`
+	FeedBack           map[string]interface{} `json:"feedback"`
+	RetrieverResources []any                  `json:"retriever_resources"`
+	AgentThoughts      []any                  `json:"agent_thoughts"`
+	CreatedAt          int64                  `json:"created_at"`
+	UpdatedAt          int64                  `json:"updated_at"`
+}
+
+func MessageRecordToDetail(c *model.Message) *WebMessageDetail {
+	return &WebMessageDetail{
+		ID:                 c.ID,
+		ConversationID:     c.ConversationID,
+		ParentMessageID:    c.ParentMessageID,
+		Inputs:             c.Inputs,
+		Query:              c.Query,
+		Answer:             c.Answer,
+		Status:             c.Status,
+		AgentThoughts:      make([]any, 0),
+		RetrieverResources: make([]any, 0),
+		FeedBack:           make(map[string]any, 0),
+		Error:              c.Error,
+		CreatedAt:          c.CreatedAt,
+		UpdatedAt:          c.UpdatedAt,
+	}
 }
 
 func ConversationRecordToDetail(c *model.Conversation) *WebConversationDetail {
@@ -44,7 +81,16 @@ type ListConversationResponse struct {
 	Count   int64                    `json:"count"`
 }
 
-type ListMessageUrl struct {
+type ListMessageResponse struct {
+	Data    []*WebMessageDetail `json:"data"`
+	Limit   int                 `json:"limit"`
+	HasMore int                 `json:"has_more"`
+	Count   int64               `json:"count"`
+}
+
+type ListMessageQuery struct {
 	ConversationID string `json:"conversation_id" form:"conversation_id" validate:"required"`
 	Limit          int    `json:"limit" form:"limit" validate:"required"`
+	LastID         string `json:"last_id" form:"last_id"`
+	FirstID        string `json:"first_id" form:"first_id"`
 }

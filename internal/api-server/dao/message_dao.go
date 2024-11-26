@@ -131,9 +131,28 @@ func (md *MessageDao) FindEndUserConversationsOrderByUpdated(ctx context.Context
 		query = query.Where(fmt.Sprintf("%s %d", opStr, lastConversation.UpdatedAt))
 	}
 
-	if err := query.Model(&model.Conversation{}).Count(&count).Order(fmt.Sprintf("%s %s", sortField, sortDirection)).Find(&conversations).Error; err != nil {
+	if err := query.Model(&model.Conversation{}).Count(&count).Limit(pageSize).Order(fmt.Sprintf("%s %s", sortField, sortDirection)).Find(&conversations).Error; err != nil {
 		return nil, 0, err
 	}
 
 	return conversations, count, nil
+}
+
+func (md *MessageDao) FindEndUserMessages(ctx context.Context, appID string, user model.BaseAccount, conversationId string, firstID string, pageSize int, order string) ([]*model.Message, int64, error) {
+	conversation, err := md.GetConversationByUser(ctx, appID, conversationId, user)
+
+	var (
+		count           int64
+		historyMessages []*model.Message
+	)
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	if err := md.db.Model(&model.Message{}).Count(&count).Order("created_at DESC").Limit(pageSize).Where("conversation_id = ?", conversation.ID).Find(&historyMessages).Error; err != nil {
+		return nil, 0, err
+	}
+	return historyMessages, count, nil
+
 }

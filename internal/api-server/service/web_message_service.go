@@ -67,3 +67,38 @@ func (s *WebMessageService) ListConversations(ctx context.Context, appID, endUse
 	}, nil
 
 }
+
+func (s *WebMessageService) ListMessages(ctx context.Context, appID, endUserID string, args *dto.ListMessageQuery, invokeFrom entities.InvokeForm) (*dto.ListMessageResponse, error) {
+
+	endUser, err := s.appRunningDomain.AppRunningRepo.GetEndUserByID(ctx, endUserID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	messages, count, err := s.chatDomain.MessageRepo.FindEndUserMessages(ctx, appID, endUser, args.ConversationID, args.FirstID, args.Limit, "DESC")
+
+	if err != nil {
+		return nil, err
+	}
+
+	messagesList := make([]*dto.WebMessageDetail, 0)
+
+	for _, message := range messages {
+		messagesList = append(messagesList, dto.MessageRecordToDetail(message))
+	}
+
+	hasMore := 0
+
+	if len(messagesList) == args.Limit {
+		hasMore = 1
+	}
+
+	return &dto.ListMessageResponse{
+		Data:    messagesList,
+		Limit:   args.Limit,
+		HasMore: hasMore,
+		Count:   count,
+	}, nil
+
+}

@@ -87,6 +87,16 @@ func (md *MessageDao) UpdateConversationUpdateAt(ctx context.Context, appID stri
 	return nil
 }
 
+func (md *MessageDao) FindPinnedConversationByUser(ctx context.Context, appID string, user model.BaseAccount) ([]*model.PinnedConversation, error) {
+	var (
+		conversations []*model.PinnedConversation
+	)
+	if err := md.db.Model(&model.PinnedConversation{}).Order("created_at DESC").Where("app_id = ? AND created_by_role = ? AND created_by = ?", appID, user.GetAccountType(), user.GetAccountID()).Find(&conversations).Error; err != nil {
+		return nil, err
+	}
+	return conversations, nil
+}
+
 func (md *MessageDao) FindEndUserConversationsOrderByUpdated(ctx context.Context, appId string, invokeFrom string, user model.BaseAccount, pageSize int, includeIDs []string, excludeIDs []string, lastID string, sortBy string) ([]*model.Conversation, int64, error) {
 	var (
 		query         *gorm.DB

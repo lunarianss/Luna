@@ -19,4 +19,5 @@ type MessageRepo interface {
 	// FindEndUserMessages(ctx context.Context, tenant *model.Tenant, page, pageSize int) ([]*model.Message, int64, error)
 	FindEndUserConversationsOrderByUpdated(ctx context.Context, appId string, invokeFrom string, user model.BaseAccount, pageSize int, includeIDs []string, excludeIDs []string, lastID string, sortBy string) ([]*model.Conversation, int64, error)
 	FindEndUserMessages(ctx context.Context, appID string, user model.BaseAccount, conversationId string, firstID string, pageSize int, order string) ([]*model.Message, int64, error)
+	FindPinnedConversationByUser(ctx context.Context, appID string, user model.BaseAccount) ([]*model.PinnedConversation, error)
 }

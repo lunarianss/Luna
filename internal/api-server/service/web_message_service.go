@@ -35,13 +35,39 @@ func NewWebMessageService(appRunningDomain *domain.AppRunningDomain, accountDoma
 
 func (s *WebMessageService) ListConversations(ctx context.Context, appID, endUserID string, args *dto.ListConversationQuery, invokeFrom entities.InvokeForm) (*dto.ListConversationResponse, error) {
 
+	var (
+		includeIDs            []string
+		excludeIDs            []string
+		pinnedConversationIDs []string
+	)
+
 	endUser, err := s.appRunningDomain.AppRunningRepo.GetEndUserByID(ctx, endUserID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	conversations, count, err := s.chatDomain.MessageRepo.FindEndUserConversationsOrderByUpdated(ctx, appID, string(invokeFrom), endUser, args.Limit, nil, nil, args.LastID, args.SortBy)
+	pinnedConversations, err := s.chatDomain.MessageRepo.FindPinnedConversationByUser(ctx, appID, endUser)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, pinnedConversation := range pinnedConversations {
+		pinnedConversationIDs = append(pinnedConversationIDs, pinnedConversation.ID)
+	}
+
+	if *args.Pinned {
+		if len(pinnedConversationIDs) > 0 {
+			includeIDs = pinnedConversationIDs
+		} else {
+			includeIDs = append(includeIDs, "")
+		}
+	} else {
+		excludeIDs = pinnedConversationIDs
+	}
+
+	conversations, count, err := s.chatDomain.MessageRepo.FindEndUserConversationsOrderByUpdated(ctx, appID, string(invokeFrom), endUser, args.Limit, includeIDs, excludeIDs, args.LastID, args.SortBy)
 
 	if err != nil {
 		return nil, err

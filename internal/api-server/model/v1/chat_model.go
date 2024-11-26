@@ -85,3 +85,21 @@ func (a *Message) BeforeCreate(tx *gorm.DB) (err error) {
 	a.ID = uuid.NewString()
 	return
 }
+
+type PinnedConversation struct {
+	ID             string `gorm:"column:id" json:"id"`
+	AppID          string `gorm:"column:app_id" json:"app_id"`
+	ConversationID string `gorm:"column:conversation_id" json:"conversation_id"`
+	CreatedByRole  string `gorm:"column:created_by_role;default:end_user" json:"created_by_role"`
+	CreatedBy      string `gorm:"column:created_by" json:"create_by"`
+	CreatedAt      int64  `gorm:"column:created_at" json:"created_at"`
+}
+
+func (a *PinnedConversation) TableName() string {
+	return "pinned_conversations"
+}
+
+func (a *PinnedConversation) BeforeCreate(tx *gorm.DB) (err error) {
+	a.ID = uuid.NewString()
+	return
+}

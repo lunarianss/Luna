@@ -11,6 +11,9 @@ import (
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat"
 	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/web_app"
+	"github.com/lunarianss/Luna/internal/api-server/model/v1"
+	"github.com/lunarianss/Luna/pkg/errors"
+	"gorm.io/gorm"
 )
 
 type WebMessageService struct {
@@ -54,7 +57,7 @@ func (s *WebMessageService) ListConversations(ctx context.Context, appID, endUse
 	}
 
 	for _, pinnedConversation := range pinnedConversations {
-		pinnedConversationIDs = append(pinnedConversationIDs, pinnedConversation.ID)
+		pinnedConversationIDs = append(pinnedConversationIDs, pinnedConversation.ConversationID)
 	}
 
 	if *args.Pinned {
@@ -127,4 +130,41 @@ func (s *WebMessageService) ListMessages(ctx context.Context, appID, endUserID s
 		Count:   count,
 	}, nil
 
+}
+
+func (s *WebMessageService) PinnedConversation(ctx context.Context, appID, endUserID, conversationID string) error {
+
+	endUser, err := s.appRunningDomain.AppRunningRepo.GetEndUserByID(ctx, endUserID)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = s.chatDomain.MessageRepo.GetPinnedConversationByConversation(ctx, appID, conversationID, endUser)
+
+	if err == nil {
+		return nil
+	}
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		conversation, err := s.chatDomain.MessageRepo.GetConversationByUser(ctx, appID, conversationID, endUser)
+		if err != nil {
+			return err
+		}
+
+		pinnedConversation := &model.PinnedConversation{
+			AppID:          appID,
+			ConversationID: conversation.ID,
+			CreatedByRole:  endUser.GetAccountType(),
+			CreatedBy:      endUser.GetAccountID(),
+		}
+
+		if _, err := s.chatDomain.MessageRepo.CreatePinnedConversation(ctx, pinnedConversation); err != nil {
+			return err
+		}
+	} else {
+		return err
+	}
+
+	return nil
 }

@@ -71,6 +71,10 @@ func (a *WebMessageRoutes) Register(g *gin.Engine) error {
 
 	authV1.GET("/messages", webSiteController.ListMessages)
 	authV1.GET("/conversations", webSiteController.ListConversation)
+	authV1.PATCH("/conversations/:conversationID/pin", webSiteController.PinnedConversion)
+	authV1.PATCH("/conversations/:conversationID/unpin", webSiteController.UnPinnedConversation)
+	authV1.DELETE("/conversations/:conversationID", webSiteController.DeleteConversion)
+	authV1.POST("/conversations/:conversationID/name", webSiteController.RenameConversion)
 	return nil
 }
 

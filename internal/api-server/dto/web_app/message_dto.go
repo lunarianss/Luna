@@ -94,3 +94,7 @@ type ListMessageQuery struct {
 	LastID         string `json:"last_id" form:"last_id"`
 	FirstID        string `json:"first_id" form:"first_id"`
 }
+
+type ConversationIDUrl struct {
+	ConversationID string `json:"conversationID" form:"conversationID" uri:"conversationID" validate:"required"`
+}

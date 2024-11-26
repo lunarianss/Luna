@@ -29,6 +29,13 @@ func (md *MessageDao) CreateMessage(ctx context.Context, message *model.Message)
 	return message, nil
 }
 
+func (md *MessageDao) CreatePinnedConversation(ctx context.Context, pinnedConversation *model.PinnedConversation) (*model.PinnedConversation, error) {
+	if err := md.db.Create(pinnedConversation).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return pinnedConversation, nil
+}
+
 func (md *MessageDao) CreateConversation(ctx context.Context, conversation *model.Conversation) (*model.Conversation, error) {
 	if err := md.db.Create(conversation).Error; err != nil {
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())
@@ -77,6 +84,17 @@ func (md *MessageDao) GetConversationByUser(ctx context.Context, appID, conversa
 	if err := db.Where("id = ? AND status = ? AND app_id = ?", conversationID, "normal", appID).First(&conversation).Error; err != nil {
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())
 	}
+	return &conversation, nil
+}
+
+func (md *MessageDao) GetPinnedConversationByConversation(ctx context.Context, appID, cID string, user model.BaseAccount) (*model.PinnedConversation, error) {
+	var (
+		conversation model.PinnedConversation
+	)
+	if err := md.db.First(&conversation, "app_id = ? AND conversation_Id = ? AND created_by_role = ? AND created_by = ?", appID, cID, user.GetAccountType(), user.GetAccountID()).Error; err != nil {
+		return nil, err
+	}
+
 	return &conversation, nil
 }
 

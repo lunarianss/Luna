@@ -16,4 +16,6 @@ type MessageRepo interface {
 	GetMessageByID(ctx context.Context, messageID string) (*model.Message, error)
 	GetConversationByID(ctx context.Context, conversationID string) (*model.Conversation, error)
 	GetConversationByUser(ctx context.Context, appId string, conversationID string, user model.BaseAccount) (*model.Conversation, error)
+	// FindEndUserMessages(ctx context.Context, tenant *model.Tenant, page, pageSize int) ([]*model.Message, int64, error)
+	FindEndUserConversationsOrderByUpdated(ctx context.Context, appId string, invokeFrom string, user model.BaseAccount, pageSize int, includeIDs []string, excludeIDs []string, lastID string, sortBy string) ([]*model.Conversation, int64, error)
 }

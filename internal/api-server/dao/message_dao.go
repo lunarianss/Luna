@@ -2,10 +2,12 @@ package dao
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/api-server/repo"
 	"github.com/lunarianss/Luna/internal/pkg/code"
+	"github.com/lunarianss/Luna/internal/pkg/mysql"
 	"github.com/lunarianss/Luna/pkg/errors"
 	"gorm.io/gorm"
 )
@@ -83,4 +85,55 @@ func (md *MessageDao) UpdateConversationUpdateAt(ctx context.Context, appID stri
 		return errors.WithCode(code.ErrDatabase, err.Error())
 	}
 	return nil
+}
+
+func (md *MessageDao) FindEndUserConversationsOrderByUpdated(ctx context.Context, appId string, invokeFrom string, user model.BaseAccount, pageSize int, includeIDs []string, excludeIDs []string, lastID string, sortBy string) ([]*model.Conversation, int64, error) {
+	var (
+		query         *gorm.DB
+		fromSource    string
+		fromEndUserID string
+		fromAccountID string
+		count         int64
+		conversations []*model.Conversation
+	)
+
+	if _, ok := user.(*model.EndUser); ok {
+		fromSource = "api"
+		fromEndUserID = user.GetAccountID()
+	}
+
+	if _, ok := user.(*model.Account); ok {
+		fromSource = "console"
+		fromAccountID = user.GetAccountID()
+	}
+
+	query = md.db
+
+	query = query.Scopes(mysql.LogicalObjects()).Where("app_id = ? AND from_source = ? AND from_end_user_id = ? AND from_account_id = ?", appId, fromSource, fromEndUserID, fromAccountID).Where("invoke_from = '' OR invoke_from = ?", invokeFrom)
+
+	if includeIDs != nil {
+		query = query.Where("id IN ?", includeIDs)
+	}
+
+	if excludeIDs != nil {
+		query = query.Where("id NOT IN ?", excludeIDs)
+	}
+
+	sortField, sortDirection := mysql.GetSortParams(sortBy)
+	sortOperation := mysql.BuildFilterCondition(sortField, sortDirection)
+
+	if lastID != "" {
+		lastConversation, err := md.GetConversationByID(ctx, lastID)
+		if err != nil {
+			return nil, 0, err
+		}
+		opStr := fmt.Sprintf("%s %s", sortField, sortOperation)
+		query = query.Where(fmt.Sprintf("%s %d", opStr, lastConversation.UpdatedAt))
+	}
+
+	if err := query.Model(&model.Conversation{}).Count(&count).Find(&conversations).Order(fmt.Sprintf("%s %s", sortField, sortDirection)).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return conversations, count, nil
 }

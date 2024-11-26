@@ -5,6 +5,8 @@
 package mysql
 
 import (
+	"strings"
+
 	"gorm.io/gorm"
 )
 
@@ -35,4 +37,22 @@ func LogicalObjects() func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		return db.Where("is_deleted = ?", 0)
 	}
+}
+
+func GetSortParams(sortBy string) (string, string) {
+	sortDirection := "ASC"
+	sortField := strings.TrimPrefix(sortBy, "-")
+
+	if strings.HasPrefix(sortBy, "-") {
+		sortDirection = "DESC"
+	}
+	return sortField, sortDirection
+}
+
+func BuildFilterCondition(field, direction string) string {
+	operator := ">"
+	if direction == "DESC" {
+		operator = "<"
+	}
+	return operator
 }

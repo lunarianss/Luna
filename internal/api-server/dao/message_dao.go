@@ -29,6 +29,13 @@ func (md *MessageDao) CreateMessage(ctx context.Context, message *model.Message)
 	return message, nil
 }
 
+func (md *MessageDao) DeletePinnedConversation(ctx context.Context, pinnedConversationID string) error {
+	if err := md.db.Where("id = ?", pinnedConversationID).Delete(&model.PinnedConversation{}).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 func (md *MessageDao) CreatePinnedConversation(ctx context.Context, pinnedConversation *model.PinnedConversation) (*model.PinnedConversation, error) {
 	if err := md.db.Create(pinnedConversation).Error; err != nil {
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())

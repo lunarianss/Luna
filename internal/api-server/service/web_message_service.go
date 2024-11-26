@@ -132,6 +132,25 @@ func (s *WebMessageService) ListMessages(ctx context.Context, appID, endUserID s
 
 }
 
+func (s *WebMessageService) UnPinnedConversation(ctx context.Context, appID, endUserID, conversationID string) error {
+	endUser, err := s.appRunningDomain.AppRunningRepo.GetEndUserByID(ctx, endUserID)
+
+	if err != nil {
+		return err
+	}
+
+	pinnedConversation, err := s.chatDomain.MessageRepo.GetPinnedConversationByConversation(ctx, appID, conversationID, endUser)
+
+	if err != nil {
+		return err
+	}
+
+	if err := s.chatDomain.MessageRepo.DeletePinnedConversation(ctx, pinnedConversation.ID); err != nil {
+		return nil
+	}
+	return nil
+}
+
 func (s *WebMessageService) PinnedConversation(ctx context.Context, appID, endUserID, conversationID string) error {
 
 	endUser, err := s.appRunningDomain.AppRunningRepo.GetEndUserByID(ctx, endUserID)

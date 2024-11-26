@@ -131,7 +131,7 @@ func (md *MessageDao) FindEndUserConversationsOrderByUpdated(ctx context.Context
 		query = query.Where(fmt.Sprintf("%s %d", opStr, lastConversation.UpdatedAt))
 	}
 
-	if err := query.Model(&model.Conversation{}).Count(&count).Find(&conversations).Order(fmt.Sprintf("%s %s", sortField, sortDirection)).Error; err != nil {
+	if err := query.Model(&model.Conversation{}).Count(&count).Order(fmt.Sprintf("%s %s", sortField, sortDirection)).Find(&conversations).Error; err != nil {
 		return nil, 0, err
 	}
 

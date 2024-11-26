@@ -6,7 +6,13 @@ type ListConversationQuery struct {
 	Limit  int    `json:"limit" form:"limit" validate:"required"`
 	Pinned *bool  `json:"pinned" form:"pinned" validate:"required"`
 	LastID string `json:"last_id" form:"last_id"`
-	SortBy string `json:"sort_by" form:"sort_by" validate:"isdefault=-updated_by"`
+	SortBy string `json:"sort_by" form:"sort_by"`
+}
+
+func NewListConversationQuery() *ListConversationQuery {
+	return &ListConversationQuery{
+		SortBy: "-updated_at",
+	}
 }
 
 type WebConversationDetail struct {

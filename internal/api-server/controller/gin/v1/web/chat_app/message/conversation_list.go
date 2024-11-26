@@ -9,7 +9,7 @@ import (
 )
 
 func (mc *MessageController) ListConversation(c *gin.Context) {
-	params := &dto.ListConversationQuery{}
+	params := dto.NewListConversationQuery()
 
 	if err := c.ShouldBind(params); err != nil {
 		core.WriteBindErrResponse(c, err)

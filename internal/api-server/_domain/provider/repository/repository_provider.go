@@ -7,7 +7,7 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/po_entity"
 )
 
-type ModelProviderRepo interface {
+type ProviderRepo interface {
 	// UpdateProvider updates Provider by gorm updates
 	UpdateProvider(ctx context.Context, provider *po_entity.Provider) error
 	// UpdateProvider updates Provider by gorm updates
@@ -25,7 +25,7 @@ type ModelProviderRepo interface {
 	// GerProviderEntity get the provider entity by provider name
 	GetProviderEntity(ctx context.Context, provider string) (*biz_entity.ProviderStaticConfiguration, error)
 	// GetProviderInstance get the provider entity by provider name
-	GetProviderInstance(ctx context.Context, provider string) (*biz_entity.ModelProviderRuntime, error)
+	GetProviderInstance(ctx context.Context, provider string) (*biz_entity.ProviderRuntime, error)
 	// GetProviders get all provider by searchProvider
 	GetTenantProvider(ctx context.Context, tenant string, providerName string, providerType string) (*po_entity.Provider, error)
 }

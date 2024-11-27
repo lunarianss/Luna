@@ -12,14 +12,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type AIModel struct {
+type AIModelRuntime struct {
 	ModelType     common.ModelType              `json:"model_type" yaml:"model_type"`
 	ModelSchemas  []*AIModelStaticConfiguration `json:"model_schemas" yaml:"model_schemas"`
 	StartedAt     float64                       `json:"started_at" yaml:"started_at"`
 	ModelConfPath string                        `json:"model_conf_path" yaml:"model_conf_path"`
 }
 
-func (a *AIModel) GetModelPositionMap() (map[string]int, error) {
+func (a *AIModelRuntime) GetModelPositionMap() (map[string]int, error) {
 	var positionMap = make(map[string]int)
 
 	var modelPosition []string
@@ -47,7 +47,7 @@ func (a *AIModel) GetModelPositionMap() (map[string]int, error) {
 	return positionMap, nil
 }
 
-func (a *AIModel) PredefinedModels() ([]*AIModelStaticConfiguration, error) {
+func (a *AIModelRuntime) PredefinedModels() ([]*AIModelStaticConfiguration, error) {
 	var (
 		modelSchemaYamlPath []string
 		AIModelEntities     []*AIModelStaticConfiguration

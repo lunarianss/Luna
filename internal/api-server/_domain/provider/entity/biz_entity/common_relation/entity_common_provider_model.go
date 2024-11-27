@@ -9,3 +9,5 @@ type ProviderModel struct {
 	ModelProperties map[ModelPropertyKey]interface{} `json:"model_properties" yaml:"model_properties"` // Properties of the model
 	Deprecated      bool                             `json:"deprecated"       yaml:"deprecated"`       // Deprecation status
 }
+
+

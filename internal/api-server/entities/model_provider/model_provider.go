@@ -21,6 +21,13 @@ type IModelProviderRepo interface {
 	ValidateProviderCredentials() error
 }
 
+type CustomConfigurationStatus string
+
+const (
+	Custom_ACTIVE       = "active"
+	Custom_NO_CONFIGURE = "no-configure"
+)
+
 type ModelProvider struct {
 	ProviderSchema   ProviderEntity
 	ModelConfPath    string
@@ -130,13 +137,6 @@ type ModelWithProviderEntity struct {
 	*ProviderModelWithStatusEntity
 	Provider *SimpleModelProviderEntity `json:"provider"`
 }
-
-type CustomConfigurationStatus string
-
-const (
-	Custom_ACTIVE       = "active"
-	Custom_NO_CONFIGURE = "no-configure"
-)
 
 // SimpleProviderEntity represents a simple model for the provider.
 type SimpleProviderEntity struct {

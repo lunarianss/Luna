@@ -1,6 +1,8 @@
 package dto
 
-import "github.com/lunarianss/Luna/internal/api-server/model/v1"
+import (
+	"github.com/lunarianss/Luna/internal/api-server/_domain/account/entity/po_entity"
+)
 
 type GetAccountProfileResp struct {
 	ID                string `json:"id" gorm:"column:id"`
@@ -16,7 +18,7 @@ type GetAccountProfileResp struct {
 	IsPasswordSet     bool   `json:"is_password_set"`
 }
 
-func AccountConvertToProfile(a *model.Account) (s *GetAccountProfileResp) {
+func AccountConvertToProfile(a *po_entity.Account) (s *GetAccountProfileResp) {
 	return &GetAccountProfileResp{
 		ID:                a.ID,
 		Name:              a.Name,

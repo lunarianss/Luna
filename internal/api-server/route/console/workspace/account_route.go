@@ -2,11 +2,10 @@ package route
 
 import (
 	"github.com/gin-gonic/gin"
+	domain "github.com/lunarianss/Luna/internal/api-server/_domain/account/domain_service"
+	repo_impl "github.com/lunarianss/Luna/internal/api-server/_repo"
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/account"
-	"github.com/lunarianss/Luna/internal/api-server/dao"
-	domain "github.com/lunarianss/Luna/internal/api-server/domain/account"
-	tenantDomain "github.com/lunarianss/Luna/internal/api-server/domain/tenant"
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
 
 	"github.com/lunarianss/Luna/internal/api-server/service"
@@ -44,13 +43,13 @@ func (a *AccountRoute) Register(g *gin.Engine) error {
 		return err
 	}
 
-	// dao
-	accountDao := dao.NewAccountDao(gormIns)
-	tenantDao := dao.NewTenantDao(gormIns)
+	// repo
+	accountRepo := repo_impl.NewAccountRepo(gormIns)
+	tenantRepo := repo_impl.NewTenantRepo(gormIns)
 
 	// domain
-	accountDomain := domain.NewAccountDomain(accountDao, redisIns, config, email, tenantDao)
-	tenantDomain := tenantDomain.NewTenantDomain(tenantDao)
+	accountDomain := domain.NewAccountDomain(accountRepo, redisIns, config, email, tenantRepo)
+	tenantDomain := domain.NewTenantDomain(tenantRepo)
 
 	// service
 	accountService := service.NewAccountService(accountDomain, tenantDomain, gormIns)

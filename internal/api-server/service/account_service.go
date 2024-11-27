@@ -4,22 +4,22 @@ import (
 	"context"
 
 	"github.com/gin-gonic/gin"
-	domain "github.com/lunarianss/Luna/internal/api-server/domain/account"
-	tenantDomain "github.com/lunarianss/Luna/internal/api-server/domain/tenant"
+	domain "github.com/lunarianss/Luna/internal/api-server/_domain/account/domain_service"
+	"github.com/lunarianss/Luna/internal/api-server/_domain/account/entity/biz_entity"
+	"github.com/lunarianss/Luna/internal/api-server/_domain/account/entity/po_entity"
 	accountDto "github.com/lunarianss/Luna/internal/api-server/dto/account"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/auth"
-	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/pkg/util"
 	"gorm.io/gorm"
 )
 
 type AccountService struct {
 	accountDomain *domain.AccountDomain
-	tenantDomain  *tenantDomain.TenantDomain
+	tenantDomain  *domain.TenantDomain
 	db            *gorm.DB
 }
 
-func NewAccountService(accountDomain *domain.AccountDomain, tenantDomain *tenantDomain.TenantDomain, db *gorm.DB) *AccountService {
+func NewAccountService(accountDomain *domain.AccountDomain, tenantDomain *domain.TenantDomain, db *gorm.DB) *AccountService {
 	return &AccountService{
 		accountDomain: accountDomain,
 		tenantDomain:  tenantDomain,
@@ -52,7 +52,7 @@ func (s *AccountService) SendEmailCode(ctx context.Context, params *dto.SendEmai
 	}, nil
 }
 
-func (s *AccountService) EmailCodeValidity(ctx context.Context, email, emailCode, token string) (*domain.TokenPair, error) {
+func (s *AccountService) EmailCodeValidity(ctx context.Context, email, emailCode, token string) (*biz_entity.TokenPair, error) {
 	tokenData, err := s.accountDomain.GetEmailTokenData(ctx, token)
 
 	if err != nil {
@@ -84,7 +84,7 @@ func (s *AccountService) EmailCodeValidity(ctx context.Context, email, emailCode
 	return tokenPair, nil
 }
 
-func (ad *AccountService) CreateAccountAndTenant(ctx context.Context, email, name, interfaceLanguage, password string) (*model.Account, error) {
+func (ad *AccountService) CreateAccountAndTenant(ctx context.Context, email, name, interfaceLanguage, password string) (*po_entity.Account, error) {
 
 	tx := ad.db.Begin()
 	account, err := ad.accountDomain.CreateAccount(ctx, tx, email, name, interfaceLanguage, "light", password, false)
@@ -104,7 +104,7 @@ func (ad *AccountService) CreateAccountAndTenant(ctx context.Context, email, nam
 	return account, tx.Commit().Error
 }
 
-func (ad *AccountService) RefreshToken(ctx context.Context, refreshToken string) (*domain.TokenPair, error) {
+func (ad *AccountService) RefreshToken(ctx context.Context, refreshToken string) (*biz_entity.TokenPair, error) {
 
 	return ad.accountDomain.RefreshToken(ctx, refreshToken)
 }

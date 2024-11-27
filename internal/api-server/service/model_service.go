@@ -7,32 +7,34 @@ package service
 import (
 	"context"
 
+	accountDomain "github.com/lunarianss/Luna/internal/api-server/_domain/account/domain_service"
+	providerDomain "github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
+	common "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/common_relation"
+	biz_entity_model "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider/model_provider"
+	biz_entity_provider_config "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider_configuration"
+
 	"github.com/lunarianss/Luna/internal/api-server/config"
-	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account"
-	domain "github.com/lunarianss/Luna/internal/api-server/domain/model"
-	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
+
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/provider"
 	"github.com/lunarianss/Luna/internal/api-server/entities/base"
-	"github.com/lunarianss/Luna/internal/api-server/entities/model_provider"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/internal/pkg/util"
 	"github.com/lunarianss/Luna/pkg/errors"
 )
 
 type ModelService struct {
-	modelDomain         *domain.ModelDomain
-	modelProviderDomain *providerDomain.ModelProviderDomain
-	accountDomain       *accountDomain.AccountDomain
-	config              *config.Config
+	providerDomain *providerDomain.ProviderDomain
+	accountDomain  *accountDomain.AccountDomain
+	config         *config.Config
 }
 
-func NewModelService(modelDomain *domain.ModelDomain, modelProviderDomain *providerDomain.ModelProviderDomain, accountDomain *accountDomain.AccountDomain, config *config.Config) *ModelService {
-	return &ModelService{modelDomain: modelDomain, modelProviderDomain: modelProviderDomain, accountDomain: accountDomain, config: config}
+func NewModelService(providerDomain *providerDomain.ProviderDomain, accountDomain *accountDomain.AccountDomain, config *config.Config) *ModelService {
+	return &ModelService{providerDomain: providerDomain, accountDomain: accountDomain, config: config}
 }
 
 func (ms *ModelService) SaveModelCredentials(ctx context.Context, tenantId, model, modelTpe, provider string, credentials map[string]interface{}) error {
 
-	providerConfigurations, err := ms.modelProviderDomain.GetConfigurations(ctx, tenantId)
+	providerConfigurations, err := ms.providerDomain.GetConfigurations(ctx, tenantId)
 
 	if err != nil {
 		return err
@@ -44,7 +46,7 @@ func (ms *ModelService) SaveModelCredentials(ctx context.Context, tenantId, mode
 		return errors.WithCode(code.ErrProviderMapModel, "provider %s not found in map provider configuration", provider)
 	}
 
-	err = ms.modelDomain.AddOrUpdateCustomModelCredentials(ctx, providerConfiguration, credentials, modelTpe, model)
+	err = providerConfiguration.AddOrUpdateCustomModelCredentials(ctx, credentials, modelTpe, model)
 
 	if err != nil {
 		return err
@@ -60,29 +62,29 @@ func (ms *ModelService) GetAccountAvailableModels(ctx context.Context, accountID
 	if err != nil {
 		return nil, err
 	}
-	providerConfigurations, err := ms.modelProviderDomain.GetConfigurations(ctx, tenantRecord.ID)
+	providerConfigurations, err := ms.providerDomain.GetConfigurations(ctx, tenantRecord.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	activeModels, err := ms.modelProviderDomain.GetModels(ctx, providerConfigurations, base.ModelType(modelType), true)
+	activeModels, err := providerConfigurations.GetModels(ctx, common.ModelType(modelType), true)
 
 	if err != nil {
 		return nil, err
 	}
 
-	providerModelsMap := make(map[string][]*model_provider.ModelWithProviderEntity)
+	providerModelsMap := make(map[string][]*biz_entity_provider_config.ModelWithProvider)
 
 	for _, activeModel := range activeModels {
 		if _, ok := providerModelsMap[activeModel.Provider.Provider]; !ok {
-			providerModelsMap[activeModel.Provider.Provider] = make([]*model_provider.ModelWithProviderEntity, 0, 10)
+			providerModelsMap[activeModel.Provider.Provider] = make([]*biz_entity_provider_config.ModelWithProvider, 0, 10)
 		}
 
 		if activeModel.Deprecated {
 			continue
 		}
 
-		if activeModel.Status != model_provider.ACTIVE {
+		if activeModel.Status != biz_entity_provider_config.ACTIVE {
 			continue
 		}
 
@@ -96,13 +98,13 @@ func (ms *ModelService) GetAccountAvailableModels(ctx context.Context, accountID
 			continue
 		}
 
-		providerModelStatus := make([]*model_provider.ProviderModelWithStatusEntity, 0, 10)
+		providerModelStatus := make([]*biz_entity_provider_config.ProviderModelWithStatus, 0, 10)
 		firstModel := providerModels[0]
 
 		for _, mapModel := range providerModels {
-			providerModelStatus = append(providerModelStatus, &model_provider.ProviderModelWithStatusEntity{
+			providerModelStatus = append(providerModelStatus, &biz_entity_provider_config.ProviderModelWithStatus{
 				Status: mapModel.Status,
-				ProviderModel: &model_provider.ProviderModel{
+				ProviderModel: &common.ProviderModel{
 					Model:           mapModel.Model,
 					Label:           mapModel.Label,
 					ModelType:       mapModel.ModelType,
@@ -132,40 +134,40 @@ func (ms *ModelService) GetAccountAvailableModels(ctx context.Context, accountID
 	return providerResponses, nil
 }
 
-func (ms *ModelService) GetModelParameterRules(ctx context.Context, accountID string, provider string, model string) ([]*model_provider.ParameterRule, error) {
+func (ms *ModelService) GetModelParameterRules(ctx context.Context, accountID string, provider string, model string) ([]*biz_entity_model.ParameterRule, error) {
 	tenantRecord, _, err := ms.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	providerConfigurations, err := ms.modelProviderDomain.GetConfigurations(ctx, tenantRecord.ID)
+	providerConfigurations, err := ms.providerDomain.GetConfigurations(ctx, tenantRecord.ID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	providerConfiguration, err := ms.modelProviderDomain.GetConfigurationByProvider(ctx, providerConfigurations, provider)
+	providerConfiguration, err := providerConfigurations.GetConfigurationByProvider(ctx, provider)
 
 	if err != nil {
 		return nil, err
 	}
 
-	credentials, err := providerConfiguration.GetCurrentCredentials(base.LLM, model)
+	credentials, err := providerConfiguration.GetCurrentCredentials(common.LLM, model)
 
 	if err != nil {
 		return nil, err
 	}
 
-	model_provider, err := ms.modelProviderDomain.ModelProviderRepo.GetProviderInstance(ctx, provider)
+	model_provider, err := ms.providerDomain.ProviderRepo.GetProviderInstance(ctx, provider)
 
 	if err != nil {
 		return nil, err
 	}
 
-	modelInstance := model_provider.GetModelInstance(base.LLM)
+	modelInstance := model_provider.GetModelInstance(common.LLM)
 
-	AIModelEntity, err := ms.modelProviderDomain.GetModelSchema(ctx, model, credentials, modelInstance)
+	AIModelEntity, err := ms.providerDomain.GetModelSchema(ctx, model, credentials, modelInstance)
 
 	if err != nil {
 		return nil, err
@@ -182,7 +184,7 @@ func (ms *ModelService) GetDefaultModelByType(ctx context.Context, accountID str
 	if err != nil {
 		return nil, err
 	}
-	defaultModelEntity, err := ms.modelProviderDomain.GetDefaultModel(ctx, tenantRecord.ID, base.ModelType(modelType))
+	defaultModelEntity, err := ms.providerDomain.GetDefaultModel(ctx, tenantRecord.ID, common.ModelType(modelType))
 
 	if errors.IsCode(err, code.ErrDefaultModelNotFound) {
 		return nil, nil
@@ -195,7 +197,7 @@ func (ms *ModelService) GetDefaultModelByType(ctx context.Context, accountID str
 	return &dto.DefaultModelResponse{
 		Model:     defaultModelEntity.Model,
 		ModelType: defaultModelEntity.ModelType,
-		Provider: &model_provider.SimpleProviderEntity{
+		Provider: &biz_entity_provider_config.SimpleModelProvider{
 			Provider:            defaultModelEntity.Provider.Provider,
 			Label:               defaultModelEntity.Provider.Label,
 			IconSmall:           defaultModelEntity.Provider.IconSmall,

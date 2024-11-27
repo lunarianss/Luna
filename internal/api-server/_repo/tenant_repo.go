@@ -14,7 +14,7 @@ type TenantRepoImpl struct {
 	db *gorm.DB
 }
 
-func NewTenantRepo(db *gorm.DB) *TenantRepoImpl {
+func NewTenantRepoImpl(db *gorm.DB) *TenantRepoImpl {
 	return &TenantRepoImpl{db: db}
 }
 

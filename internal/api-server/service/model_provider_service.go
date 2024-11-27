@@ -11,25 +11,26 @@ import (
 	"sort"
 	"strings"
 
+	accountDomain "github.com/lunarianss/Luna/internal/api-server/_domain/account/domain_service"
+	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
+	common "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/common_relation"
+	biz_entity "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider"
+	biz_entity_provider_config "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider_configuration"
 	"github.com/lunarianss/Luna/internal/api-server/config"
-	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account"
-	domain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/provider"
-	"github.com/lunarianss/Luna/internal/api-server/entities/base"
-	"github.com/lunarianss/Luna/internal/api-server/entities/model_provider"
 	model_providers "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
 )
 
 type ModelProviderService struct {
-	modelProviderDomain *domain.ModelProviderDomain
-	accountDomain       *accountDomain.AccountDomain
-	config              *config.Config
+	providerDomain *domain_service.ProviderDomain
+	accountDomain  *accountDomain.AccountDomain
+	config         *config.Config
 }
 
-func NewModelProviderService(modelProviderDomain *domain.ModelProviderDomain, accountDomain *accountDomain.AccountDomain, config *config.Config) *ModelProviderService {
-	return &ModelProviderService{modelProviderDomain: modelProviderDomain, accountDomain: accountDomain, config: config}
+func NewModelProviderService(providerDomain *domain_service.ProviderDomain, accountDomain *accountDomain.AccountDomain, config *config.Config) *ModelProviderService {
+	return &ModelProviderService{providerDomain: providerDomain, accountDomain: accountDomain, config: config}
 }
 
 func (mpSrv *ModelProviderService) GetProviderList(ctx context.Context, accountID string, modelType string) ([]*dto.ProviderResponse, error) {
@@ -41,7 +42,7 @@ func (mpSrv *ModelProviderService) GetProviderList(ctx context.Context, accountI
 		return nil, err
 	}
 
-	providerConfigurations, err := mpSrv.modelProviderDomain.GetConfigurations(ctx, tenantRecord.ID)
+	providerConfigurations, err := mpSrv.providerDomain.GetConfigurations(ctx, tenantRecord.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +52,7 @@ func (mpSrv *ModelProviderService) GetProviderList(ctx context.Context, accountI
 	for _, providerConfiguration := range providerConfigurations.Configurations {
 
 		if modelType != "" {
-			if !slices.Contains(providerConfiguration.Provider.SupportedModelTypes, base.ModelType(modelType)) {
+			if !slices.Contains(providerConfiguration.Provider.SupportedModelTypes, common.ModelType(modelType)) {
 				continue
 			}
 		}
@@ -81,7 +82,7 @@ func (mpSrv *ModelProviderService) GetProviderList(ctx context.Context, accountI
 			},
 			SystemConfiguration: &dto.SystemConfigurationResponse{
 				Enabled:             false,
-				QuotaConfigurations: make([]*model_provider.QuotaConfiguration, 0),
+				QuotaConfigurations: make([]*biz_entity_provider_config.QuotaConfiguration, 0),
 			},
 		}
 
@@ -101,13 +102,13 @@ func (mpSrv *ModelProviderService) GetProviderList(ctx context.Context, accountI
 
 func (mpSrv *ModelProviderService) GetProviderIconPath(ctx context.Context, provider, iconType, lang string) (string, error) {
 
-	providerPath, err := mpSrv.modelProviderDomain.ModelProviderRepo.GetProviderPath(ctx, provider)
+	providerPath, err := mpSrv.providerDomain.ProviderRepo.GetProviderPath(ctx, provider)
 
 	if err != nil {
 		return "", err
 	}
 
-	providerEntity, err := mpSrv.modelProviderDomain.ModelProviderRepo.GetProviderEntity(ctx, provider)
+	providerEntity, err := mpSrv.providerDomain.ProviderRepo.GetProviderEntity(ctx, provider)
 
 	if err != nil {
 		return "", err
@@ -130,25 +131,14 @@ func (mpSrv *ModelProviderService) SaveProviderCredentials(ctx context.Context, 
 		return err
 	}
 
-	providerConfigurations, err := mpSrv.modelProviderDomain.GetConfigurations(ctx, tenantRecord.ID)
-
-	if err != nil {
+	if err := mpSrv.providerDomain.SaveProviderCredentials(ctx, tenantRecord.ID, provider, credentials); err != nil {
 		return err
 	}
 
-	providerConfiguration, ok := providerConfigurations.Configurations[provider]
-
-	if !ok {
-		return errors.WithCode(code.ErrProviderMapModel, fmt.Sprintf("when create %s provider credential for provider", provider))
-	}
-
-	if err := mpSrv.modelProviderDomain.AddOrUpdateCustomProviderCredentials(ctx, providerConfiguration, credentials); err != nil {
-		return err
-	}
 	return nil
 }
 
-func (mpSrv *ModelProviderService) getIconName(providerEntity *model_provider.ProviderEntity, iconType, lang string) (string, error) {
+func (mpSrv *ModelProviderService) getIconName(providerEntity *biz_entity.ProviderStaticConfiguration, iconType, lang string) (string, error) {
 	var (
 		iconName string
 	)

@@ -2,12 +2,11 @@ package route
 
 import (
 	"github.com/gin-gonic/gin"
+	accountDomain "github.com/lunarianss/Luna/internal/api-server/_domain/account/domain_service"
+	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
+	repo_impl "github.com/lunarianss/Luna/internal/api-server/_repo"
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/model-provider/model"
-	"github.com/lunarianss/Luna/internal/api-server/dao"
-	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account"
-	domain "github.com/lunarianss/Luna/internal/api-server/domain/model"
-	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
 	"github.com/lunarianss/Luna/internal/api-server/service"
 	"github.com/lunarianss/Luna/internal/pkg/mysql"
@@ -23,15 +22,10 @@ func (r *ModelRoutes) Register(g *gin.Engine) error {
 	}
 
 	// dao
-	modelDao := dao.NewModelDao(gormIns)
-	modelProviderDao := dao.NewModelProvider(gormIns)
-	accountDao := dao.NewAccountDao(gormIns)
-	tenantDao := dao.NewTenantDao(gormIns)
-
-	// domain
-	modelDomain := domain.NewModelDomain(modelDao)
-	modelProviderDomain := providerDomain.NewModelProviderDomain(modelProviderDao, modelDao)
-	accountDomain := accountDomain.NewAccountDomain(accountDao, nil, nil, nil, tenantDao)
+	modelRepo := repo_impl.NewModelProviderRepoImpl(gormIns)
+	providerRepo := repo_impl.NewProviderRepoImpl(gormIns)
+	accountRepo := repo_impl.NewAccountRepoImpl(gormIns)
+	tenantRepo := repo_impl.NewTenantRepoImpl(gormIns)
 
 	// config
 	config, err := config.GetLunaRuntimeConfig()
@@ -39,8 +33,12 @@ func (r *ModelRoutes) Register(g *gin.Engine) error {
 	if err != nil {
 		return err
 	}
+	// domain
+	providerDomain := domain_service.NewProviderDomain(providerRepo, modelRepo, nil)
+	accountDomain := accountDomain.NewAccountDomain(accountRepo, nil, config, nil, tenantRepo)
+
 	// service
-	modelService := service.NewModelService(modelDomain, modelProviderDomain, accountDomain, config)
+	modelService := service.NewModelService(providerDomain, accountDomain, config)
 
 	modelController := controller.NewModelController(modelService)
 

@@ -295,6 +295,24 @@ func (mpd *ProviderDomain) GetDefaultModel(ctx context.Context, tenantId string,
 
 }
 
+func (mpd *ProviderDomain) SaveProviderCredentials(ctx context.Context, tenantID string, provider string, credentials map[string]interface{}) error {
+	providerConfigurations, err := mpd.GetConfigurations(ctx, tenantID)
+	if err != nil {
+		return err
+	}
+
+	providerConfiguration, ok := providerConfigurations.Configurations[provider]
+
+	if !ok {
+		return errors.WithCode(code.ErrProviderMapModel, fmt.Sprintf("when create %s provider credential for provider", provider))
+	}
+
+	if err := providerConfiguration.AddOrUpdateCustomProviderCredentials(ctx, credentials); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (mpd *ProviderDomain) toCustomConfiguration(
 	_ string,
 	providerEntity *biz_entity.ProviderStaticConfiguration,

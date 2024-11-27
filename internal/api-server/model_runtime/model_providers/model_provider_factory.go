@@ -12,7 +12,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/lunarianss/Luna/internal/api-server/entities/model_provider"
+	biz_entity "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider"
 	"gopkg.in/yaml.v3"
 
 	"github.com/lunarianss/Luna/internal/pkg/code"
@@ -30,7 +30,7 @@ var Factory = ModelProviderFactory{}
 type ModelProviderFactory struct{}
 
 type ModelProviderExtension struct {
-	ProviderInstance *model_provider.ModelProvider
+	ProviderInstance *biz_entity.ProviderRuntime
 	Name             string
 	Position         int
 }
@@ -57,7 +57,7 @@ func (f *ModelProviderFactory) GetPositionMap(fileDir string) (map[string]int, e
 	return positionIndexMap, nil
 }
 
-func (f *ModelProviderFactory) GetProvidersFromDir() ([]*model_provider.ProviderEntity, error) {
+func (f *ModelProviderFactory) GetProvidersFromDir() ([]*biz_entity.ProviderStaticConfiguration, error) {
 	modelProviderExtensions, err := f.getMapProvidersExtensions()
 	if err != nil {
 		return nil, err
@@ -72,7 +72,7 @@ func (f *ModelProviderFactory) GetProvidersFromDir() ([]*model_provider.Provider
 	return providerEntities, nil
 }
 
-func (f *ModelProviderFactory) GetProviderInstance(provider string) (*model_provider.ModelProvider, error) {
+func (f *ModelProviderFactory) GetProviderInstance(provider string) (*biz_entity.ProviderRuntime, error) {
 	providerMap, err := f.getMapProvidersExtensions()
 
 	if err != nil {
@@ -90,9 +90,9 @@ func (f *ModelProviderFactory) GetProviderInstance(provider string) (*model_prov
 
 func (f *ModelProviderFactory) extensionsConvertProviderEntity(
 	modelProviderExtensions map[string]*ModelProviderExtension,
-) ([]*model_provider.ProviderEntity, error) {
+) ([]*biz_entity.ProviderStaticConfiguration, error) {
 
-	providers := make([]*model_provider.ProviderEntity, 0, PROVIDER_COUNT)
+	providers := make([]*biz_entity.ProviderStaticConfiguration, 0, PROVIDER_COUNT)
 
 	for _, providerExtension := range modelProviderExtensions {
 		modelProviderInstance := providerExtension.ProviderInstance
@@ -124,7 +124,7 @@ func (f *ModelProviderFactory) resolveProviderExtensions(
 		modelProviderName := filepath.Base(path)
 		modelProviderExtension := &ModelProviderExtension{
 			Name:             modelProviderName,
-			ProviderInstance: &model_provider.ModelProvider{ModelConfPath: path},
+			ProviderInstance: &biz_entity.ProviderRuntime{ModelConfPath: path},
 			Position:         positionMap[modelProviderName],
 		}
 

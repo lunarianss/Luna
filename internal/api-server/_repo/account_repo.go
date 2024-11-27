@@ -14,7 +14,7 @@ type AccountRepoImpl struct {
 	db *gorm.DB
 }
 
-func NewAccountRepo(db *gorm.DB) *AccountRepoImpl {
+func NewAccountRepoImpl(db *gorm.DB) *AccountRepoImpl {
 	return &AccountRepoImpl{db: db}
 }
 

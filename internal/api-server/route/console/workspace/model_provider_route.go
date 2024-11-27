@@ -7,11 +7,11 @@ package route
 import (
 	"github.com/gin-gonic/gin"
 
+	accountDomain "github.com/lunarianss/Luna/internal/api-server/_domain/account/domain_service"
+	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
+	repo_impl "github.com/lunarianss/Luna/internal/api-server/_repo"
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/model-provider/provider"
-	"github.com/lunarianss/Luna/internal/api-server/dao"
-	"github.com/lunarianss/Luna/internal/api-server/domain/account"
-	domain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
 	"github.com/lunarianss/Luna/internal/api-server/service"
 	"github.com/lunarianss/Luna/internal/pkg/mysql"
@@ -26,15 +26,15 @@ func (r *ModelProviderRoutes) Register(g *gin.Engine) error {
 		return err
 	}
 
-	// dao
-	modelProviderDao := dao.NewModelProvider(gormIns)
-	modelDao := dao.NewModelDao(gormIns)
-	accountDao := dao.NewAccountDao(gormIns)
-	tenantDao := dao.NewTenantDao(gormIns)
+	// repos
+	providerRepo := repo_impl.NewProviderRepoImpl(gormIns)
+	modelProviderRepo := repo_impl.NewModelProviderRepoImpl(gormIns)
+	accountRepo := repo_impl.NewAccountRepoImpl(gormIns)
+	tenantRepo := repo_impl.NewTenantRepoImpl(gormIns)
 
 	// domain
-	modelProviderDomain := domain.NewModelProviderDomain(modelProviderDao, modelDao)
-	accountDomain := account.NewAccountDomain(accountDao, nil, nil, nil, tenantDao)
+	modelProviderDomain := domain_service.NewProviderDomain(providerRepo, modelProviderRepo, nil)
+	accountDomain := accountDomain.NewAccountDomain(accountRepo, nil, nil, nil, tenantRepo)
 
 	// config
 	config, err := config.GetLunaRuntimeConfig()

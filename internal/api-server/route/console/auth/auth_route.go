@@ -41,8 +41,8 @@ func (a *AuthRoutes) Register(g *gin.Engine) error {
 	}
 
 	// repo
-	accountRepo := repo_impl.NewAccountRepo(gormIns)
-	tenantRepo := repo_impl.NewTenantRepo(gormIns)
+	accountRepo := repo_impl.NewAccountRepoImpl(gormIns)
+	tenantRepo := repo_impl.NewTenantRepoImpl(gormIns)
 
 	// domain
 	accountDomain := domain.NewAccountDomain(accountRepo, redisIns, config, email, tenantRepo)

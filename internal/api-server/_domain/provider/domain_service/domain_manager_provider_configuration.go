@@ -64,6 +64,7 @@ func (pcm *ProviderConfigurationsManager) GetConfigurationByProvider(ctx context
 
 type ProviderConfigurationManager struct {
 	ProviderRepo          repository.ProviderRepo
+	ModelRepo             repository.ModelRepo
 	TenantId              string                                          `json:"tenant_id"`
 	Provider              *biz_entity.ProviderStaticConfiguration         `json:"provider"`
 	PreferredProviderType po_entity.ProviderType                          `json:"preferred_provider_type"`
@@ -71,6 +72,27 @@ type ProviderConfigurationManager struct {
 	SystemConfiguration   *biz_entity_provider_config.SystemConfiguration `json:"system_configuration"`
 	CustomConfiguration   *biz_entity_provider_config.CustomConfiguration `json:"custom_configuration"`
 	ModelSettings         []*biz_entity_provider_config.ModelSettings     `json:"model_settings"`
+}
+
+func (c *ProviderConfigurationManager) GetCurrentCredentials(modelType common.ModelType, model string) (map[string]interface{}, error) {
+
+	var credentials map[string]interface{}
+
+	if c.CustomConfiguration.Models != nil {
+		for _, modelConfiguration := range c.CustomConfiguration.Models {
+			if modelConfiguration.ModelType == string(modelType) && modelConfiguration.Model == model {
+				credentials = modelConfiguration.Credentials
+				break
+			}
+		}
+	}
+
+	if c.CustomConfiguration.Provider != nil && credentials == nil {
+
+		credentials, _ = c.CustomConfiguration.Provider.Credentials.(map[string]interface{})
+	}
+	return credentials, nil
+
 }
 
 func (pc *ProviderConfigurationManager) GetProviderModels(ctx context.Context, modelType common.ModelType, onlyActive bool) ([]*biz_entity_provider_config.ModelWithProvider, error) {
@@ -235,4 +257,55 @@ func (pc *ProviderConfigurationManager) AddOrUpdateCustomProviderCredentials(ctx
 		}
 	}
 	return nil
+}
+
+func (pc *ProviderConfigurationManager) AddOrUpdateCustomModelCredentials(ctx context.Context, credentialParam map[string]interface{}, modelType, modelName string) error {
+
+	modelRecord, credentials, err := pc.validateModelCredentials(ctx, credentialParam, modelType, modelName)
+
+	if err != nil {
+		return err
+	}
+
+	byteCredentials, err := json.Marshal(credentials)
+
+	if err != nil {
+		return errors.WithCode(code.ErrEncodingJSON, err.Error())
+	}
+
+	if modelRecord != nil {
+		modelRecord.EncryptedConfig = string(byteCredentials)
+		modelRecord.IsValid = 1
+
+		if err := pc.ModelRepo.UpdateModel(ctx, modelRecord); err != nil {
+			return err
+		}
+
+	} else {
+		model := &po_entity.ProviderModel{
+			ProviderName:    pc.Provider.Provider,
+			ModelName:       modelName,
+			ModelType:       modelType,
+			EncryptedConfig: string(byteCredentials),
+			IsValid:         1,
+			TenantID:        pc.TenantId,
+		}
+
+		if err := pc.ModelRepo.CreateModel(ctx, model); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (pc *ProviderConfigurationManager) validateModelCredentials(ctx context.Context, credentials map[string]interface{}, modelType, modeName string) (*po_entity.ProviderModel, map[string]interface{}, error) {
+
+	model, err := pc.ModelRepo.GetTenantModel(ctx, pc.TenantId, pc.Provider.Provider, modeName, modelType)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// credentials 对 apikey 进行 validate and encrypt
+	return model, credentials, nil
 }

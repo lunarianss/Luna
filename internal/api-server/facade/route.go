@@ -5,12 +5,12 @@
 package route
 
 import (
-	authRoute "github.com/lunarianss/Luna/internal/api-server/route/console/auth"
-	datasetRoute "github.com/lunarianss/Luna/internal/api-server/route/console/dataset"
-	featureRoute "github.com/lunarianss/Luna/internal/api-server/route/console/feature"
-	setupRoute "github.com/lunarianss/Luna/internal/api-server/route/console/setup"
-	consoleWorkSpaceRoute "github.com/lunarianss/Luna/internal/api-server/route/console/workspace"
-	chatAppRoute "github.com/lunarianss/Luna/internal/api-server/route/web/chat_app"
+	authRoute "github.com/lunarianss/Luna/internal/api-server/facade/console/auth"
+	datasetRoute "github.com/lunarianss/Luna/internal/api-server/facade/console/dataset"
+	featureRoute "github.com/lunarianss/Luna/internal/api-server/facade/console/feature"
+	setupRoute "github.com/lunarianss/Luna/internal/api-server/facade/console/setup"
+	consoleWorkSpaceRoute "github.com/lunarianss/Luna/internal/api-server/facade/console/workspace"
+	chatAppRoute "github.com/lunarianss/Luna/internal/api-server/facade/web/chat_app"
 	"github.com/lunarianss/Luna/internal/pkg/server"
 )
 

@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
-	"github.com/lunarianss/Luna/internal/api-server/pkg/util"
 	"github.com/lunarianss/Luna/internal/pkg/core"
+	"github.com/lunarianss/Luna/internal/pkg/util"
 )
 
 func (cc *WebChatController) Chat(c *gin.Context) {

@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/web_app"
-	"github.com/lunarianss/Luna/internal/api-server/pkg/util"
 	"github.com/lunarianss/Luna/internal/pkg/core"
+	"github.com/lunarianss/Luna/internal/pkg/util"
 )
 
 func (mc *MessageController) ListConversation(c *gin.Context) {

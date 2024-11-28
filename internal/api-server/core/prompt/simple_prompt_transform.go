@@ -11,11 +11,11 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/lunarianss/Luna/internal/api-server/core/app"
-	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/prompt/utils"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
+	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_config"
+	biz_entity_provider_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_configuration"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
 )
@@ -23,7 +23,7 @@ import (
 type SimplePromptTransform struct {
 }
 
-func (s *SimplePromptTransform) GetPromptStrAndRules(appMode po_entity.AppMode, modelConfig *app.ModelConfigWithCredentialsEntity, prePrompt string, inputs map[string]interface{}, query string, context string, histories string) (string, map[string]interface{}, error) {
+func (s *SimplePromptTransform) GetPromptStrAndRules(appMode po_entity.AppMode, modelConfig *biz_entity_provider_config.ModelConfigWithCredentialsEntity, prePrompt string, inputs map[string]interface{}, query string, context string, histories string) (string, map[string]interface{}, error) {
 
 	var (
 		variables = make(map[string]interface{})
@@ -54,7 +54,7 @@ func (s *SimplePromptTransform) GetPromptStrAndRules(appMode po_entity.AppMode, 
 	return "", promptTemplateConfig["prompt_rules"].(map[string]interface{}), nil
 
 }
-func (s *SimplePromptTransform) GetChatModelPromptMessage(appMode po_entity.AppMode, prePrompt string, inputs map[string]interface{}, query string, context string, files []string, memory any, modelConfig *app.ModelConfigWithCredentialsEntity) ([]*po_entity_chat.PromptMessage, []string, error) {
+func (s *SimplePromptTransform) GetChatModelPromptMessage(appMode po_entity.AppMode, prePrompt string, inputs map[string]interface{}, query string, context string, files []string, memory any, modelConfig *biz_entity_provider_config.ModelConfigWithCredentialsEntity) ([]*po_entity_chat.PromptMessage, []string, error) {
 
 	var promptMessages []*po_entity_chat.PromptMessage
 
@@ -81,7 +81,7 @@ func (s *SimplePromptTransform) GetLastUserMessage(prompt string, files []string
 	return po_entity_chat.NewUserMessage(prompt)
 }
 
-func (s *SimplePromptTransform) GetPrompt(appMode po_entity.AppMode, promptTemplateEntity *app_config.PromptTemplateEntity, inputs map[string]interface{}, query string, files []string, context string, memory any, modelConfig *app.ModelConfigWithCredentialsEntity) ([]*po_entity_chat.PromptMessage, []string, error) {
+func (s *SimplePromptTransform) GetPrompt(appMode po_entity.AppMode, promptTemplateEntity *biz_entity_app_config.PromptTemplateEntity, inputs map[string]interface{}, query string, files []string, context string, memory any, modelConfig *biz_entity_provider_config.ModelConfigWithCredentialsEntity) ([]*po_entity_chat.PromptMessage, []string, error) {
 
 	var (
 		promptMessage []*po_entity_chat.PromptMessage

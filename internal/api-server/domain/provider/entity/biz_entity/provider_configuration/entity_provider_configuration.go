@@ -22,6 +22,18 @@ import (
 	"github.com/lunarianss/Luna/pkg/errors"
 )
 
+// ModelConfigWithCredentialsEntity struct
+type ModelConfigWithCredentialsEntity struct {
+	Provider            string                                       `json:"provider"`
+	Model               string                                       `json:"model"`
+	ModelSchema         *biz_entity_model.AIModelStaticConfiguration `json:"model_schema"`
+	Mode                string                                       `json:"mode"`
+	ProviderModelBundle *ProviderModelBundleRuntime                  `json:"provider_model_bundle"`
+	Credentials         interface{}                                  `json:"credentials"`
+	Parameters          map[string]interface{}                       `json:"parameters"`
+	Stop                []string                                     `json:"stop"`
+}
+
 type ModelWithProvider struct {
 	*ProviderModelWithStatus
 	Provider *SimpleModelProvider `json:"provider"`

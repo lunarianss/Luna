@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
-package app_config
+package biz_entity
 
 type CreatedByRole string
 
@@ -104,22 +104,6 @@ const (
 	Multiple RetrieveStrategy = "multiple"
 )
 
-type DatasetRetrieveConfigEntity struct {
-	QueryVariable    string                 `json:"query_variable"`
-	RetrieveStrategy RetrieveStrategy       `json:"retrieve_strategy"`
-	TopK             int                    `json:"top_k"`
-	ScoreThreshold   float64                `json:"score_threshold"`
-	RerankMode       string                 `json:"rerank_mode"`
-	RerankingModel   map[string]interface{} `json:"reranking_model"`
-	Weights          map[string]interface{} `json:"weights"`
-	RerankingEnabled bool                   `json:"reranking_enabled"`
-}
-
-type DatasetEntity struct {
-	DatasetIDs     []string                    `json:"dataset_ids"`
-	RetrieveConfig DatasetRetrieveConfigEntity `json:"retrieve_config"`
-}
-
 type SensitiveWordAvoidanceEntity struct {
 	Type   string                 `json:"type"`
 	Config map[string]interface{} `json:"config"`
@@ -172,7 +156,6 @@ type EasyUIBasedAppConfig struct {
 	AppModelConfigDict    map[string]interface{}        `json:"app_model_config_dict"`
 	Model                 *ModelConfigEntity            `json:"model"`
 	PromptTemplate        *PromptTemplateEntity         `json:"prompt_template"`
-	Dataset               *DatasetEntity                `json:"dataset"`
 	ExternalDataVariables []ExternalDataVariableEntity  `json:"external_data_variables"`
 }
 

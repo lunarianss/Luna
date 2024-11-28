@@ -10,9 +10,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
+	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_config"
 	biz_entity_provider_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_configuration"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers"
 	"github.com/lunarianss/Luna/internal/pkg/code"
@@ -133,7 +133,7 @@ func (m *ModelConfigManager) ValidateAndSetDefaults(ctx context.Context, tenantI
 	return config, []string{"model"}, nil
 }
 
-func (m *ModelConfigManager) Convert(ctx context.Context, config map[string]interface{}) (*app_config.ModelConfigEntity, error) {
+func (m *ModelConfigManager) Convert(ctx context.Context, config map[string]interface{}) (*biz_entity_app_config.ModelConfigEntity, error) {
 	var (
 		modelConfig map[string]interface{}
 	)
@@ -144,7 +144,7 @@ func (m *ModelConfigManager) Convert(ctx context.Context, config map[string]inte
 		return nil, errors.WithCode(code.ErrModelEmptyInConfig, "empty model configuration in config")
 	}
 
-	return &app_config.ModelConfigEntity{
+	return &biz_entity_app_config.ModelConfigEntity{
 		Provider: modelConfig["provider"].(string),
 		Model:    modelConfig["name"].(string),
 		Mode:     modelConfig["mode"].(string),

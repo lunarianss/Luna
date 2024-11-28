@@ -6,10 +6,10 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/lunarianss/Luna/internal/api-server/core/app/apps/entities"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 	"github.com/lunarianss/Luna/internal/api-server/pkg/util"
 	"github.com/lunarianss/Luna/internal/pkg/core"
+		biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
 )
 
 func (ac *AppController) ChatMessage(c *gin.Context) {
@@ -33,7 +33,7 @@ func (ac *AppController) ChatMessage(c *gin.Context) {
 		return
 	}
 
-	if err := ac.chatService.Generate(c, paramsUrl.AppID, userID, params, entities.DEBUGGER, true); err != nil {
+	if err := ac.chatService.Generate(c, paramsUrl.AppID, userID, params, biz_entity_app_generate.Debugger, true); err != nil {
 		core.WriteResponse(c, err, nil)
 	}
 }

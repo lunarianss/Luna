@@ -6,7 +6,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/lunarianss/Luna/internal/api-server/core/app/apps/entities"
+	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/web_app"
 	"github.com/lunarianss/Luna/internal/api-server/pkg/util"
 	"github.com/lunarianss/Luna/internal/pkg/core"
@@ -27,7 +27,7 @@ func (mc *MessageController) ListMessages(c *gin.Context) {
 		return
 	}
 
-	conversations, err := mc.webAppService.ListMessages(c, appID, endUserID, params, entities.WEB_APP)
+	conversations, err := mc.webAppService.ListMessages(c, appID, endUserID, params, biz_entity_app_generate.WebApp)
 
 	if err != nil {
 		core.WriteResponse(c, err, nil)

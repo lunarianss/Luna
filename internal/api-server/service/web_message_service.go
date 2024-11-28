@@ -9,12 +9,13 @@ import (
 	"time"
 
 	"github.com/lunarianss/Luna/internal/api-server/config"
-	"github.com/lunarianss/Luna/internal/api-server/core/app/apps/entities"
+
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
+	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
 	webAppDomain "github.com/lunarianss/Luna/internal/api-server/domain/web_app/domain_service"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/web_app"
 	"github.com/lunarianss/Luna/pkg/errors"
@@ -41,7 +42,7 @@ func NewWebMessageService(webAppDomain *webAppDomain.WebAppDomain, accountDomain
 	}
 }
 
-func (s *WebMessageService) ListConversations(ctx context.Context, appID, endUserID string, args *dto.ListConversationQuery, invokeFrom entities.InvokeForm) (*dto.ListConversationResponse, error) {
+func (s *WebMessageService) ListConversations(ctx context.Context, appID, endUserID string, args *dto.ListConversationQuery, invokeFrom biz_entity_app_generate.InvokeFrom) (*dto.ListConversationResponse, error) {
 
 	var (
 		includeIDs            []string
@@ -102,7 +103,7 @@ func (s *WebMessageService) ListConversations(ctx context.Context, appID, endUse
 
 }
 
-func (s *WebMessageService) ListMessages(ctx context.Context, appID, endUserID string, args *dto.ListMessageQuery, invokeFrom entities.InvokeForm) (*dto.ListMessageResponse, error) {
+func (s *WebMessageService) ListMessages(ctx context.Context, appID, endUserID string, args *dto.ListMessageQuery, invokeFrom biz_entity_app_generate.InvokeFrom) (*dto.ListMessageResponse, error) {
 
 	endUser, err := s.webAppDomain.WebAppRepo.GetEndUserByID(ctx, endUserID)
 

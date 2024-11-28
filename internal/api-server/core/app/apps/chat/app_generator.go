@@ -11,11 +11,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/lunarianss/Luna/internal/api-server/core/app"
-	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config"
+
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/model_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/apps"
-	appEntities "github.com/lunarianss/Luna/internal/api-server/core/app/apps/entities"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/task_pipeline"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
@@ -23,6 +21,8 @@ import (
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/common/repository"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
+	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
+	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_config"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime"
 	"github.com/lunarianss/Luna/internal/pkg/code"
@@ -61,7 +61,7 @@ func (g *ChatAppGenerator) getAppModelConfig(ctx context.Context, appModel *po_e
 	}
 }
 
-func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, user repository.BaseAccount, args *dto.CreateChatMessageBody, invokeFrom appEntities.InvokeForm, stream bool) error {
+func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, user repository.BaseAccount, args *dto.CreateChatMessageBody, invokeFrom biz_entity_app_generate.InvokeFrom, stream bool) error {
 
 	var (
 		conversationRecord     *po_entity_chat.Conversation
@@ -99,7 +99,7 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, 
 
 	modelConfigManager := NewChatAppConfigManager(g.ProviderDomain)
 	if args.ModelConfig != nil {
-		if invokeFrom != appEntities.DEBUGGER {
+		if invokeFrom != biz_entity_app_generate.Debugger {
 			return errors.WithCode(code.ErrOnlyOverrideConfigInDebugger, fmt.Sprintf("mode %s is not debugger, so it cannot override", invokeFrom))
 		}
 
@@ -130,19 +130,19 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, 
 		return err
 	}
 
-	applicationGenerateEntity := &app.ChatAppGenerateEntity{
+	applicationGenerateEntity := &biz_entity_app_generate.ChatAppGenerateEntity{
 		ConversationID:  conversationID,
 		ParentMessageID: args.ParentMessageId,
-		EasyUIBasedAppGenerateEntity: &app.EasyUIBasedAppGenerateEntity{
+		EasyUIBasedAppGenerateEntity: &biz_entity_app_generate.EasyUIBasedAppGenerateEntity{
 			AppConfig: appConfig.EasyUIBasedAppConfig,
 			ModelConf: modelConf,
-			AppGenerateEntity: &app.AppGenerateEntity{
+			AppGenerateEntity: &biz_entity_app_generate.AppGenerateEntity{
 				TaskID:     uuid.NewString(),
 				AppConfig:  appConfig.AppConfig,
 				Stream:     stream,
 				Inputs:     inputs,
 				UserID:     user.GetAccountID(),
-				InvokeFrom: app.InvokeFrom(invokeFrom),
+				InvokeFrom: biz_entity_app_generate.InvokeFrom(invokeFrom),
 				Extras:     extras,
 			},
 			Query: query,
@@ -176,7 +176,7 @@ func (g *ChatAppGenerator) ListenQueue(queueManager *model_runtime.StreamGenerat
 	queueManager.Listen()
 }
 
-func (g *ChatAppGenerator) generateGoRoutine(ctx context.Context, applicationGenerateEntity *app.ChatAppGenerateEntity, conversationID string, messageID string, queueManager *model_runtime.StreamGenerateQueue) {
+func (g *ChatAppGenerator) generateGoRoutine(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, conversationID string, messageID string, queueManager *model_runtime.StreamGenerateQueue) {
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -206,7 +206,7 @@ func (g *ChatAppGenerator) generateGoRoutine(ctx context.Context, applicationGen
 	appRunner.Run(ctx, applicationGenerateEntity, message, conversation, queueManager)
 }
 
-func (g *ChatAppGenerator) InitGenerateRecords(ctx context.Context, chatAppGenerateEntity *app.ChatAppGenerateEntity, conversation *po_entity_chat.Conversation) (*po_entity_chat.Conversation, *po_entity_chat.Message, error) {
+func (g *ChatAppGenerator) InitGenerateRecords(ctx context.Context, chatAppGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, conversation *po_entity_chat.Conversation) (*po_entity_chat.Conversation, *po_entity_chat.Message, error) {
 
 	appConfig := chatAppGenerateEntity.AppConfig
 
@@ -222,7 +222,7 @@ func (g *ChatAppGenerator) InitGenerateRecords(ctx context.Context, chatAppGener
 		overrideModelConfig map[string]interface{}
 	)
 
-	if chatAppGenerateEntity.InvokeFrom == app.WebApp || chatAppGenerateEntity.InvokeFrom == app.ServiceAPI {
+	if chatAppGenerateEntity.InvokeFrom == biz_entity_app_generate.WebApp || chatAppGenerateEntity.InvokeFrom == biz_entity_app_generate.ServiceAPI {
 		fromSource = "api"
 		endUserID = chatAppGenerateEntity.UserID
 	} else {
@@ -234,7 +234,7 @@ func (g *ChatAppGenerator) InitGenerateRecords(ctx context.Context, chatAppGener
 	modelProvider = chatAppGenerateEntity.ModelConf.Provider
 	modelID = chatAppGenerateEntity.ModelConf.Model
 
-	if appConfig.AppModelConfigFrom == app_config.Args && (appConfig.AppMode == string(po_entity.CHAT) || appConfig.AppMode == string(po_entity.AGENT_CHAT) || appConfig.AppMode == string(po_entity.COMPLETION)) {
+	if appConfig.AppModelConfigFrom == biz_entity_app_config.Args && (appConfig.AppMode == string(po_entity.CHAT) || appConfig.AppMode == string(po_entity.AGENT_CHAT) || appConfig.AppMode == string(po_entity.COMPLETION)) {
 		overrideModelConfig = appConfig.AppModelConfigDict
 	}
 

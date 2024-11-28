@@ -8,12 +8,12 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/model_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/prompt_template"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
+	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_config"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
 )
@@ -48,22 +48,22 @@ func (m *ChatAppConfigManager) ConfigValidate(ctx context.Context, tenantID stri
 	return config, nil
 }
 
-func (m *ChatAppConfigManager) getAppConfig(ctx context.Context, appModel *po_entity.App, appModelConfig *po_entity.AppModelConfig, conversation *po_entity_chat.Conversation, overrideConfigDict map[string]any) (*app_config.ChatAppConfig, error) {
+func (m *ChatAppConfigManager) getAppConfig(ctx context.Context, appModel *po_entity.App, appModelConfig *po_entity.AppModelConfig, conversation *po_entity_chat.Conversation, overrideConfigDict map[string]any) (*biz_entity_app_config.ChatAppConfig, error) {
 
 	var (
-		configFrom app_config.EasyUIBasedAppModelConfigFrom
+		configFrom biz_entity_app_config.EasyUIBasedAppModelConfigFrom
 		configDict map[string]interface{}
 	)
 
 	if overrideConfigDict != nil {
-		configFrom = app_config.Args
+		configFrom = biz_entity_app_config.Args
 	} else if conversation != nil {
-		configFrom = app_config.ConversationSpecificConfig
+		configFrom = biz_entity_app_config.ConversationSpecificConfig
 	} else {
-		configFrom = app_config.AppLatestConfig
+		configFrom = biz_entity_app_config.AppLatestConfig
 	}
 
-	if configFrom != app_config.Args {
+	if configFrom != biz_entity_app_config.Args {
 		appModelByte, err := json.Marshal(appModelConfig)
 
 		if err != nil {
@@ -96,9 +96,9 @@ func (m *ChatAppConfigManager) getAppConfig(ctx context.Context, appModel *po_en
 		return nil, err
 	}
 
-	return &app_config.ChatAppConfig{
-		EasyUIBasedAppConfig: &app_config.EasyUIBasedAppConfig{
-			AppConfig: &app_config.AppConfig{
+	return &biz_entity_app_config.ChatAppConfig{
+		EasyUIBasedAppConfig: &biz_entity_app_config.EasyUIBasedAppConfig{
+			AppConfig: &biz_entity_app_config.AppConfig{
 				TenantID:               appModel.TenantID,
 				AppID:                  appModel.ID,
 				AppMode:                appModel.Mode,
@@ -110,7 +110,6 @@ func (m *ChatAppConfigManager) getAppConfig(ctx context.Context, appModel *po_en
 			AppModelConfigID:   appModelConfig.ID,
 			Model:              modelConfigEntity,
 			PromptTemplate:     promptTemplate,
-			Dataset:            nil,
 		},
 	}, nil
 }

@@ -2,11 +2,7 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
-package entities
-
-import (
-	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
-)
+package biz_entity
 
 type StreamEvent string
 
@@ -36,7 +32,7 @@ const (
 
 type ChatAppTaskState struct {
 	Metadata  any
-	LLMResult *biz_entity.LLMResult
+	LLMResult *LLMResult
 }
 
 type IStreamResponse interface {

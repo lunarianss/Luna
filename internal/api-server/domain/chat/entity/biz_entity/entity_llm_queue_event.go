@@ -2,11 +2,7 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
-package entities
-
-import (
-	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
-)
+package biz_entity
 
 type QueueEvent string
 
@@ -61,7 +57,7 @@ type QueueErrorEvent struct {
 
 type QueueLLMChunkEvent struct {
 	*AppQueueEvent
-	Chunk *biz_entity.LLMResultChunk `json:"chunk"`
+	Chunk *LLMResultChunk `json:"chunk"`
 }
 
 type QueueTextChunkEvent struct {
@@ -73,7 +69,7 @@ type QueueTextChunkEvent struct {
 
 type QueueMessageEndEvent struct {
 	*AppQueueEvent
-	LLMResult *biz_entity.LLMResult `json:"llm_result"`
+	LLMResult *LLMResult `json:"llm_result"`
 }
 
 type QueueMessage struct {

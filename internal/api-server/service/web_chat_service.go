@@ -9,11 +9,11 @@ import (
 
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/apps/chat"
-	"github.com/lunarianss/Luna/internal/api-server/core/app/apps/entities"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
+	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
 	webAppDomain "github.com/lunarianss/Luna/internal/api-server/domain/web_app/domain_service"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 )
@@ -38,7 +38,7 @@ func NewWebChatService(webAppDomain *webAppDomain.WebAppDomain, accountDomain *a
 	}
 }
 
-func (s *WebChatService) Chat(ctx context.Context, appID, endUserID string, args *dto.CreateChatMessageBody, invokeFrom entities.InvokeForm, streaming bool) error {
+func (s *WebChatService) Chat(ctx context.Context, appID, endUserID string, args *dto.CreateChatMessageBody, invokeFrom biz_entity_app_generate.InvokeFrom, streaming bool) error {
 
 	appModel, err := s.appDomain.AppRepo.GetAppByID(ctx, appID)
 

@@ -7,10 +7,10 @@ package model_config
 import (
 	"context"
 
-	"github.com/lunarianss/Luna/internal/api-server/core/app"
-	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
+	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_config"
+	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_configuration"
 )
 
 type ModelConfigConverter struct {
@@ -23,7 +23,7 @@ func NewModelConfigConverter(providerDomain *domain_service.ProviderDomain) *Mod
 	}
 }
 
-func (c *ModelConfigConverter) Convert(ctx context.Context, appConfig *app_config.EasyUIBasedAppConfig, skipCheck bool) (*app.ModelConfigWithCredentialsEntity, error) {
+func (c *ModelConfigConverter) Convert(ctx context.Context, appConfig *biz_entity_app_config.EasyUIBasedAppConfig, skipCheck bool) (*biz_entity.ModelConfigWithCredentialsEntity, error) {
 	modelConfig := appConfig.Model
 
 	providerModelBundle, err := c.ProviderDomain.GetProviderModelBundle(ctx, appConfig.TenantID, modelConfig.Provider, common.LLM)
@@ -45,7 +45,7 @@ func (c *ModelConfigConverter) Convert(ctx context.Context, appConfig *app_confi
 		return nil, err
 	}
 
-	return &app.ModelConfigWithCredentialsEntity{
+	return &biz_entity.ModelConfigWithCredentialsEntity{
 		Provider:            modelConfig.Provider,
 		Model:               modelConfig.Model,
 		ModelSchema:         AIModelEntity,

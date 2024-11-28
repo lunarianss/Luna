@@ -8,12 +8,13 @@ import (
 	"context"
 
 	"github.com/lunarianss/Luna/internal/api-server/core/app/apps/chat"
-	"github.com/lunarianss/Luna/internal/api-server/core/app/apps/entities"
+		biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
+	
 )
 
 type ChatService struct {
@@ -32,7 +33,7 @@ func NewChatService(appDomain *appDomain.AppDomain, providerDomain *domain_servi
 	}
 }
 
-func (s *ChatService) Generate(ctx context.Context, appID, accountID string, args *dto.CreateChatMessageBody, invokeFrom entities.InvokeForm, streaming bool) error {
+func (s *ChatService) Generate(ctx context.Context, appID, accountID string, args *dto.CreateChatMessageBody, invokeFrom biz_entity_app_generate.InvokeFrom, streaming bool) error {
 
 	appModel, err := s.appDomain.AppRepo.GetAppByID(ctx, appID)
 

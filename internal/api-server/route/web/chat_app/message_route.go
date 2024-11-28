@@ -7,9 +7,9 @@ import (
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/_domain/chat/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
 	webAppDomain "github.com/lunarianss/Luna/internal/api-server/_domain/web_app/domain_service"
-	repo_impl "github.com/lunarianss/Luna/internal/api-server/_repo"
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/web/chat_app/message"
+	repo_impl "github.com/lunarianss/Luna/internal/api-server/repository"
 
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
 	"github.com/lunarianss/Luna/internal/api-server/service"

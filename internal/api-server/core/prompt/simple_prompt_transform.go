@@ -10,8 +10,8 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/core/app"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/prompt/utils"
+	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/entities/message"
-	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
 )
@@ -19,7 +19,7 @@ import (
 type SimplePromptTransform struct {
 }
 
-func (s *SimplePromptTransform) GetPromptStrAndRules(appMode model.AppMode, modelConfig *app.ModelConfigWithCredentialsEntity, prePrompt string, inputs map[string]interface{}, query string, context string, histories string) (string, map[string]interface{}, error) {
+func (s *SimplePromptTransform) GetPromptStrAndRules(appMode po_entity.AppMode, modelConfig *app.ModelConfigWithCredentialsEntity, prePrompt string, inputs map[string]interface{}, query string, context string, histories string) (string, map[string]interface{}, error) {
 
 	var (
 		variables = make(map[string]interface{})
@@ -50,7 +50,7 @@ func (s *SimplePromptTransform) GetPromptStrAndRules(appMode model.AppMode, mode
 	return "", promptTemplateConfig["prompt_rules"].(map[string]interface{}), nil
 
 }
-func (s *SimplePromptTransform) GetChatModelPromptMessage(appMode model.AppMode, prePrompt string, inputs map[string]interface{}, query string, context string, files []string, memory any, modelConfig *app.ModelConfigWithCredentialsEntity) ([]*message.PromptMessage, []string, error) {
+func (s *SimplePromptTransform) GetChatModelPromptMessage(appMode po_entity.AppMode, prePrompt string, inputs map[string]interface{}, query string, context string, files []string, memory any, modelConfig *app.ModelConfigWithCredentialsEntity) ([]*message.PromptMessage, []string, error) {
 
 	var promptMessages []*message.PromptMessage
 
@@ -77,7 +77,7 @@ func (s *SimplePromptTransform) GetLastUserMessage(prompt string, files []string
 	return message.NewUserMessage(prompt)
 }
 
-func (s *SimplePromptTransform) GetPrompt(appMode model.AppMode, promptTemplateEntity *app_config.PromptTemplateEntity, inputs map[string]interface{}, query string, files []string, context string, memory any, modelConfig *app.ModelConfigWithCredentialsEntity) ([]*message.PromptMessage, []string, error) {
+func (s *SimplePromptTransform) GetPrompt(appMode po_entity.AppMode, promptTemplateEntity *app_config.PromptTemplateEntity, inputs map[string]interface{}, query string, files []string, context string, memory any, modelConfig *app.ModelConfigWithCredentialsEntity) ([]*message.PromptMessage, []string, error) {
 
 	var (
 		promptMessage []*message.PromptMessage
@@ -98,7 +98,7 @@ func (s *SimplePromptTransform) GetPrompt(appMode model.AppMode, promptTemplateE
 	return promptMessage, stop, nil
 }
 
-func (s *SimplePromptTransform) GetPromptTemplate(appMode model.AppMode, provider, model, prePrompt string, hasContext bool, queryInPrompt bool, withMemoryPrompt bool) (map[string]any, error) {
+func (s *SimplePromptTransform) GetPromptTemplate(appMode po_entity.AppMode, provider, model, prePrompt string, hasContext bool, queryInPrompt bool, withMemoryPrompt bool) (map[string]any, error) {
 
 	var (
 		customVariableKeys  []string
@@ -148,7 +148,7 @@ func (s *SimplePromptTransform) GetPromptTemplate(appMode model.AppMode, provide
 
 }
 
-func (s *SimplePromptTransform) getPromptRole(appMode model.AppMode, provider, modelName string) (map[string]interface{}, error) {
+func (s *SimplePromptTransform) getPromptRole(appMode po_entity.AppMode, provider, modelName string) (map[string]interface{}, error) {
 
 	var (
 		promptRoleMap map[string]interface{}
@@ -179,8 +179,8 @@ func (s *SimplePromptTransform) getPromptRole(appMode model.AppMode, provider, m
 	return promptRoleMap, nil
 
 }
-func (s *SimplePromptTransform) promptFileName(appMode model.AppMode, provider, modelName string) string {
-	if appMode == model.COMPLETION {
+func (s *SimplePromptTransform) promptFileName(appMode po_entity.AppMode, provider, modelName string) string {
+	if appMode == po_entity.COMPLETION {
 		return "common_completion.json"
 	} else {
 		return "common_chat.json"

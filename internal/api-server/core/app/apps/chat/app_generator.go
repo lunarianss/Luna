@@ -21,7 +21,6 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 	"github.com/lunarianss/Luna/internal/api-server/entities/message"
-	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
@@ -158,7 +157,7 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, 
 		applicationGenerateEntity.UserID,
 		conversationRecord.ID,
 		messageRecord.ID,
-		model.AppMode("chat"),
+		po_entity.AppMode("chat"),
 		invokeFrom)
 
 	go g.generateGoRoutine(c, applicationGenerateEntity, conversationRecord.ID, messageRecord.ID, queueManager)
@@ -232,7 +231,7 @@ func (g *ChatAppGenerator) InitGenerateRecords(ctx context.Context, chatAppGener
 	modelProvider = chatAppGenerateEntity.ModelConf.Provider
 	modelID = chatAppGenerateEntity.ModelConf.Model
 
-	if appConfig.AppModelConfigFrom == app_config.Args && (appConfig.AppMode == string(model.CHAT) || appConfig.AppMode == string(model.AGENT_CHAT) || appConfig.AppMode == string(model.COMPLETION)) {
+	if appConfig.AppModelConfigFrom == app_config.Args && (appConfig.AppMode == string(po_entity.CHAT) || appConfig.AppMode == string(po_entity.AGENT_CHAT) || appConfig.AppMode == string(po_entity.COMPLETION)) {
 		overrideModelConfig = appConfig.AppModelConfigDict
 	}
 

@@ -2,8 +2,8 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/provider"
-	"github.com/lunarianss/Luna/internal/api-server/entities/base"
 	"github.com/lunarianss/Luna/internal/api-server/pkg/util"
 	"github.com/lunarianss/Luna/internal/pkg/core"
 )
@@ -23,7 +23,7 @@ func (mc *ModelController) GetAccountAvailableModels(c *gin.Context) {
 		return
 	}
 
-	availableModels, err := mc.modelProviderService.GetAccountAvailableModels(c, userID, base.ModelType(params.ModelType))
+	availableModels, err := mc.modelProviderService.GetAccountAvailableModels(c, userID, common.ModelType(params.ModelType))
 
 	if err != nil {
 		core.WriteResponse(c, err, nil)

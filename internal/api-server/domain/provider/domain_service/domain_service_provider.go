@@ -13,7 +13,6 @@ import (
 	biz_entity_provider_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_configuration"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/repository"
-	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	model_providers "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/internal/pkg/util"
@@ -327,7 +326,7 @@ func (mpd *ProviderDomain) toCustomConfiguration(
 	// )
 
 	for _, providerRecord := range providerRecords {
-		if providerRecord.ProviderType == string(model.SYSTEM) {
+		if providerRecord.ProviderType == string(po_entity.SYSTEM) {
 			continue
 		}
 

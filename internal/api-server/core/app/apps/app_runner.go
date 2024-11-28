@@ -12,7 +12,6 @@ import (
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/entities/llm"
 	"github.com/lunarianss/Luna/internal/api-server/entities/message"
-	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime/model_registry"
 )
@@ -102,7 +101,7 @@ func (r *AppRunner) OrganizePromptMessage(ctx context.Context, appRecord *po_ent
 	if promptTemplateEntity.PromptType == string(app_config.SIMPLE) {
 		simplePrompt := prompt.SimplePromptTransform{}
 
-		promptMessages, stop, err = simplePrompt.GetPrompt(model.AppMode(appRecord.Mode), promptTemplateEntity, inputs, query, files, context, nil, modelConfig)
+		promptMessages, stop, err = simplePrompt.GetPrompt(po_entity.AppMode(appRecord.Mode), promptTemplateEntity, inputs, query, files, context, nil, modelConfig)
 
 		if err != nil {
 			return nil, nil, err

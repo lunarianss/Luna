@@ -1,9 +1,10 @@
 package dto
 
 import (
+	"github.com/lunarianss/Luna/internal/api-server/_domain/app/entity/biz_entity"
+	"github.com/lunarianss/Luna/internal/api-server/_domain/app/entity/po_entity"
+	po_entity_web_app "github.com/lunarianss/Luna/internal/api-server/_domain/web_app/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/config"
-	"github.com/lunarianss/Luna/internal/api-server/model/v1"
-	"github.com/lunarianss/Luna/internal/api-server/pkg/template"
 )
 
 // Create App Input Dto
@@ -20,8 +21,8 @@ type CreateAppRequest struct {
 
 // Create App Response Dto
 type CreateAppResponse struct {
-	*model.App
-	ModelConfig *model.AppModelConfig `json:"model_config"`
+	*po_entity.App
+	ModelConfig *po_entity.AppModelConfig `json:"model_config"`
 }
 
 type ListAppRequest struct {
@@ -53,7 +54,7 @@ type ListAppItem struct {
 	UseIconAsAnswerIcon int    `json:"use_icon_as_answer_icon"`
 }
 
-func ListAppRecordToItem(app *model.App) *ListAppItem {
+func ListAppRecordToItem(app *po_entity.App) *ListAppItem {
 	return &ListAppItem{
 		ID:                  app.ID,
 		Name:                app.Name,
@@ -78,28 +79,28 @@ type AppDetailRequest struct {
 }
 
 type AppDetail struct {
-	ID                  string                 `json:"id"`
-	Name                string                 `json:"name"`
-	Description         string                 `json:"description"`
-	Mode                string                 `json:"mode"`
-	Icon                string                 `json:"icon"`
-	IconType            string                 `json:"icon_type"`
-	IconBackground      string                 `json:"icon_background"`
-	EnableSite          int                    `json:"enable_site"`
-	EnableApi           int                    `json:"enable_api"`
-	ModelConfig         *model.AppModelConfig  `json:"model_config"`
-	Workflow            map[string]interface{} `json:"workflow"`
-	UseIconAsAnswerIcon int                    `json:"use_icon_as_answer_icon"`
-	APIBaseUrl          string                 `json:"api_base_url"`
-	CreatedAt           int                    `json:"created_at"`
-	UpdatedAt           int                    `json:"updated_at"`
-	CreatedBy           string                 `json:"created_by"`
-	UpdatedBy           string                 `json:"updated_by"`
-	DeletedTools        []interface{}          `json:"deleted_tools"`
-	SiteDetail          *SiteDetail            `json:"site"`
+	ID                  string                    `json:"id"`
+	Name                string                    `json:"name"`
+	Description         string                    `json:"description"`
+	Mode                string                    `json:"mode"`
+	Icon                string                    `json:"icon"`
+	IconType            string                    `json:"icon_type"`
+	IconBackground      string                    `json:"icon_background"`
+	EnableSite          int                       `json:"enable_site"`
+	EnableApi           int                       `json:"enable_api"`
+	ModelConfig         *po_entity.AppModelConfig `json:"model_config"`
+	Workflow            map[string]interface{}    `json:"workflow"`
+	UseIconAsAnswerIcon int                       `json:"use_icon_as_answer_icon"`
+	APIBaseUrl          string                    `json:"api_base_url"`
+	CreatedAt           int                       `json:"created_at"`
+	UpdatedAt           int                       `json:"updated_at"`
+	CreatedBy           string                    `json:"created_by"`
+	UpdatedBy           string                    `json:"updated_by"`
+	DeletedTools        []interface{}             `json:"deleted_tools"`
+	SiteDetail          *SiteDetail               `json:"site"`
 }
 
-func AppRecordToDetail(app *model.App, config *config.Config, modelConfig *model.AppModelConfig, siteRecord *model.Site) *AppDetail {
+func AppRecordToDetail(app *po_entity.App, config *config.Config, modelConfig *po_entity.AppModelConfig, siteRecord *po_entity_web_app.Site) *AppDetail {
 
 	appDetail := &AppDetail{
 		ID:                  app.ID,
@@ -203,12 +204,12 @@ func AppRecordToDetail(app *model.App, config *config.Config, modelConfig *model
 }
 
 type SiteDetail struct {
-	*model.Site
+	*po_entity_web_app.Site
 	AccessToken string `json:"access_token"`
 	AppBaseUrl  string `json:"app_base_url"`
 }
 
-func SiteRecordToSiteDetail(sm *model.Site, config *config.Config) *SiteDetail {
+func SiteRecordToSiteDetail(sm *po_entity_web_app.Site, config *config.Config) *SiteDetail {
 	return &SiteDetail{
 		Site:        sm,
 		AppBaseUrl:  config.SystemOptions.AppWebUrl,
@@ -223,7 +224,7 @@ type UpdateModelConfig struct {
 	CompletionPromptConfig        map[string]interface{}              `json:"completion_prompt_config"`
 	DatasetConfigs                map[string]interface{}              `json:"dataset_configs"`
 	FileUpload                    any                                 `json:"file_upload"`
-	Model                         template.Model                      `json:"model" validate:"required"`
+	Model                         biz_entity.Model                    `json:"model" validate:"required"`
 	MoreLikeThis                  map[string]interface{}              `json:"more_like_this"`
 	SensitiveWordAvoidance        map[string]interface{}              `json:"sensitive_word_avoidance"`
 	RetrieverResource             map[string]interface{}              `json:"retriever_resource"`

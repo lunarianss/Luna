@@ -26,6 +26,13 @@ type Account struct {
 	LastActiveAt      int64  `json:"last_active_at" gorm:"column:last_active_at;autoCreateTime"`
 }
 
+func (a *Account) GetAccountType() string {
+	return "account"
+}
+
+func (a *Account) GetAccountID() string {
+	return a.ID
+}
 func (a *Account) TableName() string {
 	return "accounts"
 }

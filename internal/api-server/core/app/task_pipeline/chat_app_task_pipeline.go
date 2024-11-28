@@ -8,12 +8,12 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lunarianss/Luna/internal/api-server/_domain/chat/entity/po_entity"
+	"github.com/lunarianss/Luna/internal/api-server/_domain/chat/repository"
 	"github.com/lunarianss/Luna/internal/api-server/core/app"
 	appConfigEntities "github.com/lunarianss/Luna/internal/api-server/core/app/app_config/entities"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/task_pipeline/entities"
 	"github.com/lunarianss/Luna/internal/api-server/entities/llm"
-	"github.com/lunarianss/Luna/internal/api-server/model/v1"
-	"github.com/lunarianss/Luna/internal/api-server/repo"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
 	"github.com/lunarianss/Luna/pkg/log"
@@ -23,8 +23,8 @@ type ChatAppTaskPipeline struct {
 	ApplicationGenerateEntity *app.ChatAppGenerateEntity
 	StreamResultChunkQueue    chan *appConfigEntities.MessageQueueMessage
 	StreamFinalChunkQueue     chan *appConfigEntities.MessageQueueMessage
-	Message                   *model.Message
-	MessageRepo               repo.MessageRepo
+	Message                   *po_entity.Message
+	MessageRepo               repository.MessageRepo
 	flusher                   http.Flusher
 	sender                    io.Writer
 	taskState                 *entities.ChatAppTaskState
@@ -34,7 +34,7 @@ func NewChatAppTaskPipeline(
 	applicationGenerateEntity *app.ChatAppGenerateEntity,
 	streamResultChunkQueue chan *appConfigEntities.MessageQueueMessage,
 	streamFinalChunkQueue chan *appConfigEntities.MessageQueueMessage,
-	messageRepo repo.MessageRepo, message *model.Message) *ChatAppTaskPipeline {
+	messageRepo repository.MessageRepo, message *po_entity.Message) *ChatAppTaskPipeline {
 	return &ChatAppTaskPipeline{
 		ApplicationGenerateEntity: applicationGenerateEntity,
 		StreamResultChunkQueue:    streamResultChunkQueue,

@@ -7,6 +7,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	appDomain "github.com/lunarianss/Luna/internal/api-server/_domain/app/domain_service"
+	"github.com/lunarianss/Luna/internal/api-server/_domain/app/entity/po_entity"
+	chatDomain "github.com/lunarianss/Luna/internal/api-server/_domain/chat/domain_service"
+	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/_domain/chat/entity/po_entity"
+	"github.com/lunarianss/Luna/internal/api-server/_domain/common/repository"
 	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/core/app"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config"
@@ -14,8 +19,6 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/core/app/apps"
 	appEntities "github.com/lunarianss/Luna/internal/api-server/core/app/apps/entities"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/task_pipeline"
-	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app"
-	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 	"github.com/lunarianss/Luna/internal/api-server/entities/message"
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
@@ -41,7 +44,7 @@ func NewChatAppGenerator(appDomain *appDomain.AppDomain, providerDomain *domain_
 
 }
 
-func (g *ChatAppGenerator) getAppModelConfig(ctx context.Context, appModel *model.App, conversation *model.Conversation) (*model.AppModelConfig, error) {
+func (g *ChatAppGenerator) getAppModelConfig(ctx context.Context, appModel *po_entity.App, conversation *po_entity_chat.Conversation) (*po_entity.AppModelConfig, error) {
 	if conversation == nil {
 		if appModel.AppModelConfigID == "" {
 			return nil, errors.WithCode(code.ErrAppNotFoundRelatedConfig, fmt.Sprintf("app %s not found related config", appModel.Name))
@@ -56,11 +59,11 @@ func (g *ChatAppGenerator) getAppModelConfig(ctx context.Context, appModel *mode
 	}
 }
 
-func (g *ChatAppGenerator) Generate(c context.Context, appModel *model.App, user model.BaseAccount, args *dto.CreateChatMessageBody, invokeFrom appEntities.InvokeForm, stream bool) error {
+func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, user repository.BaseAccount, args *dto.CreateChatMessageBody, invokeFrom appEntities.InvokeForm, stream bool) error {
 
 	var (
-		conversationRecord     *model.Conversation
-		messageRecord          *model.Message
+		conversationRecord     *po_entity_chat.Conversation
+		messageRecord          *po_entity_chat.Message
 		extras                 map[string]interface{}
 		overrideModelConfigMap map[string]interface{}
 		conversationID         string
@@ -184,14 +187,14 @@ func (g *ChatAppGenerator) generateGoRoutine(ctx context.Context, applicationGen
 		AppDomain: g.AppDomain,
 	}
 
-	message, err := g.AppDomain.MessageRepo.GetMessageByID(ctx, messageID)
+	message, err := g.chatDomain.MessageRepo.GetMessageByID(ctx, messageID)
 
 	if err != nil {
 		queueManager.PushErr(err)
 		return
 	}
 
-	conversation, err := g.AppDomain.MessageRepo.GetConversationByID(ctx, conversationID)
+	conversation, err := g.chatDomain.MessageRepo.GetConversationByID(ctx, conversationID)
 
 	if err != nil {
 		queueManager.PushErr(err)
@@ -201,15 +204,15 @@ func (g *ChatAppGenerator) generateGoRoutine(ctx context.Context, applicationGen
 	appRunner.Run(ctx, applicationGenerateEntity, message, conversation, queueManager)
 }
 
-func (g *ChatAppGenerator) InitGenerateRecords(ctx context.Context, chatAppGenerateEntity *app.ChatAppGenerateEntity, conversation *model.Conversation) (*model.Conversation, *model.Message, error) {
+func (g *ChatAppGenerator) InitGenerateRecords(ctx context.Context, chatAppGenerateEntity *app.ChatAppGenerateEntity, conversation *po_entity_chat.Conversation) (*po_entity_chat.Conversation, *po_entity_chat.Message, error) {
 
 	appConfig := chatAppGenerateEntity.AppConfig
 
 	var (
 		fromSource          string
 		accountID           string
-		conversationRecord  *model.Conversation
-		messageRecord       *model.Message
+		conversationRecord  *po_entity_chat.Conversation
+		messageRecord       *po_entity_chat.Message
 		endUserID           string
 		appModelConfigID    string
 		modelProvider       string
@@ -235,7 +238,7 @@ func (g *ChatAppGenerator) InitGenerateRecords(ctx context.Context, chatAppGener
 
 	if conversation == nil {
 		var err error
-		conversationRecord = &model.Conversation{
+		conversationRecord = &po_entity_chat.Conversation{
 			AppID:                   appConfig.AppID,
 			AppModelConfigID:        appModelConfigID,
 			ModelProvider:           modelProvider,
@@ -253,7 +256,7 @@ func (g *ChatAppGenerator) InitGenerateRecords(ctx context.Context, chatAppGener
 			FromEndUserID:           endUserID,
 			FromAccountID:           accountID,
 		}
-		conversationRecord, err = g.AppDomain.MessageRepo.CreateConversation(ctx, conversationRecord)
+		conversationRecord, err = g.chatDomain.MessageRepo.CreateConversation(ctx, conversationRecord)
 
 		if err != nil {
 			return nil, nil, err
@@ -262,12 +265,12 @@ func (g *ChatAppGenerator) InitGenerateRecords(ctx context.Context, chatAppGener
 	} else {
 		conversationRecord = conversation
 		conversation.UpdatedAt = time.Now().UTC().Unix()
-		if err := g.AppDomain.MessageRepo.UpdateConversationUpdateAt(ctx, conversation.AppID, conversation); err != nil {
+		if err := g.chatDomain.MessageRepo.UpdateConversationUpdateAt(ctx, conversation.AppID, conversation); err != nil {
 			return nil, nil, err
 		}
 	}
 
-	message := &model.Message{
+	message := &po_entity_chat.Message{
 		AppID:                   appConfig.AppID,
 		ModelProvider:           modelProvider,
 		ModelID:                 modelID,
@@ -293,7 +296,7 @@ func (g *ChatAppGenerator) InitGenerateRecords(ctx context.Context, chatAppGener
 		FromAccountID:           accountID,
 	}
 
-	messageRecord, err := g.AppDomain.MessageRepo.CreateMessage(ctx, message)
+	messageRecord, err := g.chatDomain.MessageRepo.CreateMessage(ctx, message)
 
 	if err != nil {
 		return nil, nil, err

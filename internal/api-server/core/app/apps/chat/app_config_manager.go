@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/lunarianss/Luna/internal/api-server/_domain/app/entity/po_entity"
+	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/_domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/model_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/prompt_template"
-	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
 )
@@ -43,7 +44,7 @@ func (m *ChatAppConfigManager) ConfigValidate(ctx context.Context, tenantID stri
 	return config, nil
 }
 
-func (m *ChatAppConfigManager) getAppConfig(ctx context.Context, appModel *model.App, appModelConfig *model.AppModelConfig, conversation *model.Conversation, overrideConfigDict map[string]any) (*app_config.ChatAppConfig, error) {
+func (m *ChatAppConfigManager) getAppConfig(ctx context.Context, appModel *po_entity.App, appModelConfig *po_entity.AppModelConfig, conversation *po_entity_chat.Conversation, overrideConfigDict map[string]any) (*app_config.ChatAppConfig, error) {
 
 	var (
 		configFrom app_config.EasyUIBasedAppModelConfigFrom

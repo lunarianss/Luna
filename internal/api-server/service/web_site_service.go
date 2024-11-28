@@ -3,32 +3,32 @@ package service
 import (
 	"context"
 
+	accountDomain "github.com/lunarianss/Luna/internal/api-server/_domain/account/domain_service"
+	"github.com/lunarianss/Luna/internal/api-server/_domain/app/domain_service"
+	webAppDomain "github.com/lunarianss/Luna/internal/api-server/_domain/web_app/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/config"
-	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account"
-	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app"
-	domain "github.com/lunarianss/Luna/internal/api-server/domain/app_running"
 	siteDto "github.com/lunarianss/Luna/internal/api-server/dto/app"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/web_app"
 )
 
 type WebSiteService struct {
-	appRunningDomain *domain.AppRunningDomain
-	accountDomain    *accountDomain.AccountDomain
-	appDomain        *appDomain.AppDomain
-	config           *config.Config
+	webAppDomain  *webAppDomain.WebAppDomain
+	accountDomain *accountDomain.AccountDomain
+	appDomain     *domain_service.AppDomain
+	config        *config.Config
 }
 
-func NewWebSiteService(appRunningDomain *domain.AppRunningDomain, accountDomain *accountDomain.AccountDomain, appDomain *appDomain.AppDomain, config *config.Config) *WebSiteService {
+func NewWebSiteService(webAppDomain *webAppDomain.WebAppDomain, accountDomain *accountDomain.AccountDomain, appDomain *domain_service.AppDomain, config *config.Config) *WebSiteService {
 	return &WebSiteService{
-		appRunningDomain: appRunningDomain,
-		accountDomain:    accountDomain,
-		appDomain:        appDomain,
-		config:           config,
+		webAppDomain:  webAppDomain,
+		accountDomain: accountDomain,
+		appDomain:     appDomain,
+		config:        config,
 	}
 }
 
 func (s *WebSiteService) GetSiteByWebToken(ctx context.Context, appID string, endUserID string, appCode string) (*dto.GetWebSiteResponse, error) {
-	siteRecord, err := s.appRunningDomain.AppRunningRepo.GetSiteByCode(ctx, appCode)
+	siteRecord, err := s.webAppDomain.WebAppRepo.GetSiteByCode(ctx, appCode)
 
 	if err != nil {
 		return nil, err

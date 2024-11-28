@@ -3,34 +3,34 @@ package service
 import (
 	"context"
 
+	accountDomain "github.com/lunarianss/Luna/internal/api-server/_domain/account/domain_service"
+	appDomain "github.com/lunarianss/Luna/internal/api-server/_domain/app/domain_service"
+	chatDomain "github.com/lunarianss/Luna/internal/api-server/_domain/chat/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
+	webAppDomain "github.com/lunarianss/Luna/internal/api-server/_domain/web_app/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/apps/chat"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/apps/entities"
-	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account"
-	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app"
-	domain "github.com/lunarianss/Luna/internal/api-server/domain/app_running"
-	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 )
 
 type WebChatService struct {
-	appRunningDomain *domain.AppRunningDomain
-	accountDomain    *accountDomain.AccountDomain
-	appDomain        *appDomain.AppDomain
-	chatDomain       *chatDomain.ChatDomain
-	providerDomain   *domain_service.ProviderDomain
-	config           *config.Config
+	webAppDomain   *webAppDomain.WebAppDomain
+	accountDomain  *accountDomain.AccountDomain
+	appDomain      *appDomain.AppDomain
+	chatDomain     *chatDomain.ChatDomain
+	providerDomain *domain_service.ProviderDomain
+	config         *config.Config
 }
 
-func NewWebChatService(appRunningDomain *domain.AppRunningDomain, accountDomain *accountDomain.AccountDomain, appDomain *appDomain.AppDomain, config *config.Config, providerDomain *domain_service.ProviderDomain, chatDomain *chatDomain.ChatDomain) *WebChatService {
+func NewWebChatService(webAppDomain *webAppDomain.WebAppDomain, accountDomain *accountDomain.AccountDomain, appDomain *appDomain.AppDomain, config *config.Config, providerDomain *domain_service.ProviderDomain, chatDomain *chatDomain.ChatDomain) *WebChatService {
 	return &WebChatService{
-		appRunningDomain: appRunningDomain,
-		accountDomain:    accountDomain,
-		appDomain:        appDomain,
-		config:           config,
-		providerDomain:   providerDomain,
-		chatDomain:       chatDomain,
+		webAppDomain:   webAppDomain,
+		accountDomain:  accountDomain,
+		appDomain:      appDomain,
+		config:         config,
+		providerDomain: providerDomain,
+		chatDomain:     chatDomain,
 	}
 }
 
@@ -42,7 +42,7 @@ func (s *WebChatService) Chat(ctx context.Context, appID, endUserID string, args
 		return err
 	}
 
-	endUserRecord, err := s.appRunningDomain.AppRunningRepo.GetEndUserByID(ctx, endUserID)
+	endUserRecord, err := s.webAppDomain.WebAppRepo.GetEndUserByID(ctx, endUserID)
 
 	if err != nil {
 		return err

@@ -1,0 +1,124 @@
+package repo_impl
+
+import (
+	"context"
+
+	"github.com/lunarianss/Luna/internal/api-server/_domain/app/entity/po_entity"
+	"github.com/lunarianss/Luna/internal/api-server/_domain/app/repository"
+	"github.com/lunarianss/Luna/internal/pkg/code"
+	"github.com/lunarianss/Luna/internal/pkg/mysql"
+	"github.com/lunarianss/Luna/pkg/errors"
+	"gorm.io/gorm"
+)
+
+type AppRepoImpl struct {
+	db *gorm.DB
+}
+
+var _ repository.AppRepo = (*AppRepoImpl)(nil)
+
+func NewAppRepoImpl(db *gorm.DB) *AppRepoImpl {
+	return &AppRepoImpl{db}
+}
+
+func (ad *AppRepoImpl) CreateApp(ctx context.Context, tx *gorm.DB, app *po_entity.App) (*po_entity.App, error) {
+	var dbIns *gorm.DB
+
+	if tx != nil {
+		dbIns = tx
+	} else {
+		dbIns = ad.db
+	}
+
+	if err := dbIns.Create(app).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return app, nil
+}
+
+func (ad *AppRepoImpl) CreateAppConfig(ctx context.Context, tx *gorm.DB, appConfig *po_entity.AppModelConfig) (*po_entity.AppModelConfig, error) {
+	var dbIns *gorm.DB
+
+	if tx != nil {
+		dbIns = tx
+	} else {
+		dbIns = ad.db
+	}
+
+	if err := dbIns.Create(appConfig).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return appConfig, nil
+}
+
+func (ad *AppRepoImpl) UpdateAppConfigID(ctx context.Context, app *po_entity.App) error {
+	if err := ad.db.Model(app).Where("id = ?", app.ID).Update("app_model_config_id", app.AppModelConfigID).Error; err != nil {
+		return errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return nil
+}
+
+func (ad *AppRepoImpl) FindTenantApps(ctx context.Context, tenantID string, page, pageSize int) ([]*po_entity.App, int64, error) {
+	var apps []*po_entity.App
+	var appCount int64
+
+	if err := ad.db.Model(&po_entity.App{}).Count(&appCount).Scopes(mysql.Paginate(page, pageSize)).Find(&apps, "tenant_id = ? AND is_universal = ?", tenantID, 0).Error; err != nil {
+		return nil, 0, err
+	}
+	return apps, appCount, nil
+}
+
+func (ad *AppRepoImpl) CreateAppWithConfig(ctx context.Context, tx *gorm.DB, app *po_entity.App, appConfig *po_entity.AppModelConfig) (*po_entity.App, error) {
+	var dbIns *gorm.DB
+
+	if tx != nil {
+		dbIns = tx
+	} else {
+		dbIns = ad.db
+	}
+
+	if err := dbIns.Create(app).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+
+	appConfig.AppID = app.ID
+
+	if err := dbIns.Create(appConfig).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+
+	app.AppModelConfigID = appConfig.ID
+
+	if err := dbIns.Model(app).Update("app_model_config_id", appConfig.ID).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+
+	return app, nil
+}
+
+func (ad *AppRepoImpl) GetAppByID(ctx context.Context, appID string) (*po_entity.App, error) {
+	var app po_entity.App
+
+	if err := ad.db.First(&app, "id = ?", appID).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return &app, nil
+}
+
+func (ad *AppRepoImpl) GetAppModelConfigById(ctx context.Context, appConfigID string) (*po_entity.AppModelConfig, error) {
+	var appConfig po_entity.AppModelConfig
+
+	if err := ad.db.First(&appConfig, "id = ?", appConfigID).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return &appConfig, nil
+}
+
+func (ad *AppRepoImpl) GetAppModelConfigByAppID(ctx context.Context, appID string) (*po_entity.AppModelConfig, error) {
+	var appConfig po_entity.AppModelConfig
+
+	if err := ad.db.First(&appConfig, "app_id = ?", appID).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return &appConfig, nil
+}

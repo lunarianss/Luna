@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/lunarianss/Luna/internal/api-server/model/v1"
+	"github.com/lunarianss/Luna/internal/api-server/_domain/app/entity/po_entity"
 )
 
 type WebAppParameterResponse struct {
@@ -17,7 +17,7 @@ type WebAppParameterResponse struct {
 	FileUpload                    map[string]map[string]interface{}   `json:"file_upload" gorm:"column:file_upload;serializer:json"`
 }
 
-func AppConfigRecordToParameter(appConfig *model.AppModelConfig) *WebAppParameterResponse {
+func AppConfigRecordToParameter(appConfig *po_entity.AppModelConfig) *WebAppParameterResponse {
 
 	parameterDetail := &WebAppParameterResponse{
 		OpeningStatement:              appConfig.OpeningStatement,

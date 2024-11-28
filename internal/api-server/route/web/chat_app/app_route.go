@@ -2,12 +2,12 @@ package route
 
 import (
 	"github.com/gin-gonic/gin"
+	accountDomain "github.com/lunarianss/Luna/internal/api-server/_domain/account/domain_service"
+	appDomain "github.com/lunarianss/Luna/internal/api-server/_domain/app/domain_service"
+	webAppDomain "github.com/lunarianss/Luna/internal/api-server/_domain/web_app/domain_service"
+	repo_impl "github.com/lunarianss/Luna/internal/api-server/_repo"
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/web/chat_app/app"
-	"github.com/lunarianss/Luna/internal/api-server/dao"
-	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account"
-	domain "github.com/lunarianss/Luna/internal/api-server/domain/app"
-	appRunningDomain "github.com/lunarianss/Luna/internal/api-server/domain/app_running"
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
 	"github.com/lunarianss/Luna/internal/api-server/service"
 	"github.com/lunarianss/Luna/internal/pkg/email"
@@ -44,17 +44,16 @@ func (a *WebAppRoutes) Register(g *gin.Engine) error {
 		return err
 	}
 
-	// dao
-	appDao := dao.NewAppDao(gormIns)
-	appRunningDao := dao.NewAppRunningDao(gormIns)
-	accountDao := dao.NewAccountDao(gormIns)
-	tenantDao := dao.NewTenantDao(gormIns)
-	messageDao := dao.NewMessageDao(gormIns)
+	// repos
+	accountRepo := repo_impl.NewAccountRepoImpl(gormIns)
+	tenantRepo := repo_impl.NewTenantRepoImpl(gormIns)
+	appRepo := repo_impl.NewAppRepoImpl(gormIns)
+	webAppRepo := repo_impl.NewWebAppRepoImpl(gormIns)
 
 	// domain
-	appDomain := domain.NewAppDomain(appDao, appRunningDao, messageDao)
-	appRunningDomain := appRunningDomain.NewAppRunningDomain(appRunningDao)
-	accountDomain := accountDomain.NewAccountDomain(accountDao, redisIns, config, email, tenantDao)
+	appDomain := appDomain.NewAppDomain(appRepo, webAppRepo, gormIns)
+	appRunningDomain := webAppDomain.NewWebAppDomain(webAppRepo)
+	accountDomain := accountDomain.NewAccountDomain(accountRepo, redisIns, config, email, tenantRepo)
 
 	webAppService := service.NewWebAppService(appRunningDomain, accountDomain, appDomain, config)
 

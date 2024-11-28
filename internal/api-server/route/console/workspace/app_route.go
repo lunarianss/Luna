@@ -2,15 +2,13 @@ package route
 
 import (
 	"github.com/gin-gonic/gin"
+	accountDomain "github.com/lunarianss/Luna/internal/api-server/_domain/account/domain_service"
+	appDomain "github.com/lunarianss/Luna/internal/api-server/_domain/app/domain_service"
+	chatDomain "github.com/lunarianss/Luna/internal/api-server/_domain/chat/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
 	repo_impl "github.com/lunarianss/Luna/internal/api-server/_repo"
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/app"
-	"github.com/lunarianss/Luna/internal/api-server/dao"
-	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account"
-	domain "github.com/lunarianss/Luna/internal/api-server/domain/app"
-	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat"
-	modelDomain "github.com/lunarianss/Luna/internal/api-server/domain/model"
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
 	"github.com/lunarianss/Luna/internal/api-server/service"
 	"github.com/lunarianss/Luna/internal/pkg/mysql"
@@ -33,28 +31,23 @@ func (a *AppRoutes) Register(g *gin.Engine) error {
 	}
 
 	// repos
-	appDao := dao.NewAppDao(gormIns)
-	modelDao := dao.NewModelDao(gormIns)
-	accountDao := dao.NewAccountDao(gormIns)
-	tenantDao := dao.NewTenantDao(gormIns)
-	appRunningDao := dao.NewAppRunningDao(gormIns)
-	messageDao := dao.NewMessageDao(gormIns)
-
+	accountRepo := repo_impl.NewAccountRepoImpl(gormIns)
+	tenantRepo := repo_impl.NewTenantRepoImpl(gormIns)
+	appRepo := repo_impl.NewAppRepoImpl(gormIns)
+	messageRepo := repo_impl.NewMessageRepoImpl(gormIns)
 	providerRepo := repo_impl.NewProviderRepoImpl(gormIns)
+	webAppRepo := repo_impl.NewWebAppRepoImpl(gormIns)
 	modelProviderRepo := repo_impl.NewModelProviderRepoImpl(gormIns)
 	providerConfigurationsManager := domain_service.NewProviderConfigurationsManager(providerRepo, modelProviderRepo, "", nil)
 
 	// domain
-	appDomain := domain.NewAppDomain(appDao, appRunningDao, messageDao)
-	modelDomain := modelDomain.NewModelDomain(modelDao)
-	// domain
 	providerDomain := domain_service.NewProviderDomain(providerRepo, modelProviderRepo, providerConfigurationsManager)
-
-	accountDomain := accountDomain.NewAccountDomain(accountDao, nil, nil, nil, tenantDao)
-	chatDomain := chatDomain.NewChatDomain(messageDao)
+	appDomain := appDomain.NewAppDomain(appRepo, webAppRepo, gormIns)
+	accountDomain := accountDomain.NewAccountDomain(accountRepo, nil, nil, nil, tenantRepo)
+	chatDomain := chatDomain.NewChatDomain(messageRepo)
 
 	// service
-	appService := service.NewAppService(appDomain, modelDomain, providerDomain, accountDomain, gormIns, config)
+	appService := service.NewAppService(appDomain, providerDomain, accountDomain, gormIns, config)
 	chatService := service.NewChatService(appDomain, providerDomain, accountDomain, chatDomain)
 
 	appController := controller.NewAppController(appService, chatService)

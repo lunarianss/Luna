@@ -6,18 +6,16 @@ package service
 
 import (
 	"context"
-	"fmt"
 
+	accountDomain "github.com/lunarianss/Luna/internal/api-server/_domain/account/domain_service"
+	appDomain "github.com/lunarianss/Luna/internal/api-server/_domain/app/domain_service"
+	"github.com/lunarianss/Luna/internal/api-server/_domain/app/entity/biz_entity"
+	"github.com/lunarianss/Luna/internal/api-server/_domain/app/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
 	common "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/common_relation"
 	"github.com/lunarianss/Luna/internal/api-server/config"
-	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account"
-	domain "github.com/lunarianss/Luna/internal/api-server/domain/app"
-	modelDomain "github.com/lunarianss/Luna/internal/api-server/domain/model"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/app"
 	"github.com/lunarianss/Luna/internal/api-server/entities/base"
-	"github.com/lunarianss/Luna/internal/api-server/model/v1"
-	"github.com/lunarianss/Luna/internal/api-server/pkg/template"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/internal/pkg/field"
 	"github.com/lunarianss/Luna/internal/pkg/util"
@@ -27,23 +25,18 @@ import (
 )
 
 type AppService struct {
-	appDomain      *domain.AppDomain
-	modelDomain    *modelDomain.ModelDomain
+	appDomain      *appDomain.AppDomain
 	providerDomain *domain_service.ProviderDomain
 	accountDomain  *accountDomain.AccountDomain
 	db             *gorm.DB
 	config         *config.Config
 }
 
-func NewAppService(appDomain *domain.AppDomain, modelDomain *modelDomain.ModelDomain, providerDomain *domain_service.ProviderDomain, accountDomain *accountDomain.AccountDomain, db *gorm.DB, config *config.Config) *AppService {
-	return &AppService{appDomain: appDomain, modelDomain: modelDomain, providerDomain: providerDomain, accountDomain: accountDomain, db: db, config: config}
+func NewAppService(appDomain *appDomain.AppDomain, providerDomain *domain_service.ProviderDomain, accountDomain *accountDomain.AccountDomain, db *gorm.DB, config *config.Config) *AppService {
+	return &AppService{appDomain: appDomain, providerDomain: providerDomain, accountDomain: accountDomain, db: db, config: config}
 }
 
 func (as *AppService) CreateApp(ctx context.Context, accountID string, createAppRequest *dto.CreateAppRequest) (*dto.CreateAppResponse, error) {
-
-	var (
-		retApp *model.App
-	)
 
 	accountRecord, err := as.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
 
@@ -58,13 +51,14 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 	}
 	tenantID := tenantRecord.ID
 
-	appTemplate, ok := template.DefaultAppTemplates[template.AppMode(createAppRequest.Mode)]
+	appTemplate, err := as.appDomain.GetTemplate(ctx, createAppRequest.Mode)
 
-	if !ok {
-		return nil, errors.WithCode(code.ErrAppMapMode, fmt.Sprintf("Invalid node template: %v", createAppRequest.Mode))
+	if err != nil {
+		return nil, err
 	}
-	defaultModelConfig := &template.ModelConfig{}
-	defaultModel := &template.Model{}
+
+	defaultModelConfig := &biz_entity.ModelConfig{}
+	defaultModel := &biz_entity.Model{}
 
 	util.DeepCopyUsingJSON(appTemplate.ModelConfig, defaultModelConfig)
 
@@ -104,7 +98,7 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 		defaultModelConfig.Model = *defaultModel
 	}
 
-	app := &model.App{
+	app := &po_entity.App{
 		Name:           createAppRequest.Name,
 		Description:    createAppRequest.Description,
 		Mode:           appTemplate.App.Mode,
@@ -120,7 +114,7 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 		APIRph:         createAppRequest.ApiRph,
 	}
 
-	appConfig := &model.AppModelConfig{
+	appConfig := &po_entity.AppModelConfig{
 		CreatedBy:     accountID,
 		UpdatedBy:     accountID,
 		UserInputForm: defaultModelConfig.UserInputForm,
@@ -134,67 +128,15 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 		app.IconType = "emoji"
 	}
 
-	tx := as.db.Begin()
-
-	if defaultModelConfig.Model.Provider != "" && defaultModelConfig.Model.Name != "" {
-		app, err := as.appDomain.AppRepo.CreateAppWithConfig(ctx, tx, app, appConfig)
-		if err != nil {
-			tx.Rollback()
-			return nil, err
-		}
-		retApp = app
-	} else {
-		app, err := as.appDomain.AppRepo.CreateApp(ctx, tx, app)
-		if err != nil {
-			tx.Rollback()
-			return nil, err
-		}
-		retApp = app
-	}
-
-	installApp := &model.InstalledApp{
-		TenantID:         app.TenantID,
-		AppID:            app.ID,
-		AppOwnerTenantID: app.TenantID,
-	}
-
-	if _, err := as.appDomain.AppRunningRepo.CreateInstallApp(ctx, installApp, tx); err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
-	siteCode, err := as.appDomain.AppRunningRepo.GenerateUniqueCodeForSite(ctx)
+	app, appConfig, err = as.appDomain.CreateApp(ctx, app, appConfig, defaultModelConfig.Model.Provider, defaultModelConfig.Model.Name, accountRecord.InterfaceLanguage)
 
 	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
-	site := &model.Site{
-		AppID:                  app.ID,
-		Title:                  app.Name,
-		IconType:               app.IconType,
-		Icon:                   app.Icon,
-		IconBackground:         app.IconBackground,
-		DefaultLanguage:        accountRecord.InterfaceLanguage,
-		CustomizeTokenStrategy: "not_allowed",
-		Code:                   siteCode,
-		CreatedBy:              app.CreatedBy,
-		UpdatedBy:              app.UpdatedBy,
-	}
-
-	if _, err := as.appDomain.AppRunningRepo.CreateSite(ctx, site, tx); err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
-	if err := tx.Commit().Error; err != nil {
 		return nil, err
 	}
 
 	return &dto.CreateAppResponse{
 		ModelConfig: appConfig,
-		App:         retApp,
+		App:         app,
 	}, nil
 }
 
@@ -205,7 +147,7 @@ func (as *AppService) ListTenantApps(ctx context.Context, params *dto.ListAppReq
 	if err != nil {
 		return nil, err
 	}
-	appRecords, appCount, err := as.appDomain.AppRepo.FindTenantApps(ctx, tenantRecord, params.Page, params.PageSize)
+	appRecords, appCount, err := as.appDomain.AppRepo.FindTenantApps(ctx, tenantRecord.ID, params.Page, params.PageSize)
 
 	if err != nil {
 		return nil, err
@@ -245,7 +187,7 @@ func (as AppService) AppDetail(ctx context.Context, appID string) (*dto.AppDetai
 		return nil, err
 	}
 
-	siteRecord, err := as.appDomain.AppRunningRepo.GetSiteByAppID(ctx, appID)
+	siteRecord, err := as.appDomain.WebAppRepo.GetSiteByAppID(ctx, appID)
 
 	if err != nil {
 		return nil, err
@@ -255,7 +197,7 @@ func (as AppService) AppDetail(ctx context.Context, appID string) (*dto.AppDetai
 }
 
 func (as *AppService) UpdateAppModelConfig(ctx context.Context, modelConfig *dto.UpdateModelConfig, appID string, accountID string) error {
-	appConfig := &model.AppModelConfig{
+	appConfig := &po_entity.AppModelConfig{
 		AppID:      appID,
 		CreatedBy:  accountID,
 		UpdatedBy:  accountID,

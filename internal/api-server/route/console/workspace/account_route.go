@@ -7,8 +7,8 @@ package route
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/lunarianss/Luna/internal/api-server/config"
-	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/account"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
+	controller "github.com/lunarianss/Luna/internal/api-server/interface/gin/v1/account"
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
 	repo_impl "github.com/lunarianss/Luna/internal/api-server/repository"
 

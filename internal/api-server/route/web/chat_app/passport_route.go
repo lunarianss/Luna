@@ -7,9 +7,9 @@ package route
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/lunarianss/Luna/internal/api-server/config"
-	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/web/chat_app/passport"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	webAppDomain "github.com/lunarianss/Luna/internal/api-server/domain/web_app/domain_service"
+	controller "github.com/lunarianss/Luna/internal/api-server/interface/gin/v1/web/chat_app/passport"
 	repo_impl "github.com/lunarianss/Luna/internal/api-server/repository"
 
 	service "github.com/lunarianss/Luna/internal/api-server/application"

@@ -9,9 +9,9 @@ import (
 
 	service "github.com/lunarianss/Luna/internal/api-server/application"
 	"github.com/lunarianss/Luna/internal/api-server/config"
-	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/model-provider/provider"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
+	controller "github.com/lunarianss/Luna/internal/api-server/interface/gin/v1/model-provider/provider"
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
 	repo_impl "github.com/lunarianss/Luna/internal/api-server/repository"
 	"github.com/lunarianss/Luna/internal/pkg/mysql"

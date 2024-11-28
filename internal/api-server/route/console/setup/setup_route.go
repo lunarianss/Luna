@@ -6,7 +6,7 @@ package route
 
 import (
 	"github.com/gin-gonic/gin"
-	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/setup"
+	controller "github.com/lunarianss/Luna/internal/api-server/interface/gin/v1/setup"
 )
 
 type SetupRoutes struct{}

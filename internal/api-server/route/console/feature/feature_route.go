@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	service "github.com/lunarianss/Luna/internal/api-server/application"
 	"github.com/lunarianss/Luna/internal/api-server/config"
-	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/feature"
+	controller "github.com/lunarianss/Luna/internal/api-server/interface/gin/v1/feature"
 )
 
 type FeatureRoutes struct{}

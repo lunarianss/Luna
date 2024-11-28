@@ -3,10 +3,10 @@ package service
 import (
 	"context"
 
-	accountDomain "github.com/lunarianss/Luna/internal/api-server/_domain/account/domain_service"
-	"github.com/lunarianss/Luna/internal/api-server/_domain/app/domain_service"
-	webAppDomain "github.com/lunarianss/Luna/internal/api-server/_domain/web_app/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/config"
+	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
+	"github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
+	webAppDomain "github.com/lunarianss/Luna/internal/api-server/domain/web_app/domain_service"
 	siteDto "github.com/lunarianss/Luna/internal/api-server/dto/app"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/web_app"
 )

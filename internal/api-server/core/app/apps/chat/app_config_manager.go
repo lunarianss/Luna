@@ -4,12 +4,12 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/lunarianss/Luna/internal/api-server/_domain/app/entity/po_entity"
-	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/_domain/chat/entity/po_entity"
-	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/model_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/prompt_template"
+	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
+	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
+	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
 )

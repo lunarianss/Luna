@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/lunarianss/Luna/internal/api-server/_domain/chat/entity/po_entity"
+	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 )
 
 type ListConversationQuery struct {

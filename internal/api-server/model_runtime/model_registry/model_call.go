@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	biz_entity_model "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider/model_provider"
-	biz_entity "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider_configuration"
+	biz_entity_model "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider/model_provider"
+	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_configuration"
 	"github.com/lunarianss/Luna/internal/api-server/entities/message"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime"
 	"github.com/lunarianss/Luna/pkg/log"

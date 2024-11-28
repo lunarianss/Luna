@@ -3,13 +3,13 @@ package apps
 import (
 	"context"
 
-	"github.com/lunarianss/Luna/internal/api-server/_domain/app/domain_service"
-	"github.com/lunarianss/Luna/internal/api-server/_domain/app/entity/po_entity"
-	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/_domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/core/app"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/entities"
 	"github.com/lunarianss/Luna/internal/api-server/core/prompt"
+	"github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
+	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
+	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/entities/llm"
 	"github.com/lunarianss/Luna/internal/api-server/entities/message"
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"

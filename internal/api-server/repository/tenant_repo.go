@@ -3,7 +3,7 @@ package repo_impl
 import (
 	"context"
 
-	"github.com/lunarianss/Luna/internal/api-server/_domain/account/entity/po_entity"
+	"github.com/lunarianss/Luna/internal/api-server/domain/account/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/internal/pkg/mysql"
 	"github.com/lunarianss/Luna/pkg/errors"

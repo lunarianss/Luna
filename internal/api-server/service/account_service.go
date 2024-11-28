@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/gin-gonic/gin"
-	domain "github.com/lunarianss/Luna/internal/api-server/_domain/account/domain_service"
-	"github.com/lunarianss/Luna/internal/api-server/_domain/account/entity/biz_entity"
-	"github.com/lunarianss/Luna/internal/api-server/_domain/account/entity/po_entity"
+	domain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
+	"github.com/lunarianss/Luna/internal/api-server/domain/account/entity/biz_entity"
+	"github.com/lunarianss/Luna/internal/api-server/domain/account/entity/po_entity"
 	accountDto "github.com/lunarianss/Luna/internal/api-server/dto/account"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/auth"
 	"github.com/lunarianss/Luna/internal/pkg/util"

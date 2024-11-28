@@ -6,10 +6,10 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
-	common "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/common_relation"
-	biz_entity_provider_config "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider_configuration"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config"
+	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
+	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
+	biz_entity_provider_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_configuration"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"

@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	"github.com/lunarianss/Luna/internal/api-server/_domain/dataset/domain_service"
+	"github.com/lunarianss/Luna/internal/api-server/domain/dataset/domain_service"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/dataset"
 )
 

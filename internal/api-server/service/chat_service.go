@@ -7,12 +7,12 @@ package service
 import (
 	"context"
 
-	accountDomain "github.com/lunarianss/Luna/internal/api-server/_domain/account/domain_service"
-	appDomain "github.com/lunarianss/Luna/internal/api-server/_domain/app/domain_service"
-	chatDomain "github.com/lunarianss/Luna/internal/api-server/_domain/chat/domain_service"
-	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/apps/chat"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/apps/entities"
+	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
+	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
+	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
+	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 )
 

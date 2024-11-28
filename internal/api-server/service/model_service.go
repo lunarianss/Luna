@@ -7,11 +7,11 @@ package service
 import (
 	"context"
 
-	accountDomain "github.com/lunarianss/Luna/internal/api-server/_domain/account/domain_service"
-	providerDomain "github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
-	common "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/common_relation"
-	biz_entity_model "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider/model_provider"
-	biz_entity_provider_config "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider_configuration"
+	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
+	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
+	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
+	biz_entity_model "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider/model_provider"
+	biz_entity_provider_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_configuration"
 
 	"github.com/lunarianss/Luna/internal/api-server/config"
 

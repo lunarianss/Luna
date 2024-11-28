@@ -5,9 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	jwtV5 "github.com/golang-jwt/jwt/v5"
-	appDomain "github.com/lunarianss/Luna/internal/api-server/_domain/app/domain_service"
-	webAppDomain "github.com/lunarianss/Luna/internal/api-server/_domain/web_app/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/config"
+	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
+	webAppDomain "github.com/lunarianss/Luna/internal/api-server/domain/web_app/domain_service"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/passport"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/internal/pkg/jwt"

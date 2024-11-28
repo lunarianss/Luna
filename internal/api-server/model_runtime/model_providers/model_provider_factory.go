@@ -12,7 +12,7 @@ import (
 	"runtime"
 	"strings"
 
-	biz_entity "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider"
+	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider"
 	"gopkg.in/yaml.v3"
 
 	"github.com/lunarianss/Luna/internal/pkg/code"

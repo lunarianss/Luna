@@ -3,10 +3,10 @@ package model_config
 import (
 	"context"
 
-	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
-	common "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/common_relation"
 	"github.com/lunarianss/Luna/internal/api-server/core/app"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config"
+	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
+	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
 )
 
 type ModelConfigConverter struct {

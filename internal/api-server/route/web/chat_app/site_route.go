@@ -2,11 +2,11 @@ package route
 
 import (
 	"github.com/gin-gonic/gin"
-	accountDomain "github.com/lunarianss/Luna/internal/api-server/_domain/account/domain_service"
-	appDomain "github.com/lunarianss/Luna/internal/api-server/_domain/app/domain_service"
-	webAppDomain "github.com/lunarianss/Luna/internal/api-server/_domain/web_app/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/web/chat_app/site"
+	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
+	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
+	webAppDomain "github.com/lunarianss/Luna/internal/api-server/domain/web_app/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
 	repo_impl "github.com/lunarianss/Luna/internal/api-server/repository"
 	"github.com/lunarianss/Luna/internal/api-server/service"

@@ -1,10 +1,10 @@
 package dto
 
 import (
-	"github.com/lunarianss/Luna/internal/api-server/_domain/app/entity/biz_entity"
-	"github.com/lunarianss/Luna/internal/api-server/_domain/app/entity/po_entity"
-	po_entity_web_app "github.com/lunarianss/Luna/internal/api-server/_domain/web_app/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/config"
+	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity"
+	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
+	po_entity_web_app "github.com/lunarianss/Luna/internal/api-server/domain/web_app/entity/po_entity"
 )
 
 // Create App Input Dto

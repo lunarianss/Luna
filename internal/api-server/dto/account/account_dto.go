@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/lunarianss/Luna/internal/api-server/_domain/account/entity/po_entity"
+	"github.com/lunarianss/Luna/internal/api-server/domain/account/entity/po_entity"
 )
 
 type GetAccountProfileResp struct {

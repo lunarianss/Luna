@@ -7,11 +7,11 @@ package dto
 import (
 	"fmt"
 
-	common "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/common_relation"
-	biz_entity "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider"
-	biz_entity_provider_config "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider_configuration"
-	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/config"
+	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
+	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider"
+	biz_entity_provider_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_configuration"
+	"github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/po_entity"
 )
 
 // --

@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/lunarianss/Luna/internal/api-server/_domain/app/entity/po_entity"
+	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 )
 
 type WebAppParameterResponse struct {

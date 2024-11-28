@@ -15,7 +15,6 @@ import (
 	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_config"
 	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
 	biz_entity_provider_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_configuration"
-	"github.com/lunarianss/Luna/internal/api-server/model_runtime"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime/model_registry"
 )
 
@@ -23,7 +22,7 @@ type AppRunner struct {
 	AppDomain *domain_service.AppDomain
 }
 
-func (runner *AppRunner) HandleInvokeResultStream(ctx context.Context, invokeResult *biz_entity.LLMResultChunk, streamGenerator *model_runtime.StreamGenerateQueue, end bool, err error) {
+func (runner *AppRunner) HandleInvokeResultStream(ctx context.Context, invokeResult *biz_entity.LLMResultChunk, streamGenerator *biz_entity.StreamGenerateQueue, end bool, err error) {
 
 	if err != nil && invokeResult == nil {
 		streamGenerator.Final(&biz_entity.QueueErrorEvent{
@@ -60,7 +59,7 @@ func (runner *AppRunner) HandleInvokeResultStream(ctx context.Context, invokeRes
 
 }
 
-func (r *AppRunner) Run(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, message *po_entity_chat.Message, conversation *po_entity_chat.Conversation, queueManager *model_runtime.StreamGenerateQueue) {
+func (r *AppRunner) Run(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, message *po_entity_chat.Message, conversation *po_entity_chat.Conversation, queueManager *biz_entity.StreamGenerateQueue) {
 
 	appRecord, err := r.AppDomain.AppRepo.GetAppByID(ctx, applicationGenerateEntity.AppConfig.AppID)
 

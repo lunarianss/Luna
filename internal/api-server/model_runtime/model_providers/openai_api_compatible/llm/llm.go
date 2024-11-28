@@ -20,14 +20,14 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_runner"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
+	biz_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
-	"github.com/lunarianss/Luna/internal/api-server/model_runtime"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 )
 
 type OpenApiCompactLargeLanguageModel struct {
 	*app_runner.AppRunner
-	*model_runtime.StreamGenerateQueue
+	*biz_entity_chat.StreamGenerateQueue
 	FullAssistantContent string
 	Usage                interface{}
 	ChunkIndex           int
@@ -41,7 +41,7 @@ type OpenApiCompactLargeLanguageModel struct {
 	ModelParameters      map[string]interface{}
 }
 
-func (m *OpenApiCompactLargeLanguageModel) Invoke(ctx context.Context, promptMessages []*po_entity_chat.PromptMessage, modelParameters map[string]interface{}, credentials map[string]interface{}, queueManager *model_runtime.StreamGenerateQueue) {
+func (m *OpenApiCompactLargeLanguageModel) Invoke(ctx context.Context, promptMessages []*po_entity_chat.PromptMessage, modelParameters map[string]interface{}, credentials map[string]interface{}, queueManager *biz_entity_chat.StreamGenerateQueue) {
 	m.Credentials = credentials
 	m.AppRunner = &app_runner.AppRunner{}
 	m.ModelParameters = modelParameters

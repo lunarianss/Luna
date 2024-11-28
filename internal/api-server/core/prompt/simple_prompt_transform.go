@@ -1,3 +1,7 @@
+// Copyright 2024 Benjamin Lee <cyan0908@163.com>. All rights reserved.
+// Use of this source code is governed by a MIT style
+// license that can be found in the LICENSE file.
+
 package prompt
 
 import (
@@ -179,7 +183,7 @@ func (s *SimplePromptTransform) getPromptRole(appMode po_entity.AppMode, provide
 	return promptRoleMap, nil
 
 }
-func (s *SimplePromptTransform) promptFileName(appMode po_entity.AppMode, provider, modelName string) string {
+func (s *SimplePromptTransform) promptFileName(appMode po_entity.AppMode, _, _ string) string {
 	if appMode == po_entity.COMPLETION {
 		return "common_completion.json"
 	} else {

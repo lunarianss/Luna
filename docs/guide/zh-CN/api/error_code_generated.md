@@ -90,4 +90,5 @@ IAM 系统支持的错误码列表如下：
 | ErrTypeOfPromptMessage | 110010 | 500 | When prompt type is user, the type of message is neither string or []*promptMessageContent |
 | ErrCallLargeLanguageModel | 110011 | 500 | Error occurred when call large language model post api |
 | ErrConvertDelimiterString | 110012 | 500 | Error occurred when convert delimiter to string |
+| ErrNotSetManagerForProvider | 110013 | 500 | Error occurred when not set manager for provider |
 

@@ -77,4 +77,5 @@ func init() {
 	errors.Enroll(ErrTypeOfPromptMessage, 500, "When prompt type is user, the type of message is neither string or []*promptMessageContent")
 	errors.Enroll(ErrCallLargeLanguageModel, 500, "Error occurred when call large language model post api")
 	errors.Enroll(ErrConvertDelimiterString, 500, "Error occurred when convert delimiter to string")
+	errors.Enroll(ErrNotSetManagerForProvider, 500, "Error occurred when not set manager for provider")
 }

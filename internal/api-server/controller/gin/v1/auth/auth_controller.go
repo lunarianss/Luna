@@ -4,7 +4,7 @@
 
 package controller
 
-import "github.com/lunarianss/Luna/internal/api-server/service"
+import service "github.com/lunarianss/Luna/internal/api-server/application"
 
 type AuthController struct {
 	authService *service.AccountService

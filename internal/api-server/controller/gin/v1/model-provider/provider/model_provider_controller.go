@@ -5,7 +5,7 @@
 package controller
 
 import (
-	"github.com/lunarianss/Luna/internal/api-server/service"
+	service "github.com/lunarianss/Luna/internal/api-server/application"
 )
 
 type ModelProviderController struct {

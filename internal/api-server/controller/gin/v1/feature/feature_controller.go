@@ -4,7 +4,7 @@
 
 package controller
 
-import "github.com/lunarianss/Luna/internal/api-server/service"
+import service "github.com/lunarianss/Luna/internal/api-server/application"
 
 type FeatureController struct {
 	featureService *service.FeatureService
@@ -12,6 +12,6 @@ type FeatureController struct {
 
 func NewFeatureController(featureService *service.FeatureService) *FeatureController {
 	return &FeatureController{
-	  featureService: featureService,
+		featureService: featureService,
 	}
 }

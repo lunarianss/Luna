@@ -6,9 +6,9 @@ package route
 
 import (
 	"github.com/gin-gonic/gin"
+	service "github.com/lunarianss/Luna/internal/api-server/application"
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/feature"
-	"github.com/lunarianss/Luna/internal/api-server/service"
 )
 
 type FeatureRoutes struct{}

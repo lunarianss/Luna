@@ -12,7 +12,7 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
 	repo_impl "github.com/lunarianss/Luna/internal/api-server/repository"
 
-	"github.com/lunarianss/Luna/internal/api-server/service"
+	service "github.com/lunarianss/Luna/internal/api-server/application"
 	"github.com/lunarianss/Luna/internal/pkg/email"
 	"github.com/lunarianss/Luna/internal/pkg/mysql"
 	"github.com/lunarianss/Luna/internal/pkg/redis"

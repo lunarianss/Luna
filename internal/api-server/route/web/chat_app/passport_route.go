@@ -12,7 +12,7 @@ import (
 	webAppDomain "github.com/lunarianss/Luna/internal/api-server/domain/web_app/domain_service"
 	repo_impl "github.com/lunarianss/Luna/internal/api-server/repository"
 
-	"github.com/lunarianss/Luna/internal/api-server/service"
+	service "github.com/lunarianss/Luna/internal/api-server/application"
 	"github.com/lunarianss/Luna/internal/pkg/jwt"
 	"github.com/lunarianss/Luna/internal/pkg/mysql"
 )

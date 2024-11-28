@@ -6,6 +6,7 @@ package route
 
 import (
 	"github.com/gin-gonic/gin"
+	service "github.com/lunarianss/Luna/internal/api-server/application"
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/web/chat_app/chat"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
@@ -15,7 +16,6 @@ import (
 	webAppDomain "github.com/lunarianss/Luna/internal/api-server/domain/web_app/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
 	repo_impl "github.com/lunarianss/Luna/internal/api-server/repository"
-	"github.com/lunarianss/Luna/internal/api-server/service"
 	"github.com/lunarianss/Luna/internal/pkg/email"
 	"github.com/lunarianss/Luna/internal/pkg/mysql"
 	"github.com/lunarianss/Luna/internal/pkg/redis"

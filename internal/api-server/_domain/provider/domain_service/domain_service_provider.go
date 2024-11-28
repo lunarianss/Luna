@@ -9,7 +9,6 @@ import (
 
 	common "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/common_relation"
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider"
-
 	biz_entity_model "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider/model_provider"
 	biz_entity_provider_config "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider_configuration"
 	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/po_entity"
@@ -36,9 +35,9 @@ func NewProviderDomain(providerRepo repository.ProviderRepo, modelRepo repositor
 	}
 }
 
-func (mpd *ProviderDomain) GetSortedListConfigurations(ctx context.Context, tenantId string) ([]*ProviderConfigurationManager, error) {
+func (mpd *ProviderDomain) GetSortedListConfigurations(ctx context.Context, tenantId string) ([]*biz_entity_provider_config.ProviderConfiguration, error) {
 	var (
-		providerListConfigurations []*ProviderConfigurationManager
+		providerListConfigurations []*biz_entity_provider_config.ProviderConfiguration
 	)
 	providerNameMapRecords, err := mpd.ProviderRepo.GetMapTenantModelProviders(ctx, tenantId)
 
@@ -57,16 +56,14 @@ func (mpd *ProviderDomain) GetSortedListConfigurations(ctx context.Context, tena
 		providerRecords := providerNameMapRecords[providerName]
 		customConfiguration := mpd.toCustomConfiguration(tenantId, providerEntity, providerRecords)
 
-		providerConfiguration := &ProviderConfigurationManager{
+		providerConfiguration := &biz_entity_provider_config.ProviderConfiguration{
 			TenantId:              tenantId,
 			Provider:              providerEntity,
 			UsingProviderType:     po_entity.CUSTOM,
 			PreferredProviderType: po_entity.CUSTOM,
 			CustomConfiguration:   customConfiguration,
 		}
-
 		providerConfiguration.SetManager(mpd.providerConfigurationsManager)
-
 		providerListConfigurations = append(providerListConfigurations, providerConfiguration)
 	}
 
@@ -78,7 +75,7 @@ func (mpd *ProviderDomain) GetSortedListConfigurations(ctx context.Context, tena
 }
 
 // GetConfigurations Get all providers, models config for tenant
-func (mpd *ProviderDomain) GetConfigurations(ctx context.Context, tenantId string) (*providerConfigurationsManager, error) {
+func (mpd *ProviderDomain) GetConfigurations(ctx context.Context, tenantId string) (*biz_entity_provider_config.ProviderConfigurations, error) {
 	providerNameMapRecords, err := mpd.ProviderRepo.GetMapTenantModelProviders(ctx, tenantId)
 
 	if err != nil {
@@ -91,26 +88,26 @@ func (mpd *ProviderDomain) GetConfigurations(ctx context.Context, tenantId strin
 		return nil, err
 	}
 
-	providerConfigurations := NewProviderConfigurationsManager(mpd.ProviderRepo, mpd.ModelRepo, tenantId, make(map[string]*biz_entity_provider_config.ProviderConfigurationManager, model_providers.PROVIDER_COUNT)).ProviderConfigurationsManager
+	providerConfigurations := NewProviderConfigurationsManager(mpd.ProviderRepo, mpd.ModelRepo, tenantId, make(map[string]*biz_entity_provider_config.ProviderConfiguration, model_providers.PROVIDER_COUNT))
 
 	for _, providerEntity := range providerNameMapEntities {
 		providerName := providerEntity.Provider
 		providerRecords := providerNameMapRecords[providerName]
 		customConfiguration := mpd.toCustomConfiguration(tenantId, providerEntity, providerRecords)
 
-		providerConfiguration := &biz_entity_provider_config.ProviderConfigurationManager{
+		providerConfiguration := &biz_entity_provider_config.ProviderConfiguration{
 			TenantId:              tenantId,
 			Provider:              providerEntity,
 			UsingProviderType:     po_entity.CUSTOM,
 			PreferredProviderType: po_entity.SYSTEM,
 			CustomConfiguration:   customConfiguration,
 		}
-		providerConfiguration.SetManager(providerConfigurations)
 
+		providerConfiguration.SetManager(providerConfigurations)
 		providerConfigurations.Configurations[providerName] = providerConfiguration
 	}
 
-	return providerConfigurations, nil
+	return providerConfigurations.ProviderConfigurations, nil
 }
 
 func (mpd *ProviderDomain) GetModelSchema(ctx context.Context, model string, credentials interface{}, AIModel *biz_entity_model.AIModelRuntime) (*biz_entity_model.AIModelStaticConfiguration, error) {
@@ -148,7 +145,7 @@ func (mpd *ProviderDomain) GetProviderModelBundle(ctx context.Context, tenantId,
 
 	AIModelInstance := providerRuntime.GetModelInstance(modelType)
 
-	return &biz_entity_model.ProviderModelBundleRuntime{
+	return &biz_entity_provider_config.ProviderModelBundleRuntime{
 		Configuration:     providerConfiguration,
 		ProviderInstance:  providerRuntime,
 		ModelTypeInstance: AIModelInstance,

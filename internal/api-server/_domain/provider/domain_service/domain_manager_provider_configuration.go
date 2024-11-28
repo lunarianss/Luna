@@ -6,12 +6,12 @@ import (
 )
 
 type providerConfigurationsManager struct {
-	*biz_entity.ProviderConfigurationsManager
+	*biz_entity.ProviderConfigurations
 }
 
-func NewProviderConfigurationsManager(providerRepo repository.ProviderRepo, modelRepo repository.ModelRepo, tenantID string, configs map[string]*ProviderConfigurationManager) *providerConfigurationsManager {
-	providerConfigurationsManager = &providerConfigurationsManager{}
-	providerConfigurationsManager.ProviderConfigurationsManager = &biz_entity.ProviderConfigurationsManager{
+func NewProviderConfigurationsManager(providerRepo repository.ProviderRepo, modelRepo repository.ModelRepo, tenantID string, configs map[string]*biz_entity.ProviderConfiguration) *providerConfigurationsManager {
+	providerConfigurationsManager := &providerConfigurationsManager{}
+	providerConfigurationsManager.ProviderConfigurations = &biz_entity.ProviderConfigurations{
 		ProviderRepo:   providerRepo,
 		ModelRepo:      modelRepo,
 		Configurations: configs,

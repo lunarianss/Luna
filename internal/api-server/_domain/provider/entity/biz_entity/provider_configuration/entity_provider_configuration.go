@@ -10,7 +10,6 @@ import (
 
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider"
 	biz_entity_model "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider/model_provider"
-	biz_entity_provider_config "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider_configuration"
 
 	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/repository"
@@ -38,19 +37,19 @@ type ModelIntegratedInstance struct {
 }
 
 type ProviderModelBundleRuntime struct {
-	Configuration     *ProviderConfigurationManager
+	Configuration     *ProviderConfiguration
 	ProviderInstance  *biz_entity.ProviderRuntime
 	ModelTypeInstance *biz_entity_model.AIModelRuntime
 }
 
-type ProviderConfigurationsManager struct {
+type ProviderConfigurations struct {
 	TenantId       string `json:"tenant_id"`
 	ProviderRepo   repository.ProviderRepo
 	ModelRepo      repository.ModelRepo
-	Configurations map[string]*ProviderConfigurationManager `json:"configurations"`
+	Configurations map[string]*ProviderConfiguration `json:"configurations"`
 }
 
-func (pcm *ProviderConfigurationsManager) GetModels(ctx context.Context, modelType common.ModelType, onlyActive bool) ([]*ModelWithProvider, error) {
+func (pcm *ProviderConfigurations) GetModels(ctx context.Context, modelType common.ModelType, onlyActive bool) ([]*ModelWithProvider, error) {
 	var (
 		providerModels []*ModelWithProvider
 	)
@@ -67,7 +66,7 @@ func (pcm *ProviderConfigurationsManager) GetModels(ctx context.Context, modelTy
 	return providerModels, nil
 }
 
-func (pcm *ProviderConfigurationsManager) GetConfigurationByProvider(ctx context.Context, provider string) (*ProviderConfigurationManager, error) {
+func (pcm *ProviderConfigurations) GetConfigurationByProvider(ctx context.Context, provider string) (*ProviderConfiguration, error) {
 	for providerName, configuration := range pcm.Configurations {
 		if providerName == provider {
 			return configuration, nil
@@ -76,15 +75,15 @@ func (pcm *ProviderConfigurationsManager) GetConfigurationByProvider(ctx context
 	return nil, errors.WithCode(code.ErrRequiredCorrectProvider, fmt.Sprintf("provider %s not found", provider))
 }
 
-func (pcm *ProviderConfigurationsManager) GetProviderRepo() repository.ProviderRepo {
+func (pcm *ProviderConfigurations) GetProviderRepo() repository.ProviderRepo {
 	return pcm.ProviderRepo
 
 }
-func (pcm *ProviderConfigurationsManager) GetModelRepo() repository.ModelRepo {
+func (pcm *ProviderConfigurations) GetModelRepo() repository.ModelRepo {
 	return pcm.ModelRepo
 }
 
-type ProviderConfigurationManager struct {
+type ProviderConfiguration struct {
 	ProviderReposGetter
 	TenantId              string                                  `json:"tenant_id"`
 	Provider              *biz_entity.ProviderStaticConfiguration `json:"provider"`
@@ -95,18 +94,18 @@ type ProviderConfigurationManager struct {
 	ModelSettings         []*ModelSettings                        `json:"model_settings"`
 }
 
-func (c *ProviderConfigurationManager) ensureManager() error {
+func (c *ProviderConfiguration) ensureManager() error {
 	if c.ProviderReposGetter == nil {
 		return errors.WithCode(code.ErrNotSetManagerForProvider, "")
 	}
 	return nil
 }
 
-func (c *ProviderConfigurationManager) SetManager(manager ProviderReposGetter) {
+func (c *ProviderConfiguration) SetManager(manager ProviderReposGetter) {
 	c.ProviderReposGetter = manager
 }
 
-func (c *ProviderConfigurationManager) GetCurrentCredentials(modelType common.ModelType, model string) (map[string]interface{}, error) {
+func (c *ProviderConfiguration) GetCurrentCredentials(modelType common.ModelType, model string) (map[string]interface{}, error) {
 	var credentials map[string]interface{}
 	if c.CustomConfiguration.Models != nil {
 		for _, modelConfiguration := range c.CustomConfiguration.Models {
@@ -125,7 +124,7 @@ func (c *ProviderConfigurationManager) GetCurrentCredentials(modelType common.Mo
 
 }
 
-func (pc *ProviderConfigurationManager) GetProviderModels(ctx context.Context, modelType common.ModelType, onlyActive bool) ([]*ModelWithProvider, error) {
+func (pc *ProviderConfiguration) GetProviderModels(ctx context.Context, modelType common.ModelType, onlyActive bool) ([]*ModelWithProvider, error) {
 
 	if err := pc.ensureManager(); err != nil {
 		return nil, err
@@ -153,7 +152,7 @@ func (pc *ProviderConfigurationManager) GetProviderModels(ctx context.Context, m
 		modelTypes = append(modelTypes, providerEntity.SupportedModelTypes...)
 	}
 
-	modelSettingMap := make(map[string]map[string]biz_entity_provider_config.ModelSettings)
+	modelSettingMap := make(map[string]map[string]ModelSettings)
 
 	for _, modelSetting := range pc.ModelSettings {
 		modelSettingMap[string(modelSetting.Model)][modelSetting.Model] = *modelSetting
@@ -168,7 +167,7 @@ func (pc *ProviderConfigurationManager) GetProviderModels(ctx context.Context, m
 
 	if onlyActive {
 		providerModels = util.SliceFilter(providerModels, func(data *ModelWithProvider) bool {
-			if data.Status == biz_entity_provider_config.ACTIVE {
+			if data.Status == ACTIVE {
 				return true
 			} else {
 				return false
@@ -179,7 +178,7 @@ func (pc *ProviderConfigurationManager) GetProviderModels(ctx context.Context, m
 
 }
 
-func (pc *ProviderConfigurationManager) getCustomProviderModels(modelTypes []common.ModelType, providerInstance *biz_entity.ProviderRuntime, modelSettingMap map[string]map[string]ModelSettings) ([]*ModelWithProvider, error) {
+func (pc *ProviderConfiguration) getCustomProviderModels(modelTypes []common.ModelType, providerInstance *biz_entity.ProviderRuntime, modelSettingMap map[string]map[string]ModelSettings) ([]*ModelWithProvider, error) {
 
 	var (
 		providerModels []*ModelWithProvider
@@ -211,7 +210,7 @@ func (pc *ProviderConfigurationManager) getCustomProviderModels(modelTypes []com
 			if _, ok := modelSettingMap[string(modelType)]; ok {
 				if modelSetting, ok := modelSettingMap[string(modelType)][AIModelEntity.Model]; ok {
 					if !modelSetting.Enabled {
-						status = biz_entity_provider_config.DISABLED
+						status = DISABLED
 					}
 				}
 			}
@@ -244,7 +243,7 @@ func (pc *ProviderConfigurationManager) getCustomProviderModels(modelTypes []com
 	return providerModels, nil
 }
 
-func (pc *ProviderConfigurationManager) validateProviderCredentials(ctx context.Context, credentials map[string]interface{}) (*po_entity.Provider, map[string]interface{}, error) {
+func (pc *ProviderConfiguration) validateProviderCredentials(ctx context.Context, credentials map[string]interface{}) (*po_entity.Provider, map[string]interface{}, error) {
 	if err := pc.ensureManager(); err != nil {
 		return nil, nil, err
 	}
@@ -257,7 +256,7 @@ func (pc *ProviderConfigurationManager) validateProviderCredentials(ctx context.
 	return provider, credentials, nil
 }
 
-func (pc *ProviderConfigurationManager) AddOrUpdateCustomProviderCredentials(ctx context.Context, credentialParam map[string]interface{}) error {
+func (pc *ProviderConfiguration) AddOrUpdateCustomProviderCredentials(ctx context.Context, credentialParam map[string]interface{}) error {
 	if err := pc.ensureManager(); err != nil {
 		return err
 	}
@@ -297,7 +296,7 @@ func (pc *ProviderConfigurationManager) AddOrUpdateCustomProviderCredentials(ctx
 	return nil
 }
 
-func (pc *ProviderConfigurationManager) AddOrUpdateCustomModelCredentials(ctx context.Context, credentialParam map[string]interface{}, modelType, modelName string) error {
+func (pc *ProviderConfiguration) AddOrUpdateCustomModelCredentials(ctx context.Context, credentialParam map[string]interface{}, modelType, modelName string) error {
 	if err := pc.ensureManager(); err != nil {
 		return err
 	}
@@ -338,7 +337,7 @@ func (pc *ProviderConfigurationManager) AddOrUpdateCustomModelCredentials(ctx co
 	return nil
 }
 
-func (pc *ProviderConfigurationManager) validateModelCredentials(ctx context.Context, credentials map[string]interface{}, modelType, modeName string) (*po_entity.ProviderModel, map[string]interface{}, error) {
+func (pc *ProviderConfiguration) validateModelCredentials(ctx context.Context, credentials map[string]interface{}, modelType, modeName string) (*po_entity.ProviderModel, map[string]interface{}, error) {
 	if err := pc.ensureManager(); err != nil {
 		return nil, nil, err
 	}

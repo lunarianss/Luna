@@ -5,7 +5,7 @@
 package entities
 
 import (
-	"github.com/lunarianss/Luna/internal/api-server/entities/llm"
+	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 )
 
 type QueueEvent string
@@ -61,7 +61,7 @@ type QueueErrorEvent struct {
 
 type QueueLLMChunkEvent struct {
 	*AppQueueEvent
-	Chunk *llm.LLMResultChunk `json:"chunk"`
+	Chunk *biz_entity.LLMResultChunk `json:"chunk"`
 }
 
 type QueueTextChunkEvent struct {
@@ -73,7 +73,7 @@ type QueueTextChunkEvent struct {
 
 type QueueMessageEndEvent struct {
 	*AppQueueEvent
-	LLMResult *llm.LLMResult `json:"llm_result"`
+	LLMResult *biz_entity.LLMResult `json:"llm_result"`
 }
 
 type QueueMessage struct {

@@ -24,7 +24,6 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/domain/common/repository"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
-	"github.com/lunarianss/Luna/internal/api-server/entities/message"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
@@ -281,7 +280,7 @@ func (g *ChatAppGenerator) InitGenerateRecords(ctx context.Context, chatAppGener
 		ConversationID:          conversationRecord.ID,
 		Inputs:                  chatAppGenerateEntity.Inputs,
 		Query:                   chatAppGenerateEntity.Query,
-		Message:                 make([]*message.PromptMessage, 0),
+		Message:                 make([]*po_entity_chat.PromptMessage, 0),
 		MessageTokens:           0,
 		MessageUnitPrice:        0,
 		MessagePriceUnit:        0,

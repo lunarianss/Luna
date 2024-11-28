@@ -8,9 +8,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	biz_entity_model "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider/model_provider"
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_configuration"
-	"github.com/lunarianss/Luna/internal/api-server/entities/message"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime"
 	"github.com/lunarianss/Luna/pkg/log"
 )
@@ -23,7 +23,7 @@ type ModelInstance struct {
 	ModelTypeInstance   *biz_entity_model.AIModelRuntime
 }
 
-func (ac *ModelInstance) InvokeLLM(ctx context.Context, promptMessage []*message.PromptMessage, queueManager *model_runtime.StreamGenerateQueue, modelParameters map[string]interface{}, tools interface{}, stop []string, stream bool, user string, callbacks interface{}) {
+func (ac *ModelInstance) InvokeLLM(ctx context.Context, promptMessage []*po_entity.PromptMessage, queueManager *model_runtime.StreamGenerateQueue, modelParameters map[string]interface{}, tools interface{}, stop []string, stream bool, user string, callbacks interface{}) {
 
 	modelKeyMapInvoke := fmt.Sprintf("%s/%s", ac.Provider, ac.ProviderModelBundle.ModelTypeInstance.ModelType)
 

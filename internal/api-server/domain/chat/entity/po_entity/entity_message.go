@@ -5,9 +5,12 @@
 package po_entity
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
-	"github.com/lunarianss/Luna/internal/api-server/entities/message"
+	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/internal/pkg/field"
+	"github.com/lunarianss/Luna/pkg/errors"
 	"gorm.io/gorm"
 )
 
@@ -48,37 +51,37 @@ func (a *Conversation) BeforeCreate(tx *gorm.DB) (err error) {
 }
 
 type Message struct {
-	ID                      string                   `gorm:"column:id" json:"id"`
-	AppID                   string                   `gorm:"column:app_id" json:"app_id"`
-	ModelProvider           string                   `gorm:"column:model_provider" json:"model_provider"`
-	ModelID                 string                   `gorm:"column:model_id" json:"model_id"`
-	OverrideModelConfigs    map[string]interface{}   `gorm:"column:override_model_configs;serializer:json" json:"override_model_configs"`
-	ConversationID          string                   `gorm:"column:conversation_id" json:"conversation_id"`
-	Inputs                  map[string]interface{}   `gorm:"column:inputs;serializer:json" json:"inputs"`
-	Query                   string                   `gorm:"column:query" json:"query"`
-	Message                 []*message.PromptMessage `gorm:"column:message;serializer:json" json:"message"`
-	MessageTokens           int                      `gorm:"column:message_tokens" json:"message_tokens"`
-	MessageUnitPrice        float64                  `gorm:"column:message_unit_price" json:"message_unit_price"`
-	Answer                  string                   `gorm:"column:answer" json:"answer"`
-	AnswerTokens            int                      `gorm:"column:answer_tokens" json:"answer_tokens"`
-	AnswerUnitPrice         float64                  `gorm:"column:answer_unit_price" json:"answer_unit_price"`
-	ProviderResponseLatency float64                  `gorm:"column:provider_response_latency" json:"provider_response_latency"`
-	TotalPrice              float64                  `gorm:"column:total_price" json:"total_price"`
-	Currency                string                   `gorm:"column:currency" json:"currency"`
-	FromSource              string                   `gorm:"column:from_source" json:"from_source"`
-	FromEndUserID           string                   `gorm:"column:from_end_user_id" json:"from_end_user_id"`
-	FromAccountID           string                   `gorm:"column:from_account_id" json:"from_account_id"`
-	CreatedAt               int64                    `gorm:"column:created_at" json:"created_at"`
-	UpdatedAt               int64                    `gorm:"column:updated_at" json:"updated_at"`
-	AgentBased              field.BitBool            `gorm:"column:agent_based" json:"agent_based"`
-	MessagePriceUnit        float64                  `gorm:"column:message_price_unit" json:"message_price_unit"`
-	AnswerPriceUnit         float64                  `gorm:"column:answer_price_unit" json:"answer_price_unit"`
-	WorkflowRunID           string                   `gorm:"column:workflow_run_id" json:"workflow_run_id"`
-	Status                  string                   `gorm:"column:status" json:"status"`
-	Error                   string                   `gorm:"column:error" json:"error"`
-	MessageMetadata         map[string]interface{}   `gorm:"column:message_metadata;serializer:json" json:"message_metadata"`
-	InvokeFrom              string                   `gorm:"column:invoke_from" json:"invoke_from"`
-	ParentMessageID         string                   `gorm:"column:parent_message_id" json:"parent_message_id"`
+	ID                      string                 `gorm:"column:id" json:"id"`
+	AppID                   string                 `gorm:"column:app_id" json:"app_id"`
+	ModelProvider           string                 `gorm:"column:model_provider" json:"model_provider"`
+	ModelID                 string                 `gorm:"column:model_id" json:"model_id"`
+	OverrideModelConfigs    map[string]interface{} `gorm:"column:override_model_configs;serializer:json" json:"override_model_configs"`
+	ConversationID          string                 `gorm:"column:conversation_id" json:"conversation_id"`
+	Inputs                  map[string]interface{} `gorm:"column:inputs;serializer:json" json:"inputs"`
+	Query                   string                 `gorm:"column:query" json:"query"`
+	Message                 []*PromptMessage       `gorm:"column:message;serializer:json" json:"message"`
+	MessageTokens           int                    `gorm:"column:message_tokens" json:"message_tokens"`
+	MessageUnitPrice        float64                `gorm:"column:message_unit_price" json:"message_unit_price"`
+	Answer                  string                 `gorm:"column:answer" json:"answer"`
+	AnswerTokens            int                    `gorm:"column:answer_tokens" json:"answer_tokens"`
+	AnswerUnitPrice         float64                `gorm:"column:answer_unit_price" json:"answer_unit_price"`
+	ProviderResponseLatency float64                `gorm:"column:provider_response_latency" json:"provider_response_latency"`
+	TotalPrice              float64                `gorm:"column:total_price" json:"total_price"`
+	Currency                string                 `gorm:"column:currency" json:"currency"`
+	FromSource              string                 `gorm:"column:from_source" json:"from_source"`
+	FromEndUserID           string                 `gorm:"column:from_end_user_id" json:"from_end_user_id"`
+	FromAccountID           string                 `gorm:"column:from_account_id" json:"from_account_id"`
+	CreatedAt               int64                  `gorm:"column:created_at" json:"created_at"`
+	UpdatedAt               int64                  `gorm:"column:updated_at" json:"updated_at"`
+	AgentBased              field.BitBool          `gorm:"column:agent_based" json:"agent_based"`
+	MessagePriceUnit        float64                `gorm:"column:message_price_unit" json:"message_price_unit"`
+	AnswerPriceUnit         float64                `gorm:"column:answer_price_unit" json:"answer_price_unit"`
+	WorkflowRunID           string                 `gorm:"column:workflow_run_id" json:"workflow_run_id"`
+	Status                  string                 `gorm:"column:status" json:"status"`
+	Error                   string                 `gorm:"column:error" json:"error"`
+	MessageMetadata         map[string]interface{} `gorm:"column:message_metadata;serializer:json" json:"message_metadata"`
+	InvokeFrom              string                 `gorm:"column:invoke_from" json:"invoke_from"`
+	ParentMessageID         string                 `gorm:"column:parent_message_id" json:"parent_message_id"`
 }
 
 func (a *Message) TableName() string {
@@ -106,4 +109,73 @@ func (a *PinnedConversation) TableName() string {
 func (a *PinnedConversation) BeforeCreate(tx *gorm.DB) (err error) {
 	a.ID = uuid.NewString()
 	return
+}
+
+type PromptMessageRole string
+
+const (
+	SYSTEM    PromptMessageRole = "system"
+	USER      PromptMessageRole = "user"
+	ASSISTANT PromptMessageRole = "assistant"
+	TOOL      PromptMessageRole = "tool"
+)
+
+type PromptMessageContentType string
+
+const (
+	TEXT  PromptMessageContentType = "text"
+	IMAGE PromptMessageContentType = "image"
+	AUDIO PromptMessageContentType = "audio"
+)
+
+type PromptMessageContent struct {
+	Type PromptMessageContentType `json:"type"`
+	Data string                   `json:"data"`
+}
+
+type PromptMessage struct {
+	Role    PromptMessageRole `json:"role"`
+	Content any               `json:"content"`
+	Name    string            `json:"name"`
+}
+
+func NewSystemMessage(content any) *PromptMessage {
+	return &PromptMessage{
+		Role:    ASSISTANT,
+		Content: content,
+	}
+}
+func NewUserMessage(content any) *PromptMessage {
+	return &PromptMessage{
+		Role:    USER,
+		Content: content,
+	}
+}
+
+func (msg *PromptMessage) ConvertToRequestData() (map[string]interface{}, error) {
+	var requestData = make(map[string]interface{})
+
+	if msg.Role == USER {
+		switch content := msg.Content.(type) {
+		case string:
+			requestData["role"] = "user"
+			requestData["content"] = content
+		case []*PromptMessageContent:
+			var subMessage []map[string]string
+			for _, messageContent := range content {
+				if messageContent.Type == TEXT {
+					subMessageItem := map[string]string{
+						"type": "text",
+						"text": messageContent.Data,
+					}
+					subMessage = append(subMessage, subMessageItem)
+				}
+			}
+			requestData["role"] = "user"
+			requestData["content"] = subMessage
+		default:
+			return nil, errors.WithCode(code.ErrTypeOfPromptMessage, fmt.Sprintf("value %T is not string or []*promptMessageContent type", msg.Content))
+		}
+	}
+	return requestData, nil
 }

@@ -17,8 +17,8 @@ import (
 
 	"github.com/lunarianss/Luna/internal/api-server/core/app/apps"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
-	"github.com/lunarianss/Luna/internal/api-server/entities/llm"
-	"github.com/lunarianss/Luna/internal/api-server/entities/message"
+	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
+	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
@@ -37,11 +37,11 @@ type OpenApiCompactLargeLanguageModel struct {
 	User                 string
 	Stop                 []string
 	Credentials          map[string]interface{}
-	PromptMessages       []*message.PromptMessage
+	PromptMessages       []*po_entity_chat.PromptMessage
 	ModelParameters      map[string]interface{}
 }
 
-func (m *OpenApiCompactLargeLanguageModel) Invoke(ctx context.Context, promptMessages []*message.PromptMessage, modelParameters map[string]interface{}, credentials map[string]interface{}, queueManager *model_runtime.StreamGenerateQueue) {
+func (m *OpenApiCompactLargeLanguageModel) Invoke(ctx context.Context, promptMessages []*po_entity_chat.PromptMessage, modelParameters map[string]interface{}, credentials map[string]interface{}, queueManager *model_runtime.StreamGenerateQueue) {
 	m.Credentials = credentials
 	m.AppRunner = &apps.AppRunner{}
 	m.ModelParameters = modelParameters
@@ -167,12 +167,12 @@ func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context) {
 	}
 }
 
-func (m *OpenApiCompactLargeLanguageModel) sendStreamChunkToQueue(ctx context.Context, messageId string, assistantPromptMessage *message.AssistantPromptMessage) {
-	streamResultChunk := &llm.LLMResultChunk{
+func (m *OpenApiCompactLargeLanguageModel) sendStreamChunkToQueue(ctx context.Context, messageId string, assistantPromptMessage *biz_entity.AssistantPromptMessage) {
+	streamResultChunk := &biz_entity.LLMResultChunk{
 		ID:            messageId,
 		Model:         m.Model,
 		PromptMessage: m.PromptMessages,
-		Delta: &llm.LLMResultChunkDelta{
+		Delta: &biz_entity.LLMResultChunkDelta{
 			Index:   m.ChunkIndex,
 			Message: assistantPromptMessage,
 		},
@@ -188,14 +188,14 @@ func (m *OpenApiCompactLargeLanguageModel) sendErrorChunkToQueue(ctx context.Con
 
 func (m *OpenApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx context.Context, messageId string, finalReason string, fullAssistant string) {
 	defer m.Close()
-	streamResultChunk := &llm.LLMResultChunk{
+	streamResultChunk := &biz_entity.LLMResultChunk{
 		ID:            messageId,
 		Model:         m.Model,
 		PromptMessage: m.PromptMessages,
-		Delta: &llm.LLMResultChunkDelta{
+		Delta: &biz_entity.LLMResultChunkDelta{
 			Index: m.ChunkIndex,
-			Message: &message.AssistantPromptMessage{
-				PromptMessage: &message.PromptMessage{
+			Message: &biz_entity.AssistantPromptMessage{
+				PromptMessage: &po_entity_chat.PromptMessage{
 					Content: fullAssistant,
 				},
 			},
@@ -245,7 +245,7 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 
 	for scanner.Scan() {
 		var (
-			assistantPromptMessage *message.AssistantPromptMessage
+			assistantPromptMessage *biz_entity.AssistantPromptMessage
 		)
 		chunk := strings.TrimSpace(scanner.Text())
 
@@ -315,7 +315,7 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 				deltaContent := deltaMap["content"]
 				if deltaContentStr, ok := deltaContent.(string); ok {
 					m.FullAssistantContent += deltaContentStr
-					assistantPromptMessage = message.NewAssistantPromptMessage(message.ASSISTANT, deltaContentStr)
+					assistantPromptMessage = biz_entity.NewAssistantPromptMessage(po_entity_chat.ASSISTANT, deltaContentStr)
 				}
 			}
 		} else {

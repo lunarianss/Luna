@@ -7,7 +7,7 @@ package llm
 import (
 	"context"
 
-	"github.com/lunarianss/Luna/internal/api-server/entities/message"
+	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers/openai_api_compatible/llm"
 	provider_register "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_registry"
@@ -27,7 +27,7 @@ func NewGroqLargeLanguageModel() *GroqLargeLanguageModel {
 
 var _ provider_register.IModelRegistry = (*GroqLargeLanguageModel)(nil)
 
-func (m *GroqLargeLanguageModel) Invoke(ctx context.Context, queueManager *model_runtime.StreamGenerateQueue, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, stream bool, user string, promptMessages []*message.PromptMessage) {
+func (m *GroqLargeLanguageModel) Invoke(ctx context.Context, queueManager *model_runtime.StreamGenerateQueue, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, stream bool, user string, promptMessages []*po_entity.PromptMessage) {
 	credentials = m.addCustomParameters(credentials)
 	m.OpenApiCompactLargeLanguageModel = &llm.OpenApiCompactLargeLanguageModel{
 		Stream: stream,

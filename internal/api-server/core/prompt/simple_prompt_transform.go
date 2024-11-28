@@ -15,7 +15,7 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/prompt/utils"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
-	"github.com/lunarianss/Luna/internal/api-server/entities/message"
+	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
 )
@@ -54,9 +54,9 @@ func (s *SimplePromptTransform) GetPromptStrAndRules(appMode po_entity.AppMode, 
 	return "", promptTemplateConfig["prompt_rules"].(map[string]interface{}), nil
 
 }
-func (s *SimplePromptTransform) GetChatModelPromptMessage(appMode po_entity.AppMode, prePrompt string, inputs map[string]interface{}, query string, context string, files []string, memory any, modelConfig *app.ModelConfigWithCredentialsEntity) ([]*message.PromptMessage, []string, error) {
+func (s *SimplePromptTransform) GetChatModelPromptMessage(appMode po_entity.AppMode, prePrompt string, inputs map[string]interface{}, query string, context string, files []string, memory any, modelConfig *app.ModelConfigWithCredentialsEntity) ([]*po_entity_chat.PromptMessage, []string, error) {
 
-	var promptMessages []*message.PromptMessage
+	var promptMessages []*po_entity_chat.PromptMessage
 
 	prompt, _, err := s.GetPromptStrAndRules(appMode, modelConfig, prePrompt, inputs, query, context, "")
 
@@ -65,7 +65,7 @@ func (s *SimplePromptTransform) GetChatModelPromptMessage(appMode po_entity.AppM
 	}
 
 	if prompt != "" && query != "" {
-		promptMessages = append(promptMessages, message.NewSystemMessage(prompt))
+		promptMessages = append(promptMessages, po_entity_chat.NewSystemMessage(prompt))
 	}
 
 	if query != "" {
@@ -77,14 +77,14 @@ func (s *SimplePromptTransform) GetChatModelPromptMessage(appMode po_entity.AppM
 	return promptMessages, nil, nil
 }
 
-func (s *SimplePromptTransform) GetLastUserMessage(prompt string, files []string) *message.PromptMessage {
-	return message.NewUserMessage(prompt)
+func (s *SimplePromptTransform) GetLastUserMessage(prompt string, files []string) *po_entity_chat.PromptMessage {
+	return po_entity_chat.NewUserMessage(prompt)
 }
 
-func (s *SimplePromptTransform) GetPrompt(appMode po_entity.AppMode, promptTemplateEntity *app_config.PromptTemplateEntity, inputs map[string]interface{}, query string, files []string, context string, memory any, modelConfig *app.ModelConfigWithCredentialsEntity) ([]*message.PromptMessage, []string, error) {
+func (s *SimplePromptTransform) GetPrompt(appMode po_entity.AppMode, promptTemplateEntity *app_config.PromptTemplateEntity, inputs map[string]interface{}, query string, files []string, context string, memory any, modelConfig *app.ModelConfigWithCredentialsEntity) ([]*po_entity_chat.PromptMessage, []string, error) {
 
 	var (
-		promptMessage []*message.PromptMessage
+		promptMessage []*po_entity_chat.PromptMessage
 		stop          []string
 		err           error
 	)

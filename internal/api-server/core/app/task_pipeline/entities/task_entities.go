@@ -5,7 +5,7 @@
 package entities
 
 import (
-	"github.com/lunarianss/Luna/internal/api-server/entities/llm"
+	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 )
 
 type StreamEvent string
@@ -36,7 +36,7 @@ const (
 
 type ChatAppTaskState struct {
 	Metadata  any
-	LLMResult *llm.LLMResult
+	LLMResult *biz_entity.LLMResult
 }
 
 type IStreamResponse interface {

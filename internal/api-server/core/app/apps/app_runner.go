@@ -13,9 +13,8 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/core/prompt"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
+	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
-	"github.com/lunarianss/Luna/internal/api-server/entities/llm"
-	"github.com/lunarianss/Luna/internal/api-server/entities/message"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime/model_registry"
 )
@@ -24,7 +23,7 @@ type AppRunner struct {
 	AppDomain *domain_service.AppDomain
 }
 
-func (runner *AppRunner) HandleInvokeResultStream(ctx context.Context, invokeResult *llm.LLMResultChunk, streamGenerator *model_runtime.StreamGenerateQueue, end bool, err error) {
+func (runner *AppRunner) HandleInvokeResultStream(ctx context.Context, invokeResult *biz_entity.LLMResultChunk, streamGenerator *model_runtime.StreamGenerateQueue, end bool, err error) {
 
 	if err != nil && invokeResult == nil {
 		streamGenerator.Final(&entities.QueueErrorEvent{
@@ -35,12 +34,12 @@ func (runner *AppRunner) HandleInvokeResultStream(ctx context.Context, invokeRes
 	}
 
 	if end {
-		llmResult := &llm.LLMResult{
+		llmResult := &biz_entity.LLMResult{
 			Model:         invokeResult.Model,
 			PromptMessage: invokeResult.PromptMessage,
 			Reason:        invokeResult.Delta.FinishReason,
-			Message: &message.AssistantPromptMessage{
-				PromptMessage: &message.PromptMessage{
+			Message: &biz_entity.AssistantPromptMessage{
+				PromptMessage: &po_entity_chat.PromptMessage{
 					Content: invokeResult.Delta.Message.Content,
 				},
 			},
@@ -95,10 +94,10 @@ func (r *AppRunner) Run(ctx context.Context, applicationGenerateEntity *app.Chat
 	modelInstance.InvokeLLM(ctx, promptMessages, queueManager, applicationGenerateEntity.ModelConf.Parameters, nil, stop, applicationGenerateEntity.Stream, applicationGenerateEntity.UserID, nil)
 }
 
-func (r *AppRunner) OrganizePromptMessage(ctx context.Context, appRecord *po_entity.App, modelConfig *app.ModelConfigWithCredentialsEntity, promptTemplateEntity *app_config.PromptTemplateEntity, inputs map[string]interface{}, files []string, query string, context string, memory any) ([]*message.PromptMessage, []string, error) {
+func (r *AppRunner) OrganizePromptMessage(ctx context.Context, appRecord *po_entity.App, modelConfig *app.ModelConfigWithCredentialsEntity, promptTemplateEntity *app_config.PromptTemplateEntity, inputs map[string]interface{}, files []string, query string, context string, memory any) ([]*po_entity_chat.PromptMessage, []string, error) {
 
 	var (
-		promptMessages []*message.PromptMessage
+		promptMessages []*po_entity_chat.PromptMessage
 		stop           []string
 		err            error
 	)

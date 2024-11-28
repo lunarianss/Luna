@@ -1,7 +1,3 @@
-// Copyright 2024 Benjamin Lee <cyan0908@163.com>. All rights reserved.
-// Use of this source code is governed by a MIT style
-// license that can be found in the LICENSE file.
-
 package task_pipeline
 
 import (
@@ -15,9 +11,9 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/core/app"
 	appConfigEntities "github.com/lunarianss/Luna/internal/api-server/core/app/app_config/entities"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/task_pipeline/entities"
+	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/repository"
-	"github.com/lunarianss/Luna/internal/api-server/entities/llm"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
 	"github.com/lunarianss/Luna/pkg/log"
@@ -46,7 +42,7 @@ func NewChatAppTaskPipeline(
 		Message:                   message,
 		MessageRepo:               messageRepo,
 		taskState: &entities.ChatAppTaskState{
-			LLMResult: llm.NewEmptyLLMResult(),
+			LLMResult: biz_entity.NewEmptyLLMResult(),
 		},
 	}
 }

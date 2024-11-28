@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/lunarianss/Luna/internal/api-server/entities/message"
+	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
@@ -32,7 +32,7 @@ type ModelRegistries struct {
 }
 
 type IModelRegistry interface {
-	Invoke(ctx context.Context, queueManager *model_runtime.StreamGenerateQueue, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, stream bool, user string, promptMessages []*message.PromptMessage)
+	Invoke(ctx context.Context, queueManager *model_runtime.StreamGenerateQueue, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, stream bool, user string, promptMessages []*po_entity.PromptMessage)
 	RegisterName() string
 }
 

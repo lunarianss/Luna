@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lunarianss/Luna/internal/api-server/core/app/apps"
+	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_runner"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
@@ -26,7 +26,7 @@ import (
 )
 
 type OpenApiCompactLargeLanguageModel struct {
-	*apps.AppRunner
+	*app_runner.AppRunner
 	*model_runtime.StreamGenerateQueue
 	FullAssistantContent string
 	Usage                interface{}
@@ -43,7 +43,7 @@ type OpenApiCompactLargeLanguageModel struct {
 
 func (m *OpenApiCompactLargeLanguageModel) Invoke(ctx context.Context, promptMessages []*po_entity_chat.PromptMessage, modelParameters map[string]interface{}, credentials map[string]interface{}, queueManager *model_runtime.StreamGenerateQueue) {
 	m.Credentials = credentials
-	m.AppRunner = &apps.AppRunner{}
+	m.AppRunner = &app_runner.AppRunner{}
 	m.ModelParameters = modelParameters
 	m.PromptMessages = promptMessages
 	m.StreamGenerateQueue = queueManager

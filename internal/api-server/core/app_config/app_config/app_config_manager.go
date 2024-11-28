@@ -2,14 +2,14 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
-package chat
+package app_config
 
 import (
 	"context"
 	"encoding/json"
 
-	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/model_config"
-	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/prompt_template"
+	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_model_config"
+	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_prompt_template"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
@@ -35,7 +35,7 @@ func (m *ChatAppConfigManager) ConfigValidate(ctx context.Context, tenantID stri
 	)
 
 	// model
-	modelConfigManager := model_config.NewModelConfigManager(m.ProviderDomain)
+	modelConfigManager := app_model_config.NewModelConfigManager(m.ProviderDomain)
 	config, currentRelatedConfigKeys, err := modelConfigManager.ValidateAndSetDefaults(ctx, tenantID, config)
 
 	if err != nil {
@@ -48,7 +48,7 @@ func (m *ChatAppConfigManager) ConfigValidate(ctx context.Context, tenantID stri
 	return config, nil
 }
 
-func (m *ChatAppConfigManager) getAppConfig(ctx context.Context, appModel *po_entity.App, appModelConfig *po_entity.AppModelConfig, conversation *po_entity_chat.Conversation, overrideConfigDict map[string]any) (*biz_entity_app_config.ChatAppConfig, error) {
+func (m *ChatAppConfigManager) GetAppConfig(ctx context.Context, appModel *po_entity.App, appModelConfig *po_entity.AppModelConfig, conversation *po_entity_chat.Conversation, overrideConfigDict map[string]any) (*biz_entity_app_config.ChatAppConfig, error) {
 
 	var (
 		configFrom biz_entity_app_config.EasyUIBasedAppModelConfigFrom
@@ -81,14 +81,14 @@ func (m *ChatAppConfigManager) getAppConfig(ctx context.Context, appModel *po_en
 		configDict = overrideConfigDict
 	}
 
-	modelConfigManager := model_config.NewModelConfigManager(m.ProviderDomain)
+	modelConfigManager := app_model_config.NewModelConfigManager(m.ProviderDomain)
 	modelConfigEntity, err := modelConfigManager.Convert(ctx, configDict)
 
 	if err != nil {
 		return nil, err
 	}
 
-	promptTemplateConfigManager := prompt_template.PromptTemplateConfigManager{}
+	promptTemplateConfigManager := app_prompt_template.PromptTemplateConfigManager{}
 
 	promptTemplate, err := promptTemplateConfigManager.Convert(configDict)
 

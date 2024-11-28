@@ -2,12 +2,12 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
-package apps
+package app_runner
 
 import (
 	"context"
 
-	"github.com/lunarianss/Luna/internal/api-server/core/prompt"
+	prompt "github.com/lunarianss/Luna/internal/api-server/core/app_prompt"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	po_entity_app "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"

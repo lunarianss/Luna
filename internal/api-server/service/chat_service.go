@@ -7,14 +7,13 @@ package service
 import (
 	"context"
 
-	"github.com/lunarianss/Luna/internal/api-server/core/app/apps/chat"
-		biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
+	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_generator"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
+	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
-	
 )
 
 type ChatService struct {
@@ -47,7 +46,7 @@ func (s *ChatService) Generate(ctx context.Context, appID, accountID string, arg
 		return err
 	}
 
-	chatAppGenerator := chat.NewChatAppGenerator(s.appDomain, s.providerDomain, s.chatDomain)
+	chatAppGenerator := app_generator.NewChatAppGenerator(s.appDomain, s.providerDomain, s.chatDomain)
 
 	if err := chatAppGenerator.Generate(ctx, appModel, accountRecord, args, invokeFrom, true); err != nil {
 		return err

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
-package chat
+package app_generator
 
 import (
 	"context"
@@ -12,17 +12,18 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/model_config"
-	"github.com/lunarianss/Luna/internal/api-server/core/app/apps"
-	"github.com/lunarianss/Luna/internal/api-server/core/app/task_pipeline"
+	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_runner"
+	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/task_pipeline"
+	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_config"
+	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_model_config"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/common/repository"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
-	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
 	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_config"
+	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime"
 	"github.com/lunarianss/Luna/internal/pkg/code"
@@ -97,7 +98,7 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, 
 		return err
 	}
 
-	modelConfigManager := NewChatAppConfigManager(g.ProviderDomain)
+	modelConfigManager := app_config.NewChatAppConfigManager(g.ProviderDomain)
 	if args.ModelConfig != nil {
 		if invokeFrom != biz_entity_app_generate.Debugger {
 			return errors.WithCode(code.ErrOnlyOverrideConfigInDebugger, fmt.Sprintf("mode %s is not debugger, so it cannot override", invokeFrom))
@@ -113,7 +114,7 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, 
 		}
 	}
 
-	appConfig, err := modelConfigManager.getAppConfig(c, appModel, appModelConfig, conversationRecord, overrideModelConfigMap)
+	appConfig, err := modelConfigManager.GetAppConfig(c, appModel, appModelConfig, conversationRecord, overrideModelConfigMap)
 
 	if err != nil {
 		return err
@@ -123,7 +124,7 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, 
 		conversationID = conversationRecord.ID
 	}
 
-	modelConverter := model_config.NewModelConfigConverter(g.ProviderDomain)
+	modelConverter := app_model_config.NewModelConfigConverter(g.ProviderDomain)
 	modelConf, err := modelConverter.Convert(c, appConfig.EasyUIBasedAppConfig, true)
 
 	if err != nil {
@@ -185,7 +186,7 @@ func (g *ChatAppGenerator) generateGoRoutine(ctx context.Context, applicationGen
 		}
 	}()
 
-	appRunner := &apps.AppRunner{
+	appRunner := &app_runner.AppRunner{
 		AppDomain: g.AppDomain,
 	}
 

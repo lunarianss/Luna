@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
-package app_generator
+package app_chat_generator
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/infrastructure/log"
-	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_runner"
+	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_chat_runner"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/task_pipeline"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_model_config"
@@ -187,7 +187,7 @@ func (g *ChatAppGenerator) generateGoRoutine(ctx context.Context, applicationGen
 		}
 	}()
 
-	appRunner := &app_runner.AppRunner{
+	appRunner := &app_chat_runner.AppChatRunner{
 		AppDomain: g.AppDomain,
 	}
 

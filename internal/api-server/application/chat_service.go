@@ -7,7 +7,7 @@ package service
 import (
 	"context"
 
-	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_generator"
+	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_chat_generator"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
@@ -46,7 +46,7 @@ func (s *ChatService) Generate(ctx context.Context, appID, accountID string, arg
 		return err
 	}
 
-	chatAppGenerator := app_generator.NewChatAppGenerator(s.appDomain, s.providerDomain, s.chatDomain)
+	chatAppGenerator := app_chat_generator.NewChatAppGenerator(s.appDomain, s.providerDomain, s.chatDomain)
 
 	if err := chatAppGenerator.Generate(ctx, appModel, accountRecord, args, invokeFrom, true); err != nil {
 		return err

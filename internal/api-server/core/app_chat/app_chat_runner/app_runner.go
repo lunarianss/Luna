@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
-package app_runner
+package app_chat_runner
 
 import (
 	"context"
@@ -18,11 +18,11 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime/model_registry"
 )
 
-type AppRunner struct {
+type AppChatRunner struct {
 	AppDomain *domain_service.AppDomain
 }
 
-func (runner *AppRunner) HandleInvokeResultStream(ctx context.Context, invokeResult *biz_entity.LLMResultChunk, streamGenerator *biz_entity.StreamGenerateQueue, end bool, err error) {
+func (runner *AppChatRunner) HandleInvokeResultStream(ctx context.Context, invokeResult *biz_entity.LLMResultChunk, streamGenerator *biz_entity.StreamGenerateQueue, end bool, err error) {
 
 	if err != nil && invokeResult == nil {
 		streamGenerator.Final(&biz_entity.QueueErrorEvent{
@@ -59,7 +59,7 @@ func (runner *AppRunner) HandleInvokeResultStream(ctx context.Context, invokeRes
 
 }
 
-func (r *AppRunner) Run(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, message *po_entity_chat.Message, conversation *po_entity_chat.Conversation, queueManager *biz_entity.StreamGenerateQueue) {
+func (r *AppChatRunner) Run(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, message *po_entity_chat.Message, conversation *po_entity_chat.Conversation, queueManager *biz_entity.StreamGenerateQueue) {
 
 	appRecord, err := r.AppDomain.AppRepo.GetAppByID(ctx, applicationGenerateEntity.AppConfig.AppID)
 
@@ -82,18 +82,16 @@ func (r *AppRunner) Run(ctx context.Context, applicationGenerateEntity *biz_enti
 		return
 	}
 
-	modelInstance := model_registry.ModelInstance{
-		Model:               applicationGenerateEntity.AppConfig.Model.Model,
-		ProviderModelBundle: applicationGenerateEntity.ModelConf.ProviderModelBundle,
-		ModelTypeInstance:   applicationGenerateEntity.ModelConf.ProviderModelBundle.ModelTypeInstance,
-		Credentials:         credentials,
-		Provider:            applicationGenerateEntity.ModelConf.ProviderModelBundle.Configuration.Provider.Provider,
+	modelInstance := model_registry.ModelRegistryCall{
+		Model:       applicationGenerateEntity.AppConfig.Model.Model,
+		Credentials: credentials,
+		Provider:    applicationGenerateEntity.ModelConf.ProviderModelBundle.Configuration.Provider.Provider,
 	}
 
 	modelInstance.InvokeLLM(ctx, promptMessages, queueManager, applicationGenerateEntity.ModelConf.Parameters, nil, stop, applicationGenerateEntity.Stream, applicationGenerateEntity.UserID, nil)
 }
 
-func (r *AppRunner) OrganizePromptMessage(ctx context.Context, appRecord *po_entity_app.App, modelConfig *biz_entity_provider_config.ModelConfigWithCredentialsEntity, promptTemplateEntity *biz_entity_app_config.PromptTemplateEntity, inputs map[string]interface{}, files []string, query string, context string, memory any) ([]*po_entity_chat.PromptMessage, []string, error) {
+func (r *AppChatRunner) OrganizePromptMessage(ctx context.Context, appRecord *po_entity_app.App, modelConfig *biz_entity_provider_config.ModelConfigWithCredentialsEntity, promptTemplateEntity *biz_entity_app_config.PromptTemplateEntity, inputs map[string]interface{}, files []string, query string, context string, memory any) ([]*po_entity_chat.PromptMessage, []string, error) {
 
 	var (
 		promptMessages []*po_entity_chat.PromptMessage

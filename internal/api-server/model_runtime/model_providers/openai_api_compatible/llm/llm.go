@@ -17,16 +17,15 @@ import (
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/infrastructure/log"
-	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_runner"
+	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_chat_runner"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
-	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	biz_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 )
 
 type OpenApiCompactLargeLanguageModel struct {
-	*app_runner.AppRunner
+	*app_chat_runner.AppChatRunner
 	*biz_entity_chat.StreamGenerateQueue
 	FullAssistantContent string
 	Usage                interface{}
@@ -43,7 +42,7 @@ type OpenApiCompactLargeLanguageModel struct {
 
 func (m *OpenApiCompactLargeLanguageModel) Invoke(ctx context.Context, promptMessages []*po_entity_chat.PromptMessage, modelParameters map[string]interface{}, credentials map[string]interface{}, queueManager *biz_entity_chat.StreamGenerateQueue) {
 	m.Credentials = credentials
-	m.AppRunner = &app_runner.AppRunner{}
+	m.AppChatRunner = &app_chat_runner.AppChatRunner{}
 	m.ModelParameters = modelParameters
 	m.PromptMessages = promptMessages
 	m.StreamGenerateQueue = queueManager
@@ -167,34 +166,34 @@ func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context) {
 	}
 }
 
-func (m *OpenApiCompactLargeLanguageModel) sendStreamChunkToQueue(ctx context.Context, messageId string, assistantPromptMessage *biz_entity.AssistantPromptMessage) {
-	streamResultChunk := &biz_entity.LLMResultChunk{
+func (m *OpenApiCompactLargeLanguageModel) sendStreamChunkToQueue(ctx context.Context, messageId string, assistantPromptMessage *biz_entity_chat.AssistantPromptMessage) {
+	streamResultChunk := &biz_entity_chat.LLMResultChunk{
 		ID:            messageId,
 		Model:         m.Model,
 		PromptMessage: m.PromptMessages,
-		Delta: &biz_entity.LLMResultChunkDelta{
+		Delta: &biz_entity_chat.LLMResultChunkDelta{
 			Index:   m.ChunkIndex,
 			Message: assistantPromptMessage,
 		},
 	}
-	m.AppRunner.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, false, nil)
+	m.AppChatRunner.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, false, nil)
 }
 
 func (m *OpenApiCompactLargeLanguageModel) sendErrorChunkToQueue(ctx context.Context, code error) {
 	defer m.Close()
 	err := errors.WithMessage(code, fmt.Sprintf("Error ocurred when handle stream: %#+v", code))
-	m.AppRunner.HandleInvokeResultStream(ctx, nil, m.StreamGenerateQueue, false, err)
+	m.AppChatRunner.HandleInvokeResultStream(ctx, nil, m.StreamGenerateQueue, false, err)
 }
 
 func (m *OpenApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx context.Context, messageId string, finalReason string, fullAssistant string) {
 	defer m.Close()
-	streamResultChunk := &biz_entity.LLMResultChunk{
+	streamResultChunk := &biz_entity_chat.LLMResultChunk{
 		ID:            messageId,
 		Model:         m.Model,
 		PromptMessage: m.PromptMessages,
-		Delta: &biz_entity.LLMResultChunkDelta{
+		Delta: &biz_entity_chat.LLMResultChunkDelta{
 			Index: m.ChunkIndex,
-			Message: &biz_entity.AssistantPromptMessage{
+			Message: &biz_entity_chat.AssistantPromptMessage{
 				PromptMessage: &po_entity_chat.PromptMessage{
 					Content: fullAssistant,
 				},
@@ -202,7 +201,7 @@ func (m *OpenApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx conte
 			FinishReason: finalReason,
 		},
 	}
-	m.AppRunner.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, true, nil)
+	m.AppChatRunner.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, true, nil)
 }
 
 func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Context, response *http.Response) {
@@ -245,7 +244,7 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 
 	for scanner.Scan() {
 		var (
-			assistantPromptMessage *biz_entity.AssistantPromptMessage
+			assistantPromptMessage *biz_entity_chat.AssistantPromptMessage
 		)
 		chunk := strings.TrimSpace(scanner.Text())
 
@@ -315,7 +314,7 @@ func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 				deltaContent := deltaMap["content"]
 				if deltaContentStr, ok := deltaContent.(string); ok {
 					m.FullAssistantContent += deltaContentStr
-					assistantPromptMessage = biz_entity.NewAssistantPromptMessage(po_entity_chat.ASSISTANT, deltaContentStr)
+					assistantPromptMessage = biz_entity_chat.NewAssistantPromptMessage(po_entity_chat.ASSISTANT, deltaContentStr)
 				}
 			}
 		} else {

@@ -15,11 +15,11 @@ import (
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider"
 	biz_entity_model "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider/model_provider"
 
+	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/repository"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/lunarianss/Luna/internal/infrastructure/util"
-	"github.com/lunarianss/Luna/infrastructure/errors"
 )
 
 // ModelConfigWithCredentialsEntity struct

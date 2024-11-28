@@ -10,7 +10,7 @@ import (
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 
-	"github.com/lunarianss/Luna/internal/api-server/entities/base"
+	biz_entity_provider_common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
 	vtor "github.com/lunarianss/Luna/internal/pkg/validation"
 )
 
@@ -29,7 +29,7 @@ func (bv *modelValidation) Register() error {
 	}
 
 	validate.RegisterValidation("valid_model_type", func(fl validator.FieldLevel) bool {
-		return slices.Contains(base.ModelTypeEnums, fl.Field().String())
+		return slices.Contains(biz_entity_provider_common.ModelTypeEnums, fl.Field().String())
 	})
 
 	validate.RegisterTranslation("valid_model_type", trans, func(ut ut.Translator) error {

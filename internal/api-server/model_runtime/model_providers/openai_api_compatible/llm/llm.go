@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/lunarianss/Luna/internal/api-server/core/app/apps"
-	"github.com/lunarianss/Luna/internal/api-server/entities/base"
+	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/entities/llm"
 	"github.com/lunarianss/Luna/internal/api-server/entities/message"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime"
@@ -95,7 +95,7 @@ func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context) {
 	messageItems := make([]map[string]interface{}, 0)
 
 	completionType := m.Credentials["mode"]
-	if completionType == string(base.CHAT) {
+	if completionType == string(po_entity.CHAT) {
 		endpointJoinUrl, err := url.JoinPath(endpointUrlStr, "chat/completions")
 
 		if err != nil {

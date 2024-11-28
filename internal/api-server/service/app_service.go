@@ -15,7 +15,6 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/app"
-	"github.com/lunarianss/Luna/internal/api-server/entities/base"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/internal/pkg/field"
 	"github.com/lunarianss/Luna/internal/pkg/util"
@@ -87,7 +86,7 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 				defaultModel.CompletionParams = make(map[string]interface{})
 			}
 		} else {
-			provider, model, err := as.providerDomain.GetFirstProviderFirstModel(ctx, tenantID, string(base.LLM))
+			provider, model, err := as.providerDomain.GetFirstProviderFirstModel(ctx, tenantID, string(common.LLM))
 			if err != nil {
 				return nil, err
 			}

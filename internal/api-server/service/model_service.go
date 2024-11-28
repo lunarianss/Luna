@@ -16,7 +16,6 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/config"
 
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/provider"
-	"github.com/lunarianss/Luna/internal/api-server/entities/base"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/internal/pkg/util"
 	"github.com/lunarianss/Luna/pkg/errors"
@@ -55,7 +54,7 @@ func (ms *ModelService) SaveModelCredentials(ctx context.Context, tenantId, mode
 	return nil
 }
 
-func (ms *ModelService) GetAccountAvailableModels(ctx context.Context, accountID string, modelType base.ModelType) ([]*dto.ProviderWithModelsResponse, error) {
+func (ms *ModelService) GetAccountAvailableModels(ctx context.Context, accountID string, modelType common.ModelType) ([]*dto.ProviderWithModelsResponse, error) {
 
 	tenantRecord, _, err := ms.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
 

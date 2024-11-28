@@ -3,7 +3,7 @@ package util
 import (
 	"reflect"
 
-	"github.com/lunarianss/Luna/internal/api-server/entities/base"
+	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
 )
 
 const (
@@ -39,7 +39,7 @@ func PatchI18nObject(obj interface{}) {
 						continue
 					}
 
-					if field.Type() == reflect.TypeOf(&base.I18nObject{}) {
+					if field.Type() == reflect.TypeOf(&common.I18nObject{}) {
 						method := field.MethodByName(PATCH_FUNCTION_NAME)
 						if method.IsValid() && method.Type().NumIn() == 0 {
 							method.Call(nil)

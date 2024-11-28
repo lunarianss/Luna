@@ -1,4 +1,4 @@
-package dataset
+package domain_service
 
 import (
 	"context"

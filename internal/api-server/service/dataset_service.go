@@ -3,15 +3,15 @@ package service
 import (
 	"context"
 
-	domain "github.com/lunarianss/Luna/internal/api-server/domain/dataset"
+	"github.com/lunarianss/Luna/internal/api-server/_domain/dataset/domain_service"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/dataset"
 )
 
 type DatasetService struct {
-	datasetDomain *domain.DatasetDomain
+	datasetDomain *domain_service.DatasetDomain
 }
 
-func NewDatasetService(domain *domain.DatasetDomain) *DatasetService {
+func NewDatasetService(domain *domain_service.DatasetDomain) *DatasetService {
 	return &DatasetService{
 		datasetDomain: domain,
 	}

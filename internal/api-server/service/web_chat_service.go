@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/apps/chat"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/apps/entities"
@@ -10,7 +11,6 @@ import (
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/app_running"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat"
-	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 )
 
@@ -19,11 +19,11 @@ type WebChatService struct {
 	accountDomain    *accountDomain.AccountDomain
 	appDomain        *appDomain.AppDomain
 	chatDomain       *chatDomain.ChatDomain
-	providerDomain   *providerDomain.ModelProviderDomain
+	providerDomain   *domain_service.ProviderDomain
 	config           *config.Config
 }
 
-func NewWebChatService(appRunningDomain *domain.AppRunningDomain, accountDomain *accountDomain.AccountDomain, appDomain *appDomain.AppDomain, config *config.Config, providerDomain *providerDomain.ModelProviderDomain, chatDomain *chatDomain.ChatDomain) *WebChatService {
+func NewWebChatService(appRunningDomain *domain.AppRunningDomain, accountDomain *accountDomain.AccountDomain, appDomain *appDomain.AppDomain, config *config.Config, providerDomain *domain_service.ProviderDomain, chatDomain *chatDomain.ChatDomain) *WebChatService {
 	return &WebChatService{
 		appRunningDomain: appRunningDomain,
 		accountDomain:    accountDomain,

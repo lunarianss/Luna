@@ -4,18 +4,19 @@ import (
 	"context"
 	"fmt"
 
+	biz_entity_model "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider/model_provider"
+	biz_entity "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider_configuration"
 	"github.com/lunarianss/Luna/internal/api-server/entities/message"
-	"github.com/lunarianss/Luna/internal/api-server/entities/model_provider"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime"
 	"github.com/lunarianss/Luna/pkg/log"
 )
 
 type ModelInstance struct {
-	ProviderModelBundle *model_provider.ProviderModelBundle
+	ProviderModelBundle *biz_entity.ProviderModelBundleRuntime
 	Model               string
 	Provider            string
 	Credentials         map[string]interface{}
-	ModelTypeInstance   *model_provider.AIModel
+	ModelTypeInstance   *biz_entity_model.AIModelRuntime
 }
 
 func (ac *ModelInstance) InvokeLLM(ctx context.Context, promptMessage []*message.PromptMessage, queueManager *model_runtime.StreamGenerateQueue, modelParameters map[string]interface{}, tools interface{}, stop []string, stream bool, user string, callbacks interface{}) {

@@ -31,7 +31,7 @@ func (m *GroqLargeLanguageModel) Invoke(ctx context.Context, queueManager *model
 	credentials = m.addCustomParameters(credentials)
 	m.OpenApiCompactLargeLanguageModel = &llm.OpenApiCompactLargeLanguageModel{
 		Stream: stream,
-		Model: model,
+		Model:  model,
 	}
 
 	m.OpenApiCompactLargeLanguageModel.Invoke(ctx, promptMessages, modelParameters, credentials, queueManager)

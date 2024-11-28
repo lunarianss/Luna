@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/core/app"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/model_config"
@@ -15,7 +16,6 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/core/app/task_pipeline"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat"
-	domain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 	"github.com/lunarianss/Luna/internal/api-server/entities/message"
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
@@ -27,11 +27,11 @@ import (
 
 type ChatAppGenerator struct {
 	AppDomain      *appDomain.AppDomain
-	ProviderDomain *domain.ModelProviderDomain
+	ProviderDomain *domain_service.ProviderDomain
 	chatDomain     *chatDomain.ChatDomain
 }
 
-func NewChatAppGenerator(appDomain *appDomain.AppDomain, providerDomain *domain.ModelProviderDomain, chatDomain *chatDomain.ChatDomain) *ChatAppGenerator {
+func NewChatAppGenerator(appDomain *appDomain.AppDomain, providerDomain *domain_service.ProviderDomain, chatDomain *chatDomain.ChatDomain) *ChatAppGenerator {
 
 	return &ChatAppGenerator{
 		AppDomain:      appDomain,

@@ -6,20 +6,20 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
+	common "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/common_relation"
+	biz_entity_provider_config "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider_configuration"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config"
-	domain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
-	"github.com/lunarianss/Luna/internal/api-server/entities/base"
-	"github.com/lunarianss/Luna/internal/api-server/entities/model_provider"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
 )
 
 type ModelConfigManager struct {
-	ProviderDomain *domain.ModelProviderDomain
+	ProviderDomain *domain_service.ProviderDomain
 }
 
-func NewModelConfigManager(providerDomain *domain.ModelProviderDomain) *ModelConfigManager {
+func NewModelConfigManager(providerDomain *domain_service.ProviderDomain) *ModelConfigManager {
 	return &ModelConfigManager{
 		ProviderDomain: providerDomain,
 	}
@@ -33,7 +33,7 @@ func (m *ModelConfigManager) ValidateAndSetDefaults(ctx context.Context, tenantI
 		modelConfig     map[string]interface{}
 		modelNameStr    string
 		modelName       interface{}
-		availableModels []*model_provider.ModelWithProviderEntity
+		availableModels []*biz_entity_provider_config.ModelWithProvider
 		isOk            bool
 		providerName    interface{}
 		providerNameStr string
@@ -88,7 +88,7 @@ func (m *ModelConfigManager) ValidateAndSetDefaults(ctx context.Context, tenantI
 		if providerConfiguration.Provider.Provider != providerNameStr {
 			continue
 		}
-		availableModels, err = m.ProviderDomain.GetProviderModels(ctx, providerConfiguration, base.LLM, false)
+		availableModels, err = providerConfiguration.GetProviderModels(ctx, common.LLM, false)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -108,7 +108,7 @@ func (m *ModelConfigManager) ValidateAndSetDefaults(ctx context.Context, tenantI
 
 	for _, availableModel := range availableModels {
 		if availableModel.Model == modelNameStr {
-			if modelMode, isOk = availableModel.ModelProperties[base.MODE]; isOk {
+			if modelMode, isOk = availableModel.ModelProperties[common.MODE]; isOk {
 				modelModeStr, _ = modelMode.(string)
 			}
 			break

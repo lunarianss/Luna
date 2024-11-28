@@ -2,6 +2,8 @@ package route
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
+	repo_impl "github.com/lunarianss/Luna/internal/api-server/_repo"
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/web/chat_app/chat"
 	"github.com/lunarianss/Luna/internal/api-server/dao"
@@ -9,7 +11,6 @@ import (
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/app"
 	appRunningDomain "github.com/lunarianss/Luna/internal/api-server/domain/app_running"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat"
-	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
 	"github.com/lunarianss/Luna/internal/api-server/service"
 	"github.com/lunarianss/Luna/internal/pkg/email"
@@ -51,17 +52,21 @@ func (a *WebChatRoutes) Register(g *gin.Engine) error {
 	appRunningDao := dao.NewAppRunningDao(gormIns)
 	accountDao := dao.NewAccountDao(gormIns)
 	tenantDao := dao.NewTenantDao(gormIns)
-	modelDao := dao.NewModelDao(gormIns)
-	providerDao := dao.NewModelProvider(gormIns)
 	messageDao := dao.NewMessageDao(gormIns)
+
+	providerRepo := repo_impl.NewProviderRepoImpl(gormIns)
+	modelProviderRepo := repo_impl.NewModelProviderRepoImpl(gormIns)
+	providerConfigurationsManager := domain_service.NewProviderConfigurationsManager(providerRepo, modelProviderRepo, "", nil)
 
 	// domain
 	appDomain := domain.NewAppDomain(appDao, appRunningDao, messageDao)
 	appRunningDomain := appRunningDomain.NewAppRunningDomain(appRunningDao)
 	accountDomain := accountDomain.NewAccountDomain(accountDao, redisIns, config, email, tenantDao)
-	providerDomain := providerDomain.NewModelProviderDomain(providerDao, modelDao)
+	// providerDomain := providerDomain.NewModelProviderDomain(providerDao, modelDao)
 	chatDomain := chatDomain.NewChatDomain(messageDao)
 
+	// domain
+	providerDomain := domain_service.NewProviderDomain(providerRepo, modelProviderRepo, providerConfigurationsManager)
 	webChatService := service.NewWebChatService(appRunningDomain, accountDomain, appDomain, config, providerDomain, chatDomain)
 
 	webSiteController := controller.NewWebChatController(webChatService)

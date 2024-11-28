@@ -2,7 +2,7 @@ package biz_entity
 
 import (
 	common "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/common_relation"
-	"github.com/lunarianss/Luna/internal/api-server/model/v1"
+	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/po_entity"
 )
 
 type ModelStatus string
@@ -31,7 +31,7 @@ type ModelSettings struct {
 
 type SystemConfiguration struct {
 	Enabled             bool
-	CurrentQuotaType    model.ProviderQuotaType
+	CurrentQuotaType    po_entity.ProviderQuotaType
 	QuotaConfigurations []*QuotaConfiguration
 	Credentials         interface{}
 }
@@ -43,7 +43,7 @@ type RestrictModels struct {
 }
 
 type QuotaConfiguration struct {
-	QuotaType      model.ProviderQuotaType
+	QuotaType      po_entity.ProviderQuotaType
 	QuotaUnit      QuotaUnit
 	QuotaLimit     int
 	QuotaUsed      int

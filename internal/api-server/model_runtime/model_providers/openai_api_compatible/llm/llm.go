@@ -16,7 +16,6 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/entities/llm"
 	"github.com/lunarianss/Luna/internal/api-server/entities/message"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime"
-
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
 	"github.com/lunarianss/Luna/pkg/log"
@@ -44,7 +43,6 @@ func (m *OpenApiCompactLargeLanguageModel) Invoke(ctx context.Context, promptMes
 	m.ModelParameters = modelParameters
 	m.PromptMessages = promptMessages
 	m.StreamGenerateQueue = queueManager
-
 	m.generate(ctx)
 }
 

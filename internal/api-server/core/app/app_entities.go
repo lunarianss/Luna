@@ -1,8 +1,9 @@
 package app
 
 import (
+	biz_entity "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider/model_provider"
+	biz_entity_provider_config "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/provider_configuration"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config"
-	"github.com/lunarianss/Luna/internal/api-server/entities/model_provider"
 )
 
 // Define types for your enums
@@ -17,14 +18,14 @@ const (
 
 // ModelConfigWithCredentialsEntity struct
 type ModelConfigWithCredentialsEntity struct {
-	Provider            string                              `json:"provider"`
-	Model               string                              `json:"model"`
-	ModelSchema         *model_provider.AIModelEntity       `json:"model_schema"`
-	Mode                string                              `json:"mode"`
-	ProviderModelBundle *model_provider.ProviderModelBundle `json:"provider_model_bundle"`
-	Credentials         interface{}                         `json:"credentials"`
-	Parameters          map[string]interface{}              `json:"parameters"`
-	Stop                []string                            `json:"stop"`
+	Provider            string                                                 `json:"provider"`
+	Model               string                                                 `json:"model"`
+	ModelSchema         *biz_entity.AIModelStaticConfiguration                 `json:"model_schema"`
+	Mode                string                                                 `json:"mode"`
+	ProviderModelBundle *biz_entity_provider_config.ProviderModelBundleRuntime `json:"provider_model_bundle"`
+	Credentials         interface{}                                            `json:"credentials"`
+	Parameters          map[string]interface{}                                 `json:"parameters"`
+	Stop                []string                                               `json:"stop"`
 }
 
 // AppGenerateEntity struct

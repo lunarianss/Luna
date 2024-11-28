@@ -31,9 +31,10 @@ func (r *ModelProviderRoutes) Register(g *gin.Engine) error {
 	modelProviderRepo := repo_impl.NewModelProviderRepoImpl(gormIns)
 	accountRepo := repo_impl.NewAccountRepoImpl(gormIns)
 	tenantRepo := repo_impl.NewTenantRepoImpl(gormIns)
+	providerConfigurationsManager := domain_service.NewProviderConfigurationsManager(providerRepo, modelProviderRepo, "", nil)
 
 	// domain
-	modelProviderDomain := domain_service.NewProviderDomain(providerRepo, modelProviderRepo, nil)
+	modelProviderDomain := domain_service.NewProviderDomain(providerRepo, modelProviderRepo, providerConfigurationsManager)
 	accountDomain := accountDomain.NewAccountDomain(accountRepo, nil, nil, nil, tenantRepo)
 
 	// config

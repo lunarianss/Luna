@@ -8,11 +8,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
+	common "github.com/lunarianss/Luna/internal/api-server/_domain/provider/entity/biz_entity/common_relation"
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/app"
 	modelDomain "github.com/lunarianss/Luna/internal/api-server/domain/model"
-	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/app"
 	"github.com/lunarianss/Luna/internal/api-server/entities/base"
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
@@ -28,13 +29,13 @@ import (
 type AppService struct {
 	appDomain      *domain.AppDomain
 	modelDomain    *modelDomain.ModelDomain
-	providerDomain *providerDomain.ModelProviderDomain
+	providerDomain *domain_service.ProviderDomain
 	accountDomain  *accountDomain.AccountDomain
 	db             *gorm.DB
 	config         *config.Config
 }
 
-func NewAppService(appDomain *domain.AppDomain, modelDomain *modelDomain.ModelDomain, providerDomain *providerDomain.ModelProviderDomain, accountDomain *accountDomain.AccountDomain, db *gorm.DB, config *config.Config) *AppService {
+func NewAppService(appDomain *domain.AppDomain, modelDomain *modelDomain.ModelDomain, providerDomain *domain_service.ProviderDomain, accountDomain *accountDomain.AccountDomain, db *gorm.DB, config *config.Config) *AppService {
 	return &AppService{appDomain: appDomain, modelDomain: modelDomain, providerDomain: providerDomain, accountDomain: accountDomain, db: db, config: config}
 }
 
@@ -68,10 +69,10 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 	util.DeepCopyUsingJSON(appTemplate.ModelConfig, defaultModelConfig)
 
 	if defaultModelConfig.Model.Name != "" {
-		modelInstance, err := as.providerDomain.GetDefaultModelInstance(ctx, tenantID, base.LLM)
+		modelInstance, err := as.providerDomain.GetDefaultModelInstance(ctx, tenantID, common.LLM)
 
 		if err != nil && errors.IsCode(err, code.ErrDefaultModelNotFound) {
-			log.Warnf("%s doesn't no default type of  %s model", tenantID, base.LLM)
+			log.Warnf("%s doesn't no default type of  %s model", tenantID, common.LLM)
 		}
 
 		if modelInstance != nil {
@@ -86,7 +87,7 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 				defaultModel.Provider = modelInstance.Provider
 				defaultModel.Name = modelInstance.Model
 
-				if v, ok := modelSchema.ModelProperties[base.MODE].(string); ok {
+				if v, ok := modelSchema.ModelProperties[common.MODE].(string); ok {
 					defaultModel.Mode = v
 				}
 				defaultModel.CompletionParams = make(map[string]interface{})

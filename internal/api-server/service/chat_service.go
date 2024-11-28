@@ -7,23 +7,23 @@ package service
 import (
 	"context"
 
+	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/apps/chat"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/apps/entities"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/app"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat"
-	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 )
 
 type ChatService struct {
 	appDomain      *domain.AppDomain
-	providerDomain *providerDomain.ModelProviderDomain
+	providerDomain *domain_service.ProviderDomain
 	accountDomain  *accountDomain.AccountDomain
 	chatDomain     *chatDomain.ChatDomain
 }
 
-func NewChatService(appDomain *domain.AppDomain, providerDomain *providerDomain.ModelProviderDomain, accountDomain *accountDomain.AccountDomain, chatDomain *chatDomain.ChatDomain) *ChatService {
+func NewChatService(appDomain *domain.AppDomain, providerDomain *domain_service.ProviderDomain, accountDomain *accountDomain.AccountDomain, chatDomain *chatDomain.ChatDomain) *ChatService {
 	return &ChatService{
 		appDomain:      appDomain,
 		providerDomain: providerDomain,

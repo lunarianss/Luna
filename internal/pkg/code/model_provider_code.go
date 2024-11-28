@@ -23,7 +23,8 @@ const (
 	ErrTypeOfPromptMessage
 	// ErrCallLargeLanguageModel - 500: Error occurred when call large language model post api.
 	ErrCallLargeLanguageModel
-
 	// ErrConvertDelimiterString - 500: Error occurred when convert delimiter to string.
 	ErrConvertDelimiterString
+	// ErrNotSetManagerForProvider - 500: Error occurred when not set manager for provider.
+	ErrNotSetManagerForProvider
 )

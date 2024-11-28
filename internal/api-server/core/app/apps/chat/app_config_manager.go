@@ -4,20 +4,20 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/model_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/prompt_template"
-	domain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
 	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/pkg/errors"
 )
 
 type ChatAppConfigManager struct {
-	ProviderDomain *domain.ModelProviderDomain
+	ProviderDomain *domain_service.ProviderDomain
 }
 
-func NewChatAppConfigManager(providerDomain *domain.ModelProviderDomain) *ChatAppConfigManager {
+func NewChatAppConfigManager(providerDomain *domain_service.ProviderDomain) *ChatAppConfigManager {
 	return &ChatAppConfigManager{
 		ProviderDomain: providerDomain,
 	}

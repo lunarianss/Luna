@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/lunarianss/Luna/internal/api-server/model/v1"
+	"github.com/lunarianss/Luna/internal/api-server/_domain/chat/entity/po_entity"
 )
 
 type ListConversationQuery struct {
@@ -44,7 +44,7 @@ type WebMessageDetail struct {
 	UpdatedAt          int64                  `json:"updated_at"`
 }
 
-func MessageRecordToDetail(c *model.Message) *WebMessageDetail {
+func MessageRecordToDetail(c *po_entity.Message) *WebMessageDetail {
 	return &WebMessageDetail{
 		ID:                 c.ID,
 		ConversationID:     c.ConversationID,
@@ -62,7 +62,7 @@ func MessageRecordToDetail(c *model.Message) *WebMessageDetail {
 	}
 }
 
-func ConversationRecordToDetail(c *model.Conversation) *WebConversationDetail {
+func ConversationRecordToDetail(c *po_entity.Conversation) *WebConversationDetail {
 	return &WebConversationDetail{
 		ID:           c.ID,
 		Name:         c.Name,

@@ -2,11 +2,12 @@ package route
 
 import (
 	"github.com/gin-gonic/gin"
+	appDomain "github.com/lunarianss/Luna/internal/api-server/_domain/app/domain_service"
+	webAppDomain "github.com/lunarianss/Luna/internal/api-server/_domain/web_app/domain_service"
+	repo_impl "github.com/lunarianss/Luna/internal/api-server/_repo"
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/web/chat_app/passport"
-	"github.com/lunarianss/Luna/internal/api-server/dao"
-	domain "github.com/lunarianss/Luna/internal/api-server/domain/app"
-	appRunningDomain "github.com/lunarianss/Luna/internal/api-server/domain/app_running"
+
 	"github.com/lunarianss/Luna/internal/api-server/service"
 	"github.com/lunarianss/Luna/internal/pkg/jwt"
 	"github.com/lunarianss/Luna/internal/pkg/mysql"
@@ -34,16 +35,15 @@ func (a *PassportRoutes) Register(g *gin.Engine) error {
 	if err != nil {
 		return err
 	}
-	// dao
-	appDao := dao.NewAppDao(gormIns)
-	appRunningDao := dao.NewAppRunningDao(gormIns)
-	messageDao := dao.NewMessageDao(gormIns)
+	// repos
+	appRepo := repo_impl.NewAppRepoImpl(gormIns)
+	webAppRepo := repo_impl.NewWebAppRepoImpl(gormIns)
 
 	// domain
-	appDomain := domain.NewAppDomain(appDao, appRunningDao, messageDao)
-	appRunningDomain := appRunningDomain.NewAppRunningDomain(appRunningDao)
+	appDomain := appDomain.NewAppDomain(appRepo, webAppRepo, gormIns)
+	webAppDomain := webAppDomain.NewWebAppDomain(webAppRepo)
 
-	passportService := service.NewPassportService(appRunningDomain, appDomain, config, jwt)
+	passportService := service.NewPassportService(webAppDomain, appDomain, config, jwt)
 	passportController := controller.NewPassportController(passportService)
 	v1 := g.Group("/v1")
 	authV1 := v1.Group("/api")

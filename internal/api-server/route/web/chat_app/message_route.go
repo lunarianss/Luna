@@ -2,14 +2,15 @@ package route
 
 import (
 	"github.com/gin-gonic/gin"
+	accountDomain "github.com/lunarianss/Luna/internal/api-server/_domain/account/domain_service"
+	appDomain "github.com/lunarianss/Luna/internal/api-server/_domain/app/domain_service"
+	chatDomain "github.com/lunarianss/Luna/internal/api-server/_domain/chat/domain_service"
+	"github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
+	webAppDomain "github.com/lunarianss/Luna/internal/api-server/_domain/web_app/domain_service"
+	repo_impl "github.com/lunarianss/Luna/internal/api-server/_repo"
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/web/chat_app/message"
-	"github.com/lunarianss/Luna/internal/api-server/dao"
-	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account"
-	domain "github.com/lunarianss/Luna/internal/api-server/domain/app"
-	appRunningDomain "github.com/lunarianss/Luna/internal/api-server/domain/app_running"
-	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat"
-	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
+
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
 	"github.com/lunarianss/Luna/internal/api-server/service"
 	"github.com/lunarianss/Luna/internal/pkg/email"
@@ -46,23 +47,24 @@ func (a *WebMessageRoutes) Register(g *gin.Engine) error {
 		return err
 	}
 
-	// dao
-	appDao := dao.NewAppDao(gormIns)
-	appRunningDao := dao.NewAppRunningDao(gormIns)
-	accountDao := dao.NewAccountDao(gormIns)
-	tenantDao := dao.NewTenantDao(gormIns)
-	modelDao := dao.NewModelDao(gormIns)
-	providerDao := dao.NewModelProvider(gormIns)
-	messageDao := dao.NewMessageDao(gormIns)
+	// repos
+	accountRepo := repo_impl.NewAccountRepoImpl(gormIns)
+	tenantRepo := repo_impl.NewTenantRepoImpl(gormIns)
+	appRepo := repo_impl.NewAppRepoImpl(gormIns)
+	messageRepo := repo_impl.NewMessageRepoImpl(gormIns)
+	providerRepo := repo_impl.NewProviderRepoImpl(gormIns)
+	webAppRepo := repo_impl.NewWebAppRepoImpl(gormIns)
+	modelProviderRepo := repo_impl.NewModelProviderRepoImpl(gormIns)
+	providerConfigurationsManager := domain_service.NewProviderConfigurationsManager(providerRepo, modelProviderRepo, "", nil)
 
 	// domain
-	appDomain := domain.NewAppDomain(appDao, appRunningDao, messageDao)
-	appRunningDomain := appRunningDomain.NewAppRunningDomain(appRunningDao)
-	accountDomain := accountDomain.NewAccountDomain(accountDao, redisIns, config, email, tenantDao)
-	providerDomain := providerDomain.NewModelProviderDomain(providerDao, modelDao)
-	chatDomain := chatDomain.NewChatDomain(messageDao)
+	providerDomain := domain_service.NewProviderDomain(providerRepo, modelProviderRepo, providerConfigurationsManager)
+	appDomain := appDomain.NewAppDomain(appRepo, webAppRepo, gormIns)
+	accountDomain := accountDomain.NewAccountDomain(accountRepo, redisIns, config, email, tenantRepo)
+	chatDomain := chatDomain.NewChatDomain(messageRepo)
+	webAppDomain := webAppDomain.NewWebAppDomain(webAppRepo)
 
-	webMessageService := service.NewWebMessageService(appRunningDomain, accountDomain, appDomain, config, providerDomain, chatDomain)
+	webMessageService := service.NewWebMessageService(webAppDomain, accountDomain, appDomain, config, providerDomain, chatDomain)
 
 	webSiteController := controller.NewMessageController(webMessageService)
 	v1 := g.Group("/v1")

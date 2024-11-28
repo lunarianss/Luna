@@ -3,20 +3,17 @@ package service
 import (
 	"context"
 
-	domain "github.com/lunarianss/Luna/internal/api-server/domain/account"
-	tenantDomain "github.com/lunarianss/Luna/internal/api-server/domain/tenant"
+	domain "github.com/lunarianss/Luna/internal/api-server/_domain/account/domain_service"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/workspace"
 )
 
 type TenantService struct {
 	accountDomain *domain.AccountDomain
-	tenantDomain  *tenantDomain.TenantDomain
 }
 
-func NewTenantService(accountDomain *domain.AccountDomain, tenantDomain *tenantDomain.TenantDomain) *TenantService {
+func NewTenantService(accountDomain *domain.AccountDomain) *TenantService {
 	return &TenantService{
 		accountDomain: accountDomain,
-		tenantDomain:  tenantDomain,
 	}
 }
 
@@ -49,7 +46,7 @@ func (s *TenantService) GetJoinTenants(ctx context.Context, accountID string) ([
 		return nil, err
 	}
 
-	tenants, err := s.tenantDomain.TenantRepo.FindTenantsJoinByAccount(ctx, accountRecord)
+	tenants, err := s.accountDomain.TenantRepo.FindTenantsJoinByAccount(ctx, accountRecord)
 
 	if err != nil {
 		return nil, err

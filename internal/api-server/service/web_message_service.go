@@ -4,36 +4,36 @@ import (
 	"context"
 	"time"
 
+	accountDomain "github.com/lunarianss/Luna/internal/api-server/_domain/account/domain_service"
+	appDomain "github.com/lunarianss/Luna/internal/api-server/_domain/app/domain_service"
+	chatDomain "github.com/lunarianss/Luna/internal/api-server/_domain/chat/domain_service"
+	"github.com/lunarianss/Luna/internal/api-server/_domain/chat/entity/po_entity"
+	providerDomain "github.com/lunarianss/Luna/internal/api-server/_domain/provider/domain_service"
+	webAppDomain "github.com/lunarianss/Luna/internal/api-server/_domain/web_app/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app/apps/entities"
-	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account"
-	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app"
-	domain "github.com/lunarianss/Luna/internal/api-server/domain/app_running"
-	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat"
-	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/web_app"
-	"github.com/lunarianss/Luna/internal/api-server/model/v1"
 	"github.com/lunarianss/Luna/pkg/errors"
 	"gorm.io/gorm"
 )
 
 type WebMessageService struct {
-	appRunningDomain *domain.AppRunningDomain
-	accountDomain    *accountDomain.AccountDomain
-	appDomain        *appDomain.AppDomain
-	chatDomain       *chatDomain.ChatDomain
-	providerDomain   *providerDomain.ModelProviderDomain
-	config           *config.Config
+	webAppDomain   *webAppDomain.WebAppDomain
+	accountDomain  *accountDomain.AccountDomain
+	appDomain      *appDomain.AppDomain
+	chatDomain     *chatDomain.ChatDomain
+	providerDomain *providerDomain.ProviderDomain
+	config         *config.Config
 }
 
-func NewWebMessageService(appRunningDomain *domain.AppRunningDomain, accountDomain *accountDomain.AccountDomain, appDomain *appDomain.AppDomain, config *config.Config, providerDomain *providerDomain.ModelProviderDomain, chatDomain *chatDomain.ChatDomain) *WebMessageService {
+func NewWebMessageService(webAppDomain *webAppDomain.WebAppDomain, accountDomain *accountDomain.AccountDomain, appDomain *appDomain.AppDomain, config *config.Config, providerDomain *providerDomain.ProviderDomain, chatDomain *chatDomain.ChatDomain) *WebMessageService {
 	return &WebMessageService{
-		appRunningDomain: appRunningDomain,
-		accountDomain:    accountDomain,
-		appDomain:        appDomain,
-		config:           config,
-		providerDomain:   providerDomain,
-		chatDomain:       chatDomain,
+		webAppDomain:   webAppDomain,
+		accountDomain:  accountDomain,
+		appDomain:      appDomain,
+		config:         config,
+		providerDomain: providerDomain,
+		chatDomain:     chatDomain,
 	}
 }
 
@@ -45,7 +45,7 @@ func (s *WebMessageService) ListConversations(ctx context.Context, appID, endUse
 		pinnedConversationIDs []string
 	)
 
-	endUser, err := s.appRunningDomain.AppRunningRepo.GetEndUserByID(ctx, endUserID)
+	endUser, err := s.webAppDomain.WebAppRepo.GetEndUserByID(ctx, endUserID)
 
 	if err != nil {
 		return nil, err
@@ -100,7 +100,7 @@ func (s *WebMessageService) ListConversations(ctx context.Context, appID, endUse
 
 func (s *WebMessageService) ListMessages(ctx context.Context, appID, endUserID string, args *dto.ListMessageQuery, invokeFrom entities.InvokeForm) (*dto.ListMessageResponse, error) {
 
-	endUser, err := s.appRunningDomain.AppRunningRepo.GetEndUserByID(ctx, endUserID)
+	endUser, err := s.webAppDomain.WebAppRepo.GetEndUserByID(ctx, endUserID)
 
 	if err != nil {
 		return nil, err
@@ -134,7 +134,7 @@ func (s *WebMessageService) ListMessages(ctx context.Context, appID, endUserID s
 }
 
 func (s *WebMessageService) UnPinnedConversation(ctx context.Context, appID, endUserID, conversationID string) error {
-	endUser, err := s.appRunningDomain.AppRunningRepo.GetEndUserByID(ctx, endUserID)
+	endUser, err := s.webAppDomain.WebAppRepo.GetEndUserByID(ctx, endUserID)
 
 	if err != nil {
 		return err
@@ -154,7 +154,7 @@ func (s *WebMessageService) UnPinnedConversation(ctx context.Context, appID, end
 
 func (s *WebMessageService) PinnedConversation(ctx context.Context, appID, endUserID, conversationID string) error {
 
-	endUser, err := s.appRunningDomain.AppRunningRepo.GetEndUserByID(ctx, endUserID)
+	endUser, err := s.webAppDomain.WebAppRepo.GetEndUserByID(ctx, endUserID)
 
 	if err != nil {
 		return err
@@ -172,7 +172,7 @@ func (s *WebMessageService) PinnedConversation(ctx context.Context, appID, endUs
 			return err
 		}
 
-		pinnedConversation := &model.PinnedConversation{
+		pinnedConversation := &po_entity.PinnedConversation{
 			AppID:          appID,
 			ConversationID: conversation.ID,
 			CreatedByRole:  endUser.GetAccountType(),
@@ -191,7 +191,7 @@ func (s *WebMessageService) PinnedConversation(ctx context.Context, appID, endUs
 
 func (s *WebMessageService) DeleteConversation(ctx context.Context, appID, endUserID, conversationID string) error {
 
-	endUser, err := s.appRunningDomain.AppRunningRepo.GetEndUserByID(ctx, endUserID)
+	endUser, err := s.webAppDomain.WebAppRepo.GetEndUserByID(ctx, endUserID)
 
 	if err != nil {
 		return err
@@ -210,7 +210,7 @@ func (s *WebMessageService) DeleteConversation(ctx context.Context, appID, endUs
 }
 
 func (s *WebMessageService) RenameConversation(ctx context.Context, appID, endUserID, conversationID string, params *dto.RenameConversationRequest) error {
-	endUser, err := s.appRunningDomain.AppRunningRepo.GetEndUserByID(ctx, endUserID)
+	endUser, err := s.webAppDomain.WebAppRepo.GetEndUserByID(ctx, endUserID)
 
 	if err != nil {
 		return err

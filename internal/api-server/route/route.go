@@ -16,8 +16,6 @@ import (
 
 // Route unified registration portal
 func init() {
-	server.RegisterRoute(&blogRoutes{})
-
 	// console/workspace
 	server.RegisterRoute(&consoleWorkSpaceRoute.ModelProviderRoutes{})
 	server.RegisterRoute(&consoleWorkSpaceRoute.ModelRoutes{})

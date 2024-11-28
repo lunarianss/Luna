@@ -2,11 +2,10 @@ package route
 
 import (
 	"github.com/gin-gonic/gin"
+	accountDomain "github.com/lunarianss/Luna/internal/api-server/_domain/account/domain_service"
+	repo_impl "github.com/lunarianss/Luna/internal/api-server/_repo"
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	controller "github.com/lunarianss/Luna/internal/api-server/controller/gin/v1/workspace"
-	"github.com/lunarianss/Luna/internal/api-server/dao"
-	domain "github.com/lunarianss/Luna/internal/api-server/domain/account"
-	tenantDomain "github.com/lunarianss/Luna/internal/api-server/domain/tenant"
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
 	"github.com/lunarianss/Luna/internal/api-server/service"
 	"github.com/lunarianss/Luna/internal/pkg/email"
@@ -42,16 +41,15 @@ func (a *WorkspaceRoutes) Register(g *gin.Engine) error {
 		return err
 	}
 
-	// dao
-	accountDao := dao.NewAccountDao(gormIns)
-	tenantDao := dao.NewTenantDao(gormIns)
+	// repos
+	accountRepo := repo_impl.NewAccountRepoImpl(gormIns)
+	tenantRepo := repo_impl.NewTenantRepoImpl(gormIns)
 
 	// domain
-	accountDomain := domain.NewAccountDomain(accountDao, redisIns, config, email, tenantDao)
-	tenantDomain := tenantDomain.NewTenantDomain(tenantDao)
 
+	accountDomain := accountDomain.NewAccountDomain(accountRepo, redisIns, config, email, tenantRepo)
 	// service
-	tenantService := service.NewTenantService(accountDomain, tenantDomain)
+	tenantService := service.NewTenantService(accountDomain)
 
 	workspaceController := controller.NewWorkspaceController(tenantService)
 	v1 := g.Group("/v1")

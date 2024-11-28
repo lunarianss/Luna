@@ -5,9 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	jwtV5 "github.com/golang-jwt/jwt/v5"
+	appDomain "github.com/lunarianss/Luna/internal/api-server/_domain/app/domain_service"
+	webAppDomain "github.com/lunarianss/Luna/internal/api-server/_domain/web_app/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/config"
-	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app"
-	domain "github.com/lunarianss/Luna/internal/api-server/domain/app_running"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/passport"
 	"github.com/lunarianss/Luna/internal/pkg/code"
 	"github.com/lunarianss/Luna/internal/pkg/jwt"
@@ -15,26 +15,26 @@ import (
 )
 
 type PassportService struct {
-	appRunningDomain *domain.AppRunningDomain
-	appDomain        *appDomain.AppDomain
-	config           *config.Config
-	jwt              *jwt.JWT
+	webAppDomain *webAppDomain.WebAppDomain
+	appDomain    *appDomain.AppDomain
+	config       *config.Config
+	jwt          *jwt.JWT
 }
 
-func NewPassportService(appRunningDomain *domain.AppRunningDomain,
+func NewPassportService(webAppDomain *webAppDomain.WebAppDomain,
 	appDomain *appDomain.AppDomain,
 	config *config.Config,
 	jwt *jwt.JWT) *PassportService {
 	return &PassportService{
-		appRunningDomain: appRunningDomain,
-		appDomain:        appDomain,
-		config:           config,
-		jwt:              jwt,
+		webAppDomain: webAppDomain,
+		appDomain:    appDomain,
+		config:       config,
+		jwt:          jwt,
 	}
 }
 
 func (ps *PassportService) AcquirePassport(c *gin.Context, appCode string) (*dto.AcquirePassportResponse, error) {
-	siteRecord, err := ps.appRunningDomain.AppRunningRepo.GetSiteByCode(c, appCode)
+	siteRecord, err := ps.webAppDomain.WebAppRepo.GetSiteByCode(c, appCode)
 
 	if err != nil {
 		return nil, err
@@ -50,7 +50,7 @@ func (ps *PassportService) AcquirePassport(c *gin.Context, appCode string) (*dto
 		return nil, errors.WithCode(code.ErrAppStatusNotNormal, "status %s not normal", appRecord.Status)
 	}
 
-	endUserRecord, err := ps.appRunningDomain.CreateEndUser(c, appRecord)
+	endUserRecord, err := ps.webAppDomain.CreateEndUser(c, appRecord)
 
 	if err != nil {
 		return nil, err

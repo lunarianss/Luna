@@ -7,9 +7,9 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/lunarianss/Luna/internal/pkg/core"
-	"github.com/lunarianss/Luna/internal/pkg/util"
-	"github.com/lunarianss/Luna/pkg/log"
+	"github.com/lunarianss/Luna/infrastructure/log"
+	"github.com/lunarianss/Luna/internal/infrastructure/core"
+	"github.com/lunarianss/Luna/internal/infrastructure/util"
 )
 
 func (bc *ModelProviderController) List(c *gin.Context) {

@@ -14,9 +14,9 @@ import (
 	controller "github.com/lunarianss/Luna/internal/api-server/interface/gin/v1/web/chat_app/site"
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
 	repo_impl "github.com/lunarianss/Luna/internal/api-server/repository"
-	"github.com/lunarianss/Luna/internal/pkg/email"
-	"github.com/lunarianss/Luna/internal/pkg/mysql"
-	"github.com/lunarianss/Luna/internal/pkg/redis"
+	"github.com/lunarianss/Luna/internal/infrastructure/email"
+	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
+	"github.com/lunarianss/Luna/internal/infrastructure/redis"
 )
 
 type WebSiteRoutes struct{}

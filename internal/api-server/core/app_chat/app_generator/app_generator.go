@@ -12,6 +12,8 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/lunarianss/Luna/infrastructure/errors"
+	"github.com/lunarianss/Luna/infrastructure/log"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_runner"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/task_pipeline"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_config"
@@ -26,9 +28,7 @@ import (
 	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime"
-	"github.com/lunarianss/Luna/internal/pkg/code"
-	"github.com/lunarianss/Luna/pkg/errors"
-	"github.com/lunarianss/Luna/pkg/log"
+	"github.com/lunarianss/Luna/internal/infrastructure/code"
 )
 
 type ChatAppGenerator struct {

@@ -7,7 +7,7 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/auth"
-	"github.com/lunarianss/Luna/internal/pkg/core"
+	"github.com/lunarianss/Luna/internal/infrastructure/core"
 )
 
 func (ac *AuthController) EmailValidity(c *gin.Context) {

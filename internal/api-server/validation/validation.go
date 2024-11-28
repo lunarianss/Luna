@@ -5,7 +5,7 @@
 package validation
 
 import (
-	"github.com/lunarianss/Luna/internal/pkg/validation"
+	"github.com/lunarianss/Luna/internal/infrastructure/validation"
 )
 
 // validation unified registration portal

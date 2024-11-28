@@ -16,9 +16,9 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/config"
 
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/provider"
-	"github.com/lunarianss/Luna/internal/pkg/code"
-	"github.com/lunarianss/Luna/internal/pkg/util"
-	"github.com/lunarianss/Luna/pkg/errors"
+	"github.com/lunarianss/Luna/internal/infrastructure/code"
+	"github.com/lunarianss/Luna/internal/infrastructure/util"
+	"github.com/lunarianss/Luna/infrastructure/errors"
 )
 
 type ModelService struct {

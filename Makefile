@@ -13,7 +13,7 @@ all: tidy add-copyright format lint cover build
 # Build options
 
 ROOT_PACKAGE=github.com/lunarianss/Luna
-VERSION_PACKAGE=github.com/lunarianss/Luna/pkg/app
+VERSION_PACKAGE=github.com/lunarianss/Luna/infrastructure/app
 
 # ==============================================================================
 # Includes

@@ -11,7 +11,7 @@ import (
 	setupRoute "github.com/lunarianss/Luna/internal/api-server/facade/console/setup"
 	consoleWorkSpaceRoute "github.com/lunarianss/Luna/internal/api-server/facade/console/workspace"
 	chatAppRoute "github.com/lunarianss/Luna/internal/api-server/facade/web/chat_app"
-	"github.com/lunarianss/Luna/internal/pkg/server"
+	"github.com/lunarianss/Luna/internal/infrastructure/server"
 )
 
 // Route unified registration portal

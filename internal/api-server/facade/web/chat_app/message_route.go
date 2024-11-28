@@ -17,9 +17,9 @@ import (
 
 	service "github.com/lunarianss/Luna/internal/api-server/application"
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
-	"github.com/lunarianss/Luna/internal/pkg/email"
-	"github.com/lunarianss/Luna/internal/pkg/mysql"
-	"github.com/lunarianss/Luna/internal/pkg/redis"
+	"github.com/lunarianss/Luna/internal/infrastructure/email"
+	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
+	"github.com/lunarianss/Luna/internal/infrastructure/redis"
 )
 
 type WebMessageRoutes struct{}

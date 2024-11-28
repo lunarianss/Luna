@@ -13,8 +13,8 @@ import (
 	repo_impl "github.com/lunarianss/Luna/internal/api-server/repository"
 
 	service "github.com/lunarianss/Luna/internal/api-server/application"
-	"github.com/lunarianss/Luna/internal/pkg/jwt"
-	"github.com/lunarianss/Luna/internal/pkg/mysql"
+	"github.com/lunarianss/Luna/internal/infrastructure/jwt"
+	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
 )
 
 type PassportRoutes struct{}

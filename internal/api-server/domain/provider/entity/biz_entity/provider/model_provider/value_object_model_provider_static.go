@@ -6,7 +6,7 @@ package biz_entity
 
 import (
 	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
-	"github.com/lunarianss/Luna/internal/pkg/field"
+	"github.com/lunarianss/Luna/internal/infrastructure/field"
 )
 
 type ParameterType string

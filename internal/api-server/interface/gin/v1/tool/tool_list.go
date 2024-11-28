@@ -6,7 +6,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/lunarianss/Luna/internal/pkg/core"
+	"github.com/lunarianss/Luna/internal/infrastructure/core"
 )
 
 func (tc *ToolController) List(c *gin.Context) {

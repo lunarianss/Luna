@@ -13,7 +13,7 @@ import (
 	controller "github.com/lunarianss/Luna/internal/api-server/interface/gin/v1/model-provider/model"
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
 	repo_impl "github.com/lunarianss/Luna/internal/api-server/repository"
-	"github.com/lunarianss/Luna/internal/pkg/mysql"
+	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
 )
 
 type ModelRoutes struct{}

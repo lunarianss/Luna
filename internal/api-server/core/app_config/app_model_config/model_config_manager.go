@@ -15,8 +15,8 @@ import (
 	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_config"
 	biz_entity_provider_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_configuration"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers"
-	"github.com/lunarianss/Luna/internal/pkg/code"
-	"github.com/lunarianss/Luna/pkg/errors"
+	"github.com/lunarianss/Luna/internal/infrastructure/code"
+	"github.com/lunarianss/Luna/infrastructure/errors"
 )
 
 type ModelConfigManager struct {

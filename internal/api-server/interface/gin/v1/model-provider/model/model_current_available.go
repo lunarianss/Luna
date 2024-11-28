@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/provider"
-	"github.com/lunarianss/Luna/internal/pkg/core"
-	"github.com/lunarianss/Luna/internal/pkg/util"
+	"github.com/lunarianss/Luna/internal/infrastructure/core"
+	"github.com/lunarianss/Luna/internal/infrastructure/util"
 )
 
 func (mc *ModelController) GetAccountAvailableModels(c *gin.Context) {

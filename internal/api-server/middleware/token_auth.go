@@ -8,10 +8,10 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lunarianss/Luna/internal/pkg/code"
-	"github.com/lunarianss/Luna/internal/pkg/core"
-	"github.com/lunarianss/Luna/internal/pkg/jwt"
-	"github.com/lunarianss/Luna/pkg/errors"
+	"github.com/lunarianss/Luna/internal/infrastructure/code"
+	"github.com/lunarianss/Luna/internal/infrastructure/core"
+	"github.com/lunarianss/Luna/internal/infrastructure/jwt"
+	"github.com/lunarianss/Luna/infrastructure/errors"
 )
 
 func TokenAuthMiddleware() gin.HandlerFunc {

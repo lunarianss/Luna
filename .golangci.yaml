@@ -313,7 +313,7 @@ linters-settings:
           - $gostd
         deny:
           - pkg: "github.com/pkg/errors"
-            desc: Should be replaced by github.com/lunarianss/Luna/pkg/errors package
+            desc: Should be replaced by github.com/lunarianss/Luna/infrastructure/errors package
   gomodguard:
     allowed:
       modules: # List of allowed modules

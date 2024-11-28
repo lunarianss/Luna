@@ -7,8 +7,8 @@ package model_providers
 import (
 	"testing"
 
-	"github.com/lunarianss/Luna/pkg/errors"
-	"github.com/lunarianss/Luna/pkg/log"
+	"github.com/lunarianss/Luna/infrastructure/errors"
+	"github.com/lunarianss/Luna/infrastructure/log"
 )
 
 func TestModelProviderFactory(t *testing.T) {

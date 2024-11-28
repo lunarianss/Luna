@@ -14,8 +14,8 @@ import (
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_config"
-	"github.com/lunarianss/Luna/internal/pkg/code"
-	"github.com/lunarianss/Luna/pkg/errors"
+	"github.com/lunarianss/Luna/internal/infrastructure/code"
+	"github.com/lunarianss/Luna/infrastructure/errors"
 )
 
 type ChatAppConfigManager struct {

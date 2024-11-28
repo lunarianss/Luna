@@ -13,7 +13,7 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/domain/account/entity/po_entity"
 	accountDto "github.com/lunarianss/Luna/internal/api-server/dto/account"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/auth"
-	"github.com/lunarianss/Luna/internal/pkg/util"
+	"github.com/lunarianss/Luna/internal/infrastructure/util"
 	"gorm.io/gorm"
 )
 

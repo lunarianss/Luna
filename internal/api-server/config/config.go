@@ -6,8 +6,8 @@ package config
 
 import (
 	"github.com/lunarianss/Luna/internal/api-server/options"
-	"github.com/lunarianss/Luna/internal/pkg/code"
-	"github.com/lunarianss/Luna/pkg/errors"
+	"github.com/lunarianss/Luna/internal/infrastructure/code"
+	"github.com/lunarianss/Luna/infrastructure/errors"
 )
 
 // Config is the running configuration structure of the Luna service.

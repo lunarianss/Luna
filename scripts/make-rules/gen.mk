@@ -16,13 +16,13 @@ gen.errcode: gen.errcode.code gen.errcode.doc
 .PHONY: gen.errcode.code
 gen.errcode.code: tools.verify.codegen
 	@echo "===========> Generating Luna error code go source files"
-	@codegen -type=int ${ROOT_DIR}/internal/pkg/code
+	@codegen -type=int ${ROOT_DIR}/internal/infrastructure/code
 
 .PHONY: gen.errcode.doc
 gen.errcode.doc: tools.verify.codegen
 	@echo "===========> Generating error code markdown documentation"
 	@codegen -type=int -doc \
-		-output ${ROOT_DIR}/docs/guide/zh-CN/api/error_code_generated.md ${ROOT_DIR}/internal/pkg/code
+		-output ${ROOT_DIR}/docs/guide/zh-CN/api/error_code_generated.md ${ROOT_DIR}/internal/infrastructure/code
 
 .PHONY: gen.ca.%
 gen.ca.%:

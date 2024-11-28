@@ -7,7 +7,7 @@ package po_entity
 import (
 	"github.com/google/uuid"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity"
-	"github.com/lunarianss/Luna/internal/pkg/field"
+	"github.com/lunarianss/Luna/internal/infrastructure/field"
 	"gorm.io/gorm"
 )
 

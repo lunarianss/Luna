@@ -8,7 +8,7 @@ import (
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 
-	vtor "github.com/lunarianss/Luna/internal/pkg/validation"
+	vtor "github.com/lunarianss/Luna/internal/infrastructure/validation"
 )
 
 type blogValidation struct{}

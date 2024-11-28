@@ -11,9 +11,9 @@ import (
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	controller "github.com/lunarianss/Luna/internal/api-server/interface/gin/v1/auth"
 	repo_impl "github.com/lunarianss/Luna/internal/api-server/repository"
-	"github.com/lunarianss/Luna/internal/pkg/email"
-	"github.com/lunarianss/Luna/internal/pkg/mysql"
-	"github.com/lunarianss/Luna/internal/pkg/redis"
+	"github.com/lunarianss/Luna/internal/infrastructure/email"
+	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
+	"github.com/lunarianss/Luna/internal/infrastructure/redis"
 )
 
 type AuthRoutes struct{}

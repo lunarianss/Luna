@@ -18,7 +18,7 @@ import (
 	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
 	webAppDomain "github.com/lunarianss/Luna/internal/api-server/domain/web_app/domain_service"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/web_app"
-	"github.com/lunarianss/Luna/pkg/errors"
+	"github.com/lunarianss/Luna/infrastructure/errors"
 	"gorm.io/gorm"
 )
 

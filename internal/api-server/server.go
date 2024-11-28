@@ -11,14 +11,14 @@ import (
 	_ "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers"
 	_ "github.com/lunarianss/Luna/internal/api-server/validation"
 
-	"github.com/lunarianss/Luna/internal/pkg/email"
-	"github.com/lunarianss/Luna/internal/pkg/jwt"
-	"github.com/lunarianss/Luna/internal/pkg/mysql"
-	"github.com/lunarianss/Luna/internal/pkg/redis"
-	"github.com/lunarianss/Luna/internal/pkg/server"
-	"github.com/lunarianss/Luna/internal/pkg/validation"
-	"github.com/lunarianss/Luna/pkg/log"
-	"github.com/lunarianss/Luna/pkg/shutdown"
+	"github.com/lunarianss/Luna/infrastructure/log"
+	"github.com/lunarianss/Luna/infrastructure/shutdown"
+	"github.com/lunarianss/Luna/internal/infrastructure/email"
+	"github.com/lunarianss/Luna/internal/infrastructure/jwt"
+	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
+	"github.com/lunarianss/Luna/internal/infrastructure/redis"
+	"github.com/lunarianss/Luna/internal/infrastructure/server"
+	"github.com/lunarianss/Luna/internal/infrastructure/validation"
 )
 
 type LunaApiServer struct {

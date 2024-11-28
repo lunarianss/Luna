@@ -8,7 +8,7 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/config"
 
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/system"
-	"github.com/lunarianss/Luna/internal/pkg/options"
+	"github.com/lunarianss/Luna/internal/infrastructure/options"
 )
 
 type FeatureService struct {

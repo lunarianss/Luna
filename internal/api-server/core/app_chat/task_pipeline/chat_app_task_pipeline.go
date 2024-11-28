@@ -11,12 +11,12 @@ import (
 
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 
+	"github.com/lunarianss/Luna/infrastructure/errors"
+	"github.com/lunarianss/Luna/infrastructure/log"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/repository"
 	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
-	"github.com/lunarianss/Luna/internal/pkg/code"
-	"github.com/lunarianss/Luna/pkg/errors"
-	"github.com/lunarianss/Luna/pkg/log"
+	"github.com/lunarianss/Luna/internal/infrastructure/code"
 )
 
 type ChatAppTaskPipeline struct {

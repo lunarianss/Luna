@@ -15,14 +15,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lunarianss/Luna/infrastructure/errors"
+	"github.com/lunarianss/Luna/infrastructure/log"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_runner"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime"
-	"github.com/lunarianss/Luna/internal/pkg/code"
-	"github.com/lunarianss/Luna/pkg/errors"
-	"github.com/lunarianss/Luna/pkg/log"
+	"github.com/lunarianss/Luna/internal/infrastructure/code"
 )
 
 type OpenApiCompactLargeLanguageModel struct {

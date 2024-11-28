@@ -11,7 +11,7 @@ import (
 	"github.com/go-playground/validator/v10"
 
 	biz_entity_provider_common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
-	vtor "github.com/lunarianss/Luna/internal/pkg/validation"
+	vtor "github.com/lunarianss/Luna/internal/infrastructure/validation"
 )
 
 type modelValidation struct{}

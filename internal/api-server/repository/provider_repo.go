@@ -14,9 +14,9 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/repository"
 	model_providers "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers"
-	"github.com/lunarianss/Luna/internal/pkg/code"
-	"github.com/lunarianss/Luna/internal/pkg/mysql"
-	"github.com/lunarianss/Luna/pkg/errors"
+	"github.com/lunarianss/Luna/internal/infrastructure/code"
+	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
+	"github.com/lunarianss/Luna/infrastructure/errors"
 )
 
 type ProviderRepoImpl struct {

@@ -19,7 +19,7 @@ import (
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 )
 
-type ChatAppTaskPipeline struct {
+type chatAppTaskPipeline struct {
 	ApplicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity
 	StreamResultChunkQueue    chan *biz_entity.MessageQueueMessage
 	StreamFinalChunkQueue     chan *biz_entity.MessageQueueMessage
@@ -34,8 +34,8 @@ func NewChatAppTaskPipeline(
 	applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity,
 	streamResultChunkQueue chan *biz_entity.MessageQueueMessage,
 	streamFinalChunkQueue chan *biz_entity.MessageQueueMessage,
-	messageRepo repository.MessageRepo, message *po_entity.Message) *ChatAppTaskPipeline {
-	return &ChatAppTaskPipeline{
+	messageRepo repository.MessageRepo, message *po_entity.Message) *chatAppTaskPipeline {
+	return &chatAppTaskPipeline{
 		ApplicationGenerateEntity: applicationGenerateEntity,
 		StreamResultChunkQueue:    streamResultChunkQueue,
 		StreamFinalChunkQueue:     streamFinalChunkQueue,
@@ -47,7 +47,7 @@ func NewChatAppTaskPipeline(
 	}
 }
 
-func (tpp *ChatAppTaskPipeline) Process(ctx context.Context, stream bool) {
+func (tpp *chatAppTaskPipeline) Process(ctx context.Context, stream bool) {
 	if !tpp.setFlush(ctx) {
 		return
 	}
@@ -57,7 +57,7 @@ func (tpp *ChatAppTaskPipeline) Process(ctx context.Context, stream bool) {
 	}
 }
 
-func (tpp *ChatAppTaskPipeline) flush(streamString string) error {
+func (tpp *chatAppTaskPipeline) flush(streamString string) error {
 	if _, err := fmt.Fprintf(tpp.sender, "data: %s\n\n", streamString); err != nil {
 		return err
 	}
@@ -65,7 +65,7 @@ func (tpp *ChatAppTaskPipeline) flush(streamString string) error {
 	return nil
 }
 
-func (tpp *ChatAppTaskPipeline) setFlush(c context.Context) bool {
+func (tpp *chatAppTaskPipeline) setFlush(c context.Context) bool {
 
 	ginContext, ok := c.(*gin.Context)
 
@@ -85,13 +85,13 @@ func (tpp *ChatAppTaskPipeline) setFlush(c context.Context) bool {
 	return true
 }
 
-func (tpp *ChatAppTaskPipeline) sendFallBackMessageEnd() {
+func (tpp *chatAppTaskPipeline) sendFallBackMessageEnd() {
 	if err := tpp.flush("data: {\"event\": \"message_end\"}\n\n"); err != nil {
 		log.Errorf("failed to send fallback message end to stream response: %v", err)
 	}
 }
 
-func (tpp *ChatAppTaskPipeline) process_stream_chunk_queue() {
+func (tpp *chatAppTaskPipeline) process_stream_chunk_queue() {
 
 	for v := range tpp.StreamResultChunkQueue {
 		if chunkEvent, ok := v.Event.(*biz_entity.QueueLLMChunkEvent); ok {
@@ -108,7 +108,7 @@ func (tpp *ChatAppTaskPipeline) process_stream_chunk_queue() {
 	}
 }
 
-func (tpp *ChatAppTaskPipeline) process_stream_end_chunk_queue(c context.Context) {
+func (tpp *chatAppTaskPipeline) process_stream_end_chunk_queue(c context.Context) {
 	for v := range tpp.StreamFinalChunkQueue {
 		if mc, ok := v.Event.(*biz_entity.QueueMessageEndEvent); ok {
 			tpp.taskState.LLMResult = mc.LLMResult
@@ -131,12 +131,12 @@ func (tpp *ChatAppTaskPipeline) process_stream_end_chunk_queue(c context.Context
 	}
 }
 
-func (tpp *ChatAppTaskPipeline) process_stream_response(c context.Context) {
+func (tpp *chatAppTaskPipeline) process_stream_response(c context.Context) {
 	tpp.process_stream_chunk_queue()
 	tpp.process_stream_end_chunk_queue(c)
 }
 
-func (tpp *ChatAppTaskPipeline) messageChunkToStreamResponse(answer string) error {
+func (tpp *chatAppTaskPipeline) messageChunkToStreamResponse(answer string) error {
 	messageChunkResponse := &biz_entity.MessageStreamResponse{
 		ID:                   tpp.Message.ID,
 		Answer:               answer,
@@ -162,7 +162,7 @@ func (tpp *ChatAppTaskPipeline) messageChunkToStreamResponse(answer string) erro
 	return nil
 }
 
-func (tpp *ChatAppTaskPipeline) messageErrToStreamResponse(ctx context.Context, err error) error {
+func (tpp *chatAppTaskPipeline) messageErrToStreamResponse(ctx context.Context, err error) error {
 
 	var errStr = "Internal Server Error, please contact support."
 
@@ -209,7 +209,7 @@ func (tpp *ChatAppTaskPipeline) messageErrToStreamResponse(ctx context.Context, 
 	return nil
 }
 
-func (tpp *ChatAppTaskPipeline) messageEndToStreamResponse() error {
+func (tpp *chatAppTaskPipeline) messageEndToStreamResponse() error {
 	messageEndResponse := &biz_entity.MessageEndStreamResponse{
 		ID: tpp.Message.ID,
 		StreamResponse: &biz_entity.StreamResponse{
@@ -232,11 +232,11 @@ func (tpp *ChatAppTaskPipeline) messageEndToStreamResponse() error {
 	return nil
 }
 
-// func (t *ChatAppTaskPipeline) toStreamResponse(c context.Context) {
+// func (t *chatAppTaskPipeline) toStreamResponse(c context.Context) {
 
 // }
 
-func (tpp *ChatAppTaskPipeline) saveMessage(c context.Context) error {
+func (tpp *chatAppTaskPipeline) saveMessage(c context.Context) error {
 	messageRecord, err := tpp.MessageRepo.GetMessageByID(c, tpp.Message.ID)
 
 	if err != nil {

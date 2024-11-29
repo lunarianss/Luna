@@ -25,7 +25,7 @@ import (
 )
 
 type OpenApiCompactLargeLanguageModel struct {
-	*app_chat_runner.AppChatRunner
+	*app_chat_runner.AppBaseChatRunner
 	*biz_entity_chat.StreamGenerateQueue
 	FullAssistantContent string
 	Usage                interface{}
@@ -42,7 +42,7 @@ type OpenApiCompactLargeLanguageModel struct {
 
 func (m *OpenApiCompactLargeLanguageModel) Invoke(ctx context.Context, promptMessages []*po_entity_chat.PromptMessage, modelParameters map[string]interface{}, credentials map[string]interface{}, queueManager *biz_entity_chat.StreamGenerateQueue) {
 	m.Credentials = credentials
-	m.AppChatRunner = &app_chat_runner.AppChatRunner{}
+	m.AppBaseChatRunner = app_chat_runner.NewAppBaseChatRunner()
 	m.ModelParameters = modelParameters
 	m.PromptMessages = promptMessages
 	m.StreamGenerateQueue = queueManager
@@ -176,13 +176,13 @@ func (m *OpenApiCompactLargeLanguageModel) sendStreamChunkToQueue(ctx context.Co
 			Message: assistantPromptMessage,
 		},
 	}
-	m.AppChatRunner.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, false, nil)
+	m.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, false, nil)
 }
 
 func (m *OpenApiCompactLargeLanguageModel) sendErrorChunkToQueue(ctx context.Context, code error) {
 	defer m.Close()
 	err := errors.WithMessage(code, fmt.Sprintf("Error ocurred when handle stream: %#+v", code))
-	m.AppChatRunner.HandleInvokeResultStream(ctx, nil, m.StreamGenerateQueue, false, err)
+	m.HandleInvokeResultStream(ctx, nil, m.StreamGenerateQueue, false, err)
 }
 
 func (m *OpenApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx context.Context, messageId string, finalReason string, fullAssistant string) {
@@ -201,7 +201,7 @@ func (m *OpenApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx conte
 			FinishReason: finalReason,
 		},
 	}
-	m.AppChatRunner.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, true, nil)
+	m.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, true, nil)
 }
 
 func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Context, response *http.Response) {

@@ -1,10 +1,57 @@
 package biz_entity
 
+type CreatedByRole string
+
+const (
+	CreatedByRoleAccount CreatedByRole = "account"
+	CreatedByRoleEndUser CreatedByRole = "end_user"
+)
+
+type EasyUIBasedAppModelConfigFrom string
+
+const (
+	Args                       EasyUIBasedAppModelConfigFrom = "args"
+	AppLatestConfig            EasyUIBasedAppModelConfigFrom = "app-latest-config"
+	ConversationSpecificConfig EasyUIBasedAppModelConfigFrom = "conversation-specific-config"
+)
+
+type PromptType string
+
+const (
+	SIMPLE   PromptType = "simple"
+	ADVANCED PromptType = "advanced"
+)
+
+type UserFrom string
+
+const (
+	UserFromAccount UserFrom = "account"
+	UserFromEndUser UserFrom = "end-user"
+)
+
+type WorkflowRunTriggeredFrom string
+
+const (
+	WorkflowRunTriggeredFromDebugging WorkflowRunTriggeredFrom = "debugging"
+	WorkflowRunTriggeredFromAppRun    WorkflowRunTriggeredFrom = "app-run"
+)
+
+type VariableEntityType string
+
+const (
+	TextInput        VariableEntityType = "text-input"
+	Select           VariableEntityType = "select"
+	Paragraph        VariableEntityType = "paragraph"
+	Number           VariableEntityType = "number"
+	ExternalDataTool VariableEntityType = "external_data_tool"
+	File             VariableEntityType = "file"
+	FileList         VariableEntityType = "file-list"
+)
+
 type AppModelConfigEnable struct {
 	Enable bool `json:"enable"`
 }
 
-// Model holds the model-specific configuration.
 type ModelInfo struct {
 	Provider         string                 `json:"provider"`
 	Name             string                 `json:"name"`

@@ -12,10 +12,10 @@ import (
 	assembler "github.com/lunarianss/Luna/internal/api-server/assembler/chat"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_model_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_prompt_template"
+	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
-	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_config"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 )

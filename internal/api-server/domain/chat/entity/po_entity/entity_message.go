@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/lunarianss/Luna/infrastructure/errors"
-	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_config"
+	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/lunarianss/Luna/internal/infrastructure/field"
 	"gorm.io/gorm"

@@ -153,7 +153,7 @@ type EasyUIBasedAppConfig struct {
 	*AppConfig
 	AppModelConfigFrom    EasyUIBasedAppModelConfigFrom `json:"app_model_config_from"`
 	AppModelConfigID      string                        `json:"app_model_config_id"`
-	AppModelConfigDict    map[string]interface{}        `json:"app_model_config_dict"`
+	AppModelConfig        *AppModelConfig               `json:"app_model_config_dict"`
 	Model                 *ModelConfigEntity            `json:"model"`
 	PromptTemplate        *PromptTemplateEntity         `json:"prompt_template"`
 	ExternalDataVariables []ExternalDataVariableEntity  `json:"external_data_variables"`

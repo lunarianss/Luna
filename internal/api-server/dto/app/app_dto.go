@@ -83,25 +83,25 @@ type AppDetailRequest struct {
 }
 
 type AppDetail struct {
-	ID                  string                    `json:"id"`
-	Name                string                    `json:"name"`
-	Description         string                    `json:"description"`
-	Mode                string                    `json:"mode"`
-	Icon                string                    `json:"icon"`
-	IconType            string                    `json:"icon_type"`
-	IconBackground      string                    `json:"icon_background"`
-	EnableSite          int                       `json:"enable_site"`
-	EnableApi           int                       `json:"enable_api"`
-	ModelConfig         *po_entity.AppModelConfig `json:"model_config"`
-	Workflow            map[string]interface{}    `json:"workflow"`
-	UseIconAsAnswerIcon int                       `json:"use_icon_as_answer_icon"`
-	APIBaseUrl          string                    `json:"api_base_url"`
-	CreatedAt           int                       `json:"created_at"`
-	UpdatedAt           int                       `json:"updated_at"`
-	CreatedBy           string                    `json:"created_by"`
-	UpdatedBy           string                    `json:"updated_by"`
-	DeletedTools        []interface{}             `json:"deleted_tools"`
-	SiteDetail          *SiteDetail               `json:"site"`
+	ID                  string                   `json:"id"`
+	Name                string                   `json:"name"`
+	Description         string                   `json:"description"`
+	Mode                string                   `json:"mode"`
+	Icon                string                   `json:"icon"`
+	IconType            string                   `json:"icon_type"`
+	IconBackground      string                   `json:"icon_background"`
+	EnableSite          int                      `json:"enable_site"`
+	EnableApi           int                      `json:"enable_api"`
+	ModelConfig         po_entity.AppModelConfig `json:"model_config"`
+	Workflow            map[string]interface{}   `json:"workflow"`
+	UseIconAsAnswerIcon int                      `json:"use_icon_as_answer_icon"`
+	APIBaseUrl          string                   `json:"api_base_url"`
+	CreatedAt           int                      `json:"created_at"`
+	UpdatedAt           int                      `json:"updated_at"`
+	CreatedBy           string                   `json:"created_by"`
+	UpdatedBy           string                   `json:"updated_by"`
+	DeletedTools        []interface{}            `json:"deleted_tools"`
+	SiteDetail          *SiteDetail              `json:"site"`
 }
 
 func AppRecordToDetail(app *po_entity.App, config *config.Config, modelConfig *po_entity.AppModelConfig, siteRecord *po_entity_web_app.Site) *AppDetail {
@@ -121,37 +121,13 @@ func AppRecordToDetail(app *po_entity.App, config *config.Config, modelConfig *p
 		CreatedBy:           app.CreatedBy,
 		UpdatedBy:           app.UpdatedBy,
 		UseIconAsAnswerIcon: int(app.UseIconAsAnswerIcon),
-		ModelConfig:         modelConfig,
+		ModelConfig:         *modelConfig,
 		SiteDetail:          SiteRecordToSiteDetail(siteRecord, config),
 		APIBaseUrl:          config.SystemOptions.ApiBaseUrl,
 	}
 
-	defaultDisable := map[string]any{
-		"enabled": false,
-	}
-
-	defaultEnable := map[string]any{
-		"enabled": true,
-	}
-
-	if appDetail.ModelConfig.SuggestedQuestionsAfterAnswer == nil {
-		appDetail.ModelConfig.SuggestedQuestionsAfterAnswer = defaultDisable
-	}
-
-	if appDetail.ModelConfig.SpeechToText == nil {
-		appDetail.ModelConfig.SpeechToText = defaultDisable
-	}
-
-	if appDetail.ModelConfig.TextToSpeech == nil {
-		appDetail.ModelConfig.TextToSpeech = defaultDisable
-	}
-
-	if appDetail.ModelConfig.RetrieverResource == nil {
-		appDetail.ModelConfig.RetrieverResource = defaultEnable
-	}
-
-	if appDetail.ModelConfig.MoreLikeThis == nil {
-		appDetail.ModelConfig.MoreLikeThis = defaultDisable
+	if !appDetail.ModelConfig.RetrieverResource.Enable {
+		appDetail.ModelConfig.RetrieverResource.Enable = true
 	}
 
 	if appDetail.ModelConfig.SensitiveWordAvoidance == nil {

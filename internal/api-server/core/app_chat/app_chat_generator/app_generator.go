@@ -69,7 +69,7 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, 
 		conversationRecord     *po_entity_chat.Conversation
 		messageRecord          *po_entity_chat.Message
 		extras                 map[string]interface{}
-		overrideModelConfigMap map[string]interface{}
+		overrideModelConfigMap *dto.AppModelConfigDto
 		conversationID         string
 		err                    error
 	)
@@ -100,19 +100,17 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, 
 	}
 
 	modelConfigManager := app_config.NewChatAppConfigManager(g.ProviderDomain)
-	if args.ModelConfig != nil {
+	if args.ModelConfig.AppID != "" {
 		if invokeFrom != biz_entity_app_generate.Debugger {
 			return errors.WithCode(code.ErrOnlyOverrideConfigInDebugger, fmt.Sprintf("mode %s is not debugger, so it cannot override", invokeFrom))
 		}
 
-		overrideModelConfigMap, err = modelConfigManager.ConfigValidate(c, appModel.TenantID, args.ModelConfig)
+		overrideModelConfigMap, err = modelConfigManager.ConfigValidate(c, appModel.TenantID, &args.ModelConfig)
 		if err != nil {
 			return err
 		}
 
-		overrideModelConfigMap["retriever_resource"] = map[string]any{
-			"enabled": true,
-		}
+		overrideModelConfigMap.RetrieverResource.Enable = true
 	}
 
 	appConfig, err := modelConfigManager.GetAppConfig(c, appModel, appModelConfig, conversationRecord, overrideModelConfigMap)
@@ -219,7 +217,7 @@ func (g *ChatAppGenerator) InitGenerateRecords(ctx context.Context, chatAppGener
 		appModelConfigID    string
 		modelProvider       string
 		modelID             string
-		overrideModelConfig map[string]interface{}
+		overrideModelConfig *biz_entity_app_config.AppModelConfig
 	)
 
 	if chatAppGenerateEntity.InvokeFrom == biz_entity_app_generate.WebApp || chatAppGenerateEntity.InvokeFrom == biz_entity_app_generate.ServiceAPI {
@@ -235,7 +233,7 @@ func (g *ChatAppGenerator) InitGenerateRecords(ctx context.Context, chatAppGener
 	modelID = chatAppGenerateEntity.ModelConf.Model
 
 	if appConfig.AppModelConfigFrom == biz_entity_app_config.Args && (appConfig.AppMode == string(po_entity.CHAT) || appConfig.AppMode == string(po_entity.AGENT_CHAT) || appConfig.AppMode == string(po_entity.COMPLETION)) {
-		overrideModelConfig = appConfig.AppModelConfigDict
+		overrideModelConfig = appConfig.AppModelConfig
 	}
 
 	if conversation == nil {

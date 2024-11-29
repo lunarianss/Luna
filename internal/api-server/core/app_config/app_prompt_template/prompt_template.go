@@ -5,30 +5,26 @@
 package app_prompt_template
 
 import (
-	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_config"
-	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/lunarianss/Luna/infrastructure/errors"
+	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_config"
+	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
+	"github.com/lunarianss/Luna/internal/infrastructure/code"
 )
 
 type PromptTemplateConfigManager struct{}
 
-func (m *PromptTemplateConfigManager) Convert(config map[string]interface{}) (*biz_entity_app_config.PromptTemplateEntity, error) {
-	promptType, ok := config["prompt_type"]
+func (m *PromptTemplateConfigManager) Convert(config *dto.AppModelConfigDto) (*biz_entity_app_config.PromptTemplateEntity, error) {
+	promptType := config.PromptType
 
-	if !ok {
+	if promptType == "" {
 		return nil, errors.WithCode(code.ErrRequiredPromptType, "prompt_type is required")
 	}
 
-	promptStr, ok := promptType.(string)
-	if !ok {
-		return nil, errors.WithCode(code.ErrRequiredPromptType, "prompt_type must be string")
-	}
-
-	if promptStr == string(biz_entity_app_config.SIMPLE) {
-		simplePromptMessage, _ := config["pre_prompt"].(string)
+	if promptType == string(biz_entity_app_config.SIMPLE) {
+		simplePromptMessage := config.PrePrompt
 		return &biz_entity_app_config.PromptTemplateEntity{
 			SimplePromptTemplate: simplePromptMessage,
-			PromptType:           promptStr,
+			PromptType:           promptType,
 		}, nil
 	}
 

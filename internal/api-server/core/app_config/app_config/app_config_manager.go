@@ -8,14 +8,16 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/lunarianss/Luna/infrastructure/errors"
+	assembler "github.com/lunarianss/Luna/internal/api-server/assembler/chat"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_model_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_prompt_template"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_config"
+	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
-	"github.com/lunarianss/Luna/infrastructure/errors"
 )
 
 type ChatAppConfigManager struct {
@@ -28,7 +30,7 @@ func NewChatAppConfigManager(providerDomain *domain_service.ProviderDomain) *Cha
 	}
 }
 
-func (m *ChatAppConfigManager) ConfigValidate(ctx context.Context, tenantID string, config map[string]any) (map[string]any, error) {
+func (m *ChatAppConfigManager) ConfigValidate(ctx context.Context, tenantID string, config *dto.AppModelConfigDto) (*dto.AppModelConfigDto, error) {
 	var (
 		relatedConfigKeys        []string
 		currentRelatedConfigKeys []string
@@ -36,6 +38,7 @@ func (m *ChatAppConfigManager) ConfigValidate(ctx context.Context, tenantID stri
 
 	// model
 	modelConfigManager := app_model_config.NewModelConfigManager(m.ProviderDomain)
+
 	config, currentRelatedConfigKeys, err := modelConfigManager.ValidateAndSetDefaults(ctx, tenantID, config)
 
 	if err != nil {
@@ -48,11 +51,11 @@ func (m *ChatAppConfigManager) ConfigValidate(ctx context.Context, tenantID stri
 	return config, nil
 }
 
-func (m *ChatAppConfigManager) GetAppConfig(ctx context.Context, appModel *po_entity.App, appModelConfig *po_entity.AppModelConfig, conversation *po_entity_chat.Conversation, overrideConfigDict map[string]any) (*biz_entity_app_config.ChatAppConfig, error) {
+func (m *ChatAppConfigManager) GetAppConfig(ctx context.Context, appModel *po_entity.App, appModelConfig *po_entity.AppModelConfig, conversation *po_entity_chat.Conversation, overrideConfigDict *dto.AppModelConfigDto) (*biz_entity_app_config.ChatAppConfig, error) {
 
 	var (
 		configFrom biz_entity_app_config.EasyUIBasedAppModelConfigFrom
-		configDict map[string]interface{}
+		configDict *dto.AppModelConfigDto
 	)
 
 	if overrideConfigDict != nil {
@@ -105,7 +108,7 @@ func (m *ChatAppConfigManager) GetAppConfig(ctx context.Context, appModel *po_en
 				SensitiveWordAvoidance: nil,
 				AdditionalFeatures:     nil,
 			},
-			AppModelConfigDict: configDict,
+			AppModelConfig:     assembler.ConvertToConfigEntity(configDict),
 			AppModelConfigFrom: configFrom,
 			AppModelConfigID:   appModelConfig.ID,
 			Model:              modelConfigEntity,

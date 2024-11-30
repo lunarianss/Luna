@@ -12,7 +12,6 @@ import (
 	"runtime"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
-	"github.com/lunarianss/Luna/internal/api-server/core/app_prompt/utils"
 	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
@@ -23,23 +22,23 @@ import (
 type SimplePromptTransform struct {
 }
 
-func (s *SimplePromptTransform) GetPromptStrAndRules(appMode po_entity.AppMode, modelConfig *biz_entity_provider_config.ModelConfigWithCredentialsEntity, prePrompt string, inputs map[string]interface{}, query string, context string, histories string) (string, map[string]interface{}, error) {
+func (s *SimplePromptTransform) GetPromptStrAndRules(appMode po_entity.AppMode, modelConfig *biz_entity_provider_config.ModelConfigWithCredentialsEntity, prePrompt string, inputs map[string]interface{}, query string, context string, histories string) (string, *biz_entity_app_config.SimpleChatPromptConfig, error) {
 
 	var (
 		variables = make(map[string]interface{})
 	)
 
-	promptTemplateConfig, err := s.GetPromptTemplate(appMode, modelConfig.Provider, modelConfig.Model, prePrompt, context == "", query == "", histories == "")
+	promptTemplateConfig, err := s.GetPromptTemplate(appMode, modelConfig.Provider, modelConfig.Model, prePrompt, context != "", false, histories != "")
 
 	if err != nil {
 		return "", nil, err
 	}
 
-	for _, key := range promptTemplateConfig["custom_variable_keys"].([]string) {
+	for _, key := range promptTemplateConfig.CustomVariableKeys {
 		variables[key] = inputs[key]
 	}
 
-	for _, v := range promptTemplateConfig["special_variable_keys"].([]string) {
+	for _, v := range promptTemplateConfig.SpecialVariableKeys {
 		if v == "#context" {
 			variables["#context#"] = context
 		} else if v == "#query#" {
@@ -48,10 +47,10 @@ func (s *SimplePromptTransform) GetPromptStrAndRules(appMode po_entity.AppMode, 
 			variables["#histories#"] = histories
 		}
 	}
-	// todo 这里通过 template 去 format
-	// promptTemplate, _ := promptTemplateConfig["prompt_template"].(utils.PromptTemplateParser)
 
-	return "", promptTemplateConfig["prompt_rules"].(map[string]interface{}), nil
+	prompt := promptTemplateConfig.PromptTemplate.Format(inputs, false)
+
+	return prompt, promptTemplateConfig.PromptRules, nil
 
 }
 func (s *SimplePromptTransform) GetChatModelPromptMessage(appMode po_entity.AppMode, prePrompt string, inputs map[string]interface{}, query string, context string, files []string, memory any, modelConfig *biz_entity_provider_config.ModelConfigWithCredentialsEntity) ([]*po_entity_chat.PromptMessage, []string, error) {
@@ -102,13 +101,14 @@ func (s *SimplePromptTransform) GetPrompt(appMode po_entity.AppMode, promptTempl
 	return promptMessage, stop, nil
 }
 
-func (s *SimplePromptTransform) GetPromptTemplate(appMode po_entity.AppMode, provider, model, prePrompt string, hasContext bool, queryInPrompt bool, withMemoryPrompt bool) (map[string]any, error) {
+func (s *SimplePromptTransform) GetPromptTemplate(appMode po_entity.AppMode, provider, model, prePrompt string, hasContext bool, queryInPrompt bool, withMemoryPrompt bool) (*biz_entity_app_config.SimpleChatPromptTransformConfig, error) {
 
 	var (
 		customVariableKeys  []string
 		specialVariableKeys []string
 		prompt              string
 		templatePromptRules string
+		templateParser      biz_entity_app_config.IPromptTemplateParser
 	)
 
 	promptRules, err := s.getPromptRole(appMode, provider, model)
@@ -117,45 +117,42 @@ func (s *SimplePromptTransform) GetPromptTemplate(appMode po_entity.AppMode, pro
 		return nil, err
 	}
 
-	promptOrders := promptRules["system_prompt_orders"].([]interface{})
+	promptOrders := promptRules.SystemPromptOrders
 
 	for _, promptOrder := range promptOrders {
-		if promptOrder.(string) == "context_prompt" && hasContext {
-			prompt += promptRules["context_prompt"].(string)
+		if promptOrder == "context_prompt" && hasContext {
+			prompt += promptRules.ContextPrompt
 			specialVariableKeys = append(specialVariableKeys, "#context#")
 		} else if promptOrder == "pre_prompt" && prePrompt != "" {
 			prompt += prePrompt + "\n"
-			templateParser := &utils.PromptTemplateParser{
-				Template: prePrompt,
-			}
-			customVariableKeys = templateParser.Exact()
+			templateParser = biz_entity_app_config.NewPromptTemplateParse(prePrompt, false)
+			customVariableKeys = templateParser.Extract()
 		} else if promptOrder == "histories_prompt" && withMemoryPrompt {
-			prompt += promptRules["histories_prompt"].(string)
+			prompt += promptRules.HistoriesPrompt
 			specialVariableKeys = append(specialVariableKeys, "#histories#")
 		}
 	}
 
 	if queryInPrompt {
-		templatePromptRules = promptRules["query_prompt"].(string)
+		templatePromptRules = promptRules.QueryPrompt
 		prompt += templatePromptRules
 		specialVariableKeys = append(specialVariableKeys, "#query#")
 	}
 
-	return map[string]interface{}{
-		"prompt_template": &utils.PromptTemplateParser{
-			Template: prompt,
-		},
-		"custom_variable_keys":  customVariableKeys,
-		"special_variable_keys": specialVariableKeys,
-		"prompt_rules":          promptRules,
-	}, nil
+	templateParser = biz_entity_app_config.NewPromptTemplateParse(prompt, false)
 
+	return &biz_entity_app_config.SimpleChatPromptTransformConfig{
+		PromptTemplate:      templateParser,
+		CustomVariableKeys:  customVariableKeys,
+		SpecialVariableKeys: specialVariableKeys,
+		PromptRules:         promptRules,
+	}, nil
 }
 
-func (s *SimplePromptTransform) getPromptRole(appMode po_entity.AppMode, provider, modelName string) (map[string]interface{}, error) {
+func (s *SimplePromptTransform) getPromptRole(appMode po_entity.AppMode, provider, modelName string) (*biz_entity_app_config.SimpleChatPromptConfig, error) {
 
 	var (
-		promptRoleMap map[string]interface{}
+		promptRoleMap biz_entity_app_config.SimpleChatPromptConfig
 	)
 
 	promptFileName := s.promptFileName(appMode, provider, modelName)
@@ -180,9 +177,9 @@ func (s *SimplePromptTransform) getPromptRole(appMode po_entity.AppMode, provide
 		return nil, errors.WithCode(code.ErrDecodingJSON, err.Error())
 	}
 
-	return promptRoleMap, nil
-
+	return &promptRoleMap, nil
 }
+
 func (s *SimplePromptTransform) promptFileName(appMode po_entity.AppMode, _, _ string) string {
 	if appMode == po_entity.COMPLETION {
 		return "common_completion.json"

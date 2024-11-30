@@ -12,6 +12,7 @@ import (
 	assembler "github.com/lunarianss/Luna/internal/api-server/assembler/chat"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_model_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_prompt_template"
+	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_variable_config"
 	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
@@ -91,13 +92,15 @@ func (m *ChatAppConfigManager) GetAppConfig(ctx context.Context, appModel *po_en
 		return nil, err
 	}
 
-	promptTemplateConfigManager := app_prompt_template.PromptTemplateConfigManager{}
+	promptTemplateConfigManager := app_prompt_template.NewPromptTemplateConfigManager()
 
 	promptTemplate, err := promptTemplateConfigManager.Convert(configDict)
 
 	if err != nil {
 		return nil, err
 	}
+
+	variables := app_variable_config.NewBasicVariablesConfigManager()
 
 	return &biz_entity_app_config.ChatAppConfig{
 		EasyUIBasedAppConfig: &biz_entity_app_config.EasyUIBasedAppConfig{
@@ -107,6 +110,7 @@ func (m *ChatAppConfigManager) GetAppConfig(ctx context.Context, appModel *po_en
 				AppMode:                appModel.Mode,
 				SensitiveWordAvoidance: nil,
 				AdditionalFeatures:     nil,
+				Variables:              variables.Convert(configDict),
 			},
 			AppModelConfig:     assembler.ConvertToConfigEntity(configDict),
 			AppModelConfigFrom: configFrom,

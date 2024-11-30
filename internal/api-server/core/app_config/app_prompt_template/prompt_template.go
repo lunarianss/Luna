@@ -11,9 +11,13 @@ import (
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 )
 
-type PromptTemplateConfigManager struct{}
+type promptTemplateConfigManager struct{}
 
-func (m *PromptTemplateConfigManager) Convert(config *dto.AppModelConfigDto) (*biz_entity_app_config.PromptTemplateEntity, error) {
+func NewPromptTemplateConfigManager() *promptTemplateConfigManager {
+	return &promptTemplateConfigManager{}
+}
+
+func (m *promptTemplateConfigManager) Convert(config *dto.AppModelConfigDto) (*biz_entity_app_config.PromptTemplateEntity, error) {
 	promptType := config.PromptType
 
 	if promptType == "" {

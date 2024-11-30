@@ -65,18 +65,19 @@ type ProviderConfigurations struct {
 	Configurations map[string]*ProviderConfiguration `json:"configurations"`
 }
 
-func (pcm *ProviderConfigurations) GetModels(ctx context.Context, modelType common.ModelType, onlyActive bool) ([]*ModelWithProvider, error) {
+func (pcm *ProviderConfigurations) GetModels(ctx context.Context, provider string, modelType common.ModelType, onlyActive bool) ([]*ModelWithProvider, error) {
 	var (
 		providerModels []*ModelWithProvider
 	)
 
 	for _, providerConfiguration := range pcm.Configurations {
+		if provider != "" && provider != providerConfiguration.Provider.Provider {
+			continue
+		}
 		models, err := providerConfiguration.GetProviderModels(ctx, modelType, onlyActive)
-
 		if err != nil {
 			return nil, err
 		}
-
 		providerModels = append(providerModels, models...)
 	}
 	return providerModels, nil

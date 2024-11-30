@@ -121,7 +121,7 @@ func (tpp *chatAppTaskPipeline) process_stream_end_chunk_queue(c context.Context
 				tpp.sendFallBackMessageEnd()
 			}
 		} else if mc, ok := v.Event.(*biz_entity.QueueErrorEvent); ok {
-			log.Errorf("found queue error event: %v", mc.Err)
+			log.Errorf("found queue error event: %#+v", mc.Err)
 
 			if err := tpp.messageErrToStreamResponse(c, mc.Err); err != nil {
 				log.Errorf("failed to flush err message to stream response: %v", err)

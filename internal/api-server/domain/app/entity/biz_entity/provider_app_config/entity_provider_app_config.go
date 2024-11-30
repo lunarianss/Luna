@@ -12,30 +12,9 @@ type ModelConfigEntity struct {
 	Stop       []string               `json:"stop"`
 }
 
-type AdvancedChatMessageEntity struct {
-	Text string `json:"text"`
-	Role string `json:"role"` // Assuming PromptMessageRole is defined as string
-}
-
-type AdvancedChatPromptTemplateEntity struct {
-	Messages []*AdvancedChatMessageEntity `json:"messages"`
-}
-
 type RolePrefixEntity struct {
 	User      string `json:"user"`
 	Assistant string `json:"assistant"`
-}
-
-type AdvancedCompletionPromptTemplateEntity struct {
-	Prompt     string            `json:"prompt"`
-	RolePrefix *RolePrefixEntity `json:"role_prefix"`
-}
-
-type PromptTemplateEntity struct {
-	PromptType                       string                                  `json:"prompt_type"`
-	SimplePromptTemplate             string                                  `json:"simple_prompt_template"`
-	AdvancedChatPromptTemplate       *AdvancedChatPromptTemplateEntity       `json:"advanced_chat_prompt_template"`
-	AdvancedCompletionPromptTemplate *AdvancedCompletionPromptTemplateEntity `json:"advanced_completion_prompt_template"`
 }
 
 type VariableEntity struct {

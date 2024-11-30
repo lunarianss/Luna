@@ -83,7 +83,7 @@ type AppModelConfig struct {
 	SpeechToText                  AppModelConfigEnable                `json:"speech_to_text" gorm:"column:speech_to_text;serializer:json"`
 	SensitiveWordAvoidance        map[string]interface{}              `json:"sensitive_word_avoidance" gorm:"column:sensitive_word_avoidance;serializer:json"`
 	RetrieverResource             AppModelConfigEnable                `json:"retriever_resource" gorm:"column:retriever_resource;serializer:json"`
-	DatasetQueryVariable          map[string]interface{}              `json:"dataset_query_variable" gorm:"column:dataset_query_variable;serializer:json"`
+	DatasetQueryVariable          string                              `json:"dataset_query_variable" gorm:"column:dataset_query_variable;serializer:json"`
 	PromptType                    string                              `json:"prompt_type" gorm:"column:prompt_type"`
 	ChatPromptConfig              map[string]interface{}              `json:"chat_prompt_config" gorm:"column:chat_prompt_config;serializer:json"`
 	CompletionPromptConfig        map[string]interface{}              `json:"completion_prompt_config" gorm:"column:completion_prompt_config;serializer:json"`

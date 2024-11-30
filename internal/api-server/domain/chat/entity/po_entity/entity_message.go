@@ -177,6 +177,10 @@ func (msg *PromptMessage) ConvertToRequestData() (map[string]interface{}, error)
 		default:
 			return nil, errors.WithCode(code.ErrTypeOfPromptMessage, fmt.Sprintf("value %T is not string or []*promptMessageContent type", msg.Content))
 		}
+	} else if msg.Role == ASSISTANT {
+		requestData["role"] = "assistant"
+		requestData["content"] = msg.Content
 	}
+
 	return requestData, nil
 }

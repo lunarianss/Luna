@@ -33,11 +33,8 @@ func (m *ModelConfigManager) ValidateAndSetDefaults(ctx context.Context, tenantI
 	//todo dto层或者这里 使用 validate 库
 	var (
 		modelIDs        []string
-		modelConfig     dto.ModelDto
-		modelNameStr    string
 		availableModels []*biz_entity_provider_config.ModelWithProvider
 		isOk            bool
-		providerNameStr string
 		modelMode       interface{}
 		modelModeStr    string
 	)
@@ -48,15 +45,10 @@ func (m *ModelConfigManager) ValidateAndSetDefaults(ctx context.Context, tenantI
 		return nil, nil, err
 	}
 
-	for _, providerConfiguration := range providerConfigurations.Configurations {
+	availableModels, err = providerConfigurations.GetModels(ctx, config.Model.Provider, common.LLM, false)
 
-		if providerConfiguration.Provider.Provider != providerNameStr {
-			continue
-		}
-		availableModels, err = providerConfiguration.GetProviderModels(ctx, common.LLM, false)
-		if err != nil {
-			return nil, nil, err
-		}
+	if err != nil {
+		return nil, nil, err
 	}
 
 	if len(availableModels) == 0 {
@@ -67,28 +59,24 @@ func (m *ModelConfigManager) ValidateAndSetDefaults(ctx context.Context, tenantI
 		modelIDs = append(modelIDs, availableModel.Model)
 	}
 
-	if !slices.Contains(modelIDs, modelNameStr) {
-		return nil, nil, errors.WithCode(code.ErrRequiredCorrectModel, fmt.Sprintf("model %s not found in %s", modelNameStr, strings.Join(modelIDs, ",")))
+	if !slices.Contains(modelIDs, config.Model.Name) {
+		return nil, nil, errors.WithCode(code.ErrRequiredCorrectModel, fmt.Sprintf("model %s not found in %s", config.Model.Name, strings.Join(modelIDs, ",")))
 	}
 
 	for _, availableModel := range availableModels {
-		if availableModel.Model == modelNameStr {
+		if availableModel.Model == config.Model.Name {
 			if modelMode, isOk = availableModel.ModelProperties[common.MODE]; isOk {
 				modelModeStr, _ = modelMode.(string)
 			}
 			break
-		}
+		}	
 	}
 
 	if modelModeStr == "" {
-		modelConfig.Mode = "completion"
+		config.Model.Mode = "completion"
 	} else {
-		modelConfig.Mode = modelModeStr
+		config.Model.Mode = modelModeStr
 	}
-
-	// todo validate and default to completion params
-
-	config.Model = modelConfig
 
 	return config, []string{"model"}, nil
 }
@@ -96,7 +84,7 @@ func (m *ModelConfigManager) ValidateAndSetDefaults(ctx context.Context, tenantI
 func (m *ModelConfigManager) Convert(ctx context.Context, config *dto.AppModelConfigDto) (*biz_entity_app_config.ModelConfigEntity, error) {
 
 	return &biz_entity_app_config.ModelConfigEntity{
-		Provider: config.Provider,
+		Provider: config.Model.Provider,
 		Model:    config.Model.Name,
 		Mode:     config.Model.Mode,
 	}, nil

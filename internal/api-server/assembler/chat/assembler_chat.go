@@ -9,17 +9,14 @@ import (
 func ConvertToConfigEntity(dtoAppConfig *dto.AppModelConfigDto) *biz_entity.AppModelConfig {
 	return &biz_entity.AppModelConfig{
 		AppID:                         dtoAppConfig.AppID,
-		Provider:                      dtoAppConfig.Provider,
 		ModelID:                       dtoAppConfig.ModelID,
 		Configs:                       dtoAppConfig.Configs,
-		CreatedAt:                     dtoAppConfig.CreatedAt,
-		UpdatedAt:                     dtoAppConfig.UpdatedAt,
 		OpeningStatement:              dtoAppConfig.OpeningStatement,
 		SuggestedQuestions:            dtoAppConfig.SuggestedQuestions,
 		SuggestedQuestionsAfterAnswer: biz_entity.AppModelConfigEnable(dtoAppConfig.SuggestedQuestionsAfterAnswer),
 		MoreLikeThis:                  biz_entity.AppModelConfigEnable(dtoAppConfig.MoreLikeThis),
 		Model:                         ConvertToModelEntity(dtoAppConfig.Model),
-		UserInputForm:                 dtoAppConfig.UserInputForm,
+		UserInputForm:                 ConvertToUserInputEntity(dtoAppConfig.UserInputForm),
 		PrePrompt:                     dtoAppConfig.PrePrompt,
 		AgentMode:                     dtoAppConfig.AgentMode,
 		SpeechToText:                  biz_entity.AppModelConfigEnable(dtoAppConfig.SpeechToText),
@@ -44,4 +41,26 @@ func ConvertToModelEntity(dtoModel dto.ModelDto) biz_entity.ModelInfo {
 		Mode:             dtoModel.Mode,
 		CompletionParams: dtoModel.CompletionParams,
 	}
+}
+
+func ConvertToUserInputEntity(dtoModels []*dto.UserInputForm) []*biz_entity.UserInputForm {
+	var returnUserInput []*biz_entity.UserInputForm
+	var baseUserTextInput *biz_entity.BaseTextUserInput
+	var userInputForm *biz_entity.UserInputForm
+
+	for _, dtoModel := range dtoModels {
+		userInputForm = &biz_entity.UserInputForm{}
+		if dtoModel.TextInput != nil {
+			baseUserTextInput = &biz_entity.BaseTextUserInput{
+				Label:     dtoModel.TextInput.Label,
+				Variable:  dtoModel.TextInput.Variable,
+				Required:  dtoModel.TextInput.Required,
+				MaxLength: dtoModel.TextInput.MaxLength,
+				Default:   dtoModel.TextInput.Default,
+			}
+		}
+		userInputForm.TextInput = baseUserTextInput
+		returnUserInput = append(returnUserInput, userInputForm)
+	}
+	return returnUserInput
 }

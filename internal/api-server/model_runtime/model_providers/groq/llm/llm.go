@@ -13,39 +13,35 @@ import (
 	provider_register "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_registry"
 )
 
-type GroqLargeLanguageModel struct {
-	*llm.OpenApiCompactLargeLanguageModel
+type groqLargeLanguageModel struct {
+	llm.IOpenApiCompactLargeLanguage
 }
 
 func init() {
 	NewGroqLargeLanguageModel().Register()
 }
 
-func NewGroqLargeLanguageModel() *GroqLargeLanguageModel {
-	return &GroqLargeLanguageModel{}
+func NewGroqLargeLanguageModel() *groqLargeLanguageModel {
+	return &groqLargeLanguageModel{}
 }
 
-var _ provider_register.IModelRegistry = (*GroqLargeLanguageModel)(nil)
+var _ provider_register.IModelRegistry = (*groqLargeLanguageModel)(nil)
 
-func (m *GroqLargeLanguageModel) Invoke(ctx context.Context, queueManager *biz_entity_chat.StreamGenerateQueue, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, stream bool, user string, promptMessages []*po_entity.PromptMessage) {
+func (m *groqLargeLanguageModel) Invoke(ctx context.Context, queueManager *biz_entity_chat.StreamGenerateQueue, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, stream bool, user string, promptMessages []*po_entity.PromptMessage) {
 	credentials = m.addCustomParameters(credentials)
-	m.OpenApiCompactLargeLanguageModel = &llm.OpenApiCompactLargeLanguageModel{
-		Stream: stream,
-		Model:  model,
-	}
-
-	m.OpenApiCompactLargeLanguageModel.Invoke(ctx, promptMessages, modelParameters, credentials, queueManager)
+	m.IOpenApiCompactLargeLanguage = llm.NewOpenApiCompactLargeLanguageModel(promptMessages, modelParameters, credentials, queueManager, model, stream)
+	m.IOpenApiCompactLargeLanguage.Invoke(ctx)
 }
 
-func (m *GroqLargeLanguageModel) Register() {
+func (m *groqLargeLanguageModel) Register() {
 
 	provider_register.ModelRuntimeRegistry.RegisterLargeModelInstance(m)
 }
-func (m *GroqLargeLanguageModel) RegisterName() string {
+func (m *groqLargeLanguageModel) RegisterName() string {
 	return "groq/llm"
 }
 
-func (m *GroqLargeLanguageModel) addCustomParameters(credentials map[string]interface{}) map[string]interface{} {
+func (m *groqLargeLanguageModel) addCustomParameters(credentials map[string]interface{}) map[string]interface{} {
 	credentials["mode"] = "chat"
 	credentials["endpoint_url"] = "https://api.groq.com/openai/v1"
 	return credentials

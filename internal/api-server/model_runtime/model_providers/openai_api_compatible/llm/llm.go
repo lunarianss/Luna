@@ -24,7 +24,11 @@ import (
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 )
 
-type OpenApiCompactLargeLanguageModel struct {
+type IOpenApiCompactLargeLanguage interface {
+	Invoke(ctx context.Context)
+}
+
+type openApiCompactLargeLanguageModel struct {
 	*app_chat_runner.AppBaseChatRunner
 	*biz_entity_chat.StreamGenerateQueue
 	FullAssistantContent string
@@ -40,16 +44,23 @@ type OpenApiCompactLargeLanguageModel struct {
 	ModelParameters      map[string]interface{}
 }
 
-func (m *OpenApiCompactLargeLanguageModel) Invoke(ctx context.Context, promptMessages []*po_entity_chat.PromptMessage, modelParameters map[string]interface{}, credentials map[string]interface{}, queueManager *biz_entity_chat.StreamGenerateQueue) {
-	m.Credentials = credentials
-	m.AppBaseChatRunner = app_chat_runner.NewAppBaseChatRunner()
-	m.ModelParameters = modelParameters
-	m.PromptMessages = promptMessages
-	m.StreamGenerateQueue = queueManager
+func NewOpenApiCompactLargeLanguageModel(promptMessages []*po_entity_chat.PromptMessage, modelParameters map[string]interface{}, credentials map[string]interface{}, queueManager *biz_entity_chat.StreamGenerateQueue, model string, stream bool) *openApiCompactLargeLanguageModel {
+	return &openApiCompactLargeLanguageModel{
+		PromptMessages:      promptMessages,
+		Credentials:         credentials,
+		ModelParameters:     modelParameters,
+		StreamGenerateQueue: queueManager,
+		Model:               model,
+		Stream:              stream,
+		AppBaseChatRunner:   app_chat_runner.NewAppBaseChatRunner(),
+	}
+}
+
+func (m *openApiCompactLargeLanguageModel) Invoke(ctx context.Context) {
 	m.generate(ctx)
 }
 
-func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context) {
+func (m *openApiCompactLargeLanguageModel) generate(ctx context.Context) {
 	headers := map[string]string{
 		"Content-Type":   "application/json",
 		"Accept-Charset": "utf-8",
@@ -166,7 +177,7 @@ func (m *OpenApiCompactLargeLanguageModel) generate(ctx context.Context) {
 	}
 }
 
-func (m *OpenApiCompactLargeLanguageModel) sendStreamChunkToQueue(ctx context.Context, messageId string, assistantPromptMessage *biz_entity_chat.AssistantPromptMessage) {
+func (m *openApiCompactLargeLanguageModel) sendStreamChunkToQueue(ctx context.Context, messageId string, assistantPromptMessage *biz_entity_chat.AssistantPromptMessage) {
 	streamResultChunk := &biz_entity_chat.LLMResultChunk{
 		ID:            messageId,
 		Model:         m.Model,
@@ -179,13 +190,13 @@ func (m *OpenApiCompactLargeLanguageModel) sendStreamChunkToQueue(ctx context.Co
 	m.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, false, nil)
 }
 
-func (m *OpenApiCompactLargeLanguageModel) sendErrorChunkToQueue(ctx context.Context, code error) {
+func (m *openApiCompactLargeLanguageModel) sendErrorChunkToQueue(ctx context.Context, code error) {
 	defer m.Close()
 	err := errors.WithMessage(code, fmt.Sprintf("Error ocurred when handle stream: %#+v", code))
 	m.HandleInvokeResultStream(ctx, nil, m.StreamGenerateQueue, false, err)
 }
 
-func (m *OpenApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx context.Context, messageId string, finalReason string, fullAssistant string) {
+func (m *openApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx context.Context, messageId string, finalReason string, fullAssistant string) {
 	defer m.Close()
 	streamResultChunk := &biz_entity_chat.LLMResultChunk{
 		ID:            messageId,
@@ -204,7 +215,7 @@ func (m *OpenApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx conte
 	m.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, true, nil)
 }
 
-func (m *OpenApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Context, response *http.Response) {
+func (m *openApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Context, response *http.Response) {
 
 	var (
 		messageID    string

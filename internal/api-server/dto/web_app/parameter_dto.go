@@ -9,16 +9,16 @@ import (
 )
 
 type WebAppParameterResponse struct {
-	OpeningStatement              map[string]interface{}              `json:"opening_statement" gorm:"column:opening_statement;serializer:json"`
-	SuggestedQuestions            []string                            `json:"suggested_questions" gorm:"column:suggested_questions;serializer:json"`
-	SuggestedQuestionsAfterAnswer po_entity.AppModelConfigEnable      `json:"suggested_questions_after_answer" gorm:"column:suggested_questions_after_answer;serializer:json"`
-	TextToSpeech                  po_entity.AppModelConfigEnable      `json:"text_to_speech" gorm:"column:text_to_speech;serializer:json"`
-	SpeechToText                  po_entity.AppModelConfigEnable      `json:"speech_to_text" gorm:"column:speech_to_text;serializer:json"`
-	RetrieverResource             po_entity.AppModelConfigEnable      `json:"retriever_resource" gorm:"column:retriever_resource;serializer:json"`
-	MoreLikeThis                  po_entity.AppModelConfigEnable      `json:"more_like_this" gorm:"column:more_like_this;serializer:json"`
-	UserInputForm                 []map[string]map[string]interface{} `json:"user_input_form" gorm:"column:user_input_form;serializer:json"`
-	SensitiveWordAvoidance        map[string]interface{}              `json:"sensitive_word_avoidance" gorm:"column:sensitive_word_avoidance;serializer:json"`
-	FileUpload                    map[string]map[string]interface{}   `json:"file_upload" gorm:"column:file_upload;serializer:json"`
+	OpeningStatement              string                         `json:"opening_statement" gorm:"column:opening_statement;serializer:json"`
+	SuggestedQuestions            []string                       `json:"suggested_questions" gorm:"column:suggested_questions;serializer:json"`
+	SuggestedQuestionsAfterAnswer po_entity.AppModelConfigEnable `json:"suggested_questions_after_answer" gorm:"column:suggested_questions_after_answer;serializer:json"`
+	TextToSpeech                  po_entity.AppModelConfigEnable `json:"text_to_speech" gorm:"column:text_to_speech;serializer:json"`
+	SpeechToText                  po_entity.AppModelConfigEnable `json:"speech_to_text" gorm:"column:speech_to_text;serializer:json"`
+	RetrieverResource             po_entity.AppModelConfigEnable `json:"retriever_resource" gorm:"column:retriever_resource;serializer:json"`
+	MoreLikeThis                  po_entity.AppModelConfigEnable `json:"more_like_this" gorm:"column:more_like_this;serializer:json"`
+	UserInputForm                 []*po_entity.UserInputForm     `json:"user_input_form" gorm:"column:user_input_form;serializer:json"`
+	SensitiveWordAvoidance        map[string]interface{}         `json:"sensitive_word_avoidance" gorm:"column:sensitive_word_avoidance;serializer:json"`
+	FileUpload                    map[string]interface{}         `json:"file_upload" gorm:"column:file_upload;serializer:json"`
 }
 
 func AppConfigRecordToParameter(appConfig *po_entity.AppModelConfig) *WebAppParameterResponse {
@@ -49,8 +49,8 @@ func AppConfigRecordToParameter(appConfig *po_entity.AppModelConfig) *WebAppPara
 	}
 
 	if parameterDetail.FileUpload == nil {
-		parameterDetail.FileUpload = map[string]map[string]interface{}{
-			"image": {
+		parameterDetail.FileUpload = map[string]interface{}{
+			"image": map[string]interface{}{
 				"enabled":          false,
 				"number_limits":    3,
 				"detail":           "high",
@@ -60,7 +60,7 @@ func AppConfigRecordToParameter(appConfig *po_entity.AppModelConfig) *WebAppPara
 	}
 
 	if parameterDetail.UserInputForm == nil {
-		parameterDetail.UserInputForm = []map[string]map[string]interface{}{}
+		parameterDetail.UserInputForm = make([]*po_entity.UserInputForm, 0)
 	}
 
 	return parameterDetail

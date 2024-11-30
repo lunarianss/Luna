@@ -9,14 +9,16 @@ import (
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/infrastructure/log"
+	assembler "github.com/lunarianss/Luna/internal/api-server/assembler/app"
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
-	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity"
+	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/app"
+	chatDto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/lunarianss/Luna/internal/infrastructure/field"
 	"github.com/lunarianss/Luna/internal/infrastructure/util"
@@ -57,7 +59,7 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 	}
 
 	defaultModelConfig := &biz_entity.ModelConfig{}
-	defaultModel := &biz_entity.Model{}
+	defaultModel := &biz_entity.ModelInfo{}
 
 	util.DeepCopyUsingJSON(appTemplate.ModelConfig, defaultModelConfig)
 
@@ -116,10 +118,10 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 	appConfig := &po_entity.AppModelConfig{
 		CreatedBy:     accountID,
 		UpdatedBy:     accountID,
-		UserInputForm: defaultModelConfig.UserInputForm,
+		UserInputForm: biz_entity.ConvertToUserInputPoEntity(defaultModelConfig.UserInputForm),
 		PrePrompt:     defaultModelConfig.PrePrompt,
 		Provider:      defaultModelConfig.Model.Provider,
-		Model:         defaultModelConfig.Model,
+		Model:         biz_entity.ConvertToModelPoEntity(defaultModelConfig.Model),
 		PromptType:    "simple",
 	}
 
@@ -181,7 +183,7 @@ func (as AppService) AppDetail(ctx context.Context, appID string) (*dto.AppDetai
 		return nil, err
 	}
 
-	appConfigRecord, err := as.appDomain.AppRepo.GetAppModelConfigByAppID(ctx, appID)
+	appConfigRecord, err := as.appDomain.AppRepo.GetAppModelConfigById(ctx, appRecord.AppModelConfigID)
 	if err != nil {
 		return nil, err
 	}
@@ -195,17 +197,15 @@ func (as AppService) AppDetail(ctx context.Context, appID string) (*dto.AppDetai
 	return dto.AppRecordToDetail(appRecord, as.config, appConfigRecord, siteRecord), nil
 }
 
-func (as *AppService) UpdateAppModelConfig(ctx context.Context, modelConfig *dto.UpdateModelConfig, appID string, accountID string) error {
-	appConfig := &po_entity.AppModelConfig{
-		AppID:      appID,
-		CreatedBy:  accountID,
-		UpdatedBy:  accountID,
-		Model:      modelConfig.Model,
-		Provider:   modelConfig.Model.Provider,
-		PromptType: "simple",
-	}
+func (as *AppService) UpdateAppModelConfig(ctx context.Context, modelConfig *chatDto.AppModelConfigDto, appID string, accountID string) error {
+	configEntity := assembler.ConvertToConfigEntity(modelConfig)
+	configRecord := configEntity.ConvertToAppConfigPoEntity()
+	configRecord.AppID = appID
+	configRecord.Provider = configEntity.Model.Provider
+	configRecord.UpdatedBy = accountID
+	configRecord.CreatedBy = accountID
 
-	appConfigRecord, err := as.appDomain.AppRepo.CreateAppConfig(ctx, nil, appConfig)
+	appConfigRecord, err := as.appDomain.AppRepo.CreateAppConfig(ctx, nil, configRecord)
 
 	if err != nil {
 		return err

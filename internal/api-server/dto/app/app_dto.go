@@ -6,7 +6,6 @@ package dto
 
 import (
 	"github.com/lunarianss/Luna/internal/api-server/config"
-	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	po_entity_web_app "github.com/lunarianss/Luna/internal/api-server/domain/web_app/entity/po_entity"
 )
@@ -166,8 +165,8 @@ func AppRecordToDetail(app *po_entity.App, config *config.Config, modelConfig *p
 	}
 
 	if appDetail.ModelConfig.FileUpload == nil {
-		appDetail.ModelConfig.FileUpload = map[string]map[string]interface{}{
-			"image": {
+		appDetail.ModelConfig.FileUpload = map[string]interface{}{
+			"image": map[string]interface{}{
 				"enabled":          false,
 				"number_limits":    3,
 				"detail":           "high",
@@ -177,7 +176,7 @@ func AppRecordToDetail(app *po_entity.App, config *config.Config, modelConfig *p
 	}
 
 	if appDetail.ModelConfig.UserInputForm == nil {
-		appDetail.ModelConfig.UserInputForm = []map[string]map[string]interface{}{}
+		appDetail.ModelConfig.UserInputForm = make([]*po_entity.UserInputForm, 0)
 	}
 
 	return appDetail
@@ -195,26 +194,4 @@ func SiteRecordToSiteDetail(sm *po_entity_web_app.Site, config *config.Config) *
 		AppBaseUrl:  config.SystemOptions.AppWebUrl,
 		AccessToken: sm.Code,
 	}
-
-}
-
-type UpdateModelConfig struct {
-	AgentMode                     map[string]interface{}              `json:"agent_mode"`
-	ChatPromptConfig              map[string]interface{}              `json:"chat_prompt_config"`
-	CompletionPromptConfig        map[string]interface{}              `json:"completion_prompt_config"`
-	DatasetConfigs                map[string]interface{}              `json:"dataset_configs"`
-	FileUpload                    any                                 `json:"file_upload"`
-	Model                         biz_entity.Model                    `json:"model" validate:"required"`
-	MoreLikeThis                  map[string]interface{}              `json:"more_like_this"`
-	SensitiveWordAvoidance        map[string]interface{}              `json:"sensitive_word_avoidance"`
-	RetrieverResource             map[string]interface{}              `json:"retriever_resource"`
-	SpeechToText                  map[string]interface{}              `json:"speech_to_text"`
-	SuggestedQuestions            []string                            `json:"suggested_questions"`
-	SuggestedQuestionsAfterAnswer map[string]interface{}              `json:"suggested_questions_after_answer"`
-	TextToSpeech                  map[string]interface{}              `json:"text_to_speech"`
-	UserInputForm                 []map[string]map[string]interface{} `json:"user_input_form"`
-	OpeningStatement              string                              `json:"opening_statement"`
-	PrePrompt                     string                              `json:"pre_prompt"`
-	DatasetQueryVariable          string                              `json:"dataset_query_variable"`
-	PromptType                    string                              `json:"prompt_type"`
 }

@@ -38,7 +38,7 @@ func (s *WebAppService) GetWebAppParameters(ctx context.Context, appID string) (
 		return nil, err
 	}
 
-	appConfigRecord, err := s.appDomain.AppRepo.GetAppModelConfigByAppID(ctx, appRecord.ID)
+	appConfigRecord, err := s.appDomain.AppRepo.GetAppModelConfigById(ctx, appRecord.AppModelConfigID)
 
 	if err != nil {
 		return nil, err

@@ -6,13 +6,13 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	dto "github.com/lunarianss/Luna/internal/api-server/dto/app"
+	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 	"github.com/lunarianss/Luna/internal/infrastructure/core"
 	"github.com/lunarianss/Luna/internal/infrastructure/util"
 )
 
 func (ac *AppController) UpdateModelConfig(c *gin.Context) {
-	params := &dto.UpdateModelConfig{}
+	params := &dto.AppModelConfigDto{}
 
 	if err := c.ShouldBind(params); err != nil {
 		core.WriteBindErrResponse(c, err)

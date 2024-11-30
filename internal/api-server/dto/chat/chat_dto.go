@@ -41,7 +41,7 @@ type AppModelConfigDto struct {
 	SuggestedQuestionsAfterAnswer AppModelConfigDtoEnable `json:"suggested_questions_after_answer"`
 	MoreLikeThis                  AppModelConfigDtoEnable `json:"more_like_this"`
 	Model                         ModelDto                `json:"model"`
-	UserInputForm                 []*UserInputForm        `json:"text-input"`
+	UserInputForm                 []*UserInputForm        `json:"user_input_form"`
 	PrePrompt                     string                  `json:"pre_prompt"`
 	AgentMode                     map[string]interface{}  `json:"agent_mode"`
 	SpeechToText                  AppModelConfigDtoEnable `json:"speech_to_text"`

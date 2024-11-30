@@ -8,13 +8,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity"
+	"github.com/lunarianss/Luna/infrastructure/errors"
+	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/repository"
 	web_app_entity "github.com/lunarianss/Luna/internal/api-server/domain/web_app/entity/po_entity"
 	web_app_repo "github.com/lunarianss/Luna/internal/api-server/domain/web_app/repository"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
-	"github.com/lunarianss/Luna/infrastructure/errors"
 	"gorm.io/gorm"
 )
 

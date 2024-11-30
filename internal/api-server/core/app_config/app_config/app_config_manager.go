@@ -9,7 +9,7 @@ import (
 	"encoding/json"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
-	assembler "github.com/lunarianss/Luna/internal/api-server/assembler/chat"
+	assembler "github.com/lunarianss/Luna/internal/api-server/assembler/app"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_model_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_prompt_template"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_variable_config"

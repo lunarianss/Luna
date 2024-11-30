@@ -22,19 +22,11 @@ type App struct {
 	EnableAPI  int    `json:"enable_api"`
 }
 
-// Model holds the model-specific configuration.
-type Model struct {
-	Provider         string                 `json:"provider"`
-	Name             string                 `json:"name"`
-	Mode             string                 `json:"mode"`
-	CompletionParams map[string]interface{} `json:"completion_params"`
-}
-
 // ModelConfig holds the model and additional configurations.
 type ModelConfig struct {
-	Model         Model                               `json:"model"`
-	UserInputForm []map[string]map[string]interface{} `json:"user_input_form"`
-	PrePrompt     string                              `json:"pre_prompt"`
+	Model         ModelInfo        `json:"model"`
+	UserInputForm []*UserInputForm `json:"user_input_form"`
+	PrePrompt     string           `json:"pre_prompt"`
 }
 
 // AppTemplate holds the template for each mode.
@@ -59,23 +51,23 @@ var DefaultAppTemplates = map[AppMode]AppTemplate{
 			EnableAPI:  1,
 		},
 		ModelConfig: &ModelConfig{
-			Model: Model{
+			Model: ModelInfo{
 				Provider:         "openai",
 				Name:             "gpt-4o",
 				Mode:             "chat",
 				CompletionParams: map[string]interface{}{},
 			},
 			PrePrompt: "{{query}}",
-			UserInputForm: []map[string]map[string]interface{}{
-				{
-					"params": {
-						"label":    "Query",
-						"variable": "query",
-						"required": true,
-						"default":  "",
-					},
-				},
-			},
+			// UserInputForm: []map[string]map[string]interface{}{
+			// 	{
+			// 		"params": {
+			// 			"label":    "Query",
+			// 			"variable": "query",
+			// 			"required": true,
+			// 			"default":  "",
+			// 		},
+			// 	},
+			// },
 		},
 	},
 	CHAT: {
@@ -85,7 +77,7 @@ var DefaultAppTemplates = map[AppMode]AppTemplate{
 			EnableAPI:  1,
 		},
 		ModelConfig: &ModelConfig{
-			Model: Model{
+			Model: ModelInfo{
 				Provider:         "openai",
 				Name:             "gpt-4o",
 				Mode:             "chat",
@@ -107,7 +99,7 @@ var DefaultAppTemplates = map[AppMode]AppTemplate{
 			EnableAPI:  1,
 		},
 		ModelConfig: &ModelConfig{
-			Model: Model{
+			Model: ModelInfo{
 				Provider:         "openai",
 				Name:             "gpt-4o",
 				Mode:             "chat",

@@ -83,12 +83,18 @@ type MessageAudioEndStreamResponse struct {
 	Audio string `json:"audio"`
 }
 
+type MetaDataUsage struct {
+	Usage *LLMUsage `json:"usage"`
+}
+
 // MessageEndStreamResponse entity
 type MessageEndStreamResponse struct {
 	*StreamResponse
-	ID       string                   `json:"id"`
-	Metadata map[string]interface{}   `json:"metadata"`
-	Files    []map[string]interface{} `json:"files"`
+	ID             string                   `json:"id"`
+	Metadata       *MetaDataUsage           `json:"metadata"`
+	Files          []map[string]interface{} `json:"files"`
+	MessageId      string                   `json:"message_id"`
+	ConversationID string                   `json:"conversation_id"`
 }
 
 // MessageFileStreamResponse entity

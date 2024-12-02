@@ -10,11 +10,19 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/lunarianss/Luna/infrastructure/errors"
 	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
-	"github.com/lunarianss/Luna/infrastructure/errors"
+	"github.com/shopspring/decimal"
 	"gopkg.in/yaml.v3"
 )
+
+type IAIModelRuntime interface {
+	GetPrice(model string, credentials any, priceType PriceType, tokens int64) (*PriceInfo, error)
+	GetModelSchema(modelName string, credentials any) (*AIModelStaticConfiguration, error)
+	PredefinedModels() ([]*AIModelStaticConfiguration, error)
+	GetModelPositionMap() (map[string]int, error)
+}
 
 type AIModelRuntime struct {
 	ModelType     common.ModelType              `json:"model_type" yaml:"model_type"`
@@ -126,4 +134,63 @@ func (a *AIModelRuntime) PredefinedModels() ([]*AIModelStaticConfiguration, erro
 	})
 
 	return AIModelEntities, nil
+}
+
+func (a *AIModelRuntime) GetModelSchema(modelName string, credentials any) (*AIModelStaticConfiguration, error) {
+
+	models, err := a.PredefinedModels()
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, model := range models {
+		if model.Model == modelName {
+			return model, nil
+		}
+	}
+
+	return nil, errors.WithCode(code.ErrModelSchemaNotFound, fmt.Sprintf("model schema %s is not found", modelName))
+}
+
+func (a *AIModelRuntime) GetPrice(model string, credentials any, priceType PriceType, tokens int64) (*PriceInfo, error) {
+	var (
+		priceConfig *PriceConfig
+		unitPrice   float64
+	)
+	modelSchema, err := a.GetModelSchema(model, credentials)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if modelSchema.Pricing == nil {
+		return NewFreePriceInfo(), errors.WithCode(code.ErrModelNotHavePrice, fmt.Sprintf("model %s not have price info", model))
+	}
+
+	priceConfig = modelSchema.Pricing
+
+	if priceType == INPUT {
+		unitPrice = float64(priceConfig.Input)
+	} else if priceType == OUTPUT {
+		unitPrice = float64(priceConfig.Output)
+	}
+
+	if unitPrice == 0 {
+		return NewFreePriceInfo(), nil
+	}
+
+	tokens_decimal := decimal.NewFromInt(tokens)
+	unitPrice_decimal := decimal.NewFromFloat(unitPrice)
+	unit_decimal := decimal.NewFromFloat(float64(priceConfig.Unit))
+
+	totalAmount := tokens_decimal.Mul(unitPrice_decimal).Mul(unit_decimal)
+	totalAmount = totalAmount.Round(7)
+
+	return &PriceInfo{
+		TotalAmount: totalAmount.InexactFloat64(),
+		UnitPrice:   unitPrice,
+		Unit:        float64(priceConfig.Unit),
+		Currency:    priceConfig.Currency,
+	}, nil
 }

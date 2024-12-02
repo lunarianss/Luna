@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -21,7 +22,9 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	biz_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
+	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider/model_provider"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
+	"github.com/shopspring/decimal"
 )
 
 type IOpenApiCompactLargeLanguage interface {
@@ -31,6 +34,7 @@ type IOpenApiCompactLargeLanguage interface {
 type openApiCompactLargeLanguageModel struct {
 	*app_chat_runner.AppBaseChatRunner
 	*biz_entity_chat.StreamGenerateQueue
+	biz_entity.IAIModelRuntime
 	FullAssistantContent string
 	Usage                interface{}
 	ChunkIndex           int
@@ -44,13 +48,14 @@ type openApiCompactLargeLanguageModel struct {
 	ModelParameters      map[string]interface{}
 }
 
-func NewOpenApiCompactLargeLanguageModel(promptMessages []*po_entity_chat.PromptMessage, modelParameters map[string]interface{}, credentials map[string]interface{}, queueManager *biz_entity_chat.StreamGenerateQueue, model string, stream bool) *openApiCompactLargeLanguageModel {
+func NewOpenApiCompactLargeLanguageModel(promptMessages []*po_entity_chat.PromptMessage, modelParameters map[string]interface{}, credentials map[string]interface{}, queueManager *biz_entity_chat.StreamGenerateQueue, model string, stream bool, modelRuntime biz_entity.IAIModelRuntime) *openApiCompactLargeLanguageModel {
 	return &openApiCompactLargeLanguageModel{
 		PromptMessages:      promptMessages,
 		Credentials:         credentials,
 		ModelParameters:     modelParameters,
 		StreamGenerateQueue: queueManager,
 		Model:               model,
+		IAIModelRuntime:     modelRuntime,
 		Stream:              stream,
 		AppBaseChatRunner:   app_chat_runner.NewAppBaseChatRunner(),
 	}
@@ -196,8 +201,91 @@ func (m *openApiCompactLargeLanguageModel) sendErrorChunkToQueue(ctx context.Con
 	m.HandleInvokeResultStream(ctx, nil, m.StreamGenerateQueue, false, err)
 }
 
-func (m *openApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx context.Context, messageId string, finalReason string, fullAssistant string) {
+func handleTokenCount(count any) (int64, bool) {
+	var countInt int64
+	ok := true
+
+	switch v := count.(type) {
+	case float64:
+		countInt = int64(v)
+	case int:
+		countInt = int64(v)
+	case string:
+		countFloat, err := strconv.ParseFloat(v, 64)
+		if err != nil {
+			ok = false
+			log.Infof("token count %v can't convert to float", count)
+		}
+		countInt = int64(countFloat)
+	default:
+		ok = false
+	}
+	return countInt, ok
+}
+
+func (m *openApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx context.Context, messageId string, finalReason string, fullAssistant string, usage map[string]interface{}) {
 	defer m.Close()
+
+	var (
+		err               error
+		ok                bool
+		completeTokensInt int64
+		promptTokensInt   int64
+	)
+
+	promptTokens, found := usage["prompt_tokens"]
+
+	if found {
+		promptTokensInt, ok = handleTokenCount(promptTokens)
+	}
+
+	if !ok {
+		// 使用 openai tokenizlier
+		promptTokensInt = 10
+	}
+
+	completeTokens, found := usage["completion_tokens"]
+
+	if found {
+		completeTokensInt, ok = handleTokenCount(completeTokens)
+	}
+
+	if !ok {
+		// 使用 openai tokenizlier
+		completeTokensInt = 20
+	}
+
+	promptPriceInfo, err := m.GetPrice(m.Model, m.Credentials, biz_entity.INPUT, promptTokensInt)
+
+	if err != nil {
+		m.HandleInvokeResultStream(ctx, nil, m.StreamGenerateQueue, false, err)
+	}
+
+	completePriceInfo, err := m.GetPrice(m.Model, m.Credentials, biz_entity.OUTPUT, completeTokensInt)
+
+	promptTotal := decimal.NewFromFloat(promptPriceInfo.TotalAmount)
+	completeTotal := decimal.NewFromFloat(completePriceInfo.TotalAmount)
+	totalAmount := promptTotal.Add(completeTotal).InexactFloat64()
+
+	if err != nil {
+		m.HandleInvokeResultStream(ctx, nil, m.StreamGenerateQueue, false, err)
+	}
+
+	llmUsage := &biz_entity_chat.LLMUsage{
+		PromptTokens:        promptTokensInt,
+		PromptUnitPrice:     promptPriceInfo.UnitPrice,
+		PromptPriceUnit:     promptPriceInfo.Unit,
+		PromptPrice:         promptPriceInfo.TotalAmount,
+		CompletionTokens:    completeTokensInt,
+		CompletionUnitPrice: completePriceInfo.UnitPrice,
+		CompletionPriceUnit: completePriceInfo.Unit,
+		CompletionPrice:     completePriceInfo.TotalAmount,
+		Currency:            promptPriceInfo.Currency,
+		Latency:             1.0,
+		TotalTokens:         promptTokensInt + completeTokensInt,
+		TotalPrice:          totalAmount,
+	}
+
 	streamResultChunk := &biz_entity_chat.LLMResultChunk{
 		ID:            messageId,
 		Model:         m.Model,
@@ -210,6 +298,7 @@ func (m *openApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx conte
 				},
 			},
 			FinishReason: finalReason,
+			Usage:        llmUsage,
 		},
 	}
 	m.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, true, nil)
@@ -252,6 +341,8 @@ func (m *openApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 
 		return 0, nil, nil
 	})
+
+	var usage = make(map[string]interface{})
 
 	for scanner.Scan() {
 		var (
@@ -298,6 +389,19 @@ func (m *openApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 
 		var chunkChoice = make(map[string]interface{})
 
+		// groq
+		if usageChunk, ok := chunkJson["x_groq"]; ok {
+			if v, ok := usageChunk.(map[string]interface{}); ok {
+				usageAny, ok := v["usage"]
+				if ok {
+					usageMap, ok := usageAny.(map[string]interface{})
+					if ok {
+						usage = usageMap
+					}
+				}
+			}
+		}
+
 		if chunkChoices, ok := chunkJson["choices"]; ok {
 			if v, ok := chunkChoices.([]interface{}); ok {
 				if vv, ok := v[0].(map[string]interface{}); ok {
@@ -343,5 +447,5 @@ func (m *openApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 		return
 	}
 
-	m.sendStreamFinalChunkToQueue(ctx, messageID, finishReason, m.FullAssistantContent)
+	m.sendStreamFinalChunkToQueue(ctx, messageID, finishReason, m.FullAssistantContent, usage)
 }

@@ -38,6 +38,7 @@ func (runner *AppBaseChatRunner) HandleInvokeResultStream(ctx context.Context, i
 					Content: invokeResult.Delta.Message.Content,
 				},
 			},
+			Usage: invokeResult.Delta.Usage,
 		}
 
 		event := biz_entity.NewAppQueueEvent(biz_entity.MessageEnd)

@@ -61,10 +61,10 @@ type Message struct {
 	Inputs                  map[string]interface{}                `gorm:"column:inputs;serializer:json" json:"inputs"`
 	Query                   string                                `gorm:"column:query" json:"query"`
 	Message                 []*PromptMessage                      `gorm:"column:message;serializer:json" json:"message"`
-	MessageTokens           int                                   `gorm:"column:message_tokens" json:"message_tokens"`
+	MessageTokens           int64                                 `gorm:"column:message_tokens" json:"message_tokens"`
 	MessageUnitPrice        float64                               `gorm:"column:message_unit_price" json:"message_unit_price"`
 	Answer                  string                                `gorm:"column:answer" json:"answer"`
-	AnswerTokens            int                                   `gorm:"column:answer_tokens" json:"answer_tokens"`
+	AnswerTokens            int64                                 `gorm:"column:answer_tokens" json:"answer_tokens"`
 	AnswerUnitPrice         float64                               `gorm:"column:answer_unit_price" json:"answer_unit_price"`
 	ProviderResponseLatency float64                               `gorm:"column:provider_response_latency" json:"provider_response_latency"`
 	TotalPrice              float64                               `gorm:"column:total_price" json:"total_price"`

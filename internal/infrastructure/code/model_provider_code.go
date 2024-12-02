@@ -19,6 +19,8 @@ const (
 	ErrAllModelsEmpty
 	// ErrAllModelsEmpty - 500: Error occurred when models haven't position definition.
 	ErrModelNotHavePosition
+	// ErrModelNotHavePrice - 500: Error occurred when models haven't price definition.
+	ErrModelNotHavePrice
 	// ErrModelNotHaveEndPoint - 500: Error occurred when models haven't url endpoint.
 	ErrModelNotHaveEndPoint
 	// ErrModelUrlNotConvertUrl - 500: Error occurred when models url interface{} convert ot string .

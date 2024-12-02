@@ -216,6 +216,11 @@ func (tpp *chatAppTaskPipeline) messageEndToStreamResponse() error {
 			TaskID: tpp.ApplicationGenerateEntity.TaskID,
 			Event:  biz_entity.StreamEventMessageEnd,
 		},
+		Metadata: &biz_entity.MetaDataUsage{
+			Usage: tpp.taskState.LLMResult.Usage,
+		},
+		MessageId:      tpp.Message.ID,
+		ConversationID: tpp.Message.ConversationID,
 	}
 
 	chatBotResponse := biz_entity.NewChatBotAppEndStreamResponse(tpp.ApplicationGenerateEntity.ConversationID, tpp.Message.ID, tpp.Message.CreatedAt, messageEndResponse)
@@ -246,6 +251,14 @@ func (tpp *chatAppTaskPipeline) saveMessage(c context.Context) error {
 	messageRecord.Answer = tpp.taskState.LLMResult.Message.Content.(string)
 
 	messageRecord.Message = tpp.taskState.LLMResult.PromptMessage
+	messageRecord.MessageTokens = tpp.taskState.LLMResult.Usage.PromptTokens
+	messageRecord.MessagePriceUnit = tpp.taskState.LLMResult.Usage.PromptPriceUnit
+	messageRecord.MessageUnitPrice = tpp.taskState.LLMResult.Usage.PromptUnitPrice
+	messageRecord.AnswerTokens = tpp.taskState.LLMResult.Usage.CompletionTokens
+	messageRecord.AnswerPriceUnit = tpp.taskState.LLMResult.Usage.CompletionPriceUnit
+	messageRecord.AnswerUnitPrice = tpp.taskState.LLMResult.Usage.CompletionUnitPrice
+	messageRecord.TotalPrice = tpp.taskState.LLMResult.Usage.TotalPrice
+	messageRecord.Currency = tpp.taskState.LLMResult.Usage.Currency
 
 	if err := tpp.MessageRepo.UpdateMessage(c, messageRecord); err != nil {
 		return err

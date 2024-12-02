@@ -142,7 +142,7 @@ type PromptMessage struct {
 
 func NewSystemMessage(content any) *PromptMessage {
 	return &PromptMessage{
-		Role:    ASSISTANT,
+		Role:    SYSTEM,
 		Content: content,
 	}
 }
@@ -179,6 +179,9 @@ func (msg *PromptMessage) ConvertToRequestData() (map[string]interface{}, error)
 		}
 	} else if msg.Role == ASSISTANT {
 		requestData["role"] = "assistant"
+		requestData["content"] = msg.Content
+	} else if msg.Role == SYSTEM {
+		requestData["role"] = "system"
 		requestData["content"] = msg.Content
 	}
 

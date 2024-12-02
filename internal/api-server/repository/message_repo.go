@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/lunarianss/Luna/infrastructure/errors"
 	po_entity_account "github.com/lunarianss/Luna/internal/api-server/domain/account/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/repository"
@@ -15,7 +16,6 @@ import (
 	po_entity_web_app "github.com/lunarianss/Luna/internal/api-server/domain/web_app/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
-	"github.com/lunarianss/Luna/infrastructure/errors"
 	"gorm.io/gorm"
 )
 
@@ -90,6 +90,15 @@ func (md *MessageRepoImpl) GetConversationByID(ctx context.Context, conversation
 	var conversation po_entity.Conversation
 
 	if err := md.db.First(&conversation, "id = ?", conversationID).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return &conversation, nil
+}
+
+func (md *MessageRepoImpl) GetConversationByApp(ctx context.Context, conversationID string, appID string) (*po_entity.Conversation, error) {
+	var conversation po_entity.Conversation
+
+	if err := md.db.First(&conversation, "id = ? AND app_id = ?", conversationID, appID).Error; err != nil {
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())
 	}
 	return &conversation, nil
@@ -184,6 +193,17 @@ func (md *MessageRepoImpl) FindEndUserConversationsOrderByUpdated(ctx context.Co
 	}
 
 	return conversations, count, nil
+}
+
+func (md *MessageRepoImpl) FindConsoleAppMessages(ctx context.Context, conversationID string, pageSize int) ([]*po_entity.Message, int64, error) {
+	var (
+		ret   []*po_entity.Message
+		count int64
+	)
+	if err := md.db.Model(&po_entity.Message{}).Count(&count).Order("created_at DESC").Limit(pageSize).Where("conversation_id = ?", conversationID).Find(&ret).Error; err != nil {
+		return nil, 0, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return ret, count, nil
 }
 
 func (md *MessageRepoImpl) FindEndUserMessages(ctx context.Context, appID string, user repo_common.BaseAccount, conversationId string, firstID string, pageSize int, order string) ([]*po_entity.Message, int64, error) {

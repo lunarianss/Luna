@@ -9,6 +9,59 @@ type CreateChatMessageUri struct {
 	AppID string `uri:"appID" validate:"required"`
 }
 
+type PromptMessage struct {
+	Role    string `json:"role"`
+	Content string `json:"text"`
+	Name    string `json:"name"`
+}
+
+type ListChatMessageItem struct {
+	ID                      string                 `json:"id"`
+	ConversationID          string                 `json:"conversation_id"`
+	Inputs                  map[string]interface{} `json:"inputs"`
+	Query                   string                 `json:"query"`
+	Message                 []*PromptMessage       `json:"message"`
+	MessageTokens           int64                  `json:"message_tokens"`
+	MessageUnitPrice        float64                `json:"message_unit_price"`
+	Answer                  string                 `json:"answer"`
+	AnswerTokens            int64                  `json:"answer_tokens"`
+	ProviderResponseLatency float64                `json:"provider_response_latency"`
+	TotalPrice              float64                `json:"total_price"`
+	Currency                string                 `json:"currency"`
+	FromSource              string                 `json:"from_source"`
+	FromEndUserID           string                 `json:"from_end_user_id"`
+	FromAccountID           string                 `json:"from_account_id"`
+	CreatedAt               int64                  `json:"created_at"`
+	MessagePriceUnit        float64                `json:"message_price_unit"`
+	AnswerPriceUnit         float64                `json:"answer_price_unit"`
+	WorkflowRunID           string                 `json:"workflow_run_id"`
+	Status                  string                 `json:"status"`
+	Error                   string                 `json:"error"`
+	MessageMetadata         map[string]interface{} `json:"message_metadata"`
+	InvokeFrom              string                 `json:"invoke_from"`
+	ParentMessageID         string                 `json:"parent_message_id"`
+}
+
+type ListChatMessagesResponse struct {
+	Limit   int                    `json:"limit"`
+	HasMore bool                   `json:"has_more"`
+	Data    []*ListChatMessageItem `json:"data"`
+	Count   int64                  `json:"count"`
+}
+
+// ChatCreateMessage Dto
+type ListChatMessageQuery struct {
+	ConversationID string `form:"conversation_id" validate:"required"`
+	FirstID        string `form:"first_id"`
+	Limit          int    `form:"limit"`
+}
+
+func NewListChatMessageQuery() *ListChatMessageQuery {
+	return &ListChatMessageQuery{
+		Limit: 20,
+	}
+}
+
 type AppModelConfigDtoEnable struct {
 	Enable bool `json:"enable"`
 }

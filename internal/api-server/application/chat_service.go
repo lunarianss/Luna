@@ -7,6 +7,7 @@ package service
 import (
 	"context"
 
+	assembler "github.com/lunarianss/Luna/internal/api-server/assembler/chat"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_chat_generator"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
@@ -14,6 +15,7 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
+	"github.com/lunarianss/Luna/internal/infrastructure/util"
 )
 
 type ChatService struct {
@@ -53,4 +55,39 @@ func (s *ChatService) Generate(ctx context.Context, appID, accountID string, arg
 	}
 
 	return nil
+}
+
+func (s *ChatService) ListConsoleMessagesOfConversation(ctx context.Context, appID string, args *dto.ListChatMessageQuery) (*dto.ListChatMessagesResponse, error) {
+	conversation, err := s.chatDomain.MessageRepo.GetConversationByApp(ctx, args.ConversationID, appID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	messageRecords, count, err := s.chatDomain.MessageRepo.FindConsoleAppMessages(ctx, conversation.ID, args.Limit)
+
+	if err != nil {
+		return nil, err
+	}
+	var messageItems []*dto.ListChatMessageItem
+
+	hasMore := true
+
+	for _, mr := range messageRecords {
+		messageDto := assembler.ConvertToListMessageDto(mr)
+		messageItems = append(messageItems, messageDto)
+	}
+
+	if len(messageRecords) < 10 {
+		hasMore = false
+	}
+
+	util.SliceReverse(messageItems)
+
+	return &dto.ListChatMessagesResponse{
+		Limit:   args.Limit,
+		HasMore: hasMore,
+		Data:    messageItems,
+		Count:   count,
+	}, nil
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/lunarianss/Luna/internal/infrastructure/core"
 )
 
-func (ac *AppController) ChatMessageList(c *gin.Context) {
+func (ac *ChatController) ChatMessageList(c *gin.Context) {
 
 	paramsUrl := &dto.CreateChatMessageUri{}
 	paramsQuery := dto.NewListChatMessageQuery()

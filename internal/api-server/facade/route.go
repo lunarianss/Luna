@@ -5,6 +5,7 @@
 package route
 
 import (
+	consoleAppRoute "github.com/lunarianss/Luna/internal/api-server/facade/console/app"
 	authRoute "github.com/lunarianss/Luna/internal/api-server/facade/console/auth"
 	datasetRoute "github.com/lunarianss/Luna/internal/api-server/facade/console/dataset"
 	featureRoute "github.com/lunarianss/Luna/internal/api-server/facade/console/feature"
@@ -23,6 +24,9 @@ func init() {
 	server.RegisterRoute(&consoleWorkSpaceRoute.AccountRoute{})
 	server.RegisterRoute(&consoleWorkSpaceRoute.WorkspaceRoutes{})
 	server.RegisterRoute(&consoleWorkSpaceRoute.TagRoutes{})
+
+	// console/app
+	server.RegisterRoute(&consoleAppRoute.ChatRoutes{})
 
 	// console/dataset
 	server.RegisterRoute(&datasetRoute.DatasetRoutes{})

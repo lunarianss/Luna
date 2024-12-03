@@ -87,6 +87,15 @@ func (md *MessageRepoImpl) GetMessageByID(ctx context.Context, messageID string)
 	return &message, nil
 }
 
+func (md *MessageRepoImpl) GetMessageByConversation(ctx context.Context, cID string, messageID string) (*po_entity.Message, error) {
+	var message po_entity.Message
+
+	if err := md.db.First(&message, "id = ? AND conversation_id = ?", messageID, cID).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return &message, nil
+}
+
 func (md *MessageRepoImpl) GetConversationByID(ctx context.Context, conversationID string) (*po_entity.Conversation, error) {
 	var conversation po_entity.Conversation
 
@@ -220,7 +229,8 @@ func (md *MessageRepoImpl) FindConversationsInConsole(ctx context.Context, page,
 
 	if keyword != "" {
 		keywordFilter := fmt.Sprintf("%%%s%%", keyword)
-		mainQuery = mainQuery.Joins("JOIN messages ON messages.conversation_id = conversations.id").Joins("JOIN (?) as subquery ON subquery.conversation_id = conversations.id", subQuery).Where("messages.query LIKE ? OR messages.answer LIKE ? OR conversations.name LIKE ? OR conversations.introduction LIKE ? OR subquery.from_end_user_session_id LIKE ?", keywordFilter, keywordFilter, keywordFilter, keywordFilter, keywordFilter).Group("conversations.id")
+		mainQuery = mainQuery.Joins("JOIN messages ON messages.conversation_id = conversations.id").Joins("JOIN (?) as subquery ON subquery.conversation_id = conversations.id", subQuery).Where("messages.query LIKE ? OR messages.answer LIKE ? OR conversations.name LIKE ? OR conversations.introduction LIKE ? OR subquery.from_end_user_session_id LIKE ?", keywordFilter, keywordFilter, keywordFilter, keywordFilter, keywordFilter)
+		mainQuery = mainQuery.Group("conversations.id")
 	}
 
 	if sortBy != "" {
@@ -249,14 +259,27 @@ func (md *MessageRepoImpl) FindConversationsInConsole(ctx context.Context, page,
 	return conversations, count, nil
 }
 
-func (md *MessageRepoImpl) FindConsoleAppMessages(ctx context.Context, conversationID string, pageSize int) ([]*po_entity.Message, int64, error) {
+func (md *MessageRepoImpl) FindConsoleAppMessages(ctx context.Context, conversationID string, pageSize int, firstID string) ([]*po_entity.Message, int64, error) {
 	var (
 		ret   []*po_entity.Message
 		count int64
 	)
-	if err := md.db.Model(&po_entity.Message{}).Order("created_at DESC").Limit(pageSize).Where("conversation_id = ?", conversationID).Count(&count).Find(&ret).Error; err != nil {
-		return nil, 0, errors.WithCode(code.ErrDatabase, err.Error())
+
+	if firstID != "" {
+		messageRecord, err := md.GetMessageByConversation(ctx, conversationID, firstID)
+
+		if err != nil {
+			return nil, 0, err
+		}
+		if err := md.db.Model(&po_entity.Message{}).Order("created_at DESC").Limit(pageSize).Where("conversation_id = ? AND id != ? AND created_at < ?", conversationID, firstID, messageRecord.CreatedAt).Count(&count).Find(&ret).Error; err != nil {
+			return nil, 0, err
+		}
+	} else {
+		if err := md.db.Model(&po_entity.Message{}).Order("created_at DESC").Limit(pageSize).Where("conversation_id = ?", conversationID).Count(&count).Find(&ret).Error; err != nil {
+			return nil, 0, errors.WithCode(code.ErrDatabase, err.Error())
+		}
 	}
+
 	return ret, count, nil
 }
 
@@ -272,9 +295,21 @@ func (md *MessageRepoImpl) FindEndUserMessages(ctx context.Context, appID string
 		return nil, 0, err
 	}
 
-	if err := md.db.Model(&po_entity.Message{}).Count(&count).Order("created_at DESC").Limit(pageSize).Where("conversation_id = ?", conversation.ID).Find(&historyMessages).Error; err != nil {
-		return nil, 0, err
+	if firstID != "" {
+		messageRecord, err := md.GetMessageByConversation(ctx, conversationId, firstID)
+
+		if err != nil {
+			return nil, 0, err
+		}
+		if err := md.db.Model(&po_entity.Message{}).Order("created_at DESC").Limit(pageSize).Where("conversation_id = ? AND id != ? AND created_at < ?", conversation.ID, firstID, messageRecord.CreatedAt).Count(&count).Find(&historyMessages).Error; err != nil {
+			return nil, 0, err
+		}
+	} else {
+		if err := md.db.Model(&po_entity.Message{}).Order("created_at DESC").Limit(pageSize).Where("conversation_id = ?", conversation.ID).Count(&count).Find(&historyMessages).Error; err != nil {
+			return nil, 0, err
+		}
 	}
+
 	return historyMessages, count, nil
 
 }

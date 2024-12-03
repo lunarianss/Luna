@@ -37,7 +37,7 @@ type MessageRepo interface {
 
 
 	// Find
-	FindConversationsInConsole(ctx context.Context, page, pageSize int, appID, start, end, sortBy, keyword string) ([]*po_entity.Conversation, int64, error)
+	FindConversationsInConsole(ctx context.Context, page, pageSize int, appID, start, end, sortBy, keyword, timezone string) ([]*po_entity.Conversation, int64, error)
 	FindEndUserConversationsOrderByUpdated(ctx context.Context, appId string, invokeFrom string, user repository.BaseAccount, pageSize int, includeIDs []string, excludeIDs []string, lastID string, sortBy string) ([]*po_entity.Conversation, int64, error)
 	FindEndUserMessages(ctx context.Context, appID string, user repository.BaseAccount, conversationId string, firstID string, pageSize int, order string) ([]*po_entity.Message, int64, error)
 	FindConsoleAppMessages(ctx context.Context, conversationID string, pageSize int, firstID string) ([]*po_entity.Message, int64, error)

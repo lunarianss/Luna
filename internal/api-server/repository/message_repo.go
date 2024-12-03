@@ -7,6 +7,7 @@ package repo_impl
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/infrastructure/log"
@@ -213,11 +214,17 @@ func (md *MessageRepoImpl) FindEndUserConversationsOrderByUpdated(ctx context.Co
 	return conversations, count, nil
 }
 
-func (md *MessageRepoImpl) FindConversationsInConsole(ctx context.Context, page, pageSize int, appID, start, end, sortBy, keyword string) ([]*po_entity.Conversation, int64, error) {
+func (md *MessageRepoImpl) FindConversationsInConsole(ctx context.Context, page, pageSize int, appID, start, end, sortBy, keyword, timezone string) ([]*po_entity.Conversation, int64, error) {
 	var (
 		conversations []*po_entity.Conversation
 		count         int64
 	)
+
+	timezoneIns, err := time.LoadLocation(timezone)
+
+	if err != nil {
+		return nil, 0, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+	}
 
 	if err := md.db.Exec("SET SESSION sql_mode = REPLACE(@@sql_mode, 'ONLY_FULL_GROUP_BY', '')").Error; err != nil {
 		return nil, 0, errors.WithCode(code.ErrDatabase, err.Error())
@@ -231,6 +238,32 @@ func (md *MessageRepoImpl) FindConversationsInConsole(ctx context.Context, page,
 		keywordFilter := fmt.Sprintf("%%%s%%", keyword)
 		mainQuery = mainQuery.Joins("JOIN messages ON messages.conversation_id = conversations.id").Joins("JOIN (?) as subquery ON subquery.conversation_id = conversations.id", subQuery).Where("messages.query LIKE ? OR messages.answer LIKE ? OR conversations.name LIKE ? OR conversations.introduction LIKE ? OR subquery.from_end_user_session_id LIKE ?", keywordFilter, keywordFilter, keywordFilter, keywordFilter, keywordFilter)
 		mainQuery = mainQuery.Group("conversations.id")
+	}
+
+	if start != "" {
+		startTime, _ := time.ParseInLocation("2006-01-02 15:04", start, timezoneIns)
+		startTimeUTC := startTime.UTC().Unix()
+
+		if sortBy == "-created_at" || sortBy == "created_at" {
+			mainQuery = mainQuery.Where("conversations.created_at >= ?", startTimeUTC)
+		} else if sortBy == "-updated_at" || sortBy == "updated_at" {
+			mainQuery = mainQuery.Where("conversations.updated_at >= ?", startTimeUTC)
+		} else {
+			mainQuery = mainQuery.Where("conversations.created_at >= ?", startTimeUTC)
+		}
+	}
+
+	if end != "" {
+		endTime, _ := time.ParseInLocation("2006-01-02 15:04", end, timezoneIns)
+		endTimeUTC := endTime.UTC().Unix()
+
+		if sortBy == "-created_at" || sortBy == "created_at" {
+			mainQuery = mainQuery.Where("conversations.created_at <= ?", endTimeUTC)
+		} else if sortBy == "-updated_at" || sortBy == "updated_at" {
+			mainQuery = mainQuery.Where("conversations.updated_at <= ?", endTimeUTC)
+		} else {
+			mainQuery = mainQuery.Where("conversations.created_at <= ?", endTimeUTC)
+		}
 	}
 
 	if sortBy != "" {

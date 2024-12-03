@@ -97,7 +97,13 @@ func (s *ChatService) ListConversations(ctx context.Context, accountID string, a
 	rets := make([]*dto.ListChatConversationItem, 0, 10)
 	var sessionID string
 
-	conversationRecords, count, err := s.chatDomain.MessageRepo.FindConversationsInConsole(ctx, args.Page, args.Limit, appID, args.Start, args.End, args.SortBy, args.Keyword)
+	accountRecord, err := s.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	conversationRecords, count, err := s.chatDomain.MessageRepo.FindConversationsInConsole(ctx, args.Page, args.Limit, appID, args.Start, args.End, args.SortBy, args.Keyword, accountRecord.Timezone)
 
 	if err != nil {
 		return nil, err

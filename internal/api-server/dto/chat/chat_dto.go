@@ -4,6 +4,19 @@
 
 package dto
 
+// FeedbackStats
+type FeedBackStats struct {
+	Like    int `json:"like"`
+	Dislike int `json:"dislike"`
+}
+
+func NewFeedBackStats() *FeedBackStats {
+	return &FeedBackStats{
+		Like:    0,
+		Dislike: 0,
+	}
+}
+
 // ChatCreateMessage Dto
 type CreateChatMessageUri struct {
 	AppID string `uri:"appID" validate:"required"`
@@ -60,6 +73,52 @@ func NewListChatMessageQuery() *ListChatMessageQuery {
 	return &ListChatMessageQuery{
 		Limit: 20,
 	}
+}
+
+type ListChatConversationQuery struct {
+	Keyword         string `json:"keyword" form:"keyword"`
+	Start           string `json:"start" form:"start"`
+	End             string `json:"end" form:"end"`
+	MessageCountGte int    `json:"message_count_gte" form:"message_count_gte"`
+	Page            int    `json:"page" form:"page"`
+	Limit           int    `json:"limit" form:"limit"`
+	SortBy          string `json:"sort_by" form:"sort_by"`
+}
+
+func NewListChatConversationQuery() *ListChatConversationQuery {
+	return &ListChatConversationQuery{
+		Limit:  10,
+		Page:   1,
+		SortBy: "-created_at",
+	}
+}
+
+type ListChatConversationItem struct {
+	ID                   string         `json:"id"`
+	Status               string         `json:"status"`
+	FromSource           string         `json:"from_source"`
+	FromEndUserID        string         `json:"from_end_user_id"`
+	FromEndUserSessionID string         `json:"from_end_user_session_id"`
+	FromAccountID        string         `json:"from_account_id"`
+	FromAccountName      string         `json:"from_account_name"`
+	Name                 string         `json:"name"`
+	Summary              string         `json:"summary"`
+	ReadAt               int64          `json:"read_at"`
+	CreatedAt            int64          `json:"created_at"`
+	UpdatedAt            int64          `json:"updated_at"`
+	Annotated            bool           `json:"annotated"`
+	ModelConfig          map[string]any `json:"model_config"`
+	MessageCount         int64          `json:"message_count"`
+	UserFeedbackStats    *FeedBackStats `json:"user_feedback_stats"`
+	AdminFeedbackStats   *FeedBackStats `json:"admin_feedback_stats"`
+}
+
+type ListChatConversationResponse struct {
+	HasMore bool                        `json:"has_more"`
+	Data    []*ListChatConversationItem `json:"data"`
+	Page    int                         `json:"page"`
+	Limit   int                         `json:"limit"`
+	Total   int64                       `json:"total"`
 }
 
 type AppModelConfigDtoEnable struct {

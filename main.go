@@ -2,40 +2,66 @@ package main
 
 import (
 	"fmt"
+	"time"
 
-	"github.com/pkoukk/tiktoken-go"
+	"github.com/go-playground/validator/v10"
 )
 
+// 自定义校验：检查时间格式是否符合指定的格式
+func validateDatetime(fl validator.FieldLevel) bool {
+	_, err := time.Parse("2006-01-02 15:04", fl.Field().String())
+	return err == nil
+}
+
+// 自定义校验：检查整数是否在指定的范围内
+func validateIntRange(min, max int) validator.Func {
+	return func(fl validator.FieldLevel) bool {
+		val := fl.Field().Int()
+		return val >= int64(min) && val <= int64(max)
+	}
+}
+
+// 请求参数结构体
+type RequestParams struct {
+	Keyword          string `json:"keyword" validate:"required"`
+	Start            string `json:"start" validate:"datetime"`
+	End              string `json:"end" validate:"datetime"`
+	AnnotationStatus string `json:"annotation_status" validate:"oneof=annotated not_annotated all"`
+	MessageCountGte  int    `json:"message_count_gte" validate:"omitempty,min=1,max=99999"`
+	Page             int    `json:"page" validate:"omitempty,min=1,max=99999"`
+	Limit            int    `json:"limit" validate:"omitempty,min=1,max=100"`
+	SortBy           string `json:"sort_by" validate:"omitempty,oneof=created_at -created_at updated_at -updated_at"`
+}
+
 func main() {
-	text := "Hello, world!"
-	text1 := "你好，世界!"
-	// var a float64 = 1.2
+	// 创建一个 validator 实例
+	validate := validator.New()
 
-	// c1, err := strconv.ParseInt(a, 10, 64)
-	// c, _ := strconv.ParseFloat(a, 64)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
+	// 注册自定义校验规则
+	validate.RegisterValidation("datetime", validateDatetime)
+	validate.RegisterValidation("int_range", validateIntRange(1, 99999))
 
-	const (
-		MODEL_O200K_BASE  string = "o200k_base"
-		MODEL_CL100K_BASE string = "cl100k_base"
-		MODEL_P50K_BASE   string = "p50k_base"
-		MODEL_P50K_EDIT   string = "p50k_edit"
-		MODEL_R50K_BASE   string = "r50k_base"
-	)
-	// encoding := "gpt-4o"
-
-	// if you don't want download dictionary at runtime, you can use offline loader
-	tke, err := tiktoken.GetEncoding(MODEL_CL100K_BASE)
-	if err != nil {
-		err = fmt.Errorf("getEncoding: %v", err)
+	// 模拟的请求参数
+	params := RequestParams{
+		Keyword:          "search",
+		Start:            "2023-10-01 14:30",
+		End:              "2023-10-02 14:30",
+		AnnotationStatus: "annotated",
+		MessageCountGte:  100,
+		Page:             1,
+		Limit:            20,
+		SortBy:           "updated_at",
 	}
 
-	token := tke.Encode(text, nil, nil)
-	token1 := tke.Encode(text1, nil, nil)
-
-	//tokens
-	fmt.Printf("你好，世界! %d\n", len(token))
-	fmt.Printf("text %d\n", len(token1))
+	// 校验请求参数
+	err := validate.Struct(params)
+	if err != nil {
+		// 输出错误信息
+		for _, err := range err.(validator.ValidationErrors) {
+			fmt.Println("Validation failed:", err.Namespace(), err.Field(), err.Tag())
+		}
+	} else {
+		// 校验成功
+		fmt.Println("Validation passed!")
+	}
 }

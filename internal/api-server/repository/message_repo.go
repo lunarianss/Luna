@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
+	"github.com/lunarianss/Luna/infrastructure/log"
 	po_entity_account "github.com/lunarianss/Luna/internal/api-server/domain/account/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/repository"
@@ -93,6 +94,14 @@ func (md *MessageRepoImpl) GetConversationByID(ctx context.Context, conversation
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())
 	}
 	return &conversation, nil
+}
+
+func (md *MessageRepoImpl) GetMessageCountOfConversation(ctx context.Context, cID string) (int64, error) {
+	var count int64
+	if err := md.db.Model(&po_entity.Message{}).Where("conversation_id = ?", cID).Count(&count).Error; err != nil {
+		return 0, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return count, nil
 }
 
 func (md *MessageRepoImpl) GetConversationByApp(ctx context.Context, conversationID string, appID string) (*po_entity.Conversation, error) {
@@ -190,6 +199,51 @@ func (md *MessageRepoImpl) FindEndUserConversationsOrderByUpdated(ctx context.Co
 
 	if err := query.Model(&po_entity.Conversation{}).Count(&count).Limit(pageSize).Order(fmt.Sprintf("%s %s", sortField, sortDirection)).Find(&conversations).Error; err != nil {
 		return nil, 0, err
+	}
+
+	return conversations, count, nil
+}
+
+func (md *MessageRepoImpl) FindConversationsInConsole(ctx context.Context, page, pageSize int, appID, start, end, sortBy, keyword string) ([]*po_entity.Conversation, int64, error) {
+	var (
+		conversations []*po_entity.Conversation
+		count         int64
+	)
+
+	if err := md.db.Exec("SET SESSION sql_mode = REPLACE(@@sql_mode, 'ONLY_FULL_GROUP_BY', '')").Error; err != nil {
+		return nil, 0, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+
+	subQuery := md.db.Model(&po_entity.Conversation{}).Select("conversations.id AS conversation_id, end_users.session_id AS from_end_user_session_id").Joins("LEFT JOIN end_users ON conversations.from_end_user_id = end_users.id")
+
+	mainQuery := md.db.Model(&po_entity.Conversation{}).Select("id, status, from_source, from_end_user_id, from_account_id, name, read_at, created_at, updated_at").Where("app_id = ?", appID)
+
+	if keyword != "" {
+		keywordFilter := fmt.Sprintf("%%%s%%", keyword)
+		mainQuery = mainQuery.Joins("JOIN messages ON message.conversation.id = conversations.id").Joins("JOIN (?) as subquery ON subquery.conversation_id = conversation.id", subQuery).Where("messages.query LIKE ? OR messages.answer LIKE ? OR conversations.name LIKE ? OR conversations.introduction LIKE ? OR subquery.from_end_user_session_id LIKE ?", keywordFilter)
+	}
+
+	if sortBy != "" {
+		switch sortBy {
+		case "created_at":
+			mainQuery = mainQuery.Order("conversations.created_at ASC")
+		case "-created_at":
+			mainQuery = mainQuery.Order("conversations.created_at DESC")
+		case "updated_at":
+			mainQuery = mainQuery.Order("conversations.updated_at ASC")
+		case "-updated_at":
+			mainQuery = mainQuery.Order("conversations.updated_at DESC")
+		default:
+			mainQuery = mainQuery.Order("conversations.created_at DESC")
+		}
+	}
+
+	if err := mainQuery.Model(&po_entity.Conversation{}).Count(&count).Scopes(mysql.Paginate(page, pageSize)).Find(&conversations).Error; err != nil {
+		return nil, 0, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+
+	if err := md.db.Exec("SET SESSION sql_mode = CONCAT(@@sql_mode, ',ONLY_FULL_GROUP_BY')").Error; err != nil {
+		log.Errorf(err.Error())
 	}
 
 	return conversations, count, nil

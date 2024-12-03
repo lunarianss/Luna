@@ -48,3 +48,18 @@ func ConvertPromptMessageDto(messages []*po_entity.PromptMessage) []*dto.PromptM
 
 	return pms
 }
+
+func ConvertToConversationJoins(conversation *po_entity.Conversation) *dto.ListChatConversationItem {
+	return &dto.ListChatConversationItem{
+		ID:            conversation.ID,
+		Status:        conversation.Status,
+		FromSource:    conversation.FromSource,
+		FromEndUserID: conversation.FromEndUserID,
+		FromAccountID: conversation.FromAccountID,
+		Name:          conversation.Name,
+		Summary:       conversation.Summary,
+		ReadAt:        conversation.ReadAt,
+		CreatedAt:     conversation.CreatedAt,
+		UpdatedAt:     conversation.UpdatedAt,
+	}
+}

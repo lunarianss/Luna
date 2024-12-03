@@ -91,3 +91,69 @@ func (s *ChatService) ListConsoleMessagesOfConversation(ctx context.Context, app
 		Count:   count,
 	}, nil
 }
+
+func (s *ChatService) ListConversations(ctx context.Context, accountID string, appID string, args *dto.ListChatConversationQuery) (*dto.ListChatConversationResponse, error) {
+	var rets []*dto.ListChatConversationItem
+	var sessionID string
+
+	conversationRecords, count, err := s.chatDomain.MessageRepo.FindConversationsInConsole(ctx, args.Page, args.Limit, appID, args.Start, args.End, args.SortBy, args.Keyword)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, conversationRecord := range conversationRecords {
+		conversationJoin := assembler.ConvertToConversationJoins(conversationRecord)
+
+		msgCount, err := s.chatDomain.MessageRepo.GetMessageCountOfConversation(ctx, conversationRecord.ID)
+
+		if err != nil {
+			return nil, err
+		}
+
+		account, err := s.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if conversationRecord.FromEndUserID != "" {
+			endUser, err := s.appDomain.WebAppRepo.GetEndUserByID(ctx, conversationRecord.FromEndUserID)
+
+			if err != nil {
+				return nil, err
+			}
+			sessionID = endUser.SessionID
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		conversationJoin.MessageCount = msgCount
+		conversationJoin.FromAccountName = account.Name
+		conversationJoin.UserFeedbackStats = dto.NewFeedBackStats()
+		conversationJoin.AdminFeedbackStats = dto.NewFeedBackStats()
+
+		if conversationRecord.FromEndUserID != "" {
+			conversationJoin.FromEndUserSessionID = sessionID
+		}
+
+		rets = append(rets, conversationJoin)
+
+	}
+
+	hasMore := false
+
+	if len(conversationRecords) == args.Limit {
+		hasMore = true
+	}
+
+	return &dto.ListChatConversationResponse{
+		Page:    args.Page,
+		Limit:   args.Limit,
+		Data:    rets,
+		HasMore: hasMore,
+		Total:   count,
+	}, nil
+}

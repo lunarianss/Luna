@@ -52,6 +52,7 @@ func (a *ChatRoutes) Register(g *gin.Engine) error {
 	modelProviderV1.Use(middleware.TokenAuthMiddleware())
 	modelProviderV1.POST("/apps/:appID/chat-messages", appController.ChatMessage)
 	modelProviderV1.GET("/apps/:appID/chat-messages", appController.ChatMessageList)
+	modelProviderV1.GET("/apps/:appID/chat-conversations", appController.ChatConversationList)
 	return nil
 }
 

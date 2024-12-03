@@ -53,6 +53,8 @@ func (a *ChatRoutes) Register(g *gin.Engine) error {
 	modelProviderV1.POST("/apps/:appID/chat-messages", appController.ChatMessage)
 	modelProviderV1.GET("/apps/:appID/chat-messages", appController.ChatMessageList)
 	modelProviderV1.GET("/apps/:appID/chat-conversations", appController.ChatConversationList)
+	modelProviderV1.GET("/apps/:appID/annotations/count", appController.GetAnnotationCount)
+	modelProviderV1.GET("/apps/:appID/chat-conversations/:conversationID", appController.ConsoleConversationDetail)
 	return nil
 }
 

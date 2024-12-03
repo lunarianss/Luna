@@ -7,11 +7,11 @@ package repo_impl
 import (
 	"context"
 
+	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/repository"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
-	"github.com/lunarianss/Luna/infrastructure/errors"
 	"gorm.io/gorm"
 )
 
@@ -66,7 +66,7 @@ func (ad *AppRepoImpl) FindTenantApps(ctx context.Context, tenantID string, page
 	var apps []*po_entity.App
 	var appCount int64
 
-	if err := ad.db.Model(&po_entity.App{}).Count(&appCount).Scopes(mysql.Paginate(page, pageSize)).Find(&apps, "tenant_id = ? AND is_universal = ?", tenantID, 0).Error; err != nil {
+	if err := ad.db.Model(&po_entity.App{}).Scopes(mysql.Paginate(page, pageSize)).Find(&apps, "tenant_id = ? AND is_universal = ?", tenantID, 0).Count(&appCount).Error; err != nil {
 		return nil, 0, err
 	}
 	return apps, appCount, nil

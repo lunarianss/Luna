@@ -216,11 +216,11 @@ func (md *MessageRepoImpl) FindConversationsInConsole(ctx context.Context, page,
 
 	subQuery := md.db.Model(&po_entity.Conversation{}).Select("conversations.id AS conversation_id, end_users.session_id AS from_end_user_session_id").Joins("LEFT JOIN end_users ON conversations.from_end_user_id = end_users.id")
 
-	mainQuery := md.db.Model(&po_entity.Conversation{}).Select("id, status, from_source, from_end_user_id, from_account_id, name, read_at, created_at, updated_at").Where("app_id = ?", appID)
+	mainQuery := md.db.Model(&po_entity.Conversation{}).Select("conversations.id, conversations.status, conversations.from_source, conversations.from_end_user_id, conversations.from_account_id, conversations.name, conversations.read_at, conversations.created_at, conversations.updated_at").Where("conversations.app_id = ?", appID)
 
 	if keyword != "" {
 		keywordFilter := fmt.Sprintf("%%%s%%", keyword)
-		mainQuery = mainQuery.Joins("JOIN messages ON message.conversation.id = conversations.id").Joins("JOIN (?) as subquery ON subquery.conversation_id = conversation.id", subQuery).Where("messages.query LIKE ? OR messages.answer LIKE ? OR conversations.name LIKE ? OR conversations.introduction LIKE ? OR subquery.from_end_user_session_id LIKE ?", keywordFilter)
+		mainQuery = mainQuery.Joins("JOIN messages ON messages.conversation_id = conversations.id").Joins("JOIN (?) as subquery ON subquery.conversation_id = conversations.id", subQuery).Where("messages.query LIKE ? OR messages.answer LIKE ? OR conversations.name LIKE ? OR conversations.introduction LIKE ? OR subquery.from_end_user_session_id LIKE ?", keywordFilter, keywordFilter, keywordFilter, keywordFilter, keywordFilter).Group("conversations.id")
 	}
 
 	if sortBy != "" {
@@ -254,7 +254,7 @@ func (md *MessageRepoImpl) FindConsoleAppMessages(ctx context.Context, conversat
 		ret   []*po_entity.Message
 		count int64
 	)
-	if err := md.db.Model(&po_entity.Message{}).Count(&count).Order("created_at DESC").Limit(pageSize).Where("conversation_id = ?", conversationID).Find(&ret).Error; err != nil {
+	if err := md.db.Model(&po_entity.Message{}).Order("created_at DESC").Limit(pageSize).Where("conversation_id = ?", conversationID).Count(&count).Find(&ret).Error; err != nil {
 		return nil, 0, errors.WithCode(code.ErrDatabase, err.Error())
 	}
 	return ret, count, nil

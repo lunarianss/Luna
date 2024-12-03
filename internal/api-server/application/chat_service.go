@@ -157,3 +157,48 @@ func (s *ChatService) ListConversations(ctx context.Context, accountID string, a
 		Total:   count,
 	}, nil
 }
+
+func (s *ChatService) DetailConversation(ctx context.Context, accountID string, cID string, appID string) (*dto.ListChatConversationItem, error) {
+	var sessionID string
+
+	conversationRecord, err := s.chatDomain.MessageRepo.GetConversationByApp(ctx, cID, appID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	conversationJoin := assembler.ConvertToConversationJoins(conversationRecord)
+
+	msgCount, err := s.chatDomain.MessageRepo.GetMessageCountOfConversation(ctx, conversationRecord.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	account, err := s.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if conversationRecord.FromEndUserID != "" {
+		endUser, err := s.appDomain.WebAppRepo.GetEndUserByID(ctx, conversationRecord.FromEndUserID)
+
+		if err != nil {
+			return nil, err
+		}
+		sessionID = endUser.SessionID
+	}
+
+	conversationJoin.MessageCount = msgCount
+	conversationJoin.ModelConfig = conversationRecord.OverrideModelConfigs
+	conversationJoin.FromAccountName = account.Name
+	conversationJoin.UserFeedbackStats = dto.NewFeedBackStats()
+	conversationJoin.AdminFeedbackStats = dto.NewFeedBackStats()
+
+	if conversationRecord.FromEndUserID != "" {
+		conversationJoin.FromEndUserSessionID = sessionID
+	}
+
+	return conversationJoin, nil
+}

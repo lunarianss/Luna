@@ -4,6 +4,8 @@
 
 package dto
 
+import biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
+
 // FeedbackStats
 type FeedBackStats struct {
 	Like    int `json:"like"`
@@ -20,6 +22,12 @@ func NewFeedBackStats() *FeedBackStats {
 // ChatCreateMessage Dto
 type CreateChatMessageUri struct {
 	AppID string `uri:"appID" validate:"required"`
+}
+
+// ChatCreateMessage Dto
+type DetailConversationUri struct {
+	AppID          string `uri:"appID" validate:"required"`
+	ConversationID string `uri:"conversationID" validate:"required"`
 }
 
 type PromptMessage struct {
@@ -52,6 +60,10 @@ type ListChatMessageItem struct {
 	Error                   string                 `json:"error"`
 	MessageMetadata         map[string]interface{} `json:"message_metadata"`
 	InvokeFrom              string                 `json:"invoke_from"`
+	FeedBacks               []string               `json:"feedbacks"`
+	AgentThoughts           []string               `json:"agent_thoughts"`
+	MessageFiles            []string               `json:"message_files"`
+	Metadata                map[string]interface{} `json:"metadata"`
 	ParentMessageID         string                 `json:"parent_message_id"`
 }
 
@@ -94,23 +106,23 @@ func NewListChatConversationQuery() *ListChatConversationQuery {
 }
 
 type ListChatConversationItem struct {
-	ID                   string         `json:"id"`
-	Status               string         `json:"status"`
-	FromSource           string         `json:"from_source"`
-	FromEndUserID        string         `json:"from_end_user_id"`
-	FromEndUserSessionID string         `json:"from_end_user_session_id"`
-	FromAccountID        string         `json:"from_account_id"`
-	FromAccountName      string         `json:"from_account_name"`
-	Name                 string         `json:"name"`
-	Summary              string         `json:"summary"`
-	ReadAt               int64          `json:"read_at"`
-	CreatedAt            int64          `json:"created_at"`
-	UpdatedAt            int64          `json:"updated_at"`
-	Annotated            bool           `json:"annotated"`
-	ModelConfig          map[string]any `json:"model_config"`
-	MessageCount         int64          `json:"message_count"`
-	UserFeedbackStats    *FeedBackStats `json:"user_feedback_stats"`
-	AdminFeedbackStats   *FeedBackStats `json:"admin_feedback_stats"`
+	ID                   string                     `json:"id"`
+	Status               string                     `json:"status"`
+	FromSource           string                     `json:"from_source"`
+	FromEndUserID        string                     `json:"from_end_user_id"`
+	FromEndUserSessionID string                     `json:"from_end_user_session_id"`
+	FromAccountID        string                     `json:"from_account_id"`
+	FromAccountName      string                     `json:"from_account_name"`
+	Name                 string                     `json:"name"`
+	Summary              string                     `json:"summary"`
+	ReadAt               int64                      `json:"read_at"`
+	CreatedAt            int64                      `json:"created_at"`
+	UpdatedAt            int64                      `json:"updated_at"`
+	Annotated            bool                       `json:"annotated"`
+	ModelConfig          *biz_entity.AppModelConfig `json:"model_config"`
+	MessageCount         int64                      `json:"message_count"`
+	UserFeedbackStats    *FeedBackStats             `json:"user_feedback_stats"`
+	AdminFeedbackStats   *FeedBackStats             `json:"admin_feedback_stats"`
 }
 
 type ListChatConversationResponse struct {

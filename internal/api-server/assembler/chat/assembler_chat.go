@@ -32,6 +32,10 @@ func ConvertToListMessageDto(message *po_entity.Message) *dto.ListChatMessageIte
 		MessageMetadata:         message.MessageMetadata,
 		InvokeFrom:              message.InvokeFrom,
 		ParentMessageID:         message.ParentMessageID,
+		FeedBacks:               make([]string, 0),
+		AgentThoughts:           make([]string, 0),
+		MessageFiles:            make([]string, 0),
+		Metadata:                make(map[string]interface{}),
 	}
 }
 

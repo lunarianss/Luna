@@ -151,6 +151,16 @@ func ConvertToModelPoEntity(entityModel ModelInfo) po_entity.ModelInfo {
 	}
 }
 
+// ConvertToModelEntity converts a ModelDto to a biz_entity.Model.
+func ConvertToModelBizEntity(entityModel po_entity.ModelInfo) ModelInfo {
+	return ModelInfo{
+		Provider:         entityModel.Provider,
+		Name:             entityModel.Name,
+		Mode:             entityModel.Mode,
+		CompletionParams: entityModel.CompletionParams,
+	}
+}
+
 func ConvertToUserInputPoEntity(entityModels []*UserInputForm) []*po_entity.UserInputForm {
 	var returnUserInput []*po_entity.UserInputForm
 	var baseUserTextInput *po_entity.BaseTextUserInput
@@ -171,4 +181,56 @@ func ConvertToUserInputPoEntity(entityModels []*UserInputForm) []*po_entity.User
 		returnUserInput = append(returnUserInput, userInputForm)
 	}
 	return returnUserInput
+}
+
+func ConvertToUserInputBizEntity(entityModels []*po_entity.UserInputForm) []*UserInputForm {
+	var returnUserInput []*UserInputForm
+	var baseUserTextInput *BaseTextUserInput
+	var userInputForm *UserInputForm
+
+	for _, dtoModel := range entityModels {
+		userInputForm = &UserInputForm{}
+		if dtoModel.TextInput != nil {
+			baseUserTextInput = &BaseTextUserInput{
+				Label:     dtoModel.TextInput.Label,
+				Variable:  dtoModel.TextInput.Variable,
+				Required:  dtoModel.TextInput.Required,
+				MaxLength: dtoModel.TextInput.MaxLength,
+				Default:   dtoModel.TextInput.Default,
+			}
+		}
+		userInputForm.TextInput = baseUserTextInput
+		returnUserInput = append(returnUserInput, userInputForm)
+	}
+	return returnUserInput
+}
+
+func ConvertToAppConfigBizEntity(a *po_entity.AppModelConfig) *AppModelConfig {
+	return &AppModelConfig{
+		AppID:                         a.AppID,
+		Provider:                      a.Provider,
+		ModelID:                       a.ModelID,
+		Configs:                       a.Configs,
+		CreatedAt:                     a.CreatedAt,
+		UpdatedAt:                     a.UpdatedAt,
+		OpeningStatement:              a.OpeningStatement,
+		SuggestedQuestions:            a.SuggestedQuestions,
+		SuggestedQuestionsAfterAnswer: AppModelConfigEnable(a.SuggestedQuestionsAfterAnswer), // 注意类型转换
+		MoreLikeThis:                  AppModelConfigEnable(a.MoreLikeThis),                  // 注意类型转换
+		Model:                         ConvertToModelBizEntity(a.Model),                      // 假设 Model 是直接可以赋值的，如果不是需要进行类型转换
+		UserInputForm:                 ConvertToUserInputBizEntity(a.UserInputForm),
+		PrePrompt:                     a.PrePrompt,
+		AgentMode:                     a.AgentMode,
+		SpeechToText:                  AppModelConfigEnable(a.SpeechToText), // 注意类型转换
+		SensitiveWordAvoidance:        a.SensitiveWordAvoidance,
+		RetrieverResource:             AppModelConfigEnable(a.RetrieverResource), // 注意类型转换
+		DatasetQueryVariable:          a.DatasetQueryVariable,
+		PromptType:                    a.PromptType,
+		ChatPromptConfig:              a.ChatPromptConfig,
+		CompletionPromptConfig:        a.CompletionPromptConfig,
+		DatasetConfigs:                a.DatasetConfigs,
+		ExternalDataTools:             a.ExternalDataTools,
+		FileUpload:                    a.FileUpload,
+		TextToSpeech:                  AppModelConfigEnable(a.TextToSpeech), // 注意类型转换
+	}
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_chat_generator"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
+	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
@@ -64,12 +65,12 @@ func (s *ChatService) ListConsoleMessagesOfConversation(ctx context.Context, app
 		return nil, err
 	}
 
-	messageRecords, count, err := s.chatDomain.MessageRepo.FindConsoleAppMessages(ctx, conversation.ID, args.Limit)
+	messageRecords, count, err := s.chatDomain.MessageRepo.FindConsoleAppMessages(ctx, conversation.ID, args.Limit, args.FirstID)
 
 	if err != nil {
 		return nil, err
 	}
-	var messageItems []*dto.ListChatMessageItem
+	messageItems := make([]*dto.ListChatMessageItem, 0, 10)
 
 	hasMore := true
 
@@ -93,7 +94,7 @@ func (s *ChatService) ListConsoleMessagesOfConversation(ctx context.Context, app
 }
 
 func (s *ChatService) ListConversations(ctx context.Context, accountID string, appID string, args *dto.ListChatConversationQuery) (*dto.ListChatConversationResponse, error) {
-	var rets []*dto.ListChatConversationItem
+	rets := make([]*dto.ListChatConversationItem, 0, 10)
 	var sessionID string
 
 	conversationRecords, count, err := s.chatDomain.MessageRepo.FindConversationsInConsole(ctx, args.Page, args.Limit, appID, args.Start, args.End, args.SortBy, args.Keyword)
@@ -124,10 +125,6 @@ func (s *ChatService) ListConversations(ctx context.Context, accountID string, a
 				return nil, err
 			}
 			sessionID = endUser.SessionID
-		}
-
-		if err != nil {
-			return nil, err
 		}
 
 		conversationJoin.MessageCount = msgCount
@@ -191,7 +188,21 @@ func (s *ChatService) DetailConversation(ctx context.Context, accountID string, 
 	}
 
 	conversationJoin.MessageCount = msgCount
-	conversationJoin.ModelConfig = conversationRecord.OverrideModelConfigs
+
+	if conversationRecord.OverrideModelConfigs != nil {
+		conversationJoin.ModelConfig = conversationRecord.OverrideModelConfigs
+		conversationJoin.ModelConfig.ModelID = conversationRecord.ModelID
+		conversationJoin.ModelConfig.Provider = conversationRecord.ModelProvider
+	} else {
+		appConf, err := s.appDomain.AppRepo.GetAppModelConfigById(ctx, conversationRecord.AppModelConfigID)
+		if err != nil {
+			return nil, err
+		}
+		conversationJoin.ModelConfig = biz_entity.ConvertToAppConfigBizEntity(appConf)
+		conversationJoin.ModelConfig.ModelID = conversationRecord.ModelID
+		conversationJoin.ModelConfig.Provider = conversationRecord.ModelProvider
+	}
+
 	conversationJoin.FromAccountName = account.Name
 	conversationJoin.UserFeedbackStats = dto.NewFeedBackStats()
 	conversationJoin.AdminFeedbackStats = dto.NewFeedBackStats()

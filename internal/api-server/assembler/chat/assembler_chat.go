@@ -42,6 +42,10 @@ func ConvertToListMessageDto(message *po_entity.Message) *dto.ListChatMessageIte
 func ConvertPromptMessageDto(messages []*po_entity.PromptMessage) []*dto.PromptMessage {
 	var pms []*dto.PromptMessage
 
+	if len(messages) == 0 {
+		return make([]*dto.PromptMessage, 0)
+	}
+
 	for _, msg := range messages {
 		pms = append(pms, &dto.PromptMessage{
 			Role:    string(msg.Role),

@@ -53,7 +53,6 @@ func (g *ChatAppGenerator) getAppModelConfig(ctx context.Context, appModel *po_e
 		if appModel.AppModelConfigID == "" {
 			return nil, errors.WithCode(code.ErrAppNotFoundRelatedConfig, fmt.Sprintf("app %s not found related config", appModel.Name))
 		}
-
 		return g.AppDomain.AppRepo.GetAppModelConfigById(ctx, appModel.AppModelConfigID)
 	} else {
 		if appModel.AppModelConfigID == "" {

@@ -52,7 +52,7 @@ func (a *StatisticRoutes) Register(g *gin.Engine) error {
 	statisticsGroup.GET("/daily-conversations", statisticController.DailyConversations)
 	statisticsGroup.GET("/daily-end-users", statisticController.ActiveUsers)
 	statisticsGroup.GET("/daily-messages", statisticController.DailyMessages)
-	// statisticsGroup.GET("/token-costs", appController.GetAnnotationCount)
+	statisticsGroup.GET("/token-costs", statisticController.TokenCosts)
 	statisticsGroup.GET("/average-session-interactions", statisticController.AverageInteraction)
 	statisticsGroup.GET("/user-satisfaction-rate", statisticController.AverageInteraction)
 	// statisticsGroup.GET("/average-response-time", statisticController.AverageInteraction)

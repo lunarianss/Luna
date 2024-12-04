@@ -205,7 +205,7 @@ func (md *MessageRepoImpl) StatisticDailyConversations(ctx context.Context, appI
 	timezoneIns, err := time.LoadLocation(location)
 
 	if err != nil {
-		return nil, err
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
 	}
 
 	sqlQuery := "SELECT DATE_FORMAT(DATE(CONVERT_TZ(FROM_UNIXTIME(conversations.created_at), '+00:00', @timezone)), '%Y-%m-%d')as date, COUNT(*) as message_count FROM conversations WHERE app_id = @app_id"
@@ -215,7 +215,7 @@ func (md *MessageRepoImpl) StatisticDailyConversations(ctx context.Context, appI
 		startTimeUTC = startTime.UTC().Unix()
 
 		if err != nil {
-			return nil, err
+			return nil, errors.WithCode(code.ErrDatabase, err.Error())
 		}
 		sqlQuery += " AND created_at >= @start_created_at"
 	}
@@ -223,7 +223,7 @@ func (md *MessageRepoImpl) StatisticDailyConversations(ctx context.Context, appI
 	if end != "" {
 		endTime, err := time.ParseInLocation("2006-01-02 15:04", end, timezoneIns)
 		if err != nil {
-			return nil, err
+			return nil, errors.WithCode(code.ErrDatabase, err.Error())
 		}
 		endTimeUTC = endTime.UTC().Unix()
 		sqlQuery += " AND created_at < @end_created_at"
@@ -237,7 +237,61 @@ func (md *MessageRepoImpl) StatisticDailyConversations(ctx context.Context, appI
 		"start_created_at": startTimeUTC,
 		"end_created_at":   endTimeUTC,
 	}).Scan(&rets).Error; err != nil {
-		return nil, err
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+
+	return rets, nil
+}
+
+func (md *MessageRepoImpl) StatisticTokenCosts(ctx context.Context, appID, start, end, location string) ([]*biz_entity.StatisticTokenCostsItem, error) {
+
+	var (
+		startTimeUTC int64
+		endTimeUTC   int64
+		rets         []*biz_entity.StatisticTokenCostsItem
+	)
+	timezoneIns, err := time.LoadLocation(location)
+
+	if err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+
+	sqlQuery := "SELECT DATE_FORMAT(DATE(CONVERT_TZ(FROM_UNIXTIME(messages.created_at), '+00:00', @timezone)), '%Y-%m-%d') as date, (SUM(messages.message_tokens) + SUM(messages.answer_tokens)) AS token_count, SUM(total_price) AS total_price FROM messages WHERE app_id = @app_id"
+
+	if start != "" {
+		startTime, err := time.ParseInLocation("2006-01-02 15:04", start, timezoneIns)
+		startTimeUTC = startTime.UTC().Unix()
+
+		if err != nil {
+			return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		}
+		sqlQuery += " AND created_at >= @start_created_at"
+	}
+
+	if end != "" {
+		endTime, err := time.ParseInLocation("2006-01-02 15:04", end, timezoneIns)
+		if err != nil {
+			return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		}
+		endTimeUTC = endTime.UTC().Unix()
+		sqlQuery += " AND created_at < @end_created_at"
+	}
+
+	sqlQuery += " GROUP BY date ORDER BY date"
+
+	if err := md.db.Raw(sqlQuery, map[string]interface{}{
+		"timezone":         location,
+		"app_id":           appID,
+		"start_created_at": startTimeUTC,
+		"end_created_at":   endTimeUTC,
+	}).Scan(&rets).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+
+	for _, ret := range rets {
+		if ret.Currency == "" {
+			ret.Currency = "USD"
+		}
 	}
 
 	return rets, nil

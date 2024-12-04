@@ -41,23 +41,22 @@ func (a *StatisticRoutes) Register(g *gin.Engine) error {
 	chatDomain := chatDomain.NewChatDomain(messageRepo)
 
 	// service
-	chatService := service.NewStatisticService(chatDomain, accountDomain)
+	statisticService := service.NewStatisticService(chatDomain, accountDomain)
 
-	appController := controller.NewSetupController(chatService)
+	statisticController := controller.NewSetupController(statisticService)
 
 	v1 := g.Group("/v1")
 	modelProviderV1 := v1.Group("/console/api")
 	statisticsGroup := modelProviderV1.Group("/apps/:appID/statistics")
 	statisticsGroup.Use(middleware.TokenAuthMiddleware())
-	statisticsGroup.GET("/daily-conversations", appController.DailyConversations)
-	statisticsGroup.GET("/daily-end-users", appController.ActiveUsers)
-	// statisticsGroup.GET("/daily-messages", appController.ChatMessageList)
-
+	statisticsGroup.GET("/daily-conversations", statisticController.DailyConversations)
+	statisticsGroup.GET("/daily-end-users", statisticController.ActiveUsers)
+	statisticsGroup.GET("/daily-messages", statisticController.DailyMessages)
 	// statisticsGroup.GET("/token-costs", appController.GetAnnotationCount)
-	statisticsGroup.GET("/average-session-interactions", appController.AverageInteraction)
-	// statisticsGroup.GET("/user-satisfaction-rate", appController.ConsoleConversationDetail)
-	// statisticsGroup.GET("/average-response-time", appController.ConsoleConversationDetail)
-	// statisticsGroup.GET("/tokens-per-second", appController.ConsoleConversationDetail)
+	statisticsGroup.GET("/average-session-interactions", statisticController.AverageInteraction)
+	statisticsGroup.GET("/user-satisfaction-rate", statisticController.AverageInteraction)
+	// statisticsGroup.GET("/average-response-time", statisticController.AverageInteraction)
+	statisticsGroup.GET("/tokens-per-second", statisticController.AverageInteraction)
 	return nil
 }
 

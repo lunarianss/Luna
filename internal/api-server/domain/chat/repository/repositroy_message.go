@@ -36,6 +36,7 @@ type MessageRepo interface {
 	GetMessageCountOfConversation(ctx context.Context, cID string) (int64, error)
 	GetMessageByConversation(ctx context.Context, cID string, messageID string) (*po_entity.Message, error)
 	StatisticDailyConversations(ctx context.Context, appID, start, end, location string) ([]*biz_entity.StatisticDailyConversationsItem, error)
+	StatisticDailyMessages(ctx context.Context, appID, start, end, location string) ([]*biz_entity.StatisticDailyConversationsItem, error)
 	StatisticDailyUsers(ctx context.Context, appID, start, end, location string) ([]*biz_entity.StatisticDailyUsersItem, error)
 	StatisticAverageSessionInteraction(ctx context.Context, appID, start, end, location string) ([]*biz_entity.StatisticAverageInteractionItem, error)
 	// Find

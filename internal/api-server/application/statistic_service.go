@@ -20,6 +20,25 @@ func NewStatisticService(chatDomain *chatDomain.ChatDomain, accountDomain *accou
 	}
 }
 
+func (ss *StatisticService) DailyMessages(ctx context.Context, appID, accountID, start, end string) (*biz_entity.StatisticDailyConversations, error) {
+
+	account, err := ss.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	statistics, err := ss.chatDomain.MessageRepo.StatisticDailyMessages(ctx, appID, start, end, account.Timezone)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &biz_entity.StatisticDailyConversations{
+		Data: statistics,
+	}, nil
+}
+
 func (ss *StatisticService) DailyConversations(ctx context.Context, appID, accountID, start, end string) (*biz_entity.StatisticDailyConversations, error) {
 
 	account, err := ss.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)

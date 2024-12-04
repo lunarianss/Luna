@@ -208,6 +208,54 @@ func (md *MessageRepoImpl) StatisticDailyConversations(ctx context.Context, appI
 		return nil, err
 	}
 
+	sqlQuery := "SELECT DATE_FORMAT(DATE(CONVERT_TZ(FROM_UNIXTIME(conversations.created_at), '+00:00', @timezone)), '%Y-%m-%d')as date, COUNT(*) as message_count FROM conversations WHERE app_id = @app_id"
+
+	if start != "" {
+		startTime, err := time.ParseInLocation("2006-01-02 15:04", start, timezoneIns)
+		startTimeUTC = startTime.UTC().Unix()
+
+		if err != nil {
+			return nil, err
+		}
+		sqlQuery += " AND created_at >= @start_created_at"
+	}
+
+	if end != "" {
+		endTime, err := time.ParseInLocation("2006-01-02 15:04", end, timezoneIns)
+		if err != nil {
+			return nil, err
+		}
+		endTimeUTC = endTime.UTC().Unix()
+		sqlQuery += " AND created_at < @end_created_at"
+	}
+
+	sqlQuery += " GROUP BY date ORDER BY date"
+
+	if err := md.db.Raw(sqlQuery, map[string]interface{}{
+		"timezone":         location,
+		"app_id":           appID,
+		"start_created_at": startTimeUTC,
+		"end_created_at":   endTimeUTC,
+	}).Scan(&rets).Error; err != nil {
+		return nil, err
+	}
+
+	return rets, nil
+}
+
+func (md *MessageRepoImpl) StatisticDailyMessages(ctx context.Context, appID, start, end, location string) ([]*biz_entity.StatisticDailyConversationsItem, error) {
+
+	var (
+		startTimeUTC int64
+		endTimeUTC   int64
+		rets         []*biz_entity.StatisticDailyConversationsItem
+	)
+	timezoneIns, err := time.LoadLocation(location)
+
+	if err != nil {
+		return nil, err
+	}
+
 	sqlQuery := "SELECT DATE_FORMAT(DATE(CONVERT_TZ(FROM_UNIXTIME(messages.created_at), '+00:00', @timezone)), '%Y-%m-%d')as date, COUNT(*) as message_count FROM messages WHERE app_id = @app_id"
 
 	if start != "" {

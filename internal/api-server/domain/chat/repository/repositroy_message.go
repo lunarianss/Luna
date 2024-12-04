@@ -37,7 +37,7 @@ type MessageRepo interface {
 	GetMessageByConversation(ctx context.Context, cID string, messageID string) (*po_entity.Message, error)
 	StatisticDailyConversations(ctx context.Context, appID, start, end, location string) ([]*biz_entity.StatisticDailyConversationsItem, error)
 	StatisticDailyUsers(ctx context.Context, appID, start, end, location string) ([]*biz_entity.StatisticDailyUsersItem, error)
-
+	StatisticAverageSessionInteraction(ctx context.Context, appID, start, end, location string) ([]*biz_entity.StatisticAverageInteractionItem, error)
 	// Find
 	FindConversationsInConsole(ctx context.Context, page, pageSize int, appID, start, end, sortBy, keyword, timezone string) ([]*po_entity.Conversation, int64, error)
 	FindEndUserConversationsOrderByUpdated(ctx context.Context, appId string, invokeFrom string, user repository.BaseAccount, pageSize int, includeIDs []string, excludeIDs []string, lastID string, sortBy string) ([]*po_entity.Conversation, int64, error)

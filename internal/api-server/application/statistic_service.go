@@ -57,3 +57,22 @@ func (ss *StatisticService) DailyUsers(ctx context.Context, appID, accountID, st
 		Data: statistics,
 	}, nil
 }
+
+func (ss *StatisticService) AverageInteractions(ctx context.Context, appID, accountID, start, end string) (*biz_entity.StatisticAverageInteraction, error) {
+
+	account, err := ss.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	statistics, err := ss.chatDomain.MessageRepo.StatisticAverageSessionInteraction(ctx, appID, start, end, account.Timezone)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &biz_entity.StatisticAverageInteraction{
+		Data: statistics,
+	}, nil
+}

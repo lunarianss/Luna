@@ -12,6 +12,7 @@ import (
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/infrastructure/log"
 	po_entity_account "github.com/lunarianss/Luna/internal/api-server/domain/account/entity/po_entity"
+	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/repository"
 	repo_common "github.com/lunarianss/Luna/internal/api-server/domain/common/repository"
@@ -77,6 +78,54 @@ func (md *MessageRepoImpl) UpdateConversationName(ctx context.Context, conversat
 		return errors.WithCode(code.ErrDatabase, err.Error())
 	}
 	return nil
+}
+
+func (md *MessageRepoImpl) StatisticDailyConversations(ctx context.Context, appID, start, end, location string) ([]*biz_entity.StatisticDailyConversationsItem, error) {
+
+	var (
+		startTimeUTC int64
+		endTimeUTC   int64
+		rets         []*biz_entity.StatisticDailyConversationsItem
+	)
+	timezoneIns, err := time.LoadLocation(location)
+
+	if err != nil {
+		return nil, err
+	}
+
+	sqlQuery := "SELECT DATE_FORMAT(DATE(CONVERT_TZ(FROM_UNIXTIME(messages.created_at), '+00:00', @timezone)), '%Y-%m-%d')as date, COUNT(*) as message_count FROM messages WHERE app_id = @app_id"
+
+	if start != "" {
+		startTime, err := time.ParseInLocation("2006-01-02 15:04", start, timezoneIns)
+		startTimeUTC = startTime.UTC().Unix()
+
+		if err != nil {
+			return nil, err
+		}
+		sqlQuery += " AND created_at >= @start_created_at"
+	}
+
+	if end != "" {
+		endTime, err := time.ParseInLocation("2006-01-02 15:04", end, timezoneIns)
+		if err != nil {
+			return nil, err
+		}
+		endTimeUTC = endTime.UTC().Unix()
+		sqlQuery += " AND created_at < @end_created_at"
+	}
+
+	sqlQuery += " GROUP BY date ORDER BY date"
+
+	if err := md.db.Raw(sqlQuery, map[string]interface{}{
+		"timezone":         location,
+		"app_id":           appID,
+		"start_created_at": startTimeUTC,
+		"end_created_at":   endTimeUTC,
+	}).Scan(&rets).Error; err != nil {
+		return nil, err
+	}
+
+	return rets, nil
 }
 
 func (md *MessageRepoImpl) GetMessageByID(ctx context.Context, messageID string) (*po_entity.Message, error) {
@@ -241,7 +290,12 @@ func (md *MessageRepoImpl) FindConversationsInConsole(ctx context.Context, page,
 	}
 
 	if start != "" {
-		startTime, _ := time.ParseInLocation("2006-01-02 15:04", start, timezoneIns)
+		startTime, err := time.ParseInLocation("2006-01-02 15:04", start, timezoneIns)
+
+		if err != nil {
+			return nil, 0, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+		}
+
 		startTimeUTC := startTime.UTC().Unix()
 
 		if sortBy == "-created_at" || sortBy == "created_at" {
@@ -254,7 +308,11 @@ func (md *MessageRepoImpl) FindConversationsInConsole(ctx context.Context, page,
 	}
 
 	if end != "" {
-		endTime, _ := time.ParseInLocation("2006-01-02 15:04", end, timezoneIns)
+		endTime, err := time.ParseInLocation("2006-01-02 15:04", end, timezoneIns)
+
+		if err != nil {
+			return nil, 0, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+		}
 		endTimeUTC := endTime.UTC().Unix()
 
 		if sortBy == "-created_at" || sortBy == "created_at" {

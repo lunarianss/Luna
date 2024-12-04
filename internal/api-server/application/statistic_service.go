@@ -38,3 +38,22 @@ func (ss *StatisticService) DailyConversations(ctx context.Context, appID, accou
 		Data: statistics,
 	}, nil
 }
+
+func (ss *StatisticService) DailyUsers(ctx context.Context, appID, accountID, start, end string) (*biz_entity.StatisticDailyUser, error) {
+
+	account, err := ss.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	statistics, err := ss.chatDomain.MessageRepo.StatisticDailyUsers(ctx, appID, start, end, account.Timezone)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &biz_entity.StatisticDailyUser{
+		Data: statistics,
+	}, nil
+}

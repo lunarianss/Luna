@@ -50,8 +50,9 @@ func (a *StatisticRoutes) Register(g *gin.Engine) error {
 	statisticsGroup := modelProviderV1.Group("/apps/:appID/statistics")
 	statisticsGroup.Use(middleware.TokenAuthMiddleware())
 	statisticsGroup.GET("/daily-conversations", appController.DailyConversations)
+	statisticsGroup.GET("/daily-end-users", appController.ActiveUsers)
 	// statisticsGroup.GET("/daily-messages", appController.ChatMessageList)
-	// statisticsGroup.GET("/daily-end-users", appController.ChatConversationList)
+
 	// statisticsGroup.GET("/token-costs", appController.GetAnnotationCount)
 	// statisticsGroup.GET("/average-session-interactions", appController.ConsoleConversationDetail)
 	// statisticsGroup.GET("/user-satisfaction-rate", appController.ConsoleConversationDetail)

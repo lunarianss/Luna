@@ -4,6 +4,8 @@
 
 package po_entity
 
+import "github.com/lunarianss/Luna/internal/infrastructure/field"
+
 type TenantJoinResult struct {
 	ID           string                 `json:"tenant_id" gorm:"column:tenant_id"`
 	Name         string                 `json:"tenant_name" gorm:"column:tenant_name"`
@@ -13,4 +15,5 @@ type TenantJoinResult struct {
 	UpdatedAt    int64                  `json:"tenant_updated_at" gorm:"column:tenant_updated_at"`
 	CustomConfig map[string]interface{} `json:"tenant_custom_config" gorm:"column:tenant_custom_config;serializer:json"`
 	Role         string                 `json:"tenant_join_role" gorm:"column:tenant_join_role"`
+	Current      field.BitBool          `json:"current" gorm:"column:tenant_join_current"`
 }

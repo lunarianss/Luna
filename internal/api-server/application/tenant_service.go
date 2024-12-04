@@ -42,7 +42,7 @@ func (s *TenantService) GetTenantCurrentWorkspace(ctx context.Context, accountID
 
 }
 
-func (s *TenantService) GetJoinTenants(ctx context.Context, accountID string) ([]*dto.CurrentTenantInfo, error) {
+func (s *TenantService) GetJoinTenants(ctx context.Context, accountID string) (*dto.CurrentTenant, error) {
 
 	accountRecord, err := s.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
 
@@ -67,8 +67,11 @@ func (s *TenantService) GetJoinTenants(ctx context.Context, accountID string) ([
 			CreateAt: tenantJoinResult.CreatedAt,
 			InTrail:  true,
 			Role:     tenantJoinResult.Role,
+			Current:  tenantJoinResult.Current,
 		})
 	}
 
-	return tenantsInfo, nil
+	return &dto.CurrentTenant{
+		Workspaces: tenantsInfo,
+	}, nil
 }

@@ -7,10 +7,10 @@ package repo_impl
 import (
 	"context"
 
+	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/internal/api-server/domain/account/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
-	"github.com/lunarianss/Luna/infrastructure/errors"
 	"gorm.io/gorm"
 )
 
@@ -92,8 +92,8 @@ func (td *TenantRepoImpl) GetCurrentTenantJoinByAccount(ctx context.Context, acc
 func (td *TenantRepoImpl) FindTenantsJoinByAccount(ctx context.Context, account *po_entity.Account) ([]*po_entity.TenantJoinResult, error) {
 	var tenantJoinResults []*po_entity.TenantJoinResult
 
-	if err := td.db.Table("tenants").Select("tenants.id as tenant_id, tenant_account_joins.role as tenant_join_role, tenants.name as tenant_name, tenants.plan as tenant_plan, tenants.status as tenant_status, tenants.created_at as tenant_created_at, tenants.updated_at as tenant_updated_at, tenants.custom_config as tenants_custom_config").Joins("join tenant_account_joins on tenants.id = tenant_account_joins.tenant_id").Scan(&tenantJoinResults).Error; err != nil {
-		return nil, err
+	if err := td.db.Table("tenants").Select("tenants.id as tenant_id, tenant_account_joins.role as tenant_join_role, tenants.name as tenant_name, tenants.plan as tenant_plan, tenants.status as tenant_status, tenants.created_at as tenant_created_at, tenants.updated_at as tenant_updated_at, tenants.custom_config as tenants_custom_config, tenant_account_joins.current as tenant_join_current").Joins("join tenant_account_joins on tenants.id = tenant_account_joins.tenant_id").Scan(&tenantJoinResults).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
 	}
 
 	return tenantJoinResults, nil

@@ -4,6 +4,8 @@
 
 package dto
 
+import "github.com/lunarianss/Luna/internal/infrastructure/field"
+
 type CurrentTenantInfo struct {
 	ID             string         `json:"id"`
 	Name           string         `json:"name"`
@@ -14,4 +16,9 @@ type CurrentTenantInfo struct {
 	TrialEndReason string         `json:"trial_end_reason"`
 	Role           string         `json:"role"`
 	CustomConfig   map[string]any `json:"custom_config"`
+	Current        field.BitBool  `json:"current"`
+}
+
+type CurrentTenant struct {
+	Workspaces []*CurrentTenantInfo `json:"workspaces"`
 }

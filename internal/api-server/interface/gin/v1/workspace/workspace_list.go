@@ -25,10 +25,5 @@ func (wc *WorkspaceController) List(c *gin.Context) {
 		return
 	}
 
-	if len(tenantsInfo) == 1 {
-		core.WriteResponse(c, nil, tenantsInfo[0])
-		return
-	}
-
 	core.WriteResponse(c, nil, tenantsInfo)
 }

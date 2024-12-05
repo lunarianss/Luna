@@ -6,16 +6,16 @@
 FROM BASE_IMAGE
 LABEL maintainer="cyan0908@163.com"
 
-WORKDIR /opt/Luna
+WORKDIR /opt/luna
 
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
       echo "Asia/Shanghai" > /etc/timezone && \
-      mkdir -p /var/log/Luna && \
-      mkdir -p /etc/Luna
+      mkdir -p /var/log/luna && \
+      mkdir -p /etc/luna
 
-COPY luna /opt/Luna/bin/
+COPY luna /opt/luna/bin/
 
-COPY luna.yaml /etc/Luna/
+COPY luna.yaml /etc/luna/
 
-ENTRYPOINT ["/opt/Luna/bin/luna"]
-CMD ["-c", "/etc/Luna/luna.yaml"]
+ENTRYPOINT ["/opt/luna/bin/luna"]
+CMD ["-c", "/etc/luna/luna.yaml"]

@@ -56,9 +56,7 @@ func (pr *ProviderResponse) PatchIcon(runtimeConfig *config.Config) {
 
 	provider := pr.Provider
 
-	insecureAddress := fmt.Sprintf("%s:%d", runtimeConfig.InsecureServing.BindAddress, runtimeConfig.InsecureServing.BindPort)
-
-	urlPrefix := fmt.Sprintf("http://%s/%s/%s", insecureAddress, "v1/console/api/workspaces/current/model-providers", provider)
+	urlPrefix := fmt.Sprintf("%s/%s/%s", runtimeConfig.SystemOptions.IconBaseUrl, "v1/console/api/workspaces/current/model-providers", provider)
 
 	if pr.IconLarge != nil {
 		pr.IconLarge = &common.I18nObject{

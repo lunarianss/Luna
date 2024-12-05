@@ -18,6 +18,13 @@ system:
   is-allow-create-workspace: true
   app-web-url: "http://127.0.0.1:3000"
   api-base-url: "http://127.0.0.1:8082/service/v1"
+  icon-base-url: "http://127.0.0.1:8082"
+  upload-file-size-limit: 15
+  upload-file-batch-limit: 5
+  upload-image-file-size-limit: 10
+  upload-video-file-size-limit: 100
+  upload-audio-file-size-limit: 50
+  batch-upload-limit: 20
 
 # 日志配置
 log:

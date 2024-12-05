@@ -18,6 +18,7 @@ type SystemOptions struct {
 	IsAllowCreateWorkspace       bool   `mapstructure:"is-allow-create-workspace"      json:"is_allow_create_workspace"`
 	AppWebUrl                    string `mapstructure:"app-web-url" json:"app_web_url"`
 	ApiBaseUrl                   string `mapstructure:"api-base-url" json:"api_base_url"`
+	IconBaseUrl                   string `mapstructure:"icon-base-url" json:"icon_base_url"`
 	UploadFileSizeLimit          int    `mapstructure:"upload-file-size-limit" json:"upload_file_size_limit"`
 	UploadFileBatchLimit         int    `mapstructure:"upload-file-batch-limit" json:"upload_file_batch_limit"`
 	UploadImageFileSizeLimit     int    `mapstructure:"upload-image-file-size-limit" json:"upload_image_file_size_limit"`

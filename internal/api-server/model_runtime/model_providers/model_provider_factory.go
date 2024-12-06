@@ -15,8 +15,8 @@ import (
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider"
 	"gopkg.in/yaml.v3"
 
-	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/lunarianss/Luna/infrastructure/errors"
+	"github.com/lunarianss/Luna/internal/infrastructure/code"
 )
 
 const (
@@ -35,45 +35,49 @@ type ModelProviderExtension struct {
 	Position         int
 }
 
-func (f *ModelProviderFactory) GetPositionMap(fileDir string) (map[string]int, error) {
+func (f *ModelProviderFactory) GetPositionMap(fileDir string) (map[string]int, []string, error) {
+
+	var orderedProvider []string
+
 	positionInfo := make([]string, 0, PROVIDER_COUNT)
 	positionFilePath := filepath.Join(fileDir, POSITION_FILE)
 	positionFileContent, err := os.ReadFile(positionFilePath)
 
 	if err != nil {
-		return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+		return nil, nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
 	}
 
 	if err := yaml.Unmarshal(positionFileContent, &positionInfo); err != nil {
-		return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+		return nil, nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
 	}
 
 	positionIndexMap := make(map[string]int)
 
 	for index, providerName := range positionInfo {
 		positionIndexMap[strings.Trim(providerName, " ")] = index
+		orderedProvider = append(orderedProvider, providerName)
 	}
 
-	return positionIndexMap, nil
+	return positionIndexMap, orderedProvider, nil
 }
 
-func (f *ModelProviderFactory) GetProvidersFromDir() ([]*biz_entity.ProviderStaticConfiguration, error) {
-	modelProviderExtensions, err := f.getMapProvidersExtensions()
+func (f *ModelProviderFactory) GetProvidersFromDir() ([]*biz_entity.ProviderStaticConfiguration, []string, error) {
+	modelProviderExtensions, orderedProvider, err := f.getMapProvidersExtensions()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	providerEntities, err := f.extensionsConvertProviderEntity(modelProviderExtensions)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return providerEntities, nil
+	return providerEntities, orderedProvider, nil
 }
 
 func (f *ModelProviderFactory) GetProviderInstance(provider string) (*biz_entity.ProviderRuntime, error) {
-	providerMap, err := f.getMapProvidersExtensions()
+	providerMap, _, err := f.getMapProvidersExtensions()
 
 	if err != nil {
 		return nil, err
@@ -176,26 +180,26 @@ func (f *ModelProviderFactory) resolveProviderDir(dirEntries []fs.DirEntry, full
 	return modelProviderResolvePaths, nil
 }
 
-func (f *ModelProviderFactory) getMapProvidersExtensions() (map[string]*ModelProviderExtension, error) {
+func (f *ModelProviderFactory) getMapProvidersExtensions() (map[string]*ModelProviderExtension, []string, error) {
 	dirEntries, fullFilePath, fileDir, err := f.resolveProviderDirInfo()
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	modelProviderResolvePaths, err := f.resolveProviderDir(dirEntries, fullFilePath)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	positionMap, err := f.GetPositionMap(fileDir)
+	positionMap, orderedProvider, err := f.GetPositionMap(fileDir)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	resolveProviderExtensions := f.resolveProviderExtensions(modelProviderResolvePaths, positionMap)
 
-	return f.resolveMapProviderExtensions(resolveProviderExtensions), nil
+	return f.resolveMapProviderExtensions(resolveProviderExtensions), orderedProvider, nil
 }
 
 func (f *ModelProviderFactory) resolveMapProviderExtensions(

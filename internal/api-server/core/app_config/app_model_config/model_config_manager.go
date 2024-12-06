@@ -39,13 +39,13 @@ func (m *ModelConfigManager) ValidateAndSetDefaults(ctx context.Context, tenantI
 		modelModeStr    string
 	)
 
-	providerConfigurations, err := m.ProviderDomain.GetConfigurations(ctx, tenantID)
+	providerConfigurations, orderedProviders, err := m.ProviderDomain.GetConfigurations(ctx, tenantID)
 
 	if err != nil {
 		return nil, nil, err
 	}
 
-	availableModels, err = providerConfigurations.GetModels(ctx, config.Model.Provider, common.LLM, false)
+	availableModels, err = providerConfigurations.GetModels(ctx, orderedProviders, config.Model.Provider, common.LLM, false)
 
 	if err != nil {
 		return nil, nil, err
@@ -69,7 +69,7 @@ func (m *ModelConfigManager) ValidateAndSetDefaults(ctx context.Context, tenantI
 				modelModeStr, _ = modelMode.(string)
 			}
 			break
-		}	
+		}
 	}
 
 	if modelModeStr == "" {

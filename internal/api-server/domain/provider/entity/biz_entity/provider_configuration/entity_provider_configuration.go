@@ -16,6 +16,7 @@ import (
 	biz_entity_model "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider/model_provider"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
+	"github.com/lunarianss/Luna/infrastructure/log"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/repository"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
@@ -65,12 +66,19 @@ type ProviderConfigurations struct {
 	Configurations map[string]*ProviderConfiguration `json:"configurations"`
 }
 
-func (pcm *ProviderConfigurations) GetModels(ctx context.Context, provider string, modelType common.ModelType, onlyActive bool) ([]*ModelWithProvider, error) {
+func (pcm *ProviderConfigurations) GetModels(ctx context.Context, orderedProviders []string, provider string, modelType common.ModelType, onlyActive bool) ([]*ModelWithProvider, error) {
 	var (
 		providerModels []*ModelWithProvider
 	)
 
-	for _, providerConfiguration := range pcm.Configurations {
+	for _, orderedProvider := range orderedProviders {
+		providerConfiguration, ok := pcm.Configurations[orderedProvider]
+
+		if !ok {
+			log.Warnf("%s provider is not in the configuration", orderedProvider)
+			continue
+		}
+
 		if provider != "" && provider != providerConfiguration.Provider.Provider {
 			continue
 		}
@@ -80,6 +88,7 @@ func (pcm *ProviderConfigurations) GetModels(ctx context.Context, provider strin
 		}
 		providerModels = append(providerModels, models...)
 	}
+
 	return providerModels, nil
 }
 

@@ -33,7 +33,7 @@ func NewModelService(providerDomain *providerDomain.ProviderDomain, accountDomai
 
 func (ms *ModelService) SaveModelCredentials(ctx context.Context, tenantId, model, modelTpe, provider string, credentials map[string]interface{}) error {
 
-	providerConfigurations, err := ms.providerDomain.GetConfigurations(ctx, tenantId)
+	providerConfigurations, _, err := ms.providerDomain.GetConfigurations(ctx, tenantId)
 
 	if err != nil {
 		return err
@@ -61,12 +61,12 @@ func (ms *ModelService) GetAccountAvailableModels(ctx context.Context, accountID
 	if err != nil {
 		return nil, err
 	}
-	providerConfigurations, err := ms.providerDomain.GetConfigurations(ctx, tenantRecord.ID)
+	providerConfigurations, orderedProviders, err := ms.providerDomain.GetConfigurations(ctx, tenantRecord.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	activeModels, err := providerConfigurations.GetModels(ctx, "", common.ModelType(modelType), true)
+	activeModels, err := providerConfigurations.GetModels(ctx, orderedProviders, "", common.ModelType(modelType), true)
 
 	if err != nil {
 		return nil, err
@@ -92,7 +92,9 @@ func (ms *ModelService) GetAccountAvailableModels(ctx context.Context, accountID
 
 	providerResponses := make([]*dto.ProviderWithModelsResponse, 0, 2)
 
-	for providerName, providerModels := range providerModelsMap {
+	for _, orderedProvider := range orderedProviders {
+		providerModels := providerModelsMap[orderedProvider]
+
 		if len(providerModels) == 0 {
 			continue
 		}
@@ -115,7 +117,7 @@ func (ms *ModelService) GetAccountAvailableModels(ctx context.Context, accountID
 		}
 
 		providerResponses = append(providerResponses, &dto.ProviderWithModelsResponse{
-			Provider:  providerName,
+			Provider:  orderedProvider,
 			Label:     firstModel.Provider.Label,
 			IconSmall: firstModel.Provider.IconSmall,
 			IconLarge: firstModel.Provider.Label,
@@ -140,7 +142,7 @@ func (ms *ModelService) GetModelParameterRules(ctx context.Context, accountID st
 		return nil, err
 	}
 
-	providerConfigurations, err := ms.providerDomain.GetConfigurations(ctx, tenantRecord.ID)
+	providerConfigurations, _, err := ms.providerDomain.GetConfigurations(ctx, tenantRecord.ID)
 
 	if err != nil {
 		return nil, err

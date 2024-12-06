@@ -21,9 +21,9 @@ type ProviderRepo interface {
 	// Get tenant's model providers mapped by provider name
 	GetMapTenantModelProviders(ctx context.Context, tenantId string) (map[string][]*po_entity.Provider, error)
 	// Get all inner Providers
-	GetSystemProviders(ctx context.Context) ([]*biz_entity.ProviderStaticConfiguration, error)
+	GetSystemProviders(ctx context.Context) ([]*biz_entity.ProviderStaticConfiguration, []string, error)
 	// Get all inner Providers mapped by provider name
-	GetMapSystemProviders(ctx context.Context) (map[string]*biz_entity.ProviderStaticConfiguration, error)
+	GetMapSystemProviders(ctx context.Context) (map[string]*biz_entity.ProviderStaticConfiguration, []string, error)
 	// Get provider path
 	GetProviderPath(ctx context.Context, provider string) (string, error)
 	// GerProviderEntity get the provider entity by provider name

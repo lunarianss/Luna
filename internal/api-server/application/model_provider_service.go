@@ -8,9 +8,10 @@ import (
 	"context"
 	"fmt"
 	"slices"
-	"sort"
 	"strings"
 
+	"github.com/lunarianss/Luna/infrastructure/errors"
+	"github.com/lunarianss/Luna/infrastructure/log"
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
@@ -20,7 +21,6 @@ import (
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/provider"
 	model_providers "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
-	"github.com/lunarianss/Luna/infrastructure/errors"
 )
 
 type ModelProviderService struct {
@@ -42,14 +42,20 @@ func (mpSrv *ModelProviderService) GetProviderList(ctx context.Context, accountI
 		return nil, err
 	}
 
-	providerConfigurations, err := mpSrv.providerDomain.GetConfigurations(ctx, tenantRecord.ID)
+	providerConfigurations, orderedProviders, err := mpSrv.providerDomain.GetConfigurations(ctx, tenantRecord.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	providerListResponse := make([]*dto.ProviderResponse, 0, model_providers.PROVIDER_COUNT)
 
-	for _, providerConfiguration := range providerConfigurations.Configurations {
+	for _, orderedProvider := range orderedProviders {
+		providerConfiguration, ok := providerConfigurations.Configurations[orderedProvider]
+
+		if !ok {
+			log.Warnf("%s provider is not in the configuration", orderedProvider)
+			continue
+		}
 
 		if modelType != "" {
 			if !slices.Contains(providerConfiguration.Provider.SupportedModelTypes, common.ModelType(modelType)) {
@@ -87,15 +93,12 @@ func (mpSrv *ModelProviderService) GetProviderList(ctx context.Context, accountI
 		}
 
 		providerListResponse = append(providerListResponse, providerResponse)
+
 	}
 
 	for _, providerResponse := range providerListResponse {
 		providerResponse.PatchIcon(mpSrv.config)
 	}
-
-	sort.Slice(providerListResponse, func(i, j int) bool {
-		return providerListResponse[i].Position < providerListResponse[j].Position
-	})
 
 	return providerListResponse, nil
 }

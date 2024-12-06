@@ -14,7 +14,7 @@ import (
 func TestModelProviderFactory(t *testing.T) {
 	mf := ModelProviderFactory{}
 	log.NewWithOptions(log.WithDebugMode())
-	providers, err := mf.GetProvidersFromDir()
+	providers, orderedProviders, err := mf.GetProvidersFromDir()
 
 	if err != nil {
 		if coder, ok := err.(errors.Coder); ok {
@@ -27,8 +27,9 @@ func TestModelProviderFactory(t *testing.T) {
 
 	// c, _ := json.MarshalIndent(providers, "", " ")
 	t.Logf(
-		"len providers : %d, the first three provider names are %s | %s | %s",
+		"len providers : %d, orderedProviders %+v, the first three provider names are %s | %s | %s",
 		len(providers),
+		orderedProviders,
 		providers[0].Provider,
 		providers[1].Provider,
 		providers[2].Provider,

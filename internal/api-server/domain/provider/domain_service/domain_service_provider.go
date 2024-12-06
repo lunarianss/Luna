@@ -8,7 +8,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"sort"
 	"strings"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
@@ -38,57 +37,18 @@ func NewProviderDomain(providerRepo repository.ProviderRepo, modelRepo repositor
 	}
 }
 
-func (mpd *ProviderDomain) GetSortedListConfigurations(ctx context.Context, tenantId string) ([]*biz_entity_provider_config.ProviderConfiguration, error) {
-	var (
-		providerListConfigurations []*biz_entity_provider_config.ProviderConfiguration
-	)
-	providerNameMapRecords, err := mpd.ProviderRepo.GetMapTenantModelProviders(ctx, tenantId)
-
-	if err != nil {
-		return nil, err
-	}
-
-	providerNameMapEntities, err := mpd.ProviderRepo.GetSystemProviders(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	for _, providerEntity := range providerNameMapEntities {
-		providerName := providerEntity.Provider
-		providerRecords := providerNameMapRecords[providerName]
-		customConfiguration := mpd.toCustomConfiguration(tenantId, providerEntity, providerRecords)
-
-		providerConfiguration := &biz_entity_provider_config.ProviderConfiguration{
-			TenantId:              tenantId,
-			Provider:              providerEntity,
-			UsingProviderType:     po_entity.CUSTOM,
-			PreferredProviderType: po_entity.CUSTOM,
-			CustomConfiguration:   customConfiguration,
-		}
-		providerConfiguration.SetManager(mpd.providerConfigurationsManager)
-		providerListConfigurations = append(providerListConfigurations, providerConfiguration)
-	}
-
-	sort.Slice(providerListConfigurations, func(i, j int) bool {
-		return providerListConfigurations[i].Provider.Position < providerListConfigurations[j].Provider.Position
-	})
-
-	return providerListConfigurations, nil
-}
-
 // GetConfigurations Get all providers, models config for tenant
-func (mpd *ProviderDomain) GetConfigurations(ctx context.Context, tenantId string) (*biz_entity_provider_config.ProviderConfigurations, error) {
+func (mpd *ProviderDomain) GetConfigurations(ctx context.Context, tenantId string) (*biz_entity_provider_config.ProviderConfigurations, []string, error) {
 	providerNameMapRecords, err := mpd.ProviderRepo.GetMapTenantModelProviders(ctx, tenantId)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	providerNameMapEntities, err := mpd.ProviderRepo.GetSystemProviders(ctx)
+	providerNameMapEntities, orderedProvider, err := mpd.ProviderRepo.GetSystemProviders(ctx)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	providerConfigurations := NewProviderConfigurationsManager(mpd.ProviderRepo, mpd.ModelRepo, tenantId, make(map[string]*biz_entity_provider_config.ProviderConfiguration, model_providers.PROVIDER_COUNT))
@@ -110,7 +70,7 @@ func (mpd *ProviderDomain) GetConfigurations(ctx context.Context, tenantId strin
 		providerConfigurations.Configurations[providerName] = providerConfiguration
 	}
 
-	return providerConfigurations.ProviderConfigurations, nil
+	return providerConfigurations.ProviderConfigurations, orderedProvider, nil
 }
 
 func (mpd *ProviderDomain) GetModelSchema(ctx context.Context, model string, credentials interface{}, AIModel *biz_entity_model.AIModelRuntime) (*biz_entity_model.AIModelStaticConfiguration, error) {
@@ -128,7 +88,7 @@ func (mpd *ProviderDomain) GetModelSchema(ctx context.Context, model string, cre
 }
 
 func (mpd *ProviderDomain) GetProviderModelBundle(ctx context.Context, tenantId, provider string, modelType common.ModelType) (*biz_entity_provider_config.ProviderModelBundleRuntime, error) {
-	providerConfigurations, err := mpd.GetConfigurations(ctx, tenantId)
+	providerConfigurations, _, err := mpd.GetConfigurations(ctx, tenantId)
 
 	if err != nil {
 		return nil, err
@@ -158,28 +118,23 @@ func (mpd *ProviderDomain) GetProviderModelBundle(ctx context.Context, tenantId,
 
 func (mpd *ProviderDomain) GetFirstProviderFirstModel(ctx context.Context, tenantID, modelType string) (string, string, error) {
 
-	var allModels []*biz_entity_provider_config.ModelWithProvider
-
-	providerConfigurations, err := mpd.GetSortedListConfigurations(ctx, tenantID)
+	providerConfigurations, orderedProviders, err := mpd.GetConfigurations(ctx, tenantID)
 
 	if err != nil {
 		return "", "", err
 	}
 
-	for _, providerConfiguration := range providerConfigurations {
-		model, err := providerConfiguration.GetProviderModels(ctx, common.ModelType(modelType), false)
+	firstProviderModels, err := providerConfigurations.Configurations[orderedProviders[0]].GetProviderModels(ctx, common.ModelType(modelType), false)
 
-		if err != nil {
-			return "", "", err
-		}
-		allModels = append(allModels, model...)
+	if err != nil {
+		return "", "", err
 	}
 
-	if len(allModels) == 0 {
+	if len(firstProviderModels) == 0 {
 		return "", "", errors.WithCode(code.ErrAllModelsEmpty, fmt.Sprintf("tenant %s does not have any type of %s models", tenantID, modelType))
 	}
 
-	return allModels[0].Provider.Provider, allModels[0].Model, nil
+	return firstProviderModels[0].Provider.Provider, firstProviderModels[0].Model, nil
 }
 
 func (mpd *ProviderDomain) GetModelInstance(ctx context.Context, tenantId, provider, model string, modelType common.ModelType) (*biz_entity_provider_config.ModelIntegratedInstance, error) {
@@ -215,20 +170,32 @@ func (mpd *ProviderDomain) GetDefaultModel(ctx context.Context, tenantId string,
 		err          error
 	)
 
-	defaultModel, err = mpd.ModelRepo.GetTenantDefaultModel(ctx, tenantId, string(modelType))
+	originType, err := modelType.ToOriginModelType()
+	if err != nil {
+		return nil, err
+	}
+
+	defaultModel, err = mpd.ModelRepo.GetTenantDefaultModel(ctx, tenantId, originType)
 
 	if err != nil {
 		return nil, err
 	}
 
 	if defaultModel == nil {
-		providerConfigurations, err := mpd.GetConfigurations(ctx, tenantId)
+		providerConfigurations, orderedProviders, err := mpd.GetConfigurations(ctx, tenantId)
 
 		if err != nil {
 			return nil, err
 		}
 
-		for _, providerConfiguration := range providerConfigurations.Configurations {
+		for _, orderedProvider := range orderedProviders {
+			providerConfiguration, ok := providerConfigurations.Configurations[orderedProvider]
+
+			if !ok {
+				log.Warnf("%s provider is not in the configuration", orderedProvider)
+				continue
+			}
+
 			availableModels, err := providerConfiguration.GetProviderModels(ctx, modelType, true)
 
 			if err != nil {
@@ -236,18 +203,12 @@ func (mpd *ProviderDomain) GetDefaultModel(ctx context.Context, tenantId string,
 			}
 
 			if availableModels != nil {
-
 				availableModel := util.SliceFind(availableModels, func(t *biz_entity_provider_config.ModelWithProvider) bool {
 					return t.Model == "gpt-4"
 				})
 
 				if availableModel == nil {
 					availableModel = availableModels[0]
-				}
-
-				originType, err := modelType.ToOriginModelType()
-				if err != nil {
-					return nil, err
 				}
 
 				defaultModel, err = mpd.ModelRepo.CreateTenantDefaultModel(ctx, &po_entity.TenantDefaultModel{
@@ -262,6 +223,7 @@ func (mpd *ProviderDomain) GetDefaultModel(ctx context.Context, tenantId string,
 				}
 			}
 		}
+
 	}
 
 	if defaultModel == nil {
@@ -294,7 +256,7 @@ func (mpd *ProviderDomain) GetDefaultModel(ctx context.Context, tenantId string,
 }
 
 func (mpd *ProviderDomain) SaveProviderCredentials(ctx context.Context, tenantID string, provider string, credentials map[string]interface{}) error {
-	providerConfigurations, err := mpd.GetConfigurations(ctx, tenantID)
+	providerConfigurations, _, err := mpd.GetConfigurations(ctx, tenantID)
 	if err != nil {
 		return err
 	}

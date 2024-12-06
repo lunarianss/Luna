@@ -10,13 +10,13 @@ import (
 
 	"gorm.io/gorm"
 
+	"github.com/lunarianss/Luna/infrastructure/errors"
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/repository"
 	model_providers "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
-	"github.com/lunarianss/Luna/infrastructure/errors"
 )
 
 type ProviderRepoImpl struct {
@@ -69,24 +69,25 @@ func (mpd *ProviderRepoImpl) GetMapTenantModelProviders(ctx context.Context, ten
 }
 
 // Get all inner Providers
-func (mpd *ProviderRepoImpl) GetSystemProviders(ctx context.Context) ([]*biz_entity.ProviderStaticConfiguration, error) {
+func (mpd *ProviderRepoImpl) GetSystemProviders(ctx context.Context) ([]*biz_entity.ProviderStaticConfiguration, []string, error) {
 	return model_providers.Factory.GetProvidersFromDir()
 }
 
 // Get all inner Providers mapped by provider name
-func (mpd *ProviderRepoImpl) GetMapSystemProviders(ctx context.Context) (map[string]*biz_entity.ProviderStaticConfiguration, error) {
+func (mpd *ProviderRepoImpl) GetMapSystemProviders(ctx context.Context) (map[string]*biz_entity.ProviderStaticConfiguration, []string, error) {
 	mapSystemProviders := make(map[string]*biz_entity.ProviderStaticConfiguration, model_providers.PROVIDER_COUNT)
 
-	systemProviders, err := mpd.GetSystemProviders(ctx)
+	systemProviders, orderedProviders, err := mpd.GetSystemProviders(ctx)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	for _, provider := range systemProviders {
 		mapSystemProviders[provider.Provider] = provider
 	}
-	return mapSystemProviders, nil
+
+	return mapSystemProviders, orderedProviders, nil
 }
 
 func (mpd *ProviderRepoImpl) GetProviderPath(ctx context.Context, provider string) (string, error) {

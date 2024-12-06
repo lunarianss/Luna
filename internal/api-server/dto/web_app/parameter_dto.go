@@ -36,8 +36,8 @@ func AppConfigRecordToParameter(appConfig *po_entity.AppModelConfig) *WebAppPara
 		FileUpload:                    appConfig.FileUpload,
 	}
 
-	if !parameterDetail.RetrieverResource.Enable {
-		parameterDetail.RetrieverResource.Enable = true
+	if !parameterDetail.RetrieverResource.Enabled {
+		parameterDetail.RetrieverResource.Enabled = true
 	}
 
 	if parameterDetail.SensitiveWordAvoidance == nil {

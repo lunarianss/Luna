@@ -109,7 +109,7 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, 
 			return err
 		}
 
-		overrideModelConfigMap.RetrieverResource.Enable = true
+		overrideModelConfigMap.RetrieverResource.Enabled = true
 	}
 
 	appConfig, err := modelConfigManager.GetAppConfig(c, appModel, appModelConfig, conversationRecord, overrideModelConfigMap)

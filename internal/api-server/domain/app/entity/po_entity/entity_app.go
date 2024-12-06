@@ -60,7 +60,7 @@ func (a *App) BeforeCreate(tx *gorm.DB) (err error) {
 }
 
 type AppModelConfigEnable struct {
-	Enable bool `json:"enable"`
+	Enabled bool `json:"enabled"`
 }
 
 type ModelInfo struct {

@@ -402,6 +402,16 @@ func (m *openApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 			}
 		}
 
+		if usageChunk, ok := chunkJson["usage"]; ok {
+			if usageChunk != nil {
+				if v, ok := usageChunk.(map[string]interface{}); ok {
+					if ok {
+						usage = v
+					}
+				}
+			}
+		}
+
 		if chunkChoices, ok := chunkJson["choices"]; ok {
 			if v, ok := chunkChoices.([]interface{}); ok {
 				if vv, ok := v[0].(map[string]interface{}); ok {

@@ -125,8 +125,8 @@ func AppRecordToDetail(app *po_entity.App, config *config.Config, modelConfig *p
 		APIBaseUrl:          config.SystemOptions.ApiBaseUrl,
 	}
 
-	if !appDetail.ModelConfig.RetrieverResource.Enable {
-		appDetail.ModelConfig.RetrieverResource.Enable = true
+	if !appDetail.ModelConfig.RetrieverResource.Enabled {
+		appDetail.ModelConfig.RetrieverResource.Enabled = true
 	}
 
 	if appDetail.ModelConfig.SensitiveWordAvoidance == nil {

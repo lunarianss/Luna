@@ -134,7 +134,7 @@ type ListChatConversationResponse struct {
 }
 
 type AppModelConfigDtoEnable struct {
-	Enable bool `json:"enable"`
+	Enabled bool `json:"enabled"`
 }
 
 // Model holds the model-specific configuration.

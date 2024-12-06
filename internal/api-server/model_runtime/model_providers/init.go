@@ -10,4 +10,6 @@ import (
 	_ "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers/groq/llm"
 	// tongyi/llm
 	_ "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers/tongyi/llm"
+	// zhipuai/llm
+	_ "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers/zhipuai/llm"
 )

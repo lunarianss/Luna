@@ -32,6 +32,7 @@ func ConvertToConfigEntity(dtoAppConfig *dto.AppModelConfigDto) *biz_entity.AppM
 		TextToSpeech:                  biz_entity.AppModelConfigEnable(dtoAppConfig.TextToSpeech),
 	}
 }
+
 // ConvertToModelEntity converts a ModelDto to a biz_entity.Model.
 func ConvertToModelEntity(dtoModel dto.ModelDto) biz_entity.ModelInfo {
 	return biz_entity.ModelInfo{

@@ -53,7 +53,7 @@ const (
 )
 
 type AppModelConfigEnable struct {
-	Enable bool `json:"enable"`
+	Enabled bool `json:"enabled"`
 }
 
 type ModelInfo struct {

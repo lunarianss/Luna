@@ -67,5 +67,5 @@ type CustomModelConfiguration struct {
 }
 
 type CustomProviderConfiguration struct {
-	Credentials interface{}
+	Credentials map[string]interface{}
 }

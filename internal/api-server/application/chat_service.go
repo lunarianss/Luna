@@ -14,8 +14,10 @@ import (
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
+	biz_entity_provider "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
 	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
+	"github.com/lunarianss/Luna/internal/api-server/model_runtime/model_registry"
 	"github.com/lunarianss/Luna/internal/infrastructure/util"
 )
 
@@ -33,6 +35,39 @@ func NewChatService(appDomain *appDomain.AppDomain, providerDomain *domain_servi
 		accountDomain:  accountDomain,
 		chatDomain:     chatDomain,
 	}
+}
+
+func (s *ChatService) AudioToText(ctx context.Context, audioFileContent []byte, filename, appID, accountID string) (*dto.Speech2TextResp, error) {
+
+	accountRecord, err := s.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	tenant, _, err := s.accountDomain.GetCurrentTenantOfAccount(ctx, accountRecord.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	audioModelIntegratedInstance, err := s.providerDomain.GetDefaultModelInstance(ctx, tenant.ID, biz_entity_provider.SPEECH2TEXT)
+
+	if err != nil {
+		return nil, err
+	}
+
+	modelRegistryCaller := model_registry.NewModelRegisterCaller(audioModelIntegratedInstance.Model, string(biz_entity_provider.SPEECH2TEXT), audioModelIntegratedInstance.Provider, audioModelIntegratedInstance.Credentials, audioModelIntegratedInstance.ModelTypeInstance)
+
+	transStr, err := modelRegistryCaller.InvokeSpeechToText(ctx, audioFileContent, accountID, filename)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.Speech2TextResp{
+		Text: transStr,
+	}, nil
 }
 
 func (s *ChatService) Generate(ctx context.Context, appID, accountID string, args *dto.CreateChatMessageBody, invokeFrom biz_entity_app_generate.InvokeFrom, streaming bool) error {

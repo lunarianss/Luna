@@ -6,6 +6,10 @@ package dto
 
 import biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 
+type Speech2TextResp struct {
+	Text string `json:"text"`
+}
+
 // FeedbackStats
 type FeedBackStats struct {
 	Like    int `json:"like"`

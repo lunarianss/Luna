@@ -45,16 +45,17 @@ func (a *ChatRoutes) Register(g *gin.Engine) error {
 	// service
 	chatService := service.NewChatService(appDomain, providerDomain, accountDomain, chatDomain)
 
-	appController := controller.NewAppController(chatService)
+	chatController := controller.NewChatController(chatService)
 
 	v1 := g.Group("/v1")
 	modelProviderV1 := v1.Group("/console/api")
 	modelProviderV1.Use(middleware.TokenAuthMiddleware())
-	modelProviderV1.POST("/apps/:appID/chat-messages", appController.ChatMessage)
-	modelProviderV1.GET("/apps/:appID/chat-messages", appController.ChatMessageList)
-	modelProviderV1.GET("/apps/:appID/chat-conversations", appController.ChatConversationList)
-	modelProviderV1.GET("/apps/:appID/annotations/count", appController.GetAnnotationCount)
-	modelProviderV1.GET("/apps/:appID/chat-conversations/:conversationID", appController.ConsoleConversationDetail)
+	modelProviderV1.POST("/apps/:appID/chat-messages", chatController.ChatMessage)
+	modelProviderV1.POST("/apps/:appID/audio-to-text", chatController.AudioToChatMessage)
+	modelProviderV1.GET("/apps/:appID/chat-messages", chatController.ChatMessageList)
+	modelProviderV1.GET("/apps/:appID/chat-conversations", chatController.ChatConversationList)
+	modelProviderV1.GET("/apps/:appID/annotations/count", chatController.GetAnnotationCount)
+	modelProviderV1.GET("/apps/:appID/chat-conversations/:conversationID", chatController.ConsoleConversationDetail)
 	return nil
 }
 

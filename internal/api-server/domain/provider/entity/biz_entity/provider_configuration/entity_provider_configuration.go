@@ -48,7 +48,7 @@ type ModelIntegratedInstance struct {
 	ProviderModelBundle *ProviderModelBundleRuntime      `json:"provider_model_bundle"`
 	Model               string                           `json:"model"`
 	Provider            string                           `json:"provider"`
-	Credentials         interface{}                      `json:"credentials"`
+	Credentials         map[string]interface{}           `json:"credentials"`
 	ModelTypeInstance   *biz_entity_model.AIModelRuntime `json:"model_type_instance"`
 }
 
@@ -135,7 +135,7 @@ func (c *ProviderConfiguration) GetCurrentCredentials(modelType common.ModelType
 
 	if c.CustomConfiguration.Provider != nil && credentials == nil {
 
-		credentials, _ = c.CustomConfiguration.Provider.Credentials.(map[string]interface{})
+		credentials = c.CustomConfiguration.Provider.Credentials
 	}
 	return credentials, nil
 

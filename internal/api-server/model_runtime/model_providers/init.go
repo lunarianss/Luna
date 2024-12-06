@@ -12,4 +12,8 @@ import (
 	_ "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers/tongyi/llm"
 	// zhipuai/llm
 	_ "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers/zhipuai/llm"
+
+	// speech2text
+	// groq/speech2text
+	_ "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers/groq/speech2text"
 )

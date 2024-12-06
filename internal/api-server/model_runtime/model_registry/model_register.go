@@ -20,37 +20,58 @@ const (
 	PROVIDER_NUMBER = 52
 )
 
+type IModelRegistry interface {
+	Invoke(ctx context.Context, queueManager *biz_entity_chat.StreamGenerateQueue, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, stream bool, user string, promptMessages []*po_entity.PromptMessage, modelRuntime biz_entity.IAIModelRuntime)
+
+	RegisterName() string
+}
+
+type IAudioModelRegistry interface {
+	Invoke(ctx context.Context, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, user, filename string, fileContent []byte, modelRuntime biz_entity.IAIModelRuntime) (*biz_entity_chat.Speech2TextResp, error)
+	RegisterName() string
+}
+
 var (
-	ModelRuntimeRegistry = &ModelRegistries{
+	ModelRuntimeRegistry = &ModelRegistries[IModelRegistry]{
 		ModelRegistry: make(map[string]IModelRegistry, PROVIDER_NUMBER),
+		RWMutex:       &sync.RWMutex{},
+	}
+
+	AudioModelRuntimeRegistry = &ModelRegistries[IAudioModelRegistry]{
+		ModelRegistry: make(map[string]IAudioModelRegistry, PROVIDER_NUMBER),
 		RWMutex:       &sync.RWMutex{},
 	}
 )
 
-type ModelRegistries struct {
-	ModelRegistry map[string]IModelRegistry
+type ModelRegistries[T any] struct {
+	ModelRegistry map[string]T
 	*sync.RWMutex
 }
 
-type IModelRegistry interface {
-	Invoke(ctx context.Context, queueManager *biz_entity_chat.StreamGenerateQueue, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, stream bool, user string, promptMessages []*po_entity.PromptMessage, modelRuntime biz_entity.IAIModelRuntime)
-	RegisterName() string
-}
-
-func (mr *ModelRegistries) RegisterLargeModelInstance(modelRegistry IModelRegistry) {
+func (mr *ModelRegistries[T]) RegisterLargeModelInstance(modelRegistry T) {
 	defer mr.Unlock()
 	mr.Lock()
 
-	mr.ModelRegistry[modelRegistry.RegisterName()] = modelRegistry
+	switch v := any(modelRegistry).(type) {
+	case IModelRegistry:
+		mr.ModelRegistry[v.RegisterName()] = modelRegistry
+	case IAudioModelRegistry:
+		mr.ModelRegistry[v.RegisterName()] = modelRegistry
+	default:
+		panic("AI mulit model registry error: ")
+	}
 }
 
-func (mr *ModelRegistries) Acquire(name string) (IModelRegistry, error) {
+func (mr *ModelRegistries[T]) Acquire(name string) (T, error) {
 	defer mr.RUnlock()
 	mr.RLock()
+
+	var zeroT T
+
 	AIModelIns, ok := mr.ModelRegistry[name]
 
 	if !ok {
-		return nil, errors.WithCode(code.ErrNotFoundModelRegistry, fmt.Sprintf("registry %s not found", name))
+		return zeroT, errors.WithCode(code.ErrNotFoundModelRegistry, fmt.Sprintf("registry %s not found", name))
 	}
 
 	return AIModelIns, nil

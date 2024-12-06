@@ -12,6 +12,6 @@ type ChatController struct {
 	chatService *service.ChatService
 }
 
-func NewAppController(chatSrv *service.ChatService) *ChatController {
+func NewChatController(chatSrv *service.ChatService) *ChatController {
 	return &ChatController{chatService: chatSrv}
 }

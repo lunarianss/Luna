@@ -171,6 +171,7 @@ func (mpd *ProviderDomain) GetDefaultModel(ctx context.Context, tenantId string,
 	)
 
 	originType, err := modelType.ToOriginModelType()
+
 	if err != nil {
 		return nil, err
 	}
@@ -221,6 +222,7 @@ func (mpd *ProviderDomain) GetDefaultModel(ctx context.Context, tenantId string,
 				if err != nil {
 					return nil, err
 				}
+				break
 			}
 		}
 

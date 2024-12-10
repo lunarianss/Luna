@@ -76,6 +76,8 @@ func (a *WebChatRoutes) Register(g *gin.Engine) error {
 	authV1 := v1.Group("/api")
 	authV1.Use(middleware.WebTokenAuthMiddleware())
 	authV1.POST("/chat-messages", webSiteController.Chat)
+	authV1.POST("/audio-to-text", webSiteController.AudioToChatMessage)
+	authV1.POST("/text-to-audio", webSiteController.TextToAudio)
 	return nil
 }
 

@@ -46,11 +46,15 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 		return nil, err
 	}
 
-	tenantRecord, _, err := as.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+	tenantRecord, tenantJoin, err := as.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
 
 	if err != nil {
 		return nil, err
 	}
+	if !tenantJoin.IsEditor() {
+		return nil, errors.WithCode(code.ErrForbidden, fmt.Sprintf("You don't have the permission for tenant %s", tenantRecord.Name))
+	}
+
 	tenantID := tenantRecord.ID
 
 	appTemplate, err := as.appDomain.GetTemplate(ctx, createAppRequest.Mode)
@@ -68,7 +72,7 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 		modelInstance, err := as.providerDomain.GetDefaultModelInstance(ctx, tenantID, common.LLM)
 
 		if err != nil && errors.IsCode(err, code.ErrDefaultModelNotFound) {
-			log.Warnf("%s doesn't no default type of  %s model", tenantID, common.LLM)
+			log.Warnf("tenant %s doesn't no default type of  %s model", tenantID, common.LLM)
 		}
 
 		if modelInstance != nil {

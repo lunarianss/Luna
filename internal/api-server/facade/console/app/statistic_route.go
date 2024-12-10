@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	service "github.com/lunarianss/Luna/internal/api-server/application"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
+	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
 	controller "github.com/lunarianss/Luna/internal/api-server/interface/gin/v1/statistic"
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
@@ -27,8 +28,9 @@ func (a *StatisticRoutes) Register(g *gin.Engine) error {
 	// repos
 	accountRepo := repo_impl.NewAccountRepoImpl(gormIns)
 	tenantRepo := repo_impl.NewTenantRepoImpl(gormIns)
-	// appRepo := repo_impl.NewAppRepoImpl(gormIns)
+	appRepo := repo_impl.NewAppRepoImpl(gormIns)
 	messageRepo := repo_impl.NewMessageRepoImpl(gormIns)
+	webAppRepo := repo_impl.NewWebAppRepoImpl(gormIns)
 	// providerRepo := repo_impl.NewProviderRepoImpl(gormIns)
 	// webAppRepo := repo_impl.NewWebAppRepoImpl(gormIns)
 	// modelProviderRepo := repo_impl.NewModelProviderRepoImpl(gormIns)
@@ -36,12 +38,12 @@ func (a *StatisticRoutes) Register(g *gin.Engine) error {
 
 	// domain
 	// providerDomain := domain_service.NewProviderDomain(providerRepo, modelProviderRepo, providerConfigurationsManager)
-	// appDomain := appDomain.NewAppDomain(appRepo, webAppRepo, gormIns)
+	appDomain := appDomain.NewAppDomain(appRepo, webAppRepo, gormIns)
 	accountDomain := accountDomain.NewAccountDomain(accountRepo, nil, nil, nil, tenantRepo)
 	chatDomain := chatDomain.NewChatDomain(messageRepo)
 
 	// service
-	statisticService := service.NewStatisticService(chatDomain, accountDomain)
+	statisticService := service.NewStatisticService(chatDomain, accountDomain, appDomain)
 
 	statisticController := controller.NewSetupController(statisticService)
 

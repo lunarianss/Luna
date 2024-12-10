@@ -4,6 +4,7 @@ import (
 	"context"
 
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
+	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 )
@@ -11,24 +12,38 @@ import (
 type StatisticService struct {
 	chatDomain    *chatDomain.ChatDomain
 	accountDomain *accountDomain.AccountDomain
+	appDomain     *appDomain.AppDomain
 }
 
-func NewStatisticService(chatDomain *chatDomain.ChatDomain, accountDomain *accountDomain.AccountDomain) *StatisticService {
+func NewStatisticService(chatDomain *chatDomain.ChatDomain, accountDomain *accountDomain.AccountDomain, appDomain *appDomain.AppDomain) *StatisticService {
 	return &StatisticService{
 		chatDomain:    chatDomain,
 		accountDomain: accountDomain,
+		appDomain:     appDomain,
 	}
 }
 
 func (ss *StatisticService) DailyMessages(ctx context.Context, appID, accountID, start, end string) (*biz_entity.StatisticDailyConversations, error) {
 
-	account, err := ss.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+	accountRecord, err := ss.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	statistics, err := ss.chatDomain.MessageRepo.StatisticDailyMessages(ctx, appID, start, end, account.Timezone)
+	tenant, _, err := ss.accountDomain.GetCurrentTenantOfAccount(ctx, accountRecord.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	appModel, err := ss.appDomain.AppRepo.GetTenantApp(ctx, appID, tenant.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	statistics, err := ss.chatDomain.MessageRepo.StatisticDailyMessages(ctx, appModel.ID, start, end, accountRecord.Timezone)
 
 	if err != nil {
 		return nil, err
@@ -41,13 +56,25 @@ func (ss *StatisticService) DailyMessages(ctx context.Context, appID, accountID,
 
 func (ss *StatisticService) DailyConversations(ctx context.Context, appID, accountID, start, end string) (*biz_entity.StatisticDailyConversations, error) {
 
-	account, err := ss.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+	accountRecord, err := ss.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	statistics, err := ss.chatDomain.MessageRepo.StatisticDailyConversations(ctx, appID, start, end, account.Timezone)
+	tenant, _, err := ss.accountDomain.GetCurrentTenantOfAccount(ctx, accountRecord.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	appModel, err := ss.appDomain.AppRepo.GetTenantApp(ctx, appID, tenant.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	statistics, err := ss.chatDomain.MessageRepo.StatisticDailyConversations(ctx, appModel.ID, start, end, accountRecord.Timezone)
 
 	if err != nil {
 		return nil, err
@@ -59,14 +86,25 @@ func (ss *StatisticService) DailyConversations(ctx context.Context, appID, accou
 }
 
 func (ss *StatisticService) DailyUsers(ctx context.Context, appID, accountID, start, end string) (*biz_entity.StatisticDailyUser, error) {
-
-	account, err := ss.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+	accountRecord, err := ss.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	statistics, err := ss.chatDomain.MessageRepo.StatisticDailyUsers(ctx, appID, start, end, account.Timezone)
+	tenant, _, err := ss.accountDomain.GetCurrentTenantOfAccount(ctx, accountRecord.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	appModel, err := ss.appDomain.AppRepo.GetTenantApp(ctx, appID, tenant.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	statistics, err := ss.chatDomain.MessageRepo.StatisticDailyUsers(ctx, appModel.ID, start, end, accountRecord.Timezone)
 
 	if err != nil {
 		return nil, err
@@ -78,14 +116,25 @@ func (ss *StatisticService) DailyUsers(ctx context.Context, appID, accountID, st
 }
 
 func (ss *StatisticService) AverageInteractions(ctx context.Context, appID, accountID, start, end string) (*biz_entity.StatisticAverageInteraction, error) {
-
-	account, err := ss.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+	accountRecord, err := ss.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	statistics, err := ss.chatDomain.MessageRepo.StatisticAverageSessionInteraction(ctx, appID, start, end, account.Timezone)
+	tenant, _, err := ss.accountDomain.GetCurrentTenantOfAccount(ctx, accountRecord.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	appModel, err := ss.appDomain.AppRepo.GetTenantApp(ctx, appID, tenant.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	statistics, err := ss.chatDomain.MessageRepo.StatisticAverageSessionInteraction(ctx, appModel.ID, start, end, accountRecord.Timezone)
 
 	if err != nil {
 		return nil, err
@@ -97,14 +146,25 @@ func (ss *StatisticService) AverageInteractions(ctx context.Context, appID, acco
 }
 
 func (ss *StatisticService) SumTokenCosts(ctx context.Context, appID, accountID, start, end string) (*biz_entity.StatisticTokenCosts, error) {
-
-	account, err := ss.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+	accountRecord, err := ss.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	statistics, err := ss.chatDomain.MessageRepo.StatisticTokenCosts(ctx, appID, start, end, account.Timezone)
+	tenant, _, err := ss.accountDomain.GetCurrentTenantOfAccount(ctx, accountRecord.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	appModel, err := ss.appDomain.AppRepo.GetTenantApp(ctx, appID, tenant.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	statistics, err := ss.chatDomain.MessageRepo.StatisticTokenCosts(ctx, appModel.ID, start, end, accountRecord.Timezone)
 
 	if err != nil {
 		return nil, err

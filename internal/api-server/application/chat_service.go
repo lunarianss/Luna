@@ -161,7 +161,13 @@ func (s *ChatService) ListConsoleMessagesOfConversation(ctx context.Context, acc
 		return nil, errors.WithCode(code.ErrForbidden, fmt.Sprintf("You don't have the permission for %s", tenant.Name))
 	}
 
-	conversation, err := s.chatDomain.MessageRepo.GetConversationByApp(ctx, args.ConversationID, appID)
+	app, err := s.appDomain.AppRepo.GetTenantApp(ctx, appID, tenant.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	conversation, err := s.chatDomain.MessageRepo.GetConversationByApp(ctx, args.ConversationID, app.ID)
 
 	if err != nil {
 		return nil, err
@@ -215,7 +221,13 @@ func (s *ChatService) ListConversations(ctx context.Context, accountID string, a
 		return nil, errors.WithCode(code.ErrForbidden, fmt.Sprintf("You don't have the permission for %s", tenant.Name))
 	}
 
-	conversationRecords, count, err := s.chatDomain.MessageRepo.FindConversationsInConsole(ctx, args.Page, args.Limit, appID, args.Start, args.End, args.SortBy, args.Keyword, accountRecord.Timezone)
+	app, err := s.appDomain.AppRepo.GetTenantApp(ctx, appID, tenant.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	conversationRecords, count, err := s.chatDomain.MessageRepo.FindConversationsInConsole(ctx, args.Page, args.Limit, app.ID, args.Start, args.End, args.SortBy, args.Keyword, accountRecord.Timezone)
 
 	if err != nil {
 		return nil, err
@@ -292,7 +304,13 @@ func (s *ChatService) DetailConversation(ctx context.Context, accountID string, 
 		return nil, errors.WithCode(code.ErrForbidden, fmt.Sprintf("You don't have the permission for %s", tenant.Name))
 	}
 
-	conversationRecord, err := s.chatDomain.MessageRepo.GetConversationByApp(ctx, cID, appID)
+	app, err := s.appDomain.AppRepo.GetTenantApp(ctx, appID, tenant.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	conversationRecord, err := s.chatDomain.MessageRepo.GetConversationByApp(ctx, cID, app.ID)
 
 	if err != nil {
 		return nil, err
@@ -328,7 +346,7 @@ func (s *ChatService) DetailConversation(ctx context.Context, accountID string, 
 		conversationJoin.ModelConfig.ModelID = conversationRecord.ModelID
 		conversationJoin.ModelConfig.Provider = conversationRecord.ModelProvider
 	} else {
-		appConf, err := s.appDomain.AppRepo.GetAppModelConfigById(ctx, conversationRecord.AppModelConfigID, appID)
+		appConf, err := s.appDomain.AppRepo.GetAppModelConfigById(ctx, conversationRecord.AppModelConfigID, app.ID)
 		if err != nil {
 			return nil, err
 		}

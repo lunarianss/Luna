@@ -9,13 +9,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	jwtV5 "github.com/golang-jwt/jwt/v5"
+	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	webAppDomain "github.com/lunarianss/Luna/internal/api-server/domain/web_app/domain_service"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/passport"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/lunarianss/Luna/internal/infrastructure/jwt"
-	"github.com/lunarianss/Luna/infrastructure/errors"
 )
 
 type PassportService struct {

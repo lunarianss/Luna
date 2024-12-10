@@ -46,7 +46,7 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 		return nil, err
 	}
 
-	tenantRecord, tenantJoin, err := as.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+	tenantRecord, tenantJoin, err := as.accountDomain.GetCurrentTenantOfAccount(ctx, accountRecord.ID)
 
 	if err != nil {
 		return nil, err
@@ -233,7 +233,7 @@ func (as *AppService) UpdateAppModelConfig(ctx context.Context, modelConfig *cha
 		return err
 	}
 
-	appRecord, err := as.appDomain.AppRepo.GetAppByID(ctx, appID)
+	appRecord, err := as.appDomain.AppRepo.GetTenantApp(ctx, appID, tenant.ID)
 
 	if err != nil {
 		return err

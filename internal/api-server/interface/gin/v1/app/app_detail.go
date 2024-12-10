@@ -21,7 +21,7 @@ func (ac *AppController) Detail(c *gin.Context) {
 		return
 	}
 
-	appDetail, err := ac.appService.AppDetail(c, appID, userID)
+	appDetail, err := ac.appService.AppDetail(c, userID, appID)
 
 	if err != nil {
 		core.WriteResponse(c, err, nil)

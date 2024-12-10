@@ -39,4 +39,6 @@ const (
 	ErrContextTimeout
 	// ErrTTSWebSocketWrite - 500: Failed to write tts websocket message.
 	ErrTTSWebSocketWrite
+	// ErrTencentARS - 500: Tencent ARS service error.
+	ErrTencentARS
 )

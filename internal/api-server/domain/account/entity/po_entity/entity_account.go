@@ -5,6 +5,8 @@
 package po_entity
 
 import (
+	"slices"
+
 	"github.com/google/uuid"
 
 	"github.com/lunarianss/Luna/internal/infrastructure/field"
@@ -84,6 +86,26 @@ type TenantAccountJoin struct {
 	CreatedAt int64         `json:"created_at" gorm:"column:created_at"`
 	UpdatedAt int64         `json:"updated_at" gorm:"column:updated_at"`
 	Current   field.BitBool `json:"current" gorm:"column:current"`
+}
+
+func (s *TenantAccountJoin) IsEditor() bool {
+	editorRoles := []TenantAccountJoinRole{OWNER, ADMIN, EDITOR}
+	return s.Role != "" && slices.Contains(editorRoles, TenantAccountJoinRole(s.Role))
+}
+
+func (s *TenantAccountJoin) IsPrivilegedRole(role string) bool {
+	privilegedRoles := []TenantAccountJoinRole{OWNER, ADMIN}
+	return s.Role != "" && slices.Contains(privilegedRoles, TenantAccountJoinRole(s.Role))
+}
+
+func (s *TenantAccountJoin) IsNonOwnerRole(role string) bool {
+	editorRoles := []TenantAccountJoinRole{ADMIN, EDITOR, DATASET_OPERATOR, NORMAL}
+	return s.Role != "" && slices.Contains(editorRoles, TenantAccountJoinRole(s.Role))
+}
+
+func (s *TenantAccountJoin) IsDatasetEditRole(role string) bool {
+	datasetEditorRoles := []TenantAccountJoinRole{OWNER, ADMIN, EDITOR, DATASET_OPERATOR}
+	return s.Role != "" && slices.Contains(datasetEditorRoles, TenantAccountJoinRole(s.Role))
 }
 
 func (a *TenantAccountJoin) TableName() string {

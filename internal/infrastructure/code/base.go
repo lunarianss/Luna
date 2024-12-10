@@ -19,6 +19,9 @@ const (
 	// ErrValidation - 400: Validation failed.
 	ErrValidation
 
+	// ErrForbidden - 403: You don't have the permission.
+	ErrForbidden
+
 	// ErrPageNotFound - 404: Page not found.
 	ErrPageNotFound
 

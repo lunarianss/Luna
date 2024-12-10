@@ -25,6 +25,7 @@ type TenantAccountJoinRole string
 
 const (
 	OWNER            TenantAccountJoinRole = "owner"
+	EDITOR           TenantAccountJoinRole = "editor"
 	ADMIN            TenantAccountJoinRole = "admin"
 	NORMAL           TenantAccountJoinRole = "normal"
 	DATASET_OPERATOR TenantAccountJoinRole = "dataset_operator"

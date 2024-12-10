@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 	"github.com/lunarianss/Luna/internal/infrastructure/core"
+	"github.com/lunarianss/Luna/internal/infrastructure/util"
 )
 
 func (ac *ChatController) ChatMessageList(c *gin.Context) {
@@ -24,7 +25,14 @@ func (ac *ChatController) ChatMessageList(c *gin.Context) {
 		return
 	}
 
-	messages, err := ac.chatService.ListConsoleMessagesOfConversation(c, paramsUrl.AppID, paramsQuery)
+	userID, err := util.GetUserIDFromGin(c)
+
+	if err != nil {
+		core.WriteResponse(c, err, nil)
+		return
+	}
+
+	messages, err := ac.chatService.ListConsoleMessagesOfConversation(c, userID, paramsUrl.AppID, paramsQuery)
 
 	if err != nil {
 		core.WriteResponse(c, err, nil)

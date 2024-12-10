@@ -6,6 +6,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	assembler "github.com/lunarianss/Luna/internal/api-server/assembler/chat"
@@ -40,12 +41,6 @@ func NewChatService(appDomain *appDomain.AppDomain, providerDomain *domain_servi
 }
 
 func (s *ChatService) TextToAudio(ctx context.Context, appID, text, messageID, voice, accountID string) error {
-	// appModel, err := s.appDomain.AppRepo.GetAppByID(ctx, appID)
-
-	// if err != nil {
-	// 	return err
-	// }
-
 	accountRecord, err := s.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
 
 	if err != nil {
@@ -54,9 +49,6 @@ func (s *ChatService) TextToAudio(ctx context.Context, appID, text, messageID, v
 
 	tenant, _, err := s.accountDomain.GetCurrentTenantOfAccount(ctx, accountRecord.ID)
 
-	if err != nil {
-		return err
-	}
 	if err != nil {
 		return err
 	}
@@ -77,12 +69,6 @@ func (s *ChatService) TextToAudio(ctx context.Context, appID, text, messageID, v
 		if err != nil {
 			return err
 		}
-
-		// _, err = ttsModelIntegratedInstance.ModelTypeInstance.GetTTSVoice(ttsModelIntegratedInstance.Model, ttsModelIntegratedInstance.Credentials, "")
-
-		// if err != nil {
-		// 	return err
-		// }
 
 		modelRegistryCaller := model_registry.NewModelRegisterCaller(ttsModelIntegratedInstance.Model, string(biz_entity_provider.TTS), ttsModelIntegratedInstance.Provider, ttsModelIntegratedInstance.Credentials, ttsModelIntegratedInstance.ModelTypeInstance)
 
@@ -130,13 +116,19 @@ func (s *ChatService) AudioToText(ctx context.Context, audioFileContent []byte, 
 
 func (s *ChatService) Generate(ctx context.Context, appID, accountID string, args *dto.CreateChatMessageBody, invokeFrom biz_entity_app_generate.InvokeFrom, streaming bool) error {
 
-	appModel, err := s.appDomain.AppRepo.GetAppByID(ctx, appID)
+	accountRecord, err := s.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
 
 	if err != nil {
 		return err
 	}
 
-	accountRecord, err := s.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+	tenant, _, err := s.accountDomain.GetCurrentTenantOfAccount(ctx, accountRecord.ID)
+
+	if err != nil {
+		return err
+	}
+
+	appModel, err := s.appDomain.AppRepo.GetTenantApp(ctx, appID, tenant.ID)
 
 	if err != nil {
 		return err
@@ -151,7 +143,24 @@ func (s *ChatService) Generate(ctx context.Context, appID, accountID string, arg
 	return nil
 }
 
-func (s *ChatService) ListConsoleMessagesOfConversation(ctx context.Context, appID string, args *dto.ListChatMessageQuery) (*dto.ListChatMessagesResponse, error) {
+func (s *ChatService) ListConsoleMessagesOfConversation(ctx context.Context, accountID, appID string, args *dto.ListChatMessageQuery) (*dto.ListChatMessagesResponse, error) {
+
+	accountRecord, err := s.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	tenant, tenantJoin, err := s.accountDomain.GetCurrentTenantOfAccount(ctx, accountRecord.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !tenantJoin.IsEditor() {
+		return nil, errors.WithCode(code.ErrForbidden, fmt.Sprintf("You don't have the permission for %s", tenant.Name))
+	}
+
 	conversation, err := s.chatDomain.MessageRepo.GetConversationByApp(ctx, args.ConversationID, appID)
 
 	if err != nil {
@@ -194,6 +203,16 @@ func (s *ChatService) ListConversations(ctx context.Context, accountID string, a
 
 	if err != nil {
 		return nil, err
+	}
+
+	tenant, tenantJoin, err := s.accountDomain.GetCurrentTenantOfAccount(ctx, accountRecord.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !tenantJoin.IsEditor() {
+		return nil, errors.WithCode(code.ErrForbidden, fmt.Sprintf("You don't have the permission for %s", tenant.Name))
 	}
 
 	conversationRecords, count, err := s.chatDomain.MessageRepo.FindConversationsInConsole(ctx, args.Page, args.Limit, appID, args.Start, args.End, args.SortBy, args.Keyword, accountRecord.Timezone)
@@ -256,6 +275,22 @@ func (s *ChatService) ListConversations(ctx context.Context, accountID string, a
 
 func (s *ChatService) DetailConversation(ctx context.Context, accountID string, cID string, appID string) (*dto.ListChatConversationItem, error) {
 	var sessionID string
+
+	accountRecord, err := s.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	tenant, tenantJoin, err := s.accountDomain.GetCurrentTenantOfAccount(ctx, accountRecord.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !tenantJoin.IsEditor() {
+		return nil, errors.WithCode(code.ErrForbidden, fmt.Sprintf("You don't have the permission for %s", tenant.Name))
+	}
 
 	conversationRecord, err := s.chatDomain.MessageRepo.GetConversationByApp(ctx, cID, appID)
 

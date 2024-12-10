@@ -78,7 +78,7 @@ type Message struct {
 	MessagePriceUnit        float64                               `gorm:"column:message_price_unit" json:"message_price_unit"`
 	AnswerPriceUnit         float64                               `gorm:"column:answer_price_unit" json:"answer_price_unit"`
 	WorkflowRunID           string                                `gorm:"column:workflow_run_id" json:"workflow_run_id"`
-	Status                  string                                `gorm:"column:status" json:"status"`
+	Status                  string                                `gorm:"column:status;default:normal" json:"status"`
 	Error                   string                                `gorm:"column:error" json:"error"`
 	MessageMetadata         map[string]interface{}                `gorm:"column:message_metadata;serializer:json" json:"message_metadata"`
 	InvokeFrom              string                                `gorm:"column:invoke_from" json:"invoke_from"`

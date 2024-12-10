@@ -16,4 +16,8 @@ import (
 	// speech2text
 	// groq/speech2text
 	_ "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers/groq/speech2text"
+
+	// tts
+	// tongyi/tts
+	_ "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers/tongyi/tts"
 )

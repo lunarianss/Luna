@@ -23,11 +23,20 @@ const (
 	ErrRequiredPromptType
 	// ErrQuotaExceed - 500: Your quota for Luna Hosted Model Provider has been exhausted,Please go to Settings -> Model Provider to complete your own provider credentials.
 	ErrQuotaExceed
-
-	// ErrAudioType - 500: Audio type error: only support extensions like "mp3", "mp4", "mpeg", "mpga", "m4a", "wav", "webm", "amr".
+	// ErrAudioType - 500: Audio type error: only support extensions like mp3, mp4, mpeg, mpga, m4a, wav, webm, amr.
 	ErrAudioType
 	// ErrAudioFileToLarge - 500: Audio file is to large.
 	ErrAudioFileToLarge
 	// ErrAudioFileEmpty - 500: Audio file is empty.
 	ErrAudioFileEmpty
+	// ErrAudioTextEmpty - 500: Audio text is empty.
+	ErrAudioTextEmpty
+	// ErrTTSWebSocket - 500: Failed to connect tts websocket.
+	ErrTTSWebSocket
+	// ErrTTSWebSocketParse - 500: Failed to parse tts websocket message.
+	ErrTTSWebSocketParse
+	// ErrContextTimeout - 500: Context timeout.
+	ErrContextTimeout
+	// ErrTTSWebSocketWrite - 500: Failed to write tts websocket message.
+	ErrTTSWebSocketWrite
 )

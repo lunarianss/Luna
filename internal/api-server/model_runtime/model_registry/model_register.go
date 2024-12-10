@@ -31,6 +31,11 @@ type IAudioModelRegistry interface {
 	RegisterName() string
 }
 
+type ITTSModelRegistry interface {
+	Invoke(ctx context.Context, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, user, tenantID string, voice string, modelRuntime biz_entity.IAIModelRuntime, format string, texts []string) error
+	RegisterName() string
+}
+
 var (
 	ModelRuntimeRegistry = &ModelRegistries[IModelRegistry]{
 		ModelRegistry: make(map[string]IModelRegistry, PROVIDER_NUMBER),
@@ -38,7 +43,12 @@ var (
 	}
 
 	AudioModelRuntimeRegistry = &ModelRegistries[IAudioModelRegistry]{
-		ModelRegistry: make(map[string]IAudioModelRegistry, PROVIDER_NUMBER),
+		ModelRegistry: make(map[string]IAudioModelRegistry, 12),
+		RWMutex:       &sync.RWMutex{},
+	}
+
+	TTSModelRuntimeRegistry = &ModelRegistries[ITTSModelRegistry]{
+		ModelRegistry: make(map[string]ITTSModelRegistry, 5),
 		RWMutex:       &sync.RWMutex{},
 	}
 )
@@ -56,6 +66,8 @@ func (mr *ModelRegistries[T]) RegisterLargeModelInstance(modelRegistry T) {
 	case IModelRegistry:
 		mr.ModelRegistry[v.RegisterName()] = modelRegistry
 	case IAudioModelRegistry:
+		mr.ModelRegistry[v.RegisterName()] = modelRegistry
+	case ITTSModelRegistry:
 		mr.ModelRegistry[v.RegisterName()] = modelRegistry
 	default:
 		panic("AI mulit model registry error: ")

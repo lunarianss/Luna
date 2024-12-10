@@ -251,7 +251,7 @@ func (g *Generator) generate(typeName string) {
 		log.Fatalf("no values defined for type %s", typeName)
 	}
 
-	g.Printf("\t import \"github.com/lunarianss/Luna/infrastructure/errors\"")
+	g.Printf("\t import \"github.com/lunarianss/Luna/internal/infrastructure/errors\"")
 	// Generate code that will fail if the constants change value.
 	g.Printf(
 		"\t// init register error codes defines in this source code to `github.com/lunarianss/Luna/infrastructure/errors\n",

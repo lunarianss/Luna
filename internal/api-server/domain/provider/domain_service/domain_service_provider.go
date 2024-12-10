@@ -229,7 +229,7 @@ func (mpd *ProviderDomain) GetDefaultModel(ctx context.Context, tenantId string,
 	}
 
 	if defaultModel == nil {
-		return nil, errors.WithCode(code.ErrDefaultModelNotFound, "default model not found")
+		return nil, errors.WithCode(code.ErrDefaultModelNotFound, fmt.Sprintf("default %s model not found", modelType))
 	}
 
 	providerInstance, err := mpd.ProviderRepo.GetProviderInstance(ctx, defaultModel.ProviderName)

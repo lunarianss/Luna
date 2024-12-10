@@ -10,6 +10,13 @@ type Speech2TextResp struct {
 	Text string `json:"text"`
 }
 
+type TextToAudioRequest struct {
+	MessageID string `json:"message_id"`
+	Streaming bool   `json:"streaming"  validate:"required"`
+	Text      string `json:"text"       validate:"required"`
+	Voice     string `json:"voice"`
+}
+
 // FeedbackStats
 type FeedBackStats struct {
 	Like    int `json:"like"`

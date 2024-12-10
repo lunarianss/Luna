@@ -67,3 +67,23 @@ func (ac *modelRegistryCall) InvokeSpeechToText(ctx context.Context, audioFileCo
 
 	return resp.Text, nil
 }
+
+func (ac *modelRegistryCall) InvokeTextToSpeech(ctx context.Context, modelParameters map[string]interface{}, user string, voice string, format string, texts []string) error {
+
+	modelKeyMapInvoke := fmt.Sprintf("%s/%s", ac.Provider, ac.ModelType)
+
+	log.Infof("invoke %s", modelKeyMapInvoke)
+
+	AIModelIns, err := TTSModelRuntimeRegistry.Acquire(modelKeyMapInvoke)
+
+	if err != nil {
+		return err
+	}
+
+	err = AIModelIns.Invoke(ctx, ac.Model, ac.Credentials, nil, user, "", voice, ac.ModelRuntime, format, texts)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}

@@ -7,12 +7,14 @@ package biz_entity
 import (
 	"fmt"
 	"os"
+	"slices"
 	"sort"
 	"strings"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
+	"github.com/mitchellh/mapstructure"
 	"github.com/shopspring/decimal"
 	"gopkg.in/yaml.v3"
 )
@@ -193,4 +195,66 @@ func (a *AIModelRuntime) GetPrice(model string, credentials any, priceType Price
 		Unit:        float64(priceConfig.Unit),
 		Currency:    priceConfig.Currency,
 	}, nil
+}
+
+type TTSVoice struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+type TTSTongYiVoiceConfig struct {
+	Mode     string   `json:"mode"`
+	Name     string   `json:"name"`
+	Language []string `json:"language"`
+}
+
+func (a *AIModelRuntime) GetTTSVoice(model string, credentials any, language string) ([]*TTSVoice, error) {
+	var TTSProviderConfig []*TTSTongYiVoiceConfig
+
+	var retsConfig []*TTSVoice
+
+	modelSchema, err := a.GetModelSchema(model, credentials)
+
+	if err != nil {
+		return nil, err
+	}
+
+	voices, ok := modelSchema.ModelProperties[common.VOICES]
+
+	if !ok {
+		return nil, errors.WithCode(code.ErrTTSModelNotVoice, fmt.Sprintf("model %s doesn't have voice", model))
+	}
+
+	if v, ok := voices.([]any); ok {
+		for _, voice := range v {
+			ttsConfig := &TTSTongYiVoiceConfig{}
+			vs := voice.(map[string]any)
+			if err := mapstructure.Decode(vs, &ttsConfig); err != nil {
+				return nil, err
+			}
+
+			TTSProviderConfig = append(TTSProviderConfig, ttsConfig)
+		}
+	} else {
+		return nil, errors.WithCode(code.ErrTTSModelNotVoice, fmt.Sprintf("voice have a incorrect format in model %s", model))
+	}
+
+	for _, ttsConfig := range TTSProviderConfig {
+		if language != "" {
+			if slices.Contains(ttsConfig.Language, language) {
+				retsConfig = append(retsConfig, &TTSVoice{
+					Name:  ttsConfig.Name,
+					Value: ttsConfig.Mode,
+				})
+			}
+		} else {
+			retsConfig = append(retsConfig, &TTSVoice{
+				Name:  ttsConfig.Name,
+				Value: ttsConfig.Mode,
+			})
+		}
+	}
+
+	return retsConfig, nil
+
 }

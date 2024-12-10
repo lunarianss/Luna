@@ -7,6 +7,7 @@ package service
 import (
 	"context"
 
+	"github.com/lunarianss/Luna/infrastructure/errors"
 	assembler "github.com/lunarianss/Luna/internal/api-server/assembler/chat"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_chat_generator"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
@@ -18,6 +19,7 @@ import (
 	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime/model_registry"
+	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/lunarianss/Luna/internal/infrastructure/util"
 )
 
@@ -35,6 +37,62 @@ func NewChatService(appDomain *appDomain.AppDomain, providerDomain *domain_servi
 		accountDomain:  accountDomain,
 		chatDomain:     chatDomain,
 	}
+}
+
+func (s *ChatService) TextToAudio(ctx context.Context, appID, text, messageID, voice, accountID string) error {
+	// appModel, err := s.appDomain.AppRepo.GetAppByID(ctx, appID)
+
+	// if err != nil {
+	// 	return err
+	// }
+
+	accountRecord, err := s.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+
+	if err != nil {
+		return err
+	}
+
+	tenant, _, err := s.accountDomain.GetCurrentTenantOfAccount(ctx, accountRecord.ID)
+
+	if err != nil {
+		return err
+	}
+	if err != nil {
+		return err
+	}
+
+	if messageID != "" {
+		message, err := s.chatDomain.MessageRepo.GetMessageByID(ctx, messageID)
+
+		if err != nil {
+			return err
+		}
+
+		if message.Answer == "" && message.Status == "normal" {
+			return errors.WithCode(code.ErrAudioTextEmpty, "")
+		}
+
+		ttsModelIntegratedInstance, err := s.providerDomain.GetDefaultModelInstance(ctx, tenant.ID, biz_entity_provider.TTS)
+
+		if err != nil {
+			return err
+		}
+
+		// _, err = ttsModelIntegratedInstance.ModelTypeInstance.GetTTSVoice(ttsModelIntegratedInstance.Model, ttsModelIntegratedInstance.Credentials, "")
+
+		// if err != nil {
+		// 	return err
+		// }
+
+		modelRegistryCaller := model_registry.NewModelRegisterCaller(ttsModelIntegratedInstance.Model, string(biz_entity_provider.TTS), ttsModelIntegratedInstance.Provider, ttsModelIntegratedInstance.Credentials, ttsModelIntegratedInstance.ModelTypeInstance)
+
+		err = modelRegistryCaller.InvokeTextToSpeech(ctx, nil, accountRecord.ID, "longxiaochun", "", []string{text})
+
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *ChatService) AudioToText(ctx context.Context, audioFileContent []byte, filename, appID, accountID string) (*dto.Speech2TextResp, error) {

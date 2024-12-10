@@ -78,6 +78,14 @@ IAM 系统支持的错误码列表如下：
 | ErrNotFoundModelRegistry | 110207 | 500 | Model registry is not found in the model registry list |
 | ErrRequiredPromptType | 110208 | 500 | Prompt type is required when convert to prompt template |
 | ErrQuotaExceed | 110209 | 500 | Your quota for Luna Hosted Model Provider has been exhausted,Please go to Settings -> Model Provider to complete your own provider credentials |
+| ErrAudioType | 110210 | 500 | Audio type error: only support extensions like mp3, mp4, mpeg, mpga, m4a, wav, webm, amr |
+| ErrAudioFileToLarge | 110211 | 500 | Audio file is to large |
+| ErrAudioFileEmpty | 110212 | 500 | Audio file is empty |
+| ErrAudioTextEmpty | 110213 | 500 | Audio text is empty |
+| ErrTTSWebSocket | 110214 | 500 | Failed to connect tts websocket |
+| ErrTTSWebSocketParse | 110215 | 500 | Failed to parse tts websocket message |
+| ErrContextTimeout | 110216 | 500 | Context timeout |
+| ErrTTSWebSocketWrite | 110217 | 500 | Failed to write tts websocket message |
 | ErrProviderMapModel | 110001 | 500 | Error occurred while attempt to index from providerMpa using provider |
 | ErrProviderNotHaveIcon | 110002 | 500 | Error occurred while provider entity doesn't have icon property |
 | ErrToOriginModelType | 110003 | 500 | Error occurred while convert to origin model type |
@@ -85,10 +93,12 @@ IAM 系统支持的错误码列表如下：
 | ErrModelSchemaNotFound | 110005 | 500 | Error occurred while attempt to index from predefined models using model name |
 | ErrAllModelsEmpty | 110006 | 500 | Error occurred when all models are empty |
 | ErrModelNotHavePosition | 110007 | 500 | Error occurred when models haven't position definition |
-| ErrModelNotHaveEndPoint | 110008 | 500 | Error occurred when models haven't url endpoint |
-| ErrModelUrlNotConvertUrl | 110009 | 500 | Error occurred when models url interface{} convert ot string  |
-| ErrTypeOfPromptMessage | 110010 | 500 | When prompt type is user, the type of message is neither string or []*promptMessageContent |
-| ErrCallLargeLanguageModel | 110011 | 500 | Error occurred when call large language model post api |
-| ErrConvertDelimiterString | 110012 | 500 | Error occurred when convert delimiter to string |
-| ErrNotSetManagerForProvider | 110013 | 500 | Error occurred when not set manager for provider |
+| ErrModelNotHavePrice | 110008 | 500 | Error occurred when models haven't price definition |
+| ErrModelNotHaveEndPoint | 110009 | 500 | Error occurred when models haven't url endpoint |
+| ErrModelUrlNotConvertUrl | 110010 | 500 | Error occurred when models url interface{} convert ot string  |
+| ErrTypeOfPromptMessage | 110011 | 500 | When prompt type is user, the type of message is neither string or []*promptMessageContent |
+| ErrCallLargeLanguageModel | 110012 | 500 | Error occurred when call large language model post api |
+| ErrConvertDelimiterString | 110013 | 500 | Error occurred when convert delimiter to string |
+| ErrNotSetManagerForProvider | 110014 | 500 | Error occurred when not set manager for provider |
+| ErrTTSModelNotVoice | 110015 | 500 | Error occurred when tts model doesn't have voice |
 

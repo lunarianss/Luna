@@ -33,4 +33,6 @@ const (
 	ErrConvertDelimiterString
 	// ErrNotSetManagerForProvider - 500: Error occurred when not set manager for provider.
 	ErrNotSetManagerForProvider
+	// ErrTTSModelNotVoice - 500: Error occurred when tts model doesn't have voice.
+	ErrTTSModelNotVoice
 )

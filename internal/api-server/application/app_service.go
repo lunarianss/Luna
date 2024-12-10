@@ -6,6 +6,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/infrastructure/log"
@@ -176,8 +177,15 @@ func (as *AppService) ListTenantApps(ctx context.Context, params *dto.ListAppReq
 
 }
 
-func (as AppService) AppDetail(ctx context.Context, appID string) (*dto.AppDetail, error) {
-	appRecord, err := as.appDomain.AppRepo.GetAppByID(ctx, appID)
+func (as AppService) AppDetail(ctx context.Context, accountID string, appID string) (*dto.AppDetail, error) {
+	tenantRecord, _, err := as.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	appRecord, err := as.appDomain.AppRepo.GetTenantApp(ctx, appID, tenantRecord.ID)
+
 	if err != nil {
 		return nil, err
 	}
@@ -197,6 +205,17 @@ func (as AppService) AppDetail(ctx context.Context, appID string) (*dto.AppDetai
 }
 
 func (as *AppService) UpdateAppModelConfig(ctx context.Context, modelConfig *chatDto.AppModelConfigDto, appID string, accountID string) error {
+
+	tenant, tenantJoin, err := as.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+
+	if err != nil {
+		return err
+	}
+
+	if !tenantJoin.IsEditor() {
+		return errors.WithCode(code.ErrForbidden, fmt.Sprintf("You don't have the permission for %s", tenant.Name))
+	}
+
 	configEntity := assembler.ConvertToConfigEntity(modelConfig)
 	configRecord := configEntity.ConvertToAppConfigPoEntity()
 	configRecord.AppID = appID

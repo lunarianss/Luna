@@ -19,4 +19,5 @@ type AppRepo interface {
 	FindTenantApps(ctx context.Context, tenantID string, page, pageSize int) ([]*po_entity.App, int64, error)
 	GetAppByID(ctx context.Context, appID string) (*po_entity.App, error)
 	GetAppModelConfigById(ctx context.Context, appConfigID string, appID string) (*po_entity.AppModelConfig, error)
+	GetTenantApp(ctx context.Context, appID, tenantID string) (*po_entity.App, error)
 }

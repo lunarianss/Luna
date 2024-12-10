@@ -109,19 +109,9 @@ func (ad *AppRepoImpl) GetAppByID(ctx context.Context, appID string) (*po_entity
 	return &app, nil
 }
 
-func (ad *AppRepoImpl) GetAppModelConfigById(ctx context.Context, appConfigID string) (*po_entity.AppModelConfig, error) {
+func (ad *AppRepoImpl) GetAppModelConfigById(ctx context.Context, appConfigID, appID string) (*po_entity.AppModelConfig, error) {
 	var appConfig po_entity.AppModelConfig
-
-	if err := ad.db.First(&appConfig, "id = ?", appConfigID).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
-	}
-	return &appConfig, nil
-}
-
-func (ad *AppRepoImpl) GetAppModelConfigByAppID(ctx context.Context, appID string) (*po_entity.AppModelConfig, error) {
-	var appConfig po_entity.AppModelConfig
-
-	if err := ad.db.First(&appConfig, "app_id = ?", appID).Error; err != nil {
+	if err := ad.db.First(&appConfig, "id = ? AND app_id = ?", appConfigID, appID).Error; err != nil {
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())
 	}
 	return &appConfig, nil

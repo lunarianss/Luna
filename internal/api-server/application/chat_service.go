@@ -293,7 +293,7 @@ func (s *ChatService) DetailConversation(ctx context.Context, accountID string, 
 		conversationJoin.ModelConfig.ModelID = conversationRecord.ModelID
 		conversationJoin.ModelConfig.Provider = conversationRecord.ModelProvider
 	} else {
-		appConf, err := s.appDomain.AppRepo.GetAppModelConfigById(ctx, conversationRecord.AppModelConfigID)
+		appConf, err := s.appDomain.AppRepo.GetAppModelConfigById(ctx, conversationRecord.AppModelConfigID, appID)
 		if err != nil {
 			return nil, err
 		}

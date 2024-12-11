@@ -146,6 +146,14 @@ func NewSystemMessage(content any) *PromptMessage {
 		Content: content,
 	}
 }
+
+func NewAssistantMessage(content any) *PromptMessage {
+	return &PromptMessage{
+		Role:    ASSISTANT,
+		Content: content,
+	}
+}
+
 func NewUserMessage(content any) *PromptMessage {
 	return &PromptMessage{
 		Role:    USER,

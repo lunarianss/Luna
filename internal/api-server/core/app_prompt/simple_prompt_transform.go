@@ -5,6 +5,7 @@
 package prompt
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"runtime"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
+	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/token_buffer_memory"
 	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
@@ -53,11 +55,14 @@ func (s *SimplePromptTransform) GetPromptStrAndRules(appMode po_entity.AppMode, 
 	return prompt, promptTemplateConfig.PromptRules, nil
 
 }
-func (s *SimplePromptTransform) GetChatModelPromptMessage(appMode po_entity.AppMode, prePrompt string, inputs map[string]interface{}, query string, context string, files []string, memory any, modelConfig *biz_entity_provider_config.ModelConfigWithCredentialsEntity) ([]*po_entity_chat.PromptMessage, []string, error) {
+func (s *SimplePromptTransform) GetChatModelPromptMessage(appMode po_entity.AppMode, prePrompt string, inputs map[string]interface{}, query string, ctx string, files []string, memory token_buffer_memory.ITokenBufferMemory, modelConfig *biz_entity_provider_config.ModelConfigWithCredentialsEntity) ([]*po_entity_chat.PromptMessage, []string, error) {
 
-	var promptMessages []*po_entity_chat.PromptMessage
+	var (
+		promptMessages []*po_entity_chat.PromptMessage
+		err            error
+	)
 
-	prompt, _, err := s.GetPromptStrAndRules(appMode, modelConfig, prePrompt, inputs, query, context, "")
+	prompt, _, err := s.GetPromptStrAndRules(appMode, modelConfig, prePrompt, inputs, query, ctx, "")
 
 	if err != nil {
 		return nil, nil, err
@@ -65,6 +70,13 @@ func (s *SimplePromptTransform) GetChatModelPromptMessage(appMode po_entity.AppM
 
 	if prompt != "" && query != "" {
 		promptMessages = append(promptMessages, po_entity_chat.NewSystemMessage(prompt))
+	}
+
+	if memory != nil {
+		promptMessages, err = s.appendChatHistories(context.TODO(), memory, promptMessages)
+		if err != nil {
+			return nil, nil, err
+		}
 	}
 
 	if query != "" {
@@ -80,7 +92,7 @@ func (s *SimplePromptTransform) GetLastUserMessage(prompt string, files []string
 	return po_entity_chat.NewUserMessage(prompt)
 }
 
-func (s *SimplePromptTransform) GetPrompt(appMode po_entity.AppMode, promptTemplateEntity *biz_entity_app_config.PromptTemplateEntity, inputs map[string]interface{}, query string, files []string, context string, memory any, modelConfig *biz_entity_provider_config.ModelConfigWithCredentialsEntity) ([]*po_entity_chat.PromptMessage, []string, error) {
+func (s *SimplePromptTransform) GetPrompt(appMode po_entity.AppMode, promptTemplateEntity *biz_entity_app_config.PromptTemplateEntity, inputs map[string]interface{}, query string, files []string, context string, memory token_buffer_memory.ITokenBufferMemory, modelConfig *biz_entity_provider_config.ModelConfigWithCredentialsEntity) ([]*po_entity_chat.PromptMessage, []string, error) {
 
 	var (
 		promptMessage []*po_entity_chat.PromptMessage
@@ -91,7 +103,7 @@ func (s *SimplePromptTransform) GetPrompt(appMode po_entity.AppMode, promptTempl
 	modelMode := modelConfig.Mode
 
 	if modelMode == "chat" {
-		promptMessage, stop, err = s.GetChatModelPromptMessage(appMode, promptTemplateEntity.SimplePromptTemplate, inputs, query, context, files, nil, modelConfig)
+		promptMessage, stop, err = s.GetChatModelPromptMessage(appMode, promptTemplateEntity.SimplePromptTemplate, inputs, query, context, files, memory, modelConfig)
 
 		if err != nil {
 			return nil, nil, err
@@ -186,4 +198,15 @@ func (s *SimplePromptTransform) promptFileName(appMode po_entity.AppMode, _, _ s
 	} else {
 		return "common_chat.json"
 	}
+}
+
+func (s *SimplePromptTransform) appendChatHistories(ctx context.Context, memory token_buffer_memory.ITokenBufferMemory, ps []*po_entity_chat.PromptMessage) ([]*po_entity_chat.PromptMessage, error) {
+
+	msgs, err := memory.GetHistoryPromptMessage(ctx, 2000, 0)
+
+	if err != nil {
+		return nil, err
+	}
+	ps = append(ps, msgs...)
+	return ps, nil
 }

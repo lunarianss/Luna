@@ -14,6 +14,14 @@ import (
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider/model_provider"
 )
 
+type IModelRegistryCall interface {
+	InvokeLLM(ctx context.Context, promptMessage []*po_entity.PromptMessage, queueManager *biz_entity_chat.StreamGenerateQueue, modelParameters map[string]interface{}, tools interface{}, stop []string, stream bool, user string, callbacks interface{})
+
+	InvokeSpeechToText(ctx context.Context, audioFileContent []byte, user string, filename string) (string, error)
+
+	InvokeTextToSpeech(ctx context.Context, modelParameters map[string]interface{}, user string, voice string, format string, texts []string) error
+}
+
 type modelRegistryCall struct {
 	Model        string
 	Provider     string

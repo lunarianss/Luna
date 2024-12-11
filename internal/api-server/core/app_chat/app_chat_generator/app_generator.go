@@ -184,7 +184,7 @@ func (g *ChatAppGenerator) generateGoRoutine(ctx context.Context, applicationGen
 		}
 	}()
 
-	appRunner := app_chat_runner.NewAppChatRunner(app_chat_runner.NewAppBaseChatRunner(), g.AppDomain)
+	appRunner := app_chat_runner.NewAppChatRunner(app_chat_runner.NewAppBaseChatRunner(), g.AppDomain, g.chatDomain)
 
 	message, err := g.chatDomain.MessageRepo.GetMessageByID(ctx, messageID)
 

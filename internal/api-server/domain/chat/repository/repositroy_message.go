@@ -46,4 +46,5 @@ type MessageRepo interface {
 	FindEndUserMessages(ctx context.Context, appID string, user repository.BaseAccount, conversationId string, firstID string, pageSize int, order string) ([]*po_entity.Message, int64, error)
 	FindConsoleAppMessages(ctx context.Context, conversationID string, pageSize int, firstID string) ([]*po_entity.Message, int64, error)
 	FindPinnedConversationByUser(ctx context.Context, appID string, user repository.BaseAccount) ([]*po_entity.PinnedConversation, error)
+	FindHistoryPromptMessage(ctx context.Context, conversationID string, limit int) ([]*po_entity.Message, error)
 }

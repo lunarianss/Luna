@@ -622,6 +622,16 @@ func (md *MessageRepoImpl) FindEndUserMessages(ctx context.Context, appID string
 
 }
 
+func (md *MessageRepoImpl) FindHistoryPromptMessage(ctx context.Context, conversationID string, limit int) ([]*po_entity.Message, error) {
+	var historyMessages []*po_entity.Message
+
+	if err := md.db.Model(&po_entity.Message{}).Select("id", "query", "answer", "created_at", "workflow_run_id", "parent_message_id").Order("created_at DESC").Limit(limit).Where("conversation_id = ?", conversationID).Find(&historyMessages).Error; err != nil {
+		return nil, err
+	}
+
+	return historyMessages, nil
+}
+
 func (md *MessageRepoImpl) LogicalDeleteConversation(ctx context.Context, conversation *po_entity.Conversation) error {
 
 	if err := md.db.Model(conversation).Where("id = ?", conversation.ID).Update("is_deleted", 1).Error; err != nil {

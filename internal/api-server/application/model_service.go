@@ -292,3 +292,29 @@ func (ms *ModelService) UpdateDefaultModel(ctx context.Context, accountID string
 
 	return nil
 }
+
+func (ms *ModelService) GetProviderModels(ctx context.Context, accountID string, provider string) (*dto.DataWrapperResponse[[]*biz_entity_provider_config.ModelWithProvider], error) {
+
+	tenantRecord, _, err := ms.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	providerConfigurations, orderedProviders, err := ms.providerDomain.GetConfigurations(ctx, tenantRecord.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	models, err := providerConfigurations.GetModels(ctx, orderedProviders, provider, "", false)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.DataWrapperResponse[[]*biz_entity_provider_config.ModelWithProvider]{
+		Data: models,
+	}, nil
+
+}

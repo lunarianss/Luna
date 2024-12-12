@@ -13,4 +13,6 @@ const (
 	ErrAppStatusNotNormal
 	// ErrAppCodeNotFound - 500: App code not found.
 	ErrAppCodeNotFound
+	// ErrAppSiteDisabled - 400: Site is disabled.
+	ErrAppSiteDisabled
 )

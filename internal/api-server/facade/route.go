@@ -28,6 +28,7 @@ func init() {
 	// console/app
 	server.RegisterRoute(&consoleAppRoute.ChatRoutes{})
 	server.RegisterRoute(&consoleAppRoute.StatisticRoutes{})
+	server.RegisterRoute(&consoleAppRoute.AppRoutes{})
 
 	// console/dataset
 	server.RegisterRoute(&datasetRoute.DatasetRoutes{})

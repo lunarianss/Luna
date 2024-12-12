@@ -8,10 +8,13 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lunarianss/Luna/infrastructure/errors"
+	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/lunarianss/Luna/internal/infrastructure/core"
 	"github.com/lunarianss/Luna/internal/infrastructure/jwt"
-	"github.com/lunarianss/Luna/infrastructure/errors"
+	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
+	"gorm.io/gorm"
 )
 
 func WebTokenAuthMiddleware() gin.HandlerFunc {
@@ -54,6 +57,29 @@ func WebTokenAuthMiddleware() gin.HandlerFunc {
 		c.Set("appCode", lunaClaims.AppCode)
 		c.Set("endUserID", lunaClaims.EndUserID)
 
+		gormIns, err := mysql.GetMySQLIns(nil)
+
+		if err != nil {
+			core.WriteResponse(c, errors.WithCode(code.ErrDatabase, err.Error()), nil)
+			c.Abort()
+		}
+
+		var app po_entity.App
+
+		if err := gormIns.First(&app, "id = ?", lunaClaims.AppID).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				core.WriteResponse(c, errors.WithCode(code.ErrResourceNotFound, err.Error()), nil)
+				c.Abort()
+			} else {
+				core.WriteResponse(c, errors.WithCode(code.ErrDatabase, err.Error()), nil)
+				c.Abort()
+			}
+		}
+
+		if app.EnableSite == 0 {
+			core.WriteResponse(c, errors.WithCode(code.ErrAppSiteDisabled, ""), nil)
+			c.Abort()
+		}
 		// 继续处理请求
 		c.Next()
 	}

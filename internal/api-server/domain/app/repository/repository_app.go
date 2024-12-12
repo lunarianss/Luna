@@ -20,4 +20,5 @@ type AppRepo interface {
 	GetAppByID(ctx context.Context, appID string) (*po_entity.App, error)
 	GetAppModelConfigById(ctx context.Context, appConfigID string, appID string) (*po_entity.AppModelConfig, error)
 	GetTenantApp(ctx context.Context, appID, tenantID string) (*po_entity.App, error)
+	UpdateEnableAppSite(ctx context.Context, app *po_entity.App) (*po_entity.App, error)
 }

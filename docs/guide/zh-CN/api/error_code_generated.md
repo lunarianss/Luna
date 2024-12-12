@@ -25,6 +25,7 @@ IAM 系统支持的错误码列表如下：
 | ErrAppNotFoundRelatedConfig | 110102 | 500 | App config is not found |
 | ErrAppStatusNotNormal | 110103 | 500 | App is not active |
 | ErrAppCodeNotFound | 110104 | 500 | App code not found |
+| ErrAppSiteDisabled | 110105 | 400 | Site is disabled |
 | ErrEmailCode | 110301 | 500 | Error occurred when email code is incorrect |
 | ErrTokenEmail | 110302 | 500 | Error occurred when email is incorrect |
 | ErrTenantAlreadyExist | 110303 | 500 | Error occurred when tenant is already exist |
@@ -33,10 +34,12 @@ IAM 系统支持的错误码列表如下：
 | ErrUnknown | 100002 | 500 | Internal server error |
 | ErrBind | 100003 | 400 | Error occurred while request body is not incorrect |
 | ErrValidation | 100004 | 400 | Validation failed |
-| ErrPageNotFound | 100005 | 404 | Page not found |
-| ErrRestfulId | 100006 | 400 | Error occurred while parse restful id from url |
-| ErrRunTimeCaller | 100007 | 500 | Error occurred while call a go system call |
-| ErrRunTimeConfig | 100008 | 500 | Error occurred while runtime config is nil |
+| ErrForbidden | 100005 | 403 | You don't have the permission |
+| ErrPageNotFound | 100006 | 404 | Page not found |
+| ErrResourceNotFound | 100007 | 404 | The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again |
+| ErrRestfulId | 100008 | 400 | Error occurred while parse restful id from url |
+| ErrRunTimeCaller | 100009 | 500 | Error occurred while call a go system call |
+| ErrRunTimeConfig | 100010 | 500 | Error occurred while runtime config is nil |
 | ErrDatabase | 100101 | 500 | Database error |
 | ErrRecordNotFound | 100102 | 500 | Database record not found |
 | ErrScanToField | 100103 | 400 | Database scan error to field |
@@ -65,7 +68,7 @@ IAM 系统支持的错误码列表如下：
 | ErrRedisSetKey | 100501 | 500 | Error occurred when set key, value to redis |
 | ErrRedisSetExpire | 100502 | 500 | Error occurred when set expire  to redis |
 | ErrRedisRuntime | 100503 | 500 | Error occurred when invoke redis api |
-| ErrRedisDataExpire | 100504 | 500 | Error occurred when redis data is expired |
+| ErrRedisDataExpire | 100504 | 500 | Error occurred when data is expired |
 | ErrRSAGenerate | 100601 | 500 | Error occurred when generate pair of rsa key |
 | ErrGinNotExistAccountInfo | 100701 | 400 | Error occurred when get account info from gin context |
 | ErrGinNotExistAppSiteInfo | 100702 | 400 | Error occurred when get app site info from gin context |
@@ -86,6 +89,7 @@ IAM 系统支持的错误码列表如下：
 | ErrTTSWebSocketParse | 110215 | 500 | Failed to parse tts websocket message |
 | ErrContextTimeout | 110216 | 500 | Context timeout |
 | ErrTTSWebSocketWrite | 110217 | 500 | Failed to write tts websocket message |
+| ErrTencentARS | 110218 | 500 | Tencent ARS service error |
 | ErrProviderMapModel | 110001 | 500 | Error occurred while attempt to index from providerMpa using provider |
 | ErrProviderNotHaveIcon | 110002 | 500 | Error occurred while provider entity doesn't have icon property |
 | ErrToOriginModelType | 110003 | 500 | Error occurred while convert to origin model type |

@@ -196,3 +196,11 @@ func SiteRecordToSiteDetail(sm *po_entity_web_app.Site, config *config.Config) *
 		AccessToken: sm.Code,
 	}
 }
+
+type EnableSiteRequest struct {
+	EnableSite bool `json:"enable_site"`
+}
+
+type APIUrlParameter struct {
+	AppID string `json:"appID" uri:"appID"`
+}

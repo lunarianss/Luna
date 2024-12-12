@@ -25,6 +25,9 @@ const (
 	// ErrPageNotFound - 404: Page not found.
 	ErrPageNotFound
 
+	// ErrResourceNotFound - 404: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+	ErrResourceNotFound
+
 	// ErrRestfulId - 400: Error occurred while parse restful id from url.
 	ErrRestfulId
 

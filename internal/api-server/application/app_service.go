@@ -7,6 +7,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/infrastructure/log"
@@ -177,7 +178,6 @@ func (as *AppService) ListTenantApps(ctx context.Context, params *dto.ListAppReq
 		Total:    appCount,
 		Data:     appItems,
 		HasMore:  hasMore,
-
 	}, nil
 
 }
@@ -247,4 +247,51 @@ func (as *AppService) UpdateAppModelConfig(ctx context.Context, modelConfig *cha
 	}
 
 	return nil
+}
+
+func (as *AppService) UpdateEnableAppSite(ctx context.Context, accountID string, appID string, enable_site bool) (*dto.AppDetail, error) {
+	tenant, tenantJoin, err := as.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !tenantJoin.IsEditor() {
+		return nil, errors.WithCode(code.ErrForbidden, fmt.Sprintf("You don't have the permission for %s", tenant.Name))
+	}
+
+	appRecord, err := as.appDomain.AppRepo.GetTenantApp(ctx, appID, tenant.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	appConfigRecord, err := as.appDomain.AppRepo.GetAppModelConfigById(ctx, appRecord.AppModelConfigID, appID)
+	if err != nil {
+		return nil, err
+	}
+
+	siteRecord, err := as.appDomain.WebAppRepo.GetSiteByAppID(ctx, appID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	enableSite := util.BoolToInt(enable_site)
+
+	if appRecord.EnableSite == field.BitBool(enableSite) {
+		return dto.AppRecordToDetail(appRecord, as.config, appConfigRecord, siteRecord), nil
+	}
+
+	appRecord.EnableSite = field.BitBool(enableSite)
+	appRecord.UpdatedBy = accountID
+	appRecord.UpdatedAt = int(time.Now().UTC().Unix())
+
+	appRecord, err = as.appDomain.AppRepo.UpdateEnableAppSite(ctx, appRecord)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return dto.AppRecordToDetail(appRecord, as.config, appConfigRecord, siteRecord), nil
 }

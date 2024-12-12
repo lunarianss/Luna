@@ -130,10 +130,14 @@ func (mpSrv *ModelProviderService) GetProviderIconPath(ctx context.Context, prov
 
 func (mpSrv *ModelProviderService) SaveProviderCredentials(ctx context.Context, accountID string, provider string, credentials map[string]interface{}) error {
 
-	tenantRecord, _, err := mpSrv.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+	tenantRecord, tenantJoin, err := mpSrv.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
 
 	if err != nil {
 		return err
+	}
+
+	if !tenantJoin.IsPrivilegedRole() {
+		return errors.WithCode(code.ErrForbidden, "tenant %s don't have the permission", tenantRecord.Name)
 	}
 
 	if err := mpSrv.providerDomain.SaveProviderCredentials(ctx, tenantRecord.ID, provider, credentials); err != nil {

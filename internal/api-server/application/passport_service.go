@@ -50,8 +50,8 @@ func (ps *PassportService) AcquirePassport(c *gin.Context, appCode string) (*dto
 		return nil, err
 	}
 
-	if appRecord.Status != "normal" {
-		return nil, errors.WithCode(code.ErrAppStatusNotNormal, "status %s not normal", appRecord.Status)
+	if appRecord.Status != "normal" || appRecord.EnableSite == 0 {
+		return nil, errors.WithCode(code.ErrResourceNotFound, "status %s not normal or site status %v is disabled", appRecord.Status, appRecord.EnableSite)
 	}
 
 	endUserRecord, err := ps.webAppDomain.CreateEndUser(c, appRecord)

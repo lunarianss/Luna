@@ -100,6 +100,13 @@ func (ad *AppRepoImpl) CreateAppWithConfig(ctx context.Context, tx *gorm.DB, app
 	return app, nil
 }
 
+func (ad *AppRepoImpl) UpdateEnableAppSite(ctx context.Context, app *po_entity.App) (*po_entity.App, error) {
+	if err := ad.db.Model(&po_entity.App{}).Select("enable_site", "updated_by", "updated_at").Where("id = ?", app.ID).Updates(app).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return app, nil
+}
+
 func (ad *AppRepoImpl) GetAppByID(ctx context.Context, appID string) (*po_entity.App, error) {
 	var app po_entity.App
 

@@ -72,7 +72,7 @@ func (md *ModelProviderRepoImpl) CreateTenantDefaultModel(ctx context.Context, t
 }
 
 func (md *ModelProviderRepoImpl) UpdateTenantDefaultModel(ctx context.Context, tenantDefaultModel *po_entity.TenantDefaultModel) error {
-	if err := md.db.Model(&po_entity.TenantDefaultModel{}).Select("provider_name", "model_name").Updates(tenantDefaultModel).Error; err != nil {
+	if err := md.db.Model(&po_entity.TenantDefaultModel{}).Select("provider_name", "model_name").Where("tenant_id = ? and model_type = ?", tenantDefaultModel.TenantID, tenantDefaultModel.ModelType).Updates(tenantDefaultModel).Error; err != nil {
 		return errors.WithCode(code.ErrDatabase, err.Error())
 	}
 

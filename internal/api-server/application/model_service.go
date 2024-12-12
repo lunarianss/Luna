@@ -235,6 +235,11 @@ func (ms *ModelService) UpdateDefaultModel(ctx context.Context, accountID string
 	}
 
 	for _, modelSetting := range args {
+
+		if modelSetting.Provider == "" || modelSetting.Model == "" {
+			continue
+		}
+
 		providerConfiguration, ok := providerConfigurations.Configurations[modelSetting.Provider]
 		if !ok {
 			return errors.WithCode(code.ErrRequiredCorrectProvider, fmt.Sprintf("provider %s is not exist", modelSetting.Provider))
@@ -247,14 +252,19 @@ func (ms *ModelService) UpdateDefaultModel(ctx context.Context, accountID string
 		}
 
 		findModel := util.SliceFind(providerModels, func(a *biz_entity_provider_config.ModelWithProvider) bool {
-			return a.Model == modelSetting.Model
+			return a.ProviderModel.Model == modelSetting.Model
 		})
 
 		if findModel == nil {
 			return errors.WithCode(code.ErrRequiredCorrectModel, fmt.Sprintf("model %s is not exist", modelSetting.Model))
 		}
 
-		defaultModel, err := ms.providerDomain.ModelRepo.GetTenantDefaultModel(ctx, tenantRecord.ID, modelSetting.ModelType)
+		originModelType, err := common.ModelType(modelSetting.ModelType).ToOriginModelType()
+
+		if err != nil {
+			return err
+		}
+		defaultModel, err := ms.providerDomain.ModelRepo.GetTenantDefaultModel(ctx, tenantRecord.ID, originModelType)
 
 		if err != nil {
 			return err

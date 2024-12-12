@@ -173,5 +173,5 @@ type UpdateDefaultModelRequest struct {
 type ModelSetting struct {
 	ModelType string `json:"model_type" validate:"required,valid_model_type"`
 	Provider  string `json:"provider" validate:"required"`
-	Model     string `json:"gpt-4o-mini" validate:"required"`
+	Model     string `json:"model" validate:"required"`
 }

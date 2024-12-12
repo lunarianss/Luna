@@ -15,7 +15,7 @@ func SliceFilter[T interface{}](data []T, filterFunc func(T) bool) []T {
 	return filterData
 }
 
-func SliceFind[T interface{}](data []*T, someFunc func(*T) bool) *T {
+func SliceFind[T interface{}](data []T, someFunc func(T) bool) (t T) {
 
 	for _, v := range data {
 		if someFunc(v) {
@@ -23,7 +23,7 @@ func SliceFind[T interface{}](data []*T, someFunc func(*T) bool) *T {
 		}
 	}
 
-	return nil
+	return
 }
 
 func SliceReverse[T interface{}](slice []T) []T {

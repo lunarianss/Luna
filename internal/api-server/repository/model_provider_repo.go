@@ -7,11 +7,11 @@ package repo_impl
 import (
 	"context"
 
+	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/repository"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
-	"github.com/lunarianss/Luna/infrastructure/errors"
 	"gorm.io/gorm"
 )
 
@@ -69,4 +69,12 @@ func (md *ModelProviderRepoImpl) CreateTenantDefaultModel(ctx context.Context, t
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())
 	}
 	return tenantDefaultModel, nil
+}
+
+func (md *ModelProviderRepoImpl) UpdateTenantDefaultModel(ctx context.Context, tenantDefaultModel *po_entity.TenantDefaultModel) error {
+	if err := md.db.Model(&po_entity.TenantDefaultModel{}).Select("provider_name", "model_name").Updates(tenantDefaultModel).Error; err != nil {
+		return errors.WithCode(code.ErrDatabase, err.Error())
+	}
+
+	return nil
 }

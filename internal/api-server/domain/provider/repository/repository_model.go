@@ -24,4 +24,6 @@ type ModelRepo interface {
 	CreateTenantDefaultModel(ctx context.Context, tenantDefaultModel *po_entity.TenantDefaultModel) (*po_entity.TenantDefaultModel, error)
 	// Get the corresponding TenantDefaultModel record
 	GetTenantDefaultModel(ctx context.Context, tenantId, modelType string) (*po_entity.TenantDefaultModel, error)
+
+	UpdateTenantDefaultModel(ctx context.Context, tenantDefaultModel *po_entity.TenantDefaultModel) error
 }

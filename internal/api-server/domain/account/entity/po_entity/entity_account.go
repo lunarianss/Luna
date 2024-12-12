@@ -93,17 +93,17 @@ func (s *TenantAccountJoin) IsEditor() bool {
 	return s.Role != "" && slices.Contains(editorRoles, TenantAccountJoinRole(s.Role))
 }
 
-func (s *TenantAccountJoin) IsPrivilegedRole(role string) bool {
+func (s *TenantAccountJoin) IsPrivilegedRole() bool {
 	privilegedRoles := []TenantAccountJoinRole{OWNER, ADMIN}
 	return s.Role != "" && slices.Contains(privilegedRoles, TenantAccountJoinRole(s.Role))
 }
 
-func (s *TenantAccountJoin) IsNonOwnerRole(role string) bool {
+func (s *TenantAccountJoin) IsNonOwnerRole() bool {
 	editorRoles := []TenantAccountJoinRole{ADMIN, EDITOR, DATASET_OPERATOR, NORMAL}
 	return s.Role != "" && slices.Contains(editorRoles, TenantAccountJoinRole(s.Role))
 }
 
-func (s *TenantAccountJoin) IsDatasetEditRole(role string) bool {
+func (s *TenantAccountJoin) IsDatasetEditRole() bool {
 	datasetEditorRoles := []TenantAccountJoinRole{OWNER, ADMIN, EDITOR, DATASET_OPERATOR}
 	return s.Role != "" && slices.Contains(datasetEditorRoles, TenantAccountJoinRole(s.Role))
 }

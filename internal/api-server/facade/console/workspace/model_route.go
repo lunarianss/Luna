@@ -57,6 +57,7 @@ func (r *ModelRoutes) Register(g *gin.Engine) error {
 	modelProviderV1.GET("/models/model-types/:modelType", modelController.GetAccountAvailableModels)
 
 	modelProviderV1.GET("/default-model", modelController.GetDefaultModelByType)
+	modelProviderV1.POST("/default-model", modelController.UpdateDefaultProviderModel)
 
 	return nil
 }

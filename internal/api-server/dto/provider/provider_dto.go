@@ -149,9 +149,23 @@ type DefaultModelByTypeQuery struct {
 	ModelType string `form:"model_type" validate:"required"`
 }
 
+type DataWrapperResponse[T interface{}] struct {
+	Data *T `json:"data"`
+}
+
 // DefaultModelResponse represents the default model entity.
 type DefaultModelResponse struct {
 	Model     string                                          `json:"model"`
 	ModelType string                                          `json:"model_type"`
 	Provider  *biz_entity_provider_config.SimpleModelProvider `json:"provider"`
+}
+
+type UpdateDefaultModelRequest struct {
+	ModelSettings []*ModelSetting `json:"model_settings" validate:"required"`
+}
+
+type ModelSetting struct {
+	ModelType string `json:"model_type" validate:"required,valid_model_type"`
+	Provider  string `json:"provider" validate:"required"`
+	Model     string `json:"gpt-4o-mini" validate:"required"`
 }

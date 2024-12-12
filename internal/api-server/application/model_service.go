@@ -6,12 +6,14 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
 	biz_entity_model "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider/model_provider"
 	biz_entity_provider_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_configuration"
+	"github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/po_entity"
 
 	"github.com/lunarianss/Luna/internal/api-server/config"
 
@@ -178,7 +180,7 @@ func (ms *ModelService) GetModelParameterRules(ctx context.Context, accountID st
 
 }
 
-func (ms *ModelService) GetDefaultModelByType(ctx context.Context, accountID string, modelType string) (*dto.DefaultModelResponse, error) {
+func (ms *ModelService) GetDefaultModelByType(ctx context.Context, accountID string, modelType string) (*dto.DataWrapperResponse[dto.DefaultModelResponse], error) {
 
 	tenantRecord, _, err := ms.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
 
@@ -195,16 +197,83 @@ func (ms *ModelService) GetDefaultModelByType(ctx context.Context, accountID str
 		return nil, err
 	}
 
-	return &dto.DefaultModelResponse{
-		Model:     defaultModelEntity.Model,
-		ModelType: defaultModelEntity.ModelType,
-		Provider: &biz_entity_provider_config.SimpleModelProvider{
-			Provider:            defaultModelEntity.Provider.Provider,
-			Label:               defaultModelEntity.Provider.Label,
-			IconSmall:           defaultModelEntity.Provider.IconSmall,
-			IconLarge:           defaultModelEntity.Provider.IconLarge,
-			SupportedModelTypes: defaultModelEntity.Provider.SupportedModelTypes,
+	return &dto.DataWrapperResponse[dto.DefaultModelResponse]{
+		Data: &dto.DefaultModelResponse{
+			Model:     defaultModelEntity.Model,
+			ModelType: defaultModelEntity.ModelType,
+			Provider: &biz_entity_provider_config.SimpleModelProvider{
+				Provider:            defaultModelEntity.Provider.Provider,
+				Label:               defaultModelEntity.Provider.Label,
+				IconSmall:           defaultModelEntity.Provider.IconSmall,
+				IconLarge:           defaultModelEntity.Provider.IconLarge,
+				SupportedModelTypes: defaultModelEntity.Provider.SupportedModelTypes,
+			},
 		},
 	}, nil
+}
 
+func (ms *ModelService) UpdateDefaultModel(ctx context.Context, accountID string, args []*dto.ModelSetting) error {
+	tenantRecord, tenantJoin, err := ms.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+
+	if err != nil {
+		return err
+	}
+
+	if !tenantJoin.IsPrivilegedRole() {
+		return errors.WithCode(code.ErrForbidden, fmt.Sprintf("tenant %s don't have the permission", tenantRecord.Name))
+	}
+
+	providerConfigurations, _, err := ms.providerDomain.GetConfigurations(ctx, tenantRecord.ID)
+
+	if err != nil {
+		return err
+	}
+
+	for _, modelSetting := range args {
+		providerConfiguration, ok := providerConfigurations.Configurations[modelSetting.Provider]
+		if !ok {
+			return errors.WithCode(code.ErrRequiredCorrectProvider, fmt.Sprintf("provider %s is not exist", modelSetting.Provider))
+		}
+
+		providerModels, err := providerConfiguration.GetProviderModels(ctx, common.ModelType(modelSetting.ModelType), true)
+
+		if err != nil {
+			return err
+		}
+
+		findModel := util.SliceFind(providerModels, func(a *biz_entity_provider_config.ModelWithProvider) bool {
+			return a.Model == modelSetting.Model
+		})
+
+		if findModel == nil {
+			return errors.WithCode(code.ErrRequiredCorrectModel, fmt.Sprintf("model %s is not exist", modelSetting.Model))
+		}
+
+		defaultModel, err := ms.providerDomain.ModelRepo.GetTenantDefaultModel(ctx, tenantRecord.ID, modelSetting.ModelType)
+
+		if err != nil {
+			return err
+		}
+
+		if defaultModel != nil {
+			defaultModel.ProviderName = modelSetting.Provider
+			defaultModel.ModelName = modelSetting.Model
+			if err := ms.providerDomain.ModelRepo.UpdateTenantDefaultModel(ctx, defaultModel); err != nil {
+				return err
+			}
+		} else {
+			defaultModel := &po_entity.TenantDefaultModel{
+				TenantID:     tenantRecord.ID,
+				ModelName:    modelSetting.Model,
+				ProviderName: modelSetting.Provider,
+				ModelType:    modelSetting.ModelType,
+			}
+
+			if _, err := ms.providerDomain.ModelRepo.CreateTenantDefaultModel(ctx, defaultModel); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }

@@ -177,7 +177,7 @@ func AppRecordToDetail(app *po_entity.App, config *config.Config, modelConfig *p
 	}
 
 	if appDetail.ModelConfig.UserInputForm == nil {
-		appDetail.ModelConfig.UserInputForm = make([]*po_entity.UserInputForm, 0)
+		appDetail.ModelConfig.UserInputForm = make([]po_entity.UserInputForm, 0)
 	}
 
 	return appDetail

@@ -156,17 +156,16 @@ type ModelDto struct {
 	CompletionParams map[string]interface{} `json:"completion_params"`
 }
 
-type UserInputForm struct {
-	TextInput *BaseTextUserInput `json:"text-input"`
+type UserInput struct {
+	Label     string   `json:"label"`
+	Variable  string   `json:"variable"`
+	Required  bool     `json:"required"`
+	MaxLength int      `json:"max_length"`
+	Default   string   `json:"default"`
+	Options   []string `json:"options"`
 }
 
-type BaseTextUserInput struct {
-	Label     string `json:"label"`
-	Variable  string `json:"variable"`
-	Required  bool   `json:"required"`
-	MaxLength int    `json:"max_length"`
-	Default   string `json:"default"`
-}
+type UserInputForm map[string]*UserInput
 
 type AppModelConfigDto struct {
 	AppID                         string                  `json:"appId"`
@@ -176,7 +175,7 @@ type AppModelConfigDto struct {
 	SuggestedQuestionsAfterAnswer AppModelConfigDtoEnable `json:"suggested_questions_after_answer"`
 	MoreLikeThis                  AppModelConfigDtoEnable `json:"more_like_this"`
 	Model                         ModelDto                `json:"model"`
-	UserInputForm                 []*UserInputForm        `json:"user_input_form"`
+	UserInputForm                 []UserInputForm         `json:"user_input_form"`
 	PrePrompt                     string                  `json:"pre_prompt"`
 	AgentMode                     map[string]interface{}  `json:"agent_mode"`
 	SpeechToText                  AppModelConfigDtoEnable `json:"speech_to_text"`

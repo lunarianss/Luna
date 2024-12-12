@@ -24,9 +24,9 @@ type App struct {
 
 // ModelConfig holds the model and additional configurations.
 type ModelConfig struct {
-	Model         ModelInfo        `json:"model"`
-	UserInputForm []*UserInputForm `json:"user_input_form"`
-	PrePrompt     string           `json:"pre_prompt"`
+	Model         ModelInfo       `json:"model"`
+	UserInputForm []UserInputForm `json:"user_input_form"`
+	PrePrompt     string          `json:"pre_prompt"`
 }
 
 // AppTemplate holds the template for each mode.

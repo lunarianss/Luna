@@ -63,25 +63,16 @@ type ModelInfo struct {
 	CompletionParams map[string]interface{} `json:"completion_params"`
 }
 
-type BaseUserInput struct {
-	Label     string `json:"label"`
-	Variable  string `json:"variable"`
-	Required  bool   `json:"required"`
-	MaxLength int    `json:"max_length"`
-	Default   string `json:"default"`
+type UserInput struct {
+	Label     string   `json:"label"`
+	Variable  string   `json:"variable"`
+	Required  bool     `json:"required"`
+	MaxLength int      `json:"max_length"`
+	Default   string   `json:"default"`
+	Options   []string `json:"options"`
 }
 
-type UserInputForm struct {
-	TextInput *BaseTextUserInput `json:"text-input"`
-}
-
-type BaseTextUserInput struct {
-	Label     string `json:"label"`
-	Variable  string `json:"variable"`
-	Required  bool   `json:"required"`
-	MaxLength int    `json:"max_length"`
-	Default   string `json:"default"`
-}
+type UserInputForm map[string]*UserInput
 
 type AppModelConfig struct {
 	AppID                         string                 `json:"app_id" gorm:"column:app_id"`
@@ -95,7 +86,7 @@ type AppModelConfig struct {
 	SuggestedQuestionsAfterAnswer AppModelConfigEnable   `json:"suggested_questions_after_answer" gorm:"column:suggested_questions_after_answer;serializer:json"`
 	MoreLikeThis                  AppModelConfigEnable   `json:"more_like_this" gorm:"column:more_like_this;serializer:json"`
 	Model                         ModelInfo              `json:"model" gorm:"column:model;serializer:json"`
-	UserInputForm                 []*UserInputForm       `json:"user_input_form" gorm:"column:user_input_form;serializer:json"`
+	UserInputForm                 []UserInputForm        `json:"user_input_form" gorm:"column:user_input_form;serializer:json"`
 	PrePrompt                     string                 `json:"pre_prompt" gorm:"column:pre_prompt;serializer:json"`
 	AgentMode                     map[string]interface{} `json:"agent_mode" gorm:"column:agent_mode;serializer:json"`
 	SpeechToText                  AppModelConfigEnable   `json:"speech_to_text" gorm:"column:speech_to_text;serializer:json"`
@@ -161,47 +152,45 @@ func ConvertToModelBizEntity(entityModel po_entity.ModelInfo) ModelInfo {
 	}
 }
 
-func ConvertToUserInputPoEntity(entityModels []*UserInputForm) []*po_entity.UserInputForm {
-	var returnUserInput []*po_entity.UserInputForm
-	var baseUserTextInput *po_entity.BaseTextUserInput
-	var userInputForm *po_entity.UserInputForm
+func ConvertToUserInputPoEntity(userInputs []UserInputForm) []po_entity.UserInputForm {
+	var returnUserInput []po_entity.UserInputForm
 
-	for _, dtoModel := range entityModels {
-		userInputForm = &po_entity.UserInputForm{}
-		if dtoModel.TextInput != nil {
-			baseUserTextInput = &po_entity.BaseTextUserInput{
-				Label:     dtoModel.TextInput.Label,
-				Variable:  dtoModel.TextInput.Variable,
-				Required:  dtoModel.TextInput.Required,
-				MaxLength: dtoModel.TextInput.MaxLength,
-				Default:   dtoModel.TextInput.Default,
+	for _, userInputMap := range userInputs {
+		userInputForm := po_entity.UserInputForm{}
+		for k, v := range userInputMap {
+			userInputForm[k] = &po_entity.UserInput{
+				Label:     v.Label,
+				Variable:  v.Variable,
+				Required:  v.Required,
+				MaxLength: v.MaxLength,
+				Default:   v.Default,
+				Options:   v.Options,
 			}
 		}
-		userInputForm.TextInput = baseUserTextInput
 		returnUserInput = append(returnUserInput, userInputForm)
 	}
+
 	return returnUserInput
 }
 
-func ConvertToUserInputBizEntity(entityModels []*po_entity.UserInputForm) []*UserInputForm {
-	var returnUserInput []*UserInputForm
-	var baseUserTextInput *BaseTextUserInput
-	var userInputForm *UserInputForm
+func ConvertToUserInputBizEntity(userInputs []po_entity.UserInputForm) []UserInputForm {
+	var returnUserInput []UserInputForm
 
-	for _, dtoModel := range entityModels {
-		userInputForm = &UserInputForm{}
-		if dtoModel.TextInput != nil {
-			baseUserTextInput = &BaseTextUserInput{
-				Label:     dtoModel.TextInput.Label,
-				Variable:  dtoModel.TextInput.Variable,
-				Required:  dtoModel.TextInput.Required,
-				MaxLength: dtoModel.TextInput.MaxLength,
-				Default:   dtoModel.TextInput.Default,
+	for _, userInputMap := range userInputs {
+		userInputForm := UserInputForm{}
+		for k, v := range userInputMap {
+			userInputForm[k] = &UserInput{
+				Label:     v.Label,
+				Variable:  v.Variable,
+				Required:  v.Required,
+				MaxLength: v.MaxLength,
+				Default:   v.Default,
+				Options:   v.Options,
 			}
 		}
-		userInputForm.TextInput = baseUserTextInput
 		returnUserInput = append(returnUserInput, userInputForm)
 	}
+
 	return returnUserInput
 }
 

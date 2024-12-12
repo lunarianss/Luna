@@ -70,25 +70,16 @@ type ModelInfo struct {
 	CompletionParams map[string]interface{} `json:"completion_params"`
 }
 
-type BaseUserInput struct {
-	Label     string `json:"label"`
-	Variable  string `json:"variable"`
-	Required  bool   `json:"required"`
-	MaxLength int    `json:"max_length"`
-	Default   string `json:"default"`
+type UserInput struct {
+	Label     string   `json:"label"`
+	Variable  string   `json:"variable"`
+	Required  bool     `json:"required"`
+	MaxLength int      `json:"max_length,omitempty"`
+	Default   string   `json:"default"`
+	Options   []string `json:"options,omitempty"`
 }
 
-type UserInputForm struct {
-	TextInput *BaseTextUserInput `json:"text-input"`
-}
-
-type BaseTextUserInput struct {
-	Label     string `json:"label"`
-	Variable  string `json:"variable"`
-	Required  bool   `json:"required"`
-	MaxLength int    `json:"max_length"`
-	Default   string `json:"default"`
-}
+type UserInputForm map[string]*UserInput
 
 type AppModelConfig struct {
 	ID                            string                 `json:"id" gorm:"column:id"`
@@ -103,7 +94,7 @@ type AppModelConfig struct {
 	SuggestedQuestionsAfterAnswer AppModelConfigEnable   `json:"suggested_questions_after_answer" gorm:"column:suggested_questions_after_answer;serializer:json"`
 	MoreLikeThis                  AppModelConfigEnable   `json:"more_like_this" gorm:"column:more_like_this;serializer:json"`
 	Model                         ModelInfo              `json:"model" gorm:"column:model;serializer:json"`
-	UserInputForm                 []*UserInputForm       `json:"user_input_form" gorm:"column:user_input_form;serializer:json"`
+	UserInputForm                 []UserInputForm       `json:"user_input_form" gorm:"column:user_input_form;serializer:json"`
 	PrePrompt                     string                 `json:"pre_prompt" gorm:"column:pre_prompt;serializer:json"`
 	AgentMode                     map[string]interface{} `json:"agent_mode" gorm:"column:agent_mode;serializer:json"`
 	SpeechToText                  AppModelConfigEnable   `json:"speech_to_text" gorm:"column:speech_to_text;serializer:json"`

@@ -17,14 +17,16 @@ func (*BasicVariablesConfigManager) Convert(appModelConfig *dto.AppModelConfigDt
 	userInputForms := appModelConfig.UserInputForm
 
 	for _, userInputForm := range userInputForms {
-		if userInputForm.TextInput != nil {
-			variables = append(variables, &biz_entity.VariableEntity{
-				Type:      "text-input",
-				Variable:  userInputForm.TextInput.Variable,
-				Label:     userInputForm.TextInput.Label,
-				Required:  userInputForm.TextInput.Required,
-				MaxLength: userInputForm.TextInput.MaxLength,
-			})
+		for inputType, v := range userInputForm {
+			if inputType == "text-input" {
+				variables = append(variables, &biz_entity.VariableEntity{
+					Type:      "text-input",
+					Variable:  v.Variable,
+					Label:     v.Label,
+					Required:  v.Required,
+					MaxLength: v.MaxLength,
+				})
+			}
 		}
 	}
 	return variables

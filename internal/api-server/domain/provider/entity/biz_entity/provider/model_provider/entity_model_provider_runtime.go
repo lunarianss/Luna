@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
-	"github.com/lunarianss/Luna/infrastructure/log"
 	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/mitchellh/mapstructure"
@@ -103,8 +102,6 @@ func (a *AIModelRuntime) PredefinedModels() ([]*AIModelStaticConfiguration, erro
 		if err := yaml.Unmarshal(AIModelEntityContent, AIModelEntity); err != nil {
 			return nil, errors.WithCode(code.ErrDecodingYaml, fmt.Sprintf("when decoding model %s of path,  failed: %s", modelSchemaYamlPath, err.Error()))
 		}
-
-		log.Info(AIModelEntity.Label)
 
 		if AIModelEntity.Label == nil {
 			AIModelEntity.Label = &common.I18nObject{

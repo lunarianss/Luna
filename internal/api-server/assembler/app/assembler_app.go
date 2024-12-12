@@ -43,24 +43,23 @@ func ConvertToModelEntity(dtoModel dto.ModelDto) biz_entity.ModelInfo {
 	}
 }
 
-func ConvertToUserInputEntity(dtoModels []*dto.UserInputForm) []*biz_entity.UserInputForm {
-	var returnUserInput []*biz_entity.UserInputForm
-	var baseUserTextInput *biz_entity.BaseTextUserInput
-	var userInputForm *biz_entity.UserInputForm
+func ConvertToUserInputEntity(userInputs []dto.UserInputForm) []biz_entity.UserInputForm {
+	var returnUserInput []biz_entity.UserInputForm
 
-	for _, dtoModel := range dtoModels {
-		userInputForm = &biz_entity.UserInputForm{}
-		if dtoModel.TextInput != nil {
-			baseUserTextInput = &biz_entity.BaseTextUserInput{
-				Label:     dtoModel.TextInput.Label,
-				Variable:  dtoModel.TextInput.Variable,
-				Required:  dtoModel.TextInput.Required,
-				MaxLength: dtoModel.TextInput.MaxLength,
-				Default:   dtoModel.TextInput.Default,
+	for _, userInputMap := range userInputs {
+		userInputForm := biz_entity.UserInputForm{}
+		for k, v := range userInputMap {
+			userInputForm[k] = &biz_entity.UserInput{
+				Label:     v.Label,
+				Variable:  v.Variable,
+				Required:  v.Required,
+				MaxLength: v.MaxLength,
+				Default:   v.Default,
+				Options:   v.Options,
 			}
 		}
-		userInputForm.TextInput = baseUserTextInput
 		returnUserInput = append(returnUserInput, userInputForm)
 	}
+
 	return returnUserInput
 }

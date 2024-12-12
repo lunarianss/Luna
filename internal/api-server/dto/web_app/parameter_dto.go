@@ -16,7 +16,7 @@ type WebAppParameterResponse struct {
 	SpeechToText                  po_entity.AppModelConfigEnable `json:"speech_to_text" gorm:"column:speech_to_text;serializer:json"`
 	RetrieverResource             po_entity.AppModelConfigEnable `json:"retriever_resource" gorm:"column:retriever_resource;serializer:json"`
 	MoreLikeThis                  po_entity.AppModelConfigEnable `json:"more_like_this" gorm:"column:more_like_this;serializer:json"`
-	UserInputForm                 []*po_entity.UserInputForm     `json:"user_input_form" gorm:"column:user_input_form;serializer:json"`
+	UserInputForm                 []po_entity.UserInputForm      `json:"user_input_form" gorm:"column:user_input_form;serializer:json"`
 	SensitiveWordAvoidance        map[string]interface{}         `json:"sensitive_word_avoidance" gorm:"column:sensitive_word_avoidance;serializer:json"`
 	FileUpload                    map[string]interface{}         `json:"file_upload" gorm:"column:file_upload;serializer:json"`
 }
@@ -60,7 +60,7 @@ func AppConfigRecordToParameter(appConfig *po_entity.AppModelConfig) *WebAppPara
 	}
 
 	if parameterDetail.UserInputForm == nil {
-		parameterDetail.UserInputForm = make([]*po_entity.UserInputForm, 0)
+		parameterDetail.UserInputForm = make([]po_entity.UserInputForm, 0)
 	}
 
 	return parameterDetail

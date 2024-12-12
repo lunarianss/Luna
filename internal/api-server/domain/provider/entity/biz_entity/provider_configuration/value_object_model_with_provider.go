@@ -12,6 +12,7 @@ type SimpleModelProvider struct {
 	IconSmall           *common.I18nObject `json:"icon_small"`
 	IconLarge           *common.I18nObject `json:"icon_large"`
 	SupportedModelTypes []common.ModelType `json:"supported_model_types"`
+	Models              []any              `json:"models"`
 }
 
 type ProviderModelWithStatus struct {

@@ -121,7 +121,7 @@ const (
 	ErrRedisSetExpire
 	// ErrRedisRuntime - 500: Error occurred when invoke redis api.
 	ErrRedisRuntime
-	// ErrRedisDataExpire - 500: Error occurred when redis data is expired.
+	// ErrRedisDataExpire - 500: Error occurred when data is expired.
 	ErrRedisDataExpire
 )
 

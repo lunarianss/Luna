@@ -10,6 +10,10 @@ type EmailTokenData struct {
 	TokenType string `json:"token_type"`
 }
 
+type ValidateTokenResponse struct {
+	Result string     `json:"result"`
+	Data   *TokenPair `json:"data"`
+}
 type TokenPair struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`

@@ -34,7 +34,7 @@ type ListAppRequest struct {
 }
 type ListAppsResponse struct {
 	Page     int            `json:"page"`
-	PageSize int            `json:"page_size"`
+	PageSize int            `json:"limit"`
 	Total    int64          `json:"total"`
 	Data     []*ListAppItem `json:"data"`
 	HasMore  int            `json:"has_more"`
@@ -55,6 +55,7 @@ type ListAppItem struct {
 	CreatedBy           string `json:"created_by"`
 	UpdatedBy           string `json:"updated_by"`
 	UseIconAsAnswerIcon int    `json:"use_icon_as_answer_icon"`
+	Tags                []any  `json:"tags"`
 }
 
 func ListAppRecordToItem(app *po_entity.App) *ListAppItem {
@@ -73,8 +74,8 @@ func ListAppRecordToItem(app *po_entity.App) *ListAppItem {
 		CreatedBy:           app.CreatedBy,
 		UpdatedBy:           app.UpdatedBy,
 		UseIconAsAnswerIcon: int(app.UseIconAsAnswerIcon),
+		Tags:                make([]any, 0),
 	}
-
 }
 
 type AppDetailRequest struct {

@@ -33,7 +33,7 @@ func NewModelProviderService(providerDomain *domain_service.ProviderDomain, acco
 	return &ModelProviderService{providerDomain: providerDomain, accountDomain: accountDomain, config: config}
 }
 
-func (mpSrv *ModelProviderService) GetProviderList(ctx context.Context, accountID string, modelType string) ([]*dto.ProviderResponse, error) {
+func (mpSrv *ModelProviderService) GetProviderList(ctx context.Context, accountID string, modelType string) (*dto.DataWrapperResponse[[]*dto.ProviderResponse], error) {
 	var customConfigurationStatus dto.CustomConfigurationStatus
 
 	tenantRecord, _, err := mpSrv.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
@@ -100,7 +100,9 @@ func (mpSrv *ModelProviderService) GetProviderList(ctx context.Context, accountI
 		providerResponse.PatchIcon(mpSrv.config)
 	}
 
-	return providerListResponse, nil
+	return &dto.DataWrapperResponse[[]*dto.ProviderResponse]{
+		Data: providerListResponse,
+	}, nil
 }
 
 func (mpSrv *ModelProviderService) GetProviderIconPath(ctx context.Context, provider, iconType, lang string) (string, error) {

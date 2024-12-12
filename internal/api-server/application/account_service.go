@@ -52,11 +52,12 @@ func (s *AccountService) SendEmailCode(ctx context.Context, params *dto.SendEmai
 	go s.accountDomain.SendEmailHtml(ctx, language, params.Email, emailCode)
 
 	return &dto.SendEmailCodeResponse{
-		Data: tokenUUID,
+		Data:   tokenUUID,
+		Result: "success",
 	}, nil
 }
 
-func (s *AccountService) EmailCodeValidity(ctx context.Context, email, emailCode, token string) (*biz_entity.TokenPair, error) {
+func (s *AccountService) EmailCodeValidity(ctx context.Context, email, emailCode, token string) (*biz_entity.ValidateTokenResponse, error) {
 	tokenData, err := s.accountDomain.GetEmailTokenData(ctx, token)
 
 	if err != nil {
@@ -85,7 +86,10 @@ func (s *AccountService) EmailCodeValidity(ctx context.Context, email, emailCode
 		return nil, err
 	}
 
-	return tokenPair, nil
+	return &biz_entity.ValidateTokenResponse{
+		Data:   tokenPair,
+		Result: "success",
+	}, nil
 }
 
 func (ad *AccountService) CreateAccountAndTenant(ctx context.Context, email, name, interfaceLanguage, password string) (*po_entity.Account, error) {

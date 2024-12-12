@@ -56,7 +56,7 @@ func (ms *ModelService) SaveModelCredentials(ctx context.Context, tenantId, mode
 	return nil
 }
 
-func (ms *ModelService) GetAccountAvailableModels(ctx context.Context, accountID string, modelType common.ModelType) ([]*dto.ProviderWithModelsResponse, error) {
+func (ms *ModelService) GetAccountAvailableModels(ctx context.Context, accountID string, modelType common.ModelType) (*dto.DataWrapperResponse[[]*dto.ProviderWithModelsResponse], error) {
 
 	tenantRecord, _, err := ms.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
 
@@ -134,10 +134,12 @@ func (ms *ModelService) GetAccountAvailableModels(ctx context.Context, accountID
 		}
 	}
 
-	return providerResponses, nil
+	return &dto.DataWrapperResponse[[]*dto.ProviderWithModelsResponse]{
+		Data: providerResponses,
+	}, nil
 }
 
-func (ms *ModelService) GetModelParameterRules(ctx context.Context, accountID string, provider string, model string) ([]*biz_entity_model.ParameterRule, error) {
+func (ms *ModelService) GetModelParameterRules(ctx context.Context, accountID string, provider string, model string) (*dto.DataWrapperResponse[[]*biz_entity_model.ParameterRule], error) {
 	tenantRecord, _, err := ms.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
 
 	if err != nil {
@@ -176,11 +178,13 @@ func (ms *ModelService) GetModelParameterRules(ctx context.Context, accountID st
 		return nil, err
 	}
 
-	return AIModelEntity.ParameterRules, nil
+	return &dto.DataWrapperResponse[[]*biz_entity_model.ParameterRule]{
+		Data: AIModelEntity.ParameterRules,
+	}, nil
 
 }
 
-func (ms *ModelService) GetDefaultModelByType(ctx context.Context, accountID string, modelType string) (*dto.DataWrapperResponse[dto.DefaultModelResponse], error) {
+func (ms *ModelService) GetDefaultModelByType(ctx context.Context, accountID string, modelType string) (*dto.DataWrapperResponse[*dto.DefaultModelResponse], error) {
 
 	tenantRecord, _, err := ms.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
 
@@ -190,14 +194,14 @@ func (ms *ModelService) GetDefaultModelByType(ctx context.Context, accountID str
 	defaultModelEntity, err := ms.providerDomain.GetDefaultModel(ctx, tenantRecord.ID, common.ModelType(modelType))
 
 	if errors.IsCode(err, code.ErrDefaultModelNotFound) {
-		return nil, nil
+		return dto.NewEmptyDataWrapperResponse[*dto.DefaultModelResponse](nil), nil
 	}
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &dto.DataWrapperResponse[dto.DefaultModelResponse]{
+	return &dto.DataWrapperResponse[*dto.DefaultModelResponse]{
 		Data: &dto.DefaultModelResponse{
 			Model:     defaultModelEntity.Model,
 			ModelType: defaultModelEntity.ModelType,
@@ -207,6 +211,7 @@ func (ms *ModelService) GetDefaultModelByType(ctx context.Context, accountID str
 				IconSmall:           defaultModelEntity.Provider.IconSmall,
 				IconLarge:           defaultModelEntity.Provider.IconLarge,
 				SupportedModelTypes: defaultModelEntity.Provider.SupportedModelTypes,
+				Models:              make([]any, 0),
 			},
 		},
 	}, nil

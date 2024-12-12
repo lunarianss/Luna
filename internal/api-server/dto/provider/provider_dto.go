@@ -150,7 +150,13 @@ type DefaultModelByTypeQuery struct {
 }
 
 type DataWrapperResponse[T interface{}] struct {
-	Data *T `json:"data"`
+	Data T `json:"data"`
+}
+
+func NewEmptyDataWrapperResponse[T interface{}](data T) *DataWrapperResponse[T] {
+	return &DataWrapperResponse[T]{
+		Data: data,
+	}
 }
 
 // DefaultModelResponse represents the default model entity.

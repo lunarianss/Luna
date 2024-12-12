@@ -177,6 +177,7 @@ func (as *AppService) ListTenantApps(ctx context.Context, params *dto.ListAppReq
 		Total:    appCount,
 		Data:     appItems,
 		HasMore:  hasMore,
+
 	}, nil
 
 }

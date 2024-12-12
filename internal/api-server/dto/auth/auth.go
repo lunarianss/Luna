@@ -10,7 +10,8 @@ type SendEmailCodeRequest struct {
 }
 
 type SendEmailCodeResponse struct {
-	Data string `json:"data"`
+	Data   string `json:"data"`
+	Result string `json:"result"`
 }
 
 type EmailCodeValidityRequest struct {

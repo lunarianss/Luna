@@ -40,7 +40,7 @@ func (r *ModelRoutes) Register(g *gin.Engine) error {
 
 	providerConfigurationsManager := domain_service.NewProviderConfigurationsManager(providerRepo, modelRepo, "", nil)
 	// domain
-	providerDomain := domain_service.NewProviderDomain(providerRepo, modelRepo, providerConfigurationsManager)
+	providerDomain := domain_service.NewProviderDomain(providerRepo, modelRepo, tenantRepo, providerConfigurationsManager)
 	accountDomain := accountDomain.NewAccountDomain(accountRepo, nil, config, nil, tenantRepo)
 
 	// service

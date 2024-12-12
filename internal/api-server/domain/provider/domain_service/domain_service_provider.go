@@ -8,10 +8,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/infrastructure/log"
+	ac "github.com/lunarianss/Luna/internal/api-server/domain/account/repository"
 	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider"
 	biz_entity_model "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider/model_provider"
@@ -25,20 +27,23 @@ import (
 
 type ProviderDomain struct {
 	ProviderRepo                  repository.ProviderRepo
+	TenantRepo                    ac.TenantRepo
 	ModelRepo                     repository.ModelRepo
 	providerConfigurationsManager *providerConfigurationsManager
 }
 
-func NewProviderDomain(providerRepo repository.ProviderRepo, modelRepo repository.ModelRepo, providerConfigurationsManager *providerConfigurationsManager) *ProviderDomain {
+func NewProviderDomain(providerRepo repository.ProviderRepo, modelRepo repository.ModelRepo, tenantRepo ac.TenantRepo, providerConfigurationsManager *providerConfigurationsManager) *ProviderDomain {
 	return &ProviderDomain{
 		ProviderRepo:                  providerRepo,
 		ModelRepo:                     modelRepo,
 		providerConfigurationsManager: providerConfigurationsManager,
+		TenantRepo:                    tenantRepo,
 	}
 }
 
 // GetConfigurations Get all providers, models config for tenant
 func (mpd *ProviderDomain) GetConfigurations(ctx context.Context, tenantId string) (*biz_entity_provider_config.ProviderConfigurations, []string, error) {
+
 	providerNameMapRecords, err := mpd.ProviderRepo.GetMapTenantModelProviders(ctx, tenantId)
 
 	if err != nil {
@@ -56,7 +61,11 @@ func (mpd *ProviderDomain) GetConfigurations(ctx context.Context, tenantId strin
 	for _, providerEntity := range providerNameMapEntities {
 		providerName := providerEntity.Provider
 		providerRecords := providerNameMapRecords[providerName]
-		customConfiguration := mpd.toCustomConfiguration(tenantId, providerEntity, providerRecords)
+		customConfiguration, err := mpd.toCustomConfiguration(tenantId, providerEntity, providerRecords)
+
+		if err != nil {
+			return nil, nil, err
+		}
 
 		providerConfiguration := &biz_entity_provider_config.ProviderConfiguration{
 			TenantId:              tenantId,
@@ -269,7 +278,12 @@ func (mpd *ProviderDomain) SaveProviderCredentials(ctx context.Context, tenantID
 		return errors.WithCode(code.ErrProviderMapModel, fmt.Sprintf("when create %s provider credential for provider", provider))
 	}
 
-	if err := providerConfiguration.AddOrUpdateCustomProviderCredentials(ctx, credentials); err != nil {
+	tenantRecord, err := mpd.TenantRepo.GetTenantByID(ctx, tenantID)
+	if err != nil {
+		return err
+	}
+
+	if err := providerConfiguration.AddOrUpdateCustomProviderCredentials(ctx, credentials, tenantRecord); err != nil {
 		return err
 	}
 	return nil
@@ -279,20 +293,22 @@ func (mpd *ProviderDomain) toCustomConfiguration(
 	_ string,
 	providerEntity *biz_entity.ProviderStaticConfiguration,
 	providerRecords []*po_entity.Provider,
-) *biz_entity_provider_config.CustomConfiguration {
+) (*biz_entity_provider_config.CustomConfiguration, error) {
 
 	var (
 		custom_provider_record *po_entity.Provider
 		// todo 从缓存中取 credentials information
-		cache_provider_credentials  map[string]interface{}
-		providerCredentials         map[string]interface{}
-		customProviderConfiguration *biz_entity_provider_config.CustomProviderConfiguration
+		cache_provider_credentials        map[string]interface{}
+		providerCredentials               map[string]interface{}
+		customProviderConfiguration       *biz_entity_provider_config.CustomProviderConfiguration
+		providerCredentialSecretVariables []string
 	)
 
-	// provider_credential_secret_variables := mpd.extractSecretVariables(
-	// 	providerEntity.ProviderCredentialSchema.CredentialFormSchemas,
-	// )
-
+	if providerEntity.ProviderCredentialSchema != nil {
+		providerCredentialSecretVariables = mpd.extractSecretVariables(
+			providerEntity.ProviderCredentialSchema.CredentialFormSchemas,
+		)
+	}
 	for _, providerRecord := range providerRecords {
 		if providerRecord.ProviderType == string(po_entity.SYSTEM) {
 			continue
@@ -319,9 +335,20 @@ func (mpd *ProviderDomain) toCustomConfiguration(
 		}
 	}
 
-	// todo 对用户的 api key 进行加密｜解密
-
 	if custom_provider_record != nil {
+
+		for k, v := range providerCredentials {
+
+			if slices.Contains(providerCredentialSecretVariables, k) {
+				decryptedData, err := util.Decrypt(v.(string), custom_provider_record.TenantID, &util.FileStorage{})
+
+				if err != nil {
+					return nil, err
+				}
+				providerCredentials[k] = decryptedData
+			}
+
+		}
 		customProviderConfiguration = &biz_entity_provider_config.CustomProviderConfiguration{
 			Credentials: providerCredentials,
 		}
@@ -329,5 +356,16 @@ func (mpd *ProviderDomain) toCustomConfiguration(
 
 	return &biz_entity_provider_config.CustomConfiguration{
 		Provider: customProviderConfiguration,
+	}, nil
+}
+
+func (mpd *ProviderDomain) extractSecretVariables(credentials []*biz_entity.CredentialFormSchema) []string {
+	var secretInputVariables []string
+
+	for _, credential := range credentials {
+		if credential.Type == biz_entity.SECRET_INPUT {
+			secretInputVariables = append(secretInputVariables, credential.Variable)
+		}
 	}
+	return secretInputVariables
 }

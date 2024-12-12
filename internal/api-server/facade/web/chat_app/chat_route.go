@@ -68,7 +68,7 @@ func (a *WebChatRoutes) Register(g *gin.Engine) error {
 	chatDomain := chatDomain.NewChatDomain(messageRepo)
 
 	// domain
-	providerDomain := domain_service.NewProviderDomain(providerRepo, modelProviderRepo, providerConfigurationsManager)
+	providerDomain := domain_service.NewProviderDomain(providerRepo, modelProviderRepo, tenantRepo, providerConfigurationsManager)
 	webChatService := service.NewWebChatService(webAppDomain, accountDomain, appDomain, config, providerDomain, chatDomain)
 
 	webSiteController := controller.NewWebChatController(webChatService)

@@ -17,6 +17,7 @@ import (
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/infrastructure/log"
+	apo "github.com/lunarianss/Luna/internal/api-server/domain/account/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/repository"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
@@ -269,7 +270,8 @@ func (pc *ProviderConfiguration) getCustomProviderModels(modelTypes []common.Mod
 	return providerModels, nil
 }
 
-func (pc *ProviderConfiguration) validateProviderCredentials(ctx context.Context, credentials map[string]interface{}) (*po_entity.Provider, map[string]interface{}, error) {
+func (pc *ProviderConfiguration) validateProviderCredentials(ctx context.Context, credentials map[string]interface{}, tenant *apo.Tenant) (*po_entity.Provider, map[string]interface{}, error) {
+	var secretVariables []string
 	if err := pc.ensureManager(); err != nil {
 		return nil, nil, err
 	}
@@ -278,15 +280,40 @@ func (pc *ProviderConfiguration) validateProviderCredentials(ctx context.Context
 	if err != nil {
 		return nil, nil, err
 	}
-	//todo credentials 对 apikey 进行 validate and encrypt
+
+	if pc.Provider.ProviderCredentialSchema != nil {
+		secretVariables = pc.extractSecretVariables(pc.Provider.ProviderCredentialSchema.CredentialFormSchemas)
+	}
+
+	for key, value := range credentials {
+		if slices.Contains(secretVariables, key) {
+			encryptedData, err := util.Encrypt(value.(string), tenant.EncryptPublicKey)
+			if err != nil {
+				return nil, nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+			}
+			credentials[key] = encryptedData
+		}
+	}
+
 	return provider, credentials, nil
 }
 
-func (pc *ProviderConfiguration) AddOrUpdateCustomProviderCredentials(ctx context.Context, credentialParam map[string]interface{}) error {
+func (pc *ProviderConfiguration) extractSecretVariables(credentials []*biz_entity.CredentialFormSchema) []string {
+	var secretInputVariables []string
+
+	for _, credential := range credentials {
+		if credential.Type == biz_entity.SECRET_INPUT {
+			secretInputVariables = append(secretInputVariables, credential.Variable)
+		}
+	}
+	return secretInputVariables
+}
+
+func (pc *ProviderConfiguration) AddOrUpdateCustomProviderCredentials(ctx context.Context, credentialParam map[string]interface{}, tenant *apo.Tenant) error {
 	if err := pc.ensureManager(); err != nil {
 		return err
 	}
-	providerRecord, credentials, err := pc.validateProviderCredentials(ctx, credentialParam)
+	providerRecord, credentials, err := pc.validateProviderCredentials(ctx, credentialParam, tenant)
 
 	if err != nil {
 		return err

@@ -17,10 +17,13 @@ import (
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
+	biz_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
+	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/app"
 	chatDto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
+	"github.com/lunarianss/Luna/internal/api-server/model_runtime/model_registry"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/lunarianss/Luna/internal/infrastructure/field"
 	"github.com/lunarianss/Luna/internal/infrastructure/util"
@@ -294,4 +297,55 @@ func (as *AppService) UpdateEnableAppSite(ctx context.Context, accountID string,
 	}
 
 	return dto.AppRecordToDetail(appRecord, as.config, appConfigRecord, siteRecord), nil
+}
+
+type TaskData struct {
+	TaskDescription string
+	InputText       string
+}
+
+func (as *AppService) GeneratePrompt(ctx context.Context, accountID string, args *dto.GeneratePrompt, rule_config_max_tokens int) (*dto.GeneratePromptResponse, error) {
+	tenant, _, err := as.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	modelParameters := map[string]interface {
+	}{"max_tokens": rule_config_max_tokens,
+		"temperature": 0.01}
+
+	modelIns, err := as.providerDomain.GetModelInstance(ctx, tenant.ID, args.ModelConfig.Provider, args.ModelConfig.Name, common.LLM)
+
+	if err != nil {
+		return nil, err
+	}
+
+	promptGenerate := biz_entity_chat.GetRuleConfigPromptGenerateTemplate()
+
+	promptTemplateParse := biz_entity.NewPromptTemplateParse(promptGenerate, false)
+
+	promptGenerate = promptTemplateParse.Format(map[string]interface{}{
+		"TaskDescription": args.Instruction,
+	}, false)
+
+	var promptMessages []*po_entity_chat.PromptMessage
+
+	promptMessages = append(promptMessages, po_entity_chat.NewUserMessage(promptGenerate))
+
+	modelCaller := model_registry.NewModelRegisterCaller(args.ModelConfig.Name, string(common.LLM), args.ModelConfig.Provider, modelIns.Credentials, modelIns.ModelTypeInstance)
+
+	llmResult, err := modelCaller.InvokeLLMNonStream(ctx, promptMessages, modelParameters, nil, nil, false, accountID, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.GeneratePromptResponse{
+		OpenStatement: "",
+		Variables:     make([]string, 0),
+		Prompt:        llmResult.Message.Content.(string),
+		Error:         "",
+	}, nil
+
 }

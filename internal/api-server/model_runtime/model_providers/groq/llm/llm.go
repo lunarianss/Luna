@@ -30,8 +30,14 @@ var _ provider_register.IModelRegistry = (*groqLargeLanguageModel)(nil)
 
 func (m *groqLargeLanguageModel) Invoke(ctx context.Context, queueManager *biz_entity_chat.StreamGenerateQueue, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, stream bool, user string, promptMessages []*po_entity.PromptMessage, modelRuntime biz_entity.IAIModelRuntime) {
 	credentials = m.addCustomParameters(credentials)
-	m.IOpenApiCompactLargeLanguage = llm.NewOpenApiCompactLargeLanguageModel(promptMessages, modelParameters, credentials, queueManager, model, stream, modelRuntime)
-	m.IOpenApiCompactLargeLanguage.Invoke(ctx)
+	m.IOpenApiCompactLargeLanguage = llm.NewOpenApiCompactLargeLanguageModel(promptMessages, modelParameters, credentials, model, stream, modelRuntime)
+	m.IOpenApiCompactLargeLanguage.Invoke(ctx, queueManager)
+}
+
+func (m *groqLargeLanguageModel) InvokeNonStream(ctx context.Context, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, stream bool, user string, promptMessages []*po_entity.PromptMessage, modelRuntime biz_entity.IAIModelRuntime) (*biz_entity_chat.LLMResult, error) {
+	credentials = m.addCustomParameters(credentials)
+	m.IOpenApiCompactLargeLanguage = llm.NewOpenApiCompactLargeLanguageModel(promptMessages, modelParameters, credentials, model, stream, modelRuntime)
+	return m.IOpenApiCompactLargeLanguage.InvokeNonStream(ctx)
 }
 
 func (m *groqLargeLanguageModel) Register() {

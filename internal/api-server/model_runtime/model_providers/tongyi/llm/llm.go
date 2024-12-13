@@ -14,35 +14,41 @@ import (
 	provider_register "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_registry"
 )
 
-type groqLargeLanguageModel struct {
+type tongyiLargeLanguageModel struct {
 	llm.IOpenApiCompactLargeLanguage
 }
 
 func init() {
-	NewGroqLargeLanguageModel().Register()
+	NewTongyiLargeLanguageModel().Register()
 }
 
-func NewGroqLargeLanguageModel() *groqLargeLanguageModel {
-	return &groqLargeLanguageModel{}
+func NewTongyiLargeLanguageModel() *tongyiLargeLanguageModel {
+	return &tongyiLargeLanguageModel{}
 }
 
-var _ provider_register.IModelRegistry = (*groqLargeLanguageModel)(nil)
+var _ provider_register.IModelRegistry = (*tongyiLargeLanguageModel)(nil)
 
-func (m *groqLargeLanguageModel) Invoke(ctx context.Context, queueManager *biz_entity_chat.StreamGenerateQueue, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, stream bool, user string, promptMessages []*po_entity.PromptMessage, modelRuntime biz_entity.IAIModelRuntime) {
+func (m *tongyiLargeLanguageModel) Invoke(ctx context.Context, queueManager *biz_entity_chat.StreamGenerateQueue, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, stream bool, user string, promptMessages []*po_entity.PromptMessage, modelRuntime biz_entity.IAIModelRuntime) {
 	credentials = m.addCustomParameters(credentials)
-	m.IOpenApiCompactLargeLanguage = llm.NewOpenApiCompactLargeLanguageModel(promptMessages, modelParameters, credentials, queueManager, model, stream, modelRuntime)
-	m.IOpenApiCompactLargeLanguage.Invoke(ctx)
+	m.IOpenApiCompactLargeLanguage = llm.NewOpenApiCompactLargeLanguageModel(promptMessages, modelParameters, credentials, model, stream, modelRuntime)
+	m.IOpenApiCompactLargeLanguage.Invoke(ctx, queueManager)
 }
 
-func (m *groqLargeLanguageModel) Register() {
+func (m *tongyiLargeLanguageModel) InvokeNonStream(ctx context.Context, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, stream bool, user string, promptMessages []*po_entity.PromptMessage, modelRuntime biz_entity.IAIModelRuntime) (*biz_entity_chat.LLMResult, error) {
+	credentials = m.addCustomParameters(credentials)
+	m.IOpenApiCompactLargeLanguage = llm.NewOpenApiCompactLargeLanguageModel(promptMessages, modelParameters, credentials, model, stream, modelRuntime)
+	return m.IOpenApiCompactLargeLanguage.InvokeNonStream(ctx)
+}
+
+func (m *tongyiLargeLanguageModel) Register() {
 	provider_register.ModelRuntimeRegistry.RegisterLargeModelInstance(m)
 }
 
-func (m *groqLargeLanguageModel) RegisterName() string {
+func (m *tongyiLargeLanguageModel) RegisterName() string {
 	return "tongyi/llm"
 }
 
-func (m *groqLargeLanguageModel) addCustomParameters(credentials map[string]interface{}) map[string]interface{} {
+func (m *tongyiLargeLanguageModel) addCustomParameters(credentials map[string]interface{}) map[string]interface{} {
 	credentials["mode"] = "chat"
 	credentials["endpoint_url"] = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 	credentials["api_key"] = credentials["dashscope_api_key"]

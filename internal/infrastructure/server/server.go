@@ -29,7 +29,7 @@ func NewConfig() *Config {
 		EnableProfiling: true,
 		EnableMetrics:   true,
 		ReadTimeout:     10,
-		WriteTimeout:    10,
+		WriteTimeout:    300,
 		MaxHeaderBytes:  1 << 20,
 	}
 }

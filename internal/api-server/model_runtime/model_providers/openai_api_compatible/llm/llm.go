@@ -28,7 +28,8 @@ import (
 )
 
 type IOpenApiCompactLargeLanguage interface {
-	Invoke(ctx context.Context)
+	Invoke(ctx context.Context, queue *biz_entity_chat.StreamGenerateQueue)
+	InvokeNonStream(ctx context.Context) (*biz_entity_chat.LLMResult, error)
 }
 
 type openApiCompactLargeLanguageModel struct {
@@ -48,21 +49,230 @@ type openApiCompactLargeLanguageModel struct {
 	ModelParameters      map[string]interface{}
 }
 
-func NewOpenApiCompactLargeLanguageModel(promptMessages []*po_entity_chat.PromptMessage, modelParameters map[string]interface{}, credentials map[string]interface{}, queueManager *biz_entity_chat.StreamGenerateQueue, model string, stream bool, modelRuntime biz_entity.IAIModelRuntime) *openApiCompactLargeLanguageModel {
+func NewOpenApiCompactLargeLanguageModel(promptMessages []*po_entity_chat.PromptMessage, modelParameters map[string]interface{}, credentials map[string]interface{}, model string, stream bool, modelRuntime biz_entity.IAIModelRuntime) *openApiCompactLargeLanguageModel {
 	return &openApiCompactLargeLanguageModel{
-		PromptMessages:      promptMessages,
-		Credentials:         credentials,
-		ModelParameters:     modelParameters,
-		StreamGenerateQueue: queueManager,
-		Model:               model,
-		IAIModelRuntime:     modelRuntime,
-		Stream:              stream,
-		AppBaseChatRunner:   app_chat_runner.NewAppBaseChatRunner(),
+		PromptMessages:    promptMessages,
+		Credentials:       credentials,
+		ModelParameters:   modelParameters,
+		Model:             model,
+		IAIModelRuntime:   modelRuntime,
+		Stream:            stream,
+		AppBaseChatRunner: app_chat_runner.NewAppBaseChatRunner(),
 	}
 }
 
-func (m *openApiCompactLargeLanguageModel) Invoke(ctx context.Context) {
+func (m *openApiCompactLargeLanguageModel) InvokeNonStream(ctx context.Context) (*biz_entity_chat.LLMResult, error) {
+	return m.generateNonStream(ctx)
+}
+
+func (m *openApiCompactLargeLanguageModel) Invoke(ctx context.Context, queue *biz_entity_chat.StreamGenerateQueue) {
+	m.StreamGenerateQueue = queue
 	m.generate(ctx)
+}
+
+func (m *openApiCompactLargeLanguageModel) generateNonStream(ctx context.Context) (*biz_entity_chat.LLMResult, error) {
+	headers := map[string]string{
+		"Content-Type":   "application/json",
+		"Accept-Charset": "utf-8",
+	}
+
+	if extraHeaders, ok := m.Credentials["extra_headers"]; ok {
+		if extraHeadersMap, ok := extraHeaders.(map[string]string); ok {
+			for k, v := range extraHeadersMap {
+				if _, ok := headers[k]; !ok {
+					headers[k] = v
+				}
+			}
+		}
+	}
+
+	if apiKey, ok := m.Credentials["api_key"]; ok {
+		headers["Authorization"] = fmt.Sprintf("Bearer %s", apiKey)
+	}
+
+	endpointUrl, ok := m.Credentials["endpoint_url"]
+
+	if !ok || endpointUrl == "" {
+
+		return nil, errors.WithCode(code.ErrModelNotHaveEndPoint, fmt.Sprintf("Model %s not have endpoint url", m.Model))
+	}
+
+	endpointUrlStr, ok := endpointUrl.(string)
+
+	if !ok {
+
+		return nil, errors.WithCode(code.ErrModelNotHaveEndPoint, fmt.Sprintf("Model %s not have endpoint url", m.Model))
+	}
+
+	if !strings.HasSuffix(endpointUrlStr, "/") {
+		endpointUrlStr = fmt.Sprintf("%s/", endpointUrlStr)
+	}
+
+	requestData := map[string]interface{}{
+		"model":  m.Model,
+		"stream": m.Stream,
+	}
+
+	for k, v := range m.ModelParameters {
+		requestData[k] = v
+	}
+	messageItems := make([]map[string]interface{}, 0)
+
+	completionType := m.Credentials["mode"]
+	if completionType == string(po_entity.CHAT) {
+		endpointJoinUrl, err := url.JoinPath(endpointUrlStr, "chat/completions")
+
+		if err != nil {
+			return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+		}
+		endpointUrlStr = endpointJoinUrl
+
+		for _, promptMessage := range m.PromptMessages {
+			messageItem, err := promptMessage.ConvertToRequestData()
+
+			if err != nil {
+				return nil, err
+			}
+			messageItems = append(messageItems, messageItem)
+		}
+	}
+
+	requestData["messages"] = messageItems
+
+	if len(m.Stop) > 1 {
+		requestData["stop"] = m.Stop
+	}
+
+	if m.User != "" {
+		requestData["user"] = m.User
+	}
+
+	client := http.Client{
+		Timeout: time.Duration(300) * time.Second,
+	}
+
+	log.Infof("Invoke llm request body %+v", requestData)
+	requestBodyData, err := json.Marshal(requestData)
+
+	if err != nil {
+		return nil, errors.WithCode(code.ErrEncodingJSON, err.Error())
+	}
+
+	req, err := http.NewRequest("POST", endpointUrlStr, bytes.NewReader(requestBodyData))
+
+	if err != nil {
+		return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+	}
+
+	if len(headers) > 0 {
+		for headerKey, headerValue := range headers {
+			req.Header.Set(headerKey, headerValue)
+		}
+	}
+
+	response, err := client.Do(req)
+	if err != nil {
+		return nil, errors.WithCode(code.ErrCallLargeLanguageModel, err.Error())
+	}
+
+	defer response.Body.Close()
+	return m.handleNoStreamResponse(ctx, response)
+}
+
+func (m *openApiCompactLargeLanguageModel) handleNoStreamResponse(ctx context.Context, response *http.Response) (*biz_entity_chat.LLMResult, error) {
+	defer response.Body.Close()
+
+	completion_type := m.Credentials["mode"].(string)
+	var responseJSON biz_entity_chat.OpenaiResponse
+
+	if err := json.NewDecoder(response.Body).Decode(&responseJSON); err != nil {
+		return nil, errors.WithCode(code.ErrDecodingJSON, err.Error())
+	}
+
+	choices := responseJSON.Choices
+
+	if len(choices) == 0 {
+		return nil, errors.WithCode(code.ErrCallLargeLanguageModel, "")
+	}
+
+	output := choices[0]
+
+	messageId := responseJSON.ID
+
+	responseContent := ""
+
+	reason := output.FinishReason
+
+	if completion_type == "chat" {
+		responseContent = output.Message.Content
+	}
+
+	assistantMessage := biz_entity_chat.NewAssistantPromptMessage(responseContent)
+
+	var (
+		err               error
+		ok                bool
+		completeTokensInt int64
+		promptTokensInt   int64
+	)
+
+	promptTokens := responseJSON.Usage.PromptTokens
+
+	promptTokensInt, ok = handleTokenCount(promptTokens)
+
+	if !ok {
+		// 使用 openai tokenizlier
+		promptTokensInt = 10
+	}
+
+	completeTokens := responseJSON.Usage.CompletionTokens
+
+	completeTokensInt, ok = handleTokenCount(completeTokens)
+
+	if !ok {
+		// 使用 openai tokenizlier
+		completeTokensInt = 20
+	}
+
+	promptPriceInfo, err := m.GetPrice(m.Model, m.Credentials, biz_entity.INPUT, promptTokensInt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	completePriceInfo, err := m.GetPrice(m.Model, m.Credentials, biz_entity.OUTPUT, completeTokensInt)
+
+	promptTotal := decimal.NewFromFloat(promptPriceInfo.TotalAmount)
+	completeTotal := decimal.NewFromFloat(completePriceInfo.TotalAmount)
+	totalAmount := promptTotal.Add(completeTotal).InexactFloat64()
+
+	if err != nil {
+		return nil, err
+	}
+
+	llmUsage := &biz_entity_chat.LLMUsage{
+		PromptTokens:        promptTokensInt,
+		PromptUnitPrice:     promptPriceInfo.UnitPrice,
+		PromptPriceUnit:     promptPriceInfo.Unit,
+		PromptPrice:         promptPriceInfo.TotalAmount,
+		CompletionTokens:    completeTokensInt,
+		CompletionUnitPrice: completePriceInfo.UnitPrice,
+		CompletionPriceUnit: completePriceInfo.Unit,
+		CompletionPrice:     completePriceInfo.TotalAmount,
+		Currency:            promptPriceInfo.Currency,
+		Latency:             1.0,
+		TotalTokens:         promptTokensInt + completeTokensInt,
+		TotalPrice:          totalAmount,
+	}
+
+	return &biz_entity_chat.LLMResult{
+		ID:                messageId,
+		Model:             m.Model,
+		Message:           assistantMessage,
+		Usage:             llmUsage,
+		SystemFingerprint: responseJSON.SystemFingerprint,
+		Reason:            reason,
+	}, nil
 }
 
 func (m *openApiCompactLargeLanguageModel) generate(ctx context.Context) {
@@ -220,7 +430,12 @@ func handleTokenCount(count any) (int64, bool) {
 	default:
 		ok = false
 	}
-	return countInt, ok
+
+	if countInt == 0 {
+		return 0, false
+	} else {
+		return countInt, ok
+	}
 }
 
 func (m *openApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx context.Context, messageId string, finalReason string, fullAssistant string, usage map[string]interface{}) {
@@ -439,7 +654,7 @@ func (m *openApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 				deltaContent := deltaMap["content"]
 				if deltaContentStr, ok := deltaContent.(string); ok {
 					m.FullAssistantContent += deltaContentStr
-					assistantPromptMessage = biz_entity_chat.NewAssistantPromptMessage(po_entity_chat.ASSISTANT, deltaContentStr)
+					assistantPromptMessage = biz_entity_chat.NewAssistantPromptMessage(deltaContentStr)
 				}
 			}
 		} else {

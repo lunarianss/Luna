@@ -14,11 +14,11 @@ func NewEmptyAssistantPromptMessage() *AssistantPromptMessage {
 	}
 }
 
-func NewAssistantPromptMessage(role po_entity.PromptMessageRole, content interface{}) *AssistantPromptMessage {
+func NewAssistantPromptMessage(content interface{}) *AssistantPromptMessage {
 	return &AssistantPromptMessage{
 		PromptMessage: &po_entity.PromptMessage{
 			Content: content,
-			Role:    role,
+			Role:    po_entity.ASSISTANT,
 		},
 	}
 }

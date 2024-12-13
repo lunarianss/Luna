@@ -112,9 +112,19 @@ func (ad *AccountService) CreateAccountAndTenant(ctx context.Context, email, nam
 	return account, tx.Commit().Error
 }
 
-func (ad *AccountService) RefreshToken(ctx context.Context, refreshToken string) (*biz_entity.TokenPair, error) {
+func (ad *AccountService) RefreshToken(ctx context.Context, refreshToken string) (*accountDto.RefreshTokenResponse, error) {
 
-	return ad.accountDomain.RefreshToken(ctx, refreshToken)
+	tokenPair, err := ad.accountDomain.RefreshToken(ctx, refreshToken)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &accountDto.RefreshTokenResponse{
+		AccessToken:  tokenPair.AccessToken,
+		RefreshToken: tokenPair.RefreshToken,
+		Result:       "success",
+	}, nil
 }
 
 func (ad *AccountService) GetAccountProfile(ctx context.Context, accountID string) (*accountDto.GetAccountProfileResp, error) {

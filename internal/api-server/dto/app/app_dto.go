@@ -204,3 +204,22 @@ type EnableSiteRequest struct {
 type APIUrlParameter struct {
 	AppID string `json:"appID" uri:"appID"`
 }
+
+type GeneratePromptModelConfig struct {
+	Provider         string         `json:"provider" validate:"required"`
+	Name             string         `json:"name" validate:"required"`
+	Mode             string         `json:"mode" validate:"required"`
+	CompletionParams map[string]any `json:"completion_params"`
+}
+type GeneratePrompt struct {
+	Instruction string                     `json:"instruction" validate:"required"`
+	ModelConfig *GeneratePromptModelConfig `json:"model_config"`
+	NoVariable  bool                       `json:"no_variable"`
+}
+
+type GeneratePromptResponse struct {
+	Prompt        string   `json:"prompt" `
+	Variables     []string `json:"variables"`
+	OpenStatement string   `json:"open_statement"`
+	Error         string   `json:"error"`
+}

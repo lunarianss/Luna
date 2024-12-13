@@ -15,9 +15,9 @@ import (
 )
 
 type IModelRegistryCall interface {
-	InvokeLLM(ctx context.Context, promptMessage []*po_entity.PromptMessage, queueManager *biz_entity_chat.StreamGenerateQueue, modelParameters map[string]interface{}, tools interface{}, stop []string, stream bool, user string, callbacks interface{})
+	InvokeLLM(ctx context.Context, promptMessage []*po_entity.PromptMessage, queueManager *biz_entity_chat.StreamGenerateQueue, modelParameters map[string]interface{}, tools interface{}, stop []string, user string, callbacks interface{})
 
-	InvokeLLMNonStream(ctx context.Context, promptMessage []*po_entity.PromptMessage, modelParameters map[string]interface{}, tools interface{}, stop []string, stream bool, user string, callbacks interface{}) (*biz_entity_chat.LLMResult, error)
+	InvokeLLMNonStream(ctx context.Context, promptMessage []*po_entity.PromptMessage, modelParameters map[string]interface{}, tools interface{}, stop []string, user string, callbacks interface{}) (*biz_entity_chat.LLMResult, error)
 
 	InvokeSpeechToText(ctx context.Context, audioFileContent []byte, user string, filename string) (string, error)
 
@@ -43,7 +43,7 @@ func NewModelRegisterCaller(model, modelType, provider string, credentials map[s
 
 }
 
-func (ac *modelRegistryCall) InvokeLLM(ctx context.Context, promptMessage []*po_entity.PromptMessage, queueManager *biz_entity_chat.StreamGenerateQueue, modelParameters map[string]interface{}, tools interface{}, stop []string, stream bool, user string, callbacks interface{}) {
+func (ac *modelRegistryCall) InvokeLLM(ctx context.Context, promptMessage []*po_entity.PromptMessage, queueManager *biz_entity_chat.StreamGenerateQueue, modelParameters map[string]interface{}, tools interface{}, stop []string, user string, callbacks interface{}) {
 
 	modelKeyMapInvoke := fmt.Sprintf("%s/%s", ac.Provider, ac.ModelType)
 
@@ -55,10 +55,10 @@ func (ac *modelRegistryCall) InvokeLLM(ctx context.Context, promptMessage []*po_
 		queueManager.PushErr(err)
 		return
 	}
-	AIModelIns.Invoke(ctx, queueManager, ac.Model, ac.Credentials, modelParameters, stop, stream, user, promptMessage, ac.ModelRuntime)
+	AIModelIns.Invoke(ctx, queueManager, ac.Model, ac.Credentials, modelParameters, stop, user, promptMessage, ac.ModelRuntime)
 }
 
-func (ac *modelRegistryCall) InvokeLLMNonStream(ctx context.Context, promptMessage []*po_entity.PromptMessage, modelParameters map[string]interface{}, tools interface{}, stop []string, stream bool, user string, callbacks interface{}) (*biz_entity_chat.LLMResult, error) {
+func (ac *modelRegistryCall) InvokeLLMNonStream(ctx context.Context, promptMessage []*po_entity.PromptMessage, modelParameters map[string]interface{}, tools interface{}, stop []string, user string, callbacks interface{}) (*biz_entity_chat.LLMResult, error) {
 
 	modelKeyMapInvoke := fmt.Sprintf("%s/%s", ac.Provider, ac.ModelType)
 
@@ -70,7 +70,7 @@ func (ac *modelRegistryCall) InvokeLLMNonStream(ctx context.Context, promptMessa
 		return nil, err
 	}
 
-	return AIModelIns.InvokeNonStream(ctx, ac.Model, ac.Credentials, modelParameters, stop, stream, user, promptMessage, ac.ModelRuntime)
+	return AIModelIns.InvokeNonStream(ctx, ac.Model, ac.Credentials, modelParameters, stop, user, promptMessage, ac.ModelRuntime)
 }
 
 func (ac *modelRegistryCall) InvokeSpeechToText(ctx context.Context, audioFileContent []byte, user string, filename string) (string, error) {

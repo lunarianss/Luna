@@ -41,7 +41,6 @@ type openApiCompactLargeLanguageModel struct {
 	ChunkIndex           int
 	Delimiter            string
 	Model                string
-	Stream               bool
 	User                 string
 	Stop                 []string
 	Credentials          map[string]interface{}
@@ -49,14 +48,13 @@ type openApiCompactLargeLanguageModel struct {
 	ModelParameters      map[string]interface{}
 }
 
-func NewOpenApiCompactLargeLanguageModel(promptMessages []*po_entity_chat.PromptMessage, modelParameters map[string]interface{}, credentials map[string]interface{}, model string, stream bool, modelRuntime biz_entity.IAIModelRuntime) *openApiCompactLargeLanguageModel {
+func NewOpenApiCompactLargeLanguageModel(promptMessages []*po_entity_chat.PromptMessage, modelParameters map[string]interface{}, credentials map[string]interface{}, model string, modelRuntime biz_entity.IAIModelRuntime) *openApiCompactLargeLanguageModel {
 	return &openApiCompactLargeLanguageModel{
 		PromptMessages:    promptMessages,
 		Credentials:       credentials,
 		ModelParameters:   modelParameters,
 		Model:             model,
 		IAIModelRuntime:   modelRuntime,
-		Stream:            stream,
 		AppBaseChatRunner: app_chat_runner.NewAppBaseChatRunner(),
 	}
 }
@@ -110,7 +108,7 @@ func (m *openApiCompactLargeLanguageModel) generateNonStream(ctx context.Context
 
 	requestData := map[string]interface{}{
 		"model":  m.Model,
-		"stream": m.Stream,
+		"stream": false,
 	}
 
 	for k, v := range m.ModelParameters {
@@ -179,7 +177,7 @@ func (m *openApiCompactLargeLanguageModel) generateNonStream(ctx context.Context
 	return m.handleNoStreamResponse(ctx, response)
 }
 
-func (m *openApiCompactLargeLanguageModel) handleNoStreamResponse(ctx context.Context, response *http.Response) (*biz_entity_chat.LLMResult, error) {
+func (m *openApiCompactLargeLanguageModel) handleNoStreamResponse(_ context.Context, response *http.Response) (*biz_entity_chat.LLMResult, error) {
 	defer response.Body.Close()
 
 	completion_type := m.Credentials["mode"].(string)
@@ -315,7 +313,7 @@ func (m *openApiCompactLargeLanguageModel) generate(ctx context.Context) {
 
 	requestData := map[string]interface{}{
 		"model":  m.Model,
-		"stream": m.Stream,
+		"stream": true,
 	}
 
 	for k, v := range m.ModelParameters {
@@ -387,9 +385,7 @@ func (m *openApiCompactLargeLanguageModel) generate(ctx context.Context) {
 
 	defer response.Body.Close()
 
-	if m.Stream {
-		m.handleStreamResponse(ctx, response)
-	}
+	m.handleStreamResponse(ctx, response)
 }
 
 func (m *openApiCompactLargeLanguageModel) sendStreamChunkToQueue(ctx context.Context, messageId string, assistantPromptMessage *biz_entity_chat.AssistantPromptMessage) {

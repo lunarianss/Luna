@@ -2,6 +2,8 @@ package assembler
 
 import (
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
+	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
+	appDto "github.com/lunarianss/Luna/internal/api-server/dto/app"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 )
 
@@ -62,4 +64,19 @@ func ConvertToUserInputEntity(userInputs []dto.UserInputForm) []biz_entity.UserI
 	}
 
 	return returnUserInput
+}
+
+func ConvertToServiceTokens(serviceTokens []*po_entity.ApiToken) []*appDto.GenerateServiceToken {
+	var dtoServiceTokens []*appDto.GenerateServiceToken
+
+	for _, serviceToken := range serviceTokens {
+
+		dtoServiceTokens = append(dtoServiceTokens, &appDto.GenerateServiceToken{
+			ID:        serviceToken.ID,
+			Type:      serviceToken.Type,
+			Token:     serviceToken.Token,
+			CreatedAt: serviceToken.CreatedAt,
+		})
+	}
+	return dtoServiceTokens
 }

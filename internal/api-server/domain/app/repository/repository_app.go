@@ -19,6 +19,8 @@ type AppRepo interface {
 	GenerateServiceToken(ctx context.Context, num int) (string, error)
 	UpdateAppConfigID(ctx context.Context, app *po_entity.App) error
 	FindTenantApps(ctx context.Context, tenantID string, page, pageSize int) ([]*po_entity.App, int64, error)
+	FindServiceTokens(ctx context.Context, appID string) ([]*po_entity.ApiToken, error)
+
 	GetAppByID(ctx context.Context, appID string) (*po_entity.App, error)
 	GetAppModelConfigById(ctx context.Context, appConfigID string, appID string) (*po_entity.AppModelConfig, error)
 	GetServiceTokenByCode(ctx context.Context, code string) (*po_entity.ApiToken, error)

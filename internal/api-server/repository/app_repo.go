@@ -161,6 +161,15 @@ func (ad *AppRepoImpl) GetServiceTokenByCode(ctx context.Context, token string) 
 	return &appToken, nil
 }
 
+func (ad *AppRepoImpl) FindServiceTokens(ctx context.Context, appID string) ([]*po_entity.ApiToken, error) {
+	var apiTokens []*po_entity.ApiToken
+
+	if err := ad.db.Where("app_id = ? AND type = ?", appID, "app").Find(&apiTokens).Error; err != nil {
+		return nil, err
+	}
+	return apiTokens, nil
+}
+
 func (ad *AppRepoImpl) GenerateServiceToken(ctx context.Context, num int) (string, error) {
 
 	token, err := util.GenerateRandomString(16)

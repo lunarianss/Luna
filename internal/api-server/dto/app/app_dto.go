@@ -224,6 +224,9 @@ type GeneratePromptResponse struct {
 	Error         string   `json:"error"`
 }
 
+type DataWrapperResponse[T interface{}] struct {
+	Data T `json:"data"`
+}
 type GenerateServiceToken struct {
 	ID         string `json:"id"`
 	Type       string `json:"type"`

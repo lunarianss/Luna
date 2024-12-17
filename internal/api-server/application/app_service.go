@@ -400,3 +400,29 @@ func (as *AppService) GenerateServiceToken(ctx context.Context, accountID string
 
 	return &dto.GenerateServiceToken{ID: appToken.AppID, Type: appTokenRecord.Type, Token: appTokenRecord.Token, CreatedAt: appTokenRecord.CreatedAt}, nil
 }
+
+func (as *AppService) ListServiceTokens(ctx context.Context, accountID string, appID string) (*dto.DataWrapperResponse[[]*dto.GenerateServiceToken], error) {
+	tenant, _, err := as.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	app, err := as.appDomain.AppRepo.GetTenantApp(ctx, appID, tenant.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	apiTokens, err := as.appDomain.AppRepo.FindServiceTokens(ctx, app.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	dtoApiTokens := assembler.ConvertToServiceTokens(apiTokens)
+
+	return &dto.DataWrapperResponse[[]*dto.GenerateServiceToken]{
+		Data: dtoApiTokens,
+	}, nil
+}

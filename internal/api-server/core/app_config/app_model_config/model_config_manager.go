@@ -84,8 +84,9 @@ func (m *ModelConfigManager) ValidateAndSetDefaults(ctx context.Context, tenantI
 func (m *ModelConfigManager) Convert(ctx context.Context, config *dto.AppModelConfigDto) (*biz_entity_app_config.ModelConfigEntity, error) {
 
 	return &biz_entity_app_config.ModelConfigEntity{
-		Provider: config.Model.Provider,
-		Model:    config.Model.Name,
-		Mode:     config.Model.Mode,
+		Provider:   config.Model.Provider,
+		Model:      config.Model.Name,
+		Mode:       config.Model.Mode,
+		Parameters: config.Model.CompletionParams,
 	}, nil
 }

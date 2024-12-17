@@ -137,7 +137,7 @@ func Decrypt(encryptedText string, tenantID string, storage Storage) (string, er
 	}
 
 	// Load private key
-	filepath := fmt.Sprintf("./private_keys/%s/private.pem", tenantID)
+	filepath := fmt.Sprintf("/Users/max/Documents/coding/Backend/Golang/Personal/Luna/private_keys/%s/private.pem", tenantID)
 	privateKeyPem, err := storage.Load(filepath)
 	if err != nil {
 		return "", err

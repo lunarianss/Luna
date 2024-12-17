@@ -94,7 +94,7 @@ type AppModelConfig struct {
 	SuggestedQuestionsAfterAnswer AppModelConfigEnable   `json:"suggested_questions_after_answer" gorm:"column:suggested_questions_after_answer;serializer:json"`
 	MoreLikeThis                  AppModelConfigEnable   `json:"more_like_this" gorm:"column:more_like_this;serializer:json"`
 	Model                         ModelInfo              `json:"model" gorm:"column:model;serializer:json"`
-	UserInputForm                 []UserInputForm       `json:"user_input_form" gorm:"column:user_input_form;serializer:json"`
+	UserInputForm                 []UserInputForm        `json:"user_input_form" gorm:"column:user_input_form;serializer:json"`
 	PrePrompt                     string                 `json:"pre_prompt" gorm:"column:pre_prompt;serializer:json"`
 	AgentMode                     map[string]interface{} `json:"agent_mode" gorm:"column:agent_mode;serializer:json"`
 	SpeechToText                  AppModelConfigEnable   `json:"speech_to_text" gorm:"column:speech_to_text;serializer:json"`
@@ -117,6 +117,25 @@ func (a *AppModelConfig) TableName() string {
 }
 
 func (a *AppModelConfig) BeforeCreate(tx *gorm.DB) (err error) {
+	a.ID = uuid.NewString()
+	return
+}
+
+type ApiToken struct {
+	ID         string `json:"id" gorm:"column:id"`
+	AppID      string `json:"app_id" gorm:"column:app_id"`
+	TenantID   string `json:"tenant_id" gorm:"column:tenant_id"`
+	Type       string `json:"type" gorm:"column:type"`
+	Token      string `json:"token" gorm:"column:token"`
+	LastUsedAt int64  `json:"last_used_at" gorm:"column:last_used_at"`
+	CreatedAt  int64  `json:"created_at" gorm:"column:created_at"`
+}
+
+func (a *ApiToken) TableName() string {
+	return "api_tokens"
+}
+
+func (a *ApiToken) BeforeCreate(tx *gorm.DB) (err error) {
 	a.ID = uuid.NewString()
 	return
 }

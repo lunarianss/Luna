@@ -57,6 +57,7 @@ func (a *AppRoutes) Register(g *gin.Engine) error {
 	modelProviderV1.Use(middleware.TokenAuthMiddleware())
 	modelProviderV1.POST("/apps/:appID/site-enable", appController.UpdateAppSiteEnable)
 	modelProviderV1.POST("/rule-generate", appController.GeneratePrompt)
+	modelProviderV1.POST("/apps/:appID/api-keys", appController.GenerateAppServiceToken)
 	return nil
 }
 

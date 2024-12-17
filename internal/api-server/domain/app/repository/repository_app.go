@@ -13,12 +13,16 @@ import (
 
 type AppRepo interface {
 	CreateApp(ctx context.Context, tx *gorm.DB, app *po_entity.App) (*po_entity.App, error)
+	CreateServiceToken(ctx context.Context, token *po_entity.ApiToken) (*po_entity.ApiToken, error)
 	CreateAppWithConfig(ctx context.Context, tx *gorm.DB, app *po_entity.App, appConfig *po_entity.AppModelConfig) (*po_entity.App, error)
 	CreateAppConfig(ctx context.Context, tx *gorm.DB, appConfig *po_entity.AppModelConfig) (*po_entity.AppModelConfig, error)
+	GenerateServiceToken(ctx context.Context, num int) (string, error)
 	UpdateAppConfigID(ctx context.Context, app *po_entity.App) error
 	FindTenantApps(ctx context.Context, tenantID string, page, pageSize int) ([]*po_entity.App, int64, error)
 	GetAppByID(ctx context.Context, appID string) (*po_entity.App, error)
 	GetAppModelConfigById(ctx context.Context, appConfigID string, appID string) (*po_entity.AppModelConfig, error)
+	GetServiceTokenByCode(ctx context.Context, code string) (*po_entity.ApiToken, error)
 	GetTenantApp(ctx context.Context, appID, tenantID string) (*po_entity.App, error)
+	GetServiceTokenCount(ctx context.Context, appID string) (int64, error)
 	UpdateEnableAppSite(ctx context.Context, app *po_entity.App) (*po_entity.App, error)
 }

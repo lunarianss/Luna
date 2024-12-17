@@ -15,4 +15,6 @@ const (
 	ErrAppCodeNotFound
 	// ErrAppSiteDisabled - 400: Site is disabled.
 	ErrAppSiteDisabled
+	// ErrAppTokenExceed - 400: count of app token is exceeded.
+	ErrAppTokenExceed
 )

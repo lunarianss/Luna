@@ -6,12 +6,14 @@ package repo_impl
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/repository"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
+	"github.com/lunarianss/Luna/internal/infrastructure/util"
 	"gorm.io/gorm"
 )
 
@@ -38,6 +40,13 @@ func (ad *AppRepoImpl) CreateApp(ctx context.Context, tx *gorm.DB, app *po_entit
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())
 	}
 	return app, nil
+}
+
+func (ad *AppRepoImpl) CreateServiceToken(ctx context.Context, token *po_entity.ApiToken) (*po_entity.ApiToken, error) {
+	if err := ad.db.Create(token).Error; err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return token, nil
 }
 
 func (ad *AppRepoImpl) CreateAppConfig(ctx context.Context, tx *gorm.DB, appConfig *po_entity.AppModelConfig) (*po_entity.AppModelConfig, error) {
@@ -130,4 +139,42 @@ func (ad *AppRepoImpl) GetTenantApp(ctx context.Context, appID, tenantID string)
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())
 	}
 	return &app, nil
+}
+
+func (ad *AppRepoImpl) GetServiceTokenCount(ctx context.Context, appID string) (int64, error) {
+	var count int64
+	if err := ad.db.Model(&po_entity.ApiToken{}).Count(&count).Where("type = ? AND app_id = ?", "app", appID).Error; err != nil {
+		return count, err
+	}
+
+	return count, nil
+}
+
+func (ad *AppRepoImpl) GetServiceTokenByCode(ctx context.Context, token string) (*po_entity.ApiToken, error) {
+
+	var appToken po_entity.ApiToken
+
+	if err := ad.db.First(&appToken, "token = ?", token).Error; err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("token %s record not found", token))
+	}
+
+	return &appToken, nil
+}
+
+func (ad *AppRepoImpl) GenerateServiceToken(ctx context.Context, num int) (string, error) {
+
+	token, err := util.GenerateRandomString(16)
+
+	if err != nil {
+		return "", errors.WithCode(code.ErrRunTimeCaller, err.Error())
+	}
+
+	for {
+		serverTokenRecord, err := ad.GetServiceTokenByCode(ctx, token)
+		if errors.Is(err, gorm.ErrRecordNotFound) && serverTokenRecord == nil {
+			return fmt.Sprintf("app-%s", token), nil
+		} else if err != nil {
+			return "", err
+		}
+	}
 }

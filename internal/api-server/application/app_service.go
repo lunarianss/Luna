@@ -30,6 +30,8 @@ import (
 	"gorm.io/gorm"
 )
 
+const MAX_KEYS = 10
+
 type AppService struct {
 	appDomain      *appDomain.AppDomain
 	providerDomain *domain_service.ProviderDomain
@@ -348,4 +350,53 @@ func (as *AppService) GeneratePrompt(ctx context.Context, accountID string, args
 		Error:         "",
 	}, nil
 
+}
+
+func (as *AppService) GenerateServiceToken(ctx context.Context, accountID string, appID string) (*dto.GenerateServiceToken, error) {
+
+	tenant, tenantJoin, err := as.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !tenantJoin.IsEditor() {
+		return nil, errors.WithCode(code.ErrForbidden, fmt.Sprintf("You don't have the permission for %s", tenant.Name))
+	}
+
+	app, err := as.appDomain.AppRepo.GetTenantApp(ctx, appID, tenant.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	count, err := as.appDomain.AppRepo.GetServiceTokenCount(ctx, app.ID)
+
+	if err != nil {
+		return nil, err
+	}
+	if count >= MAX_KEYS {
+		return nil, errors.WithCode(code.ErrAppTokenExceed, "count %d > maxSize %d, exceed max account", count, MAX_KEYS)
+	}
+
+	serviceToken, err := as.appDomain.AppRepo.GenerateServiceToken(ctx, 24)
+
+	if err != nil {
+		return nil, err
+	}
+
+	appToken := &po_entity.ApiToken{
+		Token:    serviceToken,
+		Type:     "app",
+		TenantID: tenant.ID,
+		AppID:    appID,
+	}
+
+	appTokenRecord, err := as.appDomain.AppRepo.CreateServiceToken(ctx, appToken)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.GenerateServiceToken{ID: appToken.AppID, Type: appTokenRecord.Type, Token: appTokenRecord.Token, CreatedAt: appTokenRecord.CreatedAt}, nil
 }

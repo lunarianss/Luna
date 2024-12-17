@@ -223,3 +223,11 @@ type GeneratePromptResponse struct {
 	OpenStatement string   `json:"open_statement"`
 	Error         string   `json:"error"`
 }
+
+type GenerateServiceToken struct {
+	ID         string `json:"id"`
+	Type       string `json:"type"`
+	Token      string `json:"token"`
+	LastUsedAt string `json:"last_used_at"`
+	CreatedAt  int64  `json:"created_at"`
+}

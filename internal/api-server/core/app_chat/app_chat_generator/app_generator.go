@@ -14,6 +14,7 @@ import (
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/infrastructure/log"
+	assembler "github.com/lunarianss/Luna/internal/api-server/assembler/chat"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_chat_runner"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/task_pipeline"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_config"
@@ -35,7 +36,7 @@ import (
 type IChatAppGenerator interface {
 	Generate(c context.Context, appModel *po_entity.App, user repository.BaseAccount, args *dto.CreateChatMessageBody, invokeFrom biz_entity_app_generate.InvokeFrom, stream bool) error
 
-	GenerateNonStream(c context.Context, appModel *po_entity.App, user repository.BaseAccount, args *dto.CreateChatMessageBody, invokeFrom biz_entity_app_generate.InvokeFrom, stream bool) (*biz_entity_chat.LLMResult, error)
+	GenerateNonStream(c context.Context, appModel *po_entity.App, user repository.BaseAccount, args *dto.CreateChatMessageBody, invokeFrom biz_entity_app_generate.InvokeFrom, stream bool) (*dto.ServiceChatCompletionResponse, error)
 }
 
 type ChatAppGenerator struct {
@@ -162,15 +163,20 @@ func (g *ChatAppGenerator) baseGenerate(c context.Context, appModel *po_entity.A
 	return applicationGenerateEntity, conversationRecord, messageRecord, nil
 }
 
-func (g *ChatAppGenerator) GenerateNonStream(c context.Context, appModel *po_entity.App, user repository.BaseAccount, args *dto.CreateChatMessageBody, invokeFrom biz_entity_app_generate.InvokeFrom, stream bool) (*biz_entity_chat.LLMResult, error) {
-
+func (g *ChatAppGenerator) GenerateNonStream(c context.Context, appModel *po_entity.App, user repository.BaseAccount, args *dto.CreateChatMessageBody, invokeFrom biz_entity_app_generate.InvokeFrom, stream bool) (*dto.ServiceChatCompletionResponse, error) {
 	applicationGenerateEntity, conversationRecord, messageRecord, err := g.baseGenerate(c, appModel, user, args, invokeFrom, stream)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return g.generateNonStream(c, applicationGenerateEntity, conversationRecord.ID, messageRecord.ID)
+	llmResult, err := g.generateNonStream(c, applicationGenerateEntity, conversationRecord.ID, messageRecord.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return assembler.CovertToServiceChatCompletionResponse(messageRecord, conversationRecord.ID, llmResult), nil
 }
 
 func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, user repository.BaseAccount, args *dto.CreateChatMessageBody, invokeFrom biz_entity_app_generate.InvokeFrom, stream bool) error {

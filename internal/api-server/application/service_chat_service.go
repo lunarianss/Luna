@@ -16,7 +16,6 @@ import (
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
-	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	biz_entity_provider "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
 	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
@@ -98,7 +97,7 @@ func (s *ServiceChatService) Chat(ctx context.Context, app *po_entity.App, tenan
 	return nil
 }
 
-func (s *ServiceChatService) ChatNonStream(ctx context.Context, app *po_entity.App, tenant *po_account.Tenant, args *dto.ServiceCreateChatMessageBody, invokeFrom biz_entity_app_generate.InvokeFrom) (*biz_entity.LLMResult, error) {
+func (s *ServiceChatService) ChatNonStream(ctx context.Context, app *po_entity.App, tenant *po_account.Tenant, args *dto.ServiceCreateChatMessageBody, invokeFrom biz_entity_app_generate.InvokeFrom) (*dto.ServiceChatCompletionResponse, error) {
 
 	endUserRecord, chatAppGenerator, chatMessageBodyDto, err := s.baseChat(ctx, app, tenant, args)
 

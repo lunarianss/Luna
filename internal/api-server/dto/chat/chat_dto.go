@@ -196,7 +196,7 @@ type CreateChatMessageBody struct {
 	ResponseMode                 string                 `json:"response_mode" validate:"required"`
 	ConversationID               string                 `json:"conversation_id"`
 	Query                        string                 `json:"query" validate:"required"`
-	Files                        []string               `json:"files"`
+	Files                        []interface{}          `json:"files"`
 	Inputs                       map[string]interface{} `json:"inputs" `
 	ModelConfig                  AppModelConfigDto      `json:"model_config"`
 	ParentMessageId              string                 `json:"parent_message_id"`
@@ -207,10 +207,39 @@ type ServiceCreateChatMessageBody struct {
 	ResponseMode                 string                 `json:"response_mode" validate:"required"`
 	ConversationID               string                 `json:"conversation_id"`
 	Query                        string                 `json:"query" validate:"required"`
-	Files                        []string               `json:"files"`
+	Files                        []interface{}          `json:"files"`
 	Inputs                       map[string]interface{} `json:"inputs" `
 	ModelConfig                  AppModelConfigDto      `json:"model_config"`
 	ParentMessageId              string                 `json:"parent_message_id"`
 	User                         string                 `json:"user"`
 	AutoGenerateConversationName bool                   `json:"auto_generate_conversation_name"`
+}
+
+type Usage struct {
+	PromptTokens        int64   `json:"prompt_tokens"`
+	PromptUnitPrice     float64 `json:"prompt_unit_price"`
+	PromptPriceUnit     float64 `json:"prompt_price_unit"`
+	PromptPrice         float64 `json:"prompt_price"`
+	CompletionTokens    int64   `json:"completion_tokens"`
+	CompletionUnitPrice float64 `json:"completion_unit_price"`
+	CompletionPriceUnit float64 `json:"completion_price_unit"`
+	CompletionPrice     float64 `json:"completion_price"`
+	TotalTokens         int64   `json:"total_tokens"`
+	TotalPrice          float64 `json:"total_price"`
+	Currency            string  `json:"currency"`
+	Latency             float64 `json:"latency"`
+}
+
+type ServiceChatCompletionMetaDataResponse struct {
+	Usage              *Usage
+	RetrieverResources []any
+}
+
+type ServiceChatCompletionResponse struct {
+	MessageID      string                                 `json:"message_id"`
+	ConversationID string                                 `json:"conversation_id"`
+	Mode           string                                 `json:"mode"`
+	Answer         string                                 `json:"answer"`
+	Metadata       *ServiceChatCompletionMetaDataResponse `json:"metadata"`
+	CreatedAt      int64                                  `json:"created_at"`
 }

@@ -1,6 +1,7 @@
-package chat
+package assembler
 
 import (
+	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 )
@@ -69,5 +70,31 @@ func ConvertToConversationJoins(conversation *po_entity.Conversation) *dto.ListC
 		ReadAt:        conversation.ReadAt,
 		CreatedAt:     conversation.CreatedAt,
 		UpdatedAt:     conversation.UpdatedAt,
+	}
+}
+
+func CovertToServiceChatCompletionResponse(message *po_entity.Message, cID string, llmResult *biz_entity.LLMResult) *dto.ServiceChatCompletionResponse {
+	return &dto.ServiceChatCompletionResponse{
+		MessageID:      message.ID,
+		CreatedAt:      message.CreatedAt,
+		ConversationID: cID,
+		Mode:           "chat",
+		Answer:         llmResult.Message.Content.(string),
+		Metadata: &dto.ServiceChatCompletionMetaDataResponse{
+			RetrieverResources: make([]any, 0),
+			Usage: &dto.Usage{
+				PromptTokens:        llmResult.Usage.PromptTokens,
+				PromptUnitPrice:     llmResult.Usage.PromptUnitPrice,
+				PromptPriceUnit:     llmResult.Usage.PromptPriceUnit,
+				PromptPrice:         llmResult.Usage.PromptPrice,
+				CompletionTokens:    llmResult.Usage.CompletionTokens,
+				CompletionUnitPrice: llmResult.Usage.CompletionUnitPrice,
+				CompletionPriceUnit: llmResult.Usage.PromptPriceUnit,
+				CompletionPrice:     llmResult.Usage.CompletionPrice,
+				TotalTokens:         llmResult.Usage.TotalTokens,
+				Currency:            llmResult.Usage.Currency,
+				Latency:             llmResult.Usage.Latency,
+			},
+		},
 	}
 }

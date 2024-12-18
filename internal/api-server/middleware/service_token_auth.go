@@ -53,7 +53,7 @@ func ServiceTokenAuthMiddleware() gin.HandlerFunc {
 			}
 		}
 
-		if err := gormIns.Model(&po_entity.ApiToken{}).Update("last_used_at", time.Now().UTC().Unix()).Error; err != nil {
+		if err := gormIns.Model(&po_entity.ApiToken{}).Where("id = ?", apiToken.ID).Update("last_used_at", time.Now().UTC().Unix()).Error; err != nil {
 			core.WriteResponse(c, errors.WithCode(code.ErrDatabase, err.Error()), nil)
 			c.Abort()
 			return

@@ -13,6 +13,8 @@ import (
 	consoleWorkSpaceRoute "github.com/lunarianss/Luna/internal/api-server/facade/console/workspace"
 	chatAppRoute "github.com/lunarianss/Luna/internal/api-server/facade/web/chat_app"
 	"github.com/lunarianss/Luna/internal/infrastructure/server"
+
+	serviceChatRoute "github.com/lunarianss/Luna/internal/api-server/facade/service/chat_app"
 )
 
 // Route unified registration portal
@@ -49,4 +51,7 @@ func init() {
 	server.RegisterRoute(&chatAppRoute.WebAppRoutes{})
 	server.RegisterRoute(&chatAppRoute.WebChatRoutes{})
 	server.RegisterRoute(&chatAppRoute.WebMessageRoutes{})
+
+	// service
+	server.RegisterRoute(&serviceChatRoute.ServiceChatRoutes{})
 }

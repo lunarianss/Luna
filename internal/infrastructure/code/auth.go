@@ -13,4 +13,6 @@ const (
 	ErrTenantAlreadyExist
 	// ErrAccountBanned - 500: Error occurred when user is banned but still to operate.
 	ErrAccountBanned
+	// ErrTenantStatusArchive - 400: Error occurred when tenant's status is archive.
+	ErrTenantStatusArchive
 )

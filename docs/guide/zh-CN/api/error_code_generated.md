@@ -26,10 +26,13 @@ IAM 系统支持的错误码列表如下：
 | ErrAppStatusNotNormal | 110103 | 500 | App is not active |
 | ErrAppCodeNotFound | 110104 | 500 | App code not found |
 | ErrAppSiteDisabled | 110105 | 400 | Site is disabled |
+| ErrAppApiDisabled | 110106 | 400 | Api is disabled |
+| ErrAppTokenExceed | 110107 | 400 | Count of app token is exceeded |
 | ErrEmailCode | 110301 | 500 | Error occurred when email code is incorrect |
 | ErrTokenEmail | 110302 | 500 | Error occurred when email is incorrect |
 | ErrTenantAlreadyExist | 110303 | 500 | Error occurred when tenant is already exist |
 | ErrAccountBanned | 110304 | 500 | Error occurred when user is banned but still to operate |
+| ErrTenantStatusArchive | 110305 | 400 | Error occurred when tenant's status is archive |
 | ErrSuccess | 100001 | 200 | OK |
 | ErrUnknown | 100002 | 500 | Internal server error |
 | ErrBind | 100003 | 400 | Error occurred while request body is not incorrect |
@@ -38,7 +41,7 @@ IAM 系统支持的错误码列表如下：
 | ErrPageNotFound | 100006 | 404 | Page not found |
 | ErrResourceNotFound | 100007 | 404 | The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again |
 | ErrRestfulId | 100008 | 400 | Error occurred while parse restful id from url |
-| ErrRunTimeCaller | 100009 | 500 | Error occurred while call a go system call |
+| ErrRunTimeCaller | 100009 | 500 | Error occurred while call a system call |
 | ErrRunTimeConfig | 100010 | 500 | Error occurred while runtime config is nil |
 | ErrDatabase | 100101 | 500 | Database error |
 | ErrRecordNotFound | 100102 | 500 | Database record not found |
@@ -72,6 +75,7 @@ IAM 系统支持的错误码列表如下：
 | ErrRSAGenerate | 100601 | 500 | Error occurred when generate pair of rsa key |
 | ErrGinNotExistAccountInfo | 100701 | 400 | Error occurred when get account info from gin context |
 | ErrGinNotExistAppSiteInfo | 100702 | 400 | Error occurred when get app site info from gin context |
+| ErrGinNotExistServiceTokenInfo | 100703 | 400 | Error occurred when get app service token info from gin context |
 | ErrOnlyOverrideConfigInDebugger | 110201 | 500 | Error occurred while attempt to override config in non-debug mode |
 | ErrModelEmptyInConfig | 110202 | 500 | Error occurred while attempt to index model from config |
 | ErrRequiredCorrectProvider | 110203 | 500 | Error occurred when provider is not found or provider isn't include in the provider list |

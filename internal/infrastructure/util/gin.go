@@ -7,6 +7,8 @@ package util
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/lunarianss/Luna/infrastructure/errors"
+	po_account "github.com/lunarianss/Luna/internal/api-server/domain/account/entity/po_entity"
+	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 )
 
@@ -44,4 +46,22 @@ func GetWebAppFromGin(g *gin.Context) (string, string, string, error) {
 	}
 
 	return appIDStr, appCodeStr, endUserStr, nil
+}
+
+func GetServiceTokenFromGin(g *gin.Context) (*po_entity.App, *po_account.Tenant, error) {
+	app, exist := g.Get("app")
+	tenant, tenantExist := g.Get("tenant")
+
+	if !exist || !tenantExist {
+		return nil, nil, errors.WithCode(code.ErrGinNotExistServiceTokenInfo, "")
+	}
+
+	appRecord, ok := app.(*po_entity.App)
+	tenantRecord, tenantOk := tenant.(*po_account.Tenant)
+
+	if !ok || !tenantOk {
+		return nil, nil, errors.WithCode(code.ErrGinNotExistServiceTokenInfo, "")
+	}
+
+	return appRecord, tenantRecord, nil
 }

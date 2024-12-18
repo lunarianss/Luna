@@ -138,4 +138,6 @@ const (
 	ErrGinNotExistAccountInfo int = iota + 100701
 	// ErrGinNotExistAppSiteInfo - 400: Error occurred when get app site info from gin context.
 	ErrGinNotExistAppSiteInfo int = iota + 100701
+	// ErrGinNotExistServiceTokenInfo - 400: Error occurred when get app service token info from gin context.
+	ErrGinNotExistServiceTokenInfo int = iota + 100701
 )

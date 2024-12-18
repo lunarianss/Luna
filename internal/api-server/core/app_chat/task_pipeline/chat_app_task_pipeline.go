@@ -47,14 +47,13 @@ func NewChatAppTaskPipeline(
 	}
 }
 
-func (tpp *chatAppTaskPipeline) Process(ctx context.Context, stream bool) {
+func (tpp *chatAppTaskPipeline) Process(ctx context.Context) {
 	if !tpp.setFlush(ctx) {
 		return
 	}
 
-	if stream {
-		tpp.process_stream_response(ctx)
-	}
+	tpp.process_stream_response(ctx)
+
 }
 
 func (tpp *chatAppTaskPipeline) flush(streamString string) error {

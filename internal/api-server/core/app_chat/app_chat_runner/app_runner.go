@@ -30,7 +30,7 @@ func NewAppChatRunner(appBaseChatRunner *AppBaseChatRunner, appDomain *domain_se
 	}
 }
 
-func (r *appChatRunner) Run(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, message *po_entity_chat.Message, conversation *po_entity_chat.Conversation, queueManager *biz_entity.StreamGenerateQueue) {
+func (r *appChatRunner) baseRun(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, _ *po_entity_chat.Message, conversation *po_entity_chat.Conversation) (model_registry.IModelRegistryCall, []*po_entity_chat.PromptMessage, []string, error) {
 
 	var (
 		memory token_buffer_memory.ITokenBufferMemory
@@ -39,15 +39,13 @@ func (r *appChatRunner) Run(ctx context.Context, applicationGenerateEntity *biz_
 	appRecord, err := r.AppDomain.AppRepo.GetAppByID(ctx, applicationGenerateEntity.AppConfig.AppID)
 
 	if err != nil {
-		queueManager.PushErr(err)
-		return
+		return nil, nil, nil, err
 	}
 
 	credentials, err := applicationGenerateEntity.ModelConf.ProviderModelBundle.Configuration.GetCurrentCredentials(applicationGenerateEntity.ModelConf.ProviderModelBundle.ModelTypeInstance.ModelType, applicationGenerateEntity.AppConfig.Model.Model)
 
 	if err != nil {
-		queueManager.PushErr(err)
-		return
+		return nil, nil, nil, err
 	}
 
 	if applicationGenerateEntity.ConversationID != "" {
@@ -59,13 +57,33 @@ func (r *appChatRunner) Run(ctx context.Context, applicationGenerateEntity *biz_
 	promptMessages, stop, err := r.OrganizePromptMessage(ctx, appRecord, applicationGenerateEntity.ModelConf, applicationGenerateEntity.AppConfig.PromptTemplate, applicationGenerateEntity.Inputs, nil, applicationGenerateEntity.Query, "", memory)
 
 	if err != nil {
-		queueManager.PushErr(err)
-		return
+		return nil, nil, nil, err
 	}
 
 	modelInstance := model_registry.NewModelRegisterCaller(applicationGenerateEntity.AppConfig.Model.Model, string(applicationGenerateEntity.ModelConf.ProviderModelBundle.ModelTypeInstance.ModelType), applicationGenerateEntity.ModelConf.ProviderModelBundle.Configuration.Provider.Provider, credentials, applicationGenerateEntity.ModelConf.ProviderModelBundle.ModelTypeInstance)
 
-	if applicationGenerateEntity.Stream {
-		modelInstance.InvokeLLM(ctx, promptMessages, queueManager, applicationGenerateEntity.ModelConf.Parameters, nil, stop, applicationGenerateEntity.UserID, nil)
+	return modelInstance, promptMessages, stop, nil
+}
+
+func (r *appChatRunner) Run(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, message *po_entity_chat.Message, conversation *po_entity_chat.Conversation, queueManager *biz_entity.StreamGenerateQueue) {
+
+	modelInstance, promptMessages, stop, err := r.baseRun(ctx, applicationGenerateEntity, message, conversation)
+
+	if err != nil {
+		queueManager.PushErr(err)
+		return
 	}
+
+	modelInstance.InvokeLLM(ctx, promptMessages, queueManager, applicationGenerateEntity.ModelConf.Parameters, nil, stop, applicationGenerateEntity.UserID, nil)
+}
+
+func (r *appChatRunner) RunNonStream(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, message *po_entity_chat.Message, conversation *po_entity_chat.Conversation) (*biz_entity.LLMResult, error) {
+
+	modelInstance, promptMessages, stop, err := r.baseRun(ctx, applicationGenerateEntity, message, conversation)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return modelInstance.InvokeLLMNonStream(ctx, promptMessages, applicationGenerateEntity.ModelConf.Parameters, nil, stop, applicationGenerateEntity.UserID, nil)
 }

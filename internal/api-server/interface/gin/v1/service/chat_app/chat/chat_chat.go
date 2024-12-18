@@ -13,21 +13,33 @@ import (
 )
 
 func (cc *ServiceChatController) Chat(c *gin.Context) {
-	params := &dto.CreateChatMessageBody{}
+	params := &dto.ServiceCreateChatMessageBody{}
 
 	if err := c.ShouldBind(params); err != nil {
 		core.WriteBindErrResponse(c, err)
 		return
 	}
 
-	appID, _, endUserID, err := util.GetWebAppFromGin(c)
+	app, tenant, err := util.GetServiceTokenFromGin(c)
 
 	if err != nil {
 		core.WriteResponse(c, err, nil)
 		return
 	}
 
-	if err := cc.webAppService.Chat(c, appID, endUserID, params, biz_entity_app_generate.WebApp, true); err != nil {
-		core.WriteResponse(c, err, nil)
+	if params.ResponseMode == "streaming" {
+		if err := cc.serviceChatService.Chat(c, app, tenant, params, biz_entity_app_generate.ServiceAPI); err != nil {
+			core.WriteResponse(c, err, nil)
+		}
+		return
+	}
+
+	if params.ResponseMode == "blocking" {
+		if llmResult, err := cc.serviceChatService.ChatNonStream(c, app, tenant, params, biz_entity_app_generate.ServiceAPI); err != nil {
+			core.WriteResponse(c, err, nil)
+		} else {
+			core.WriteResponse(c, nil, llmResult)
+		}
+		return
 	}
 }

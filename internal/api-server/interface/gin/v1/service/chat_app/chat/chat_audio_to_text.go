@@ -80,7 +80,7 @@ func (ac *ServiceChatController) AudioToChatMessage(c *gin.Context) {
 		return
 	}
 
-	if transcription, err := ac.webAppService.AudioToText(c, audioFileContent, audioFile.Filename, appID, endUserID); err != nil {
+	if transcription, err := ac.serviceChatService.AudioToText(c, audioFileContent, audioFile.Filename, appID, endUserID); err != nil {
 		core.WriteResponse(c, err, nil)
 	} else {
 		core.WriteResponse(c, nil, transcription)

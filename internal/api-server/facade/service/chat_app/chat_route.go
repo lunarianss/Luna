@@ -69,12 +69,12 @@ func (a *ServiceChatRoutes) Register(g *gin.Engine) error {
 
 	// domain
 	providerDomain := domain_service.NewProviderDomain(providerRepo, modelProviderRepo, tenantRepo, providerConfigurationsManager)
-	webChatService := service.NewWebChatService(webAppDomain, accountDomain, appDomain, config, providerDomain, chatDomain)
+	serviceChatService := service.NewServiceChatService(webAppDomain, accountDomain, appDomain, config, providerDomain, chatDomain)
 
-	serviceChatController := controller.NewServiceChatController(webChatService)
+	serviceChatController := controller.NewServiceChatController(serviceChatService)
 	v1 := g.Group("/v1")
 	authV1 := v1.Group("/service/api")
-	authV1.Use(middleware.WebTokenAuthMiddleware())
+	authV1.Use(middleware.ServiceTokenAuthMiddleware())
 	authV1.POST("/chat-messages", serviceChatController.Chat)
 	authV1.POST("/audio-to-text", serviceChatController.AudioToChatMessage)
 	authV1.POST("/text-to-audio", serviceChatController.TextToAudio)

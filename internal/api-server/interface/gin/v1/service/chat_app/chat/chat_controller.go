@@ -7,11 +7,11 @@ package controller
 import service "github.com/lunarianss/Luna/internal/api-server/application"
 
 type ServiceChatController struct {
-	webAppService *service.WebChatService
+	serviceChatService *service.ServiceChatService
 }
 
-func NewServiceChatController(webChatService *service.WebChatService) *ServiceChatController {
+func NewServiceChatController(serviceChatService *service.ServiceChatService) *ServiceChatController {
 	return &ServiceChatController{
-		webAppService: webChatService,
+		serviceChatService: serviceChatService,
 	}
 }

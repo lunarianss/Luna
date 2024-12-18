@@ -32,6 +32,12 @@ import (
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 )
 
+type IChatAppGenerator interface {
+	Generate(c context.Context, appModel *po_entity.App, user repository.BaseAccount, args *dto.CreateChatMessageBody, invokeFrom biz_entity_app_generate.InvokeFrom, stream bool) error
+
+	GenerateNonStream(c context.Context, appModel *po_entity.App, user repository.BaseAccount, args *dto.CreateChatMessageBody, invokeFrom biz_entity_app_generate.InvokeFrom, stream bool) (*biz_entity_chat.LLMResult, error)
+}
+
 type ChatAppGenerator struct {
 	AppDomain      *appDomain.AppDomain
 	ProviderDomain *domain_service.ProviderDomain
@@ -62,7 +68,7 @@ func (g *ChatAppGenerator) getAppModelConfig(ctx context.Context, appModel *po_e
 	}
 }
 
-func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, user repository.BaseAccount, args *dto.CreateChatMessageBody, invokeFrom biz_entity_app_generate.InvokeFrom, stream bool) error {
+func (g *ChatAppGenerator) baseGenerate(c context.Context, appModel *po_entity.App, user repository.BaseAccount, args *dto.CreateChatMessageBody, invokeFrom biz_entity_app_generate.InvokeFrom, stream bool) (*biz_entity_app_generate.ChatAppGenerateEntity, *po_entity_chat.Conversation, *po_entity_chat.Message, error) {
 
 	var (
 		conversationRecord     *po_entity_chat.Conversation
@@ -88,25 +94,25 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, 
 		conversationRecord, err = g.chatDomain.MessageRepo.GetConversationByUser(c, appModel.ID, args.ConversationID, user)
 
 		if err != nil {
-			return err
+			return nil, nil, nil, err
 		}
 	}
 
 	appModelConfig, err := g.getAppModelConfig(c, appModel, conversationRecord)
 
 	if err != nil {
-		return err
+		return nil, nil, nil, err
 	}
 
 	modelConfigManager := app_config.NewChatAppConfigManager(g.ProviderDomain)
 	if args.ModelConfig.AppID != "" {
 		if invokeFrom != biz_entity_app_generate.Debugger {
-			return errors.WithCode(code.ErrOnlyOverrideConfigInDebugger, fmt.Sprintf("mode %s is not debugger, so it cannot override", invokeFrom))
+			return nil, nil, nil, errors.WithCode(code.ErrOnlyOverrideConfigInDebugger, fmt.Sprintf("mode %s is not debugger, so it cannot override", invokeFrom))
 		}
 
 		overrideModelConfigMap, err = modelConfigManager.ConfigValidate(c, appModel.TenantID, &args.ModelConfig)
 		if err != nil {
-			return err
+			return nil, nil, nil, err
 		}
 
 		overrideModelConfigMap.RetrieverResource.Enabled = true
@@ -115,7 +121,7 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, 
 	appConfig, err := modelConfigManager.GetAppConfig(c, appModel, appModelConfig, conversationRecord, overrideModelConfigMap)
 
 	if err != nil {
-		return err
+		return nil, nil, nil, err
 	}
 
 	if conversationRecord != nil {
@@ -126,7 +132,7 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, 
 	modelConf, err := modelConverter.Convert(c, appConfig.EasyUIBasedAppConfig, true)
 
 	if err != nil {
-		return err
+		return nil, nil, nil, err
 	}
 
 	applicationGenerateEntity := &biz_entity_app_generate.ChatAppGenerateEntity{
@@ -151,6 +157,27 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, 
 	conversationRecord, messageRecord, err = g.InitGenerateRecords(c, applicationGenerateEntity, conversationRecord)
 
 	if err != nil {
+		return nil, nil, nil, err
+	}
+	return applicationGenerateEntity, conversationRecord, messageRecord, nil
+}
+
+func (g *ChatAppGenerator) GenerateNonStream(c context.Context, appModel *po_entity.App, user repository.BaseAccount, args *dto.CreateChatMessageBody, invokeFrom biz_entity_app_generate.InvokeFrom, stream bool) (*biz_entity_chat.LLMResult, error) {
+
+	applicationGenerateEntity, conversationRecord, messageRecord, err := g.baseGenerate(c, appModel, user, args, invokeFrom, stream)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return g.generateNonStream(c, applicationGenerateEntity, conversationRecord.ID, messageRecord.ID)
+}
+
+func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, user repository.BaseAccount, args *dto.CreateChatMessageBody, invokeFrom biz_entity_app_generate.InvokeFrom, stream bool) error {
+
+	applicationGenerateEntity, conversationRecord, messageRecord, err := g.baseGenerate(c, appModel, user, args, invokeFrom, stream)
+
+	if err != nil {
 		return err
 	}
 
@@ -166,13 +193,33 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, 
 
 	go g.ListenQueue(queueManager)
 
-	task_pipeline.NewChatAppTaskPipeline(applicationGenerateEntity, streamResultChunkQueue, streamFinalChunkQueue, g.chatDomain.MessageRepo, messageRecord).Process(c, true)
+	task_pipeline.NewChatAppTaskPipeline(applicationGenerateEntity, streamResultChunkQueue, streamFinalChunkQueue, g.chatDomain.MessageRepo, messageRecord).Process(c)
 
 	return nil
 }
 
 func (g *ChatAppGenerator) ListenQueue(queueManager *biz_entity_chat.StreamGenerateQueue) {
 	queueManager.Listen()
+}
+
+func (g *ChatAppGenerator) generateNonStream(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, conversationID string, messageID string) (*biz_entity_chat.LLMResult, error) {
+
+	appRunner := app_chat_runner.NewAppChatRunner(app_chat_runner.NewAppBaseChatRunner(), g.AppDomain, g.chatDomain)
+
+	message, err := g.chatDomain.MessageRepo.GetMessageByID(ctx, messageID)
+
+	if err != nil {
+
+		return nil, err
+	}
+
+	conversation, err := g.chatDomain.MessageRepo.GetConversationByID(ctx, conversationID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return appRunner.RunNonStream(ctx, applicationGenerateEntity, message, conversation)
 }
 
 func (g *ChatAppGenerator) generateGoRoutine(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, conversationID string, messageID string, queueManager *biz_entity_chat.StreamGenerateQueue) {

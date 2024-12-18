@@ -52,6 +52,15 @@ func (ad *WebAppRepoImpl) GetEndUserByID(ctx context.Context, endUserID string) 
 	return &endUser, nil
 }
 
+func (ad *WebAppRepoImpl) GetEndUserByInfo(ctx context.Context, sessionID string, tenantID string, appID string, endUserType string) (*po_entity.EndUser, error) {
+	var endUser po_entity.EndUser
+	if err := ad.db.First(&endUser, "session_id = ? AND type = ? AND tenant_id = ? AND app_id = ?", sessionID, endUserType, tenantID, appID).Error; err != nil {
+		return nil, err
+	}
+
+	return &endUser, nil
+}
+
 func (ad *WebAppRepoImpl) GetEndUserBySession(ctx context.Context, sessionID string) (*po_entity.EndUser, error) {
 	var endUser po_entity.EndUser
 	if err := ad.db.First(&endUser, "session_id = ?", sessionID).Error; err != nil {

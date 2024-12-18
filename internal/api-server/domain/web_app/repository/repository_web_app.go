@@ -22,4 +22,5 @@ type WebAppRepo interface {
 	GetSiteByCode(ctx context.Context, code string) (*po_entity.Site, error)
 	GetEndUserBySession(ctx context.Context, sessionID string) (*po_entity.EndUser, error)
 	GetEndUserByID(ctx context.Context, endUserID string) (*po_entity.EndUser, error)
+	GetEndUserByInfo(ctx context.Context, sessionID string, tenantID string, appID string, endUserType string) (*po_entity.EndUser, error)
 }

@@ -23,7 +23,7 @@ func (ac *ServiceChatController) TextToAudio(c *gin.Context) {
 		return
 	}
 
-	if err := ac.webAppService.TextToAudio(c, appID, params.Text, params.MessageID, "", endUserID); err != nil {
+	if err := ac.serviceChatService.TextToAudio(c, appID, params.Text, params.MessageID, "", endUserID); err != nil {
 		log.Errorf("%#+v", err)
 	}
 }

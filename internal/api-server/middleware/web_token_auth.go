@@ -62,6 +62,7 @@ func WebTokenAuthMiddleware() gin.HandlerFunc {
 		if err != nil {
 			core.WriteResponse(c, errors.WithCode(code.ErrDatabase, err.Error()), nil)
 			c.Abort()
+			return
 		}
 
 		var app po_entity.App
@@ -70,15 +71,18 @@ func WebTokenAuthMiddleware() gin.HandlerFunc {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				core.WriteResponse(c, errors.WithCode(code.ErrResourceNotFound, err.Error()), nil)
 				c.Abort()
+				return
 			} else {
 				core.WriteResponse(c, errors.WithCode(code.ErrDatabase, err.Error()), nil)
 				c.Abort()
+				return
 			}
 		}
 
 		if app.EnableSite == 0 {
 			core.WriteResponse(c, errors.WithCode(code.ErrAppSiteDisabled, ""), nil)
 			c.Abort()
+			return
 		}
 		// 继续处理请求
 		c.Next()

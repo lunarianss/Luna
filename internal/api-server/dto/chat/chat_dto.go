@@ -211,7 +211,7 @@ type ServiceCreateChatMessageBody struct {
 	Inputs                       map[string]interface{} `json:"inputs" `
 	ModelConfig                  AppModelConfigDto      `json:"model_config"`
 	ParentMessageId              string                 `json:"parent_message_id"`
-	User                         string                 `json:"user"`
+	User                         string                 `json:"user" validate:"required"`
 	AutoGenerateConversationName bool                   `json:"auto_generate_conversation_name"`
 }
 

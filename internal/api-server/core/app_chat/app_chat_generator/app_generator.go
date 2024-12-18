@@ -33,6 +33,8 @@ import (
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 )
 
+const UUID_NIL = "00000000-0000-0000-0000-000000000000"
+
 type IChatAppGenerator interface {
 	Generate(c context.Context, appModel *po_entity.App, user repository.BaseAccount, args *dto.CreateChatMessageBody, invokeFrom biz_entity_app_generate.InvokeFrom, stream bool) error
 
@@ -78,6 +80,7 @@ func (g *ChatAppGenerator) baseGenerate(c context.Context, appModel *po_entity.A
 		overrideModelConfigMap *dto.AppModelConfigDto
 		conversationID         string
 		err                    error
+		parentMessageID        string
 	)
 
 	query := args.Query
@@ -136,9 +139,15 @@ func (g *ChatAppGenerator) baseGenerate(c context.Context, appModel *po_entity.A
 		return nil, nil, nil, err
 	}
 
+	if invokeFrom != biz_entity_app_generate.ServiceAPI {
+		parentMessageID = args.ParentMessageId
+	} else {
+		parentMessageID = UUID_NIL
+	}
+
 	applicationGenerateEntity := &biz_entity_app_generate.ChatAppGenerateEntity{
 		ConversationID:  conversationID,
-		ParentMessageID: args.ParentMessageId,
+		ParentMessageID: parentMessageID,
 		EasyUIBasedAppGenerateEntity: &biz_entity_app_generate.EasyUIBasedAppGenerateEntity{
 			AppConfig: appConfig.EasyUIBasedAppConfig,
 			ModelConf: modelConf,
@@ -171,6 +180,12 @@ func (g *ChatAppGenerator) GenerateNonStream(c context.Context, appModel *po_ent
 	}
 
 	llmResult, err := g.generateNonStream(c, applicationGenerateEntity, conversationRecord.ID, messageRecord.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = task_pipeline.NewNonStreamTaskPipeline(applicationGenerateEntity, g.chatDomain.MessageRepo, messageRecord, llmResult).ProcessNonStream(c)
 
 	if err != nil {
 		return nil, err

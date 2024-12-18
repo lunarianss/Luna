@@ -30,6 +30,17 @@ type chatAppTaskPipeline struct {
 	taskState                 *biz_entity.ChatAppTaskState
 }
 
+func NewNonStreamTaskPipeline(applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, messageRepo repository.MessageRepo, message *po_entity.Message, llmResult *biz_entity.LLMResult) *chatAppTaskPipeline {
+	return &chatAppTaskPipeline{
+		ApplicationGenerateEntity: applicationGenerateEntity,
+		Message:                   message,
+		MessageRepo:               messageRepo,
+		taskState: &biz_entity.ChatAppTaskState{
+			LLMResult: llmResult,
+		},
+	}
+}
+
 func NewChatAppTaskPipeline(
 	applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity,
 	streamResultChunkQueue chan *biz_entity.MessageQueueMessage,
@@ -51,9 +62,11 @@ func (tpp *chatAppTaskPipeline) Process(ctx context.Context) {
 	if !tpp.setFlush(ctx) {
 		return
 	}
-
 	tpp.process_stream_response(ctx)
+}
 
+func (tpp *chatAppTaskPipeline) ProcessNonStream(ctx context.Context) error {
+	return tpp.saveMessage(ctx)
 }
 
 func (tpp *chatAppTaskPipeline) flush(streamString string) error {
@@ -235,10 +248,6 @@ func (tpp *chatAppTaskPipeline) messageEndToStreamResponse() error {
 	}
 	return nil
 }
-
-// func (t *chatAppTaskPipeline) toStreamResponse(c context.Context) {
-
-// }
 
 func (tpp *chatAppTaskPipeline) saveMessage(c context.Context) error {
 	messageRecord, err := tpp.MessageRepo.GetMessageByID(c, tpp.Message.ID)

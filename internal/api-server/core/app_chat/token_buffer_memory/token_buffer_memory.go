@@ -9,6 +9,8 @@ import (
 	"github.com/lunarianss/Luna/internal/infrastructure/util"
 )
 
+const UUID_NIL = "00000000-0000-0000-0000-000000000000"
+
 type ITokenBufferMemory interface {
 	GetHistoryPromptMessage(ctx context.Context, maxTokenLimit int, messageLimit int) ([]*po_entity.PromptMessage, error)
 }
@@ -80,7 +82,7 @@ func (s *tokenBufferMemory) extractThreadMessage(messages []*po_entity.Message) 
 			threadMessages = append(threadMessages, threadMessage)
 			nextMessage = &threadMessage.ParentMessageID
 		} else {
-			if *nextMessage == threadMessage.ID {
+			if *nextMessage == threadMessage.ID || *nextMessage == UUID_NIL {
 				threadMessages = append(threadMessages, threadMessage)
 				nextMessage = &threadMessage.ParentMessageID
 			}

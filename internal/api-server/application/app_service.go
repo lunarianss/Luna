@@ -301,6 +301,53 @@ func (as *AppService) UpdateEnableAppSite(ctx context.Context, accountID string,
 	return dto.AppRecordToDetail(appRecord, as.config, appConfigRecord, siteRecord), nil
 }
 
+func (as *AppService) UpdateEnableAppApi(ctx context.Context, accountID string, appID string, enable_api bool) (*dto.AppDetail, error) {
+	tenant, tenantJoin, err := as.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !tenantJoin.IsEditor() {
+		return nil, errors.WithCode(code.ErrForbidden, fmt.Sprintf("You don't have the permission for %s", tenant.Name))
+	}
+
+	appRecord, err := as.appDomain.AppRepo.GetTenantApp(ctx, appID, tenant.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	appConfigRecord, err := as.appDomain.AppRepo.GetAppModelConfigById(ctx, appRecord.AppModelConfigID, appID)
+	if err != nil {
+		return nil, err
+	}
+
+	siteRecord, err := as.appDomain.WebAppRepo.GetSiteByAppID(ctx, appID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	enableAPI := util.BoolToInt(enable_api)
+
+	if appRecord.EnableSite == field.BitBool(enableAPI) {
+		return dto.AppRecordToDetail(appRecord, as.config, appConfigRecord, siteRecord), nil
+	}
+
+	appRecord.EnableAPI = field.BitBool(enableAPI)
+	appRecord.UpdatedBy = accountID
+	appRecord.UpdatedAt = int(time.Now().UTC().Unix())
+
+	appRecord, err = as.appDomain.AppRepo.UpdateEnableAppApi(ctx, appRecord)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return dto.AppRecordToDetail(appRecord, as.config, appConfigRecord, siteRecord), nil
+}
+
 type TaskData struct {
 	TaskDescription string
 	InputText       string

@@ -201,6 +201,10 @@ type EnableSiteRequest struct {
 	EnableSite bool `json:"enable_site"`
 }
 
+type EnableAPIRequest struct {
+	EnableAPI bool `json:"enable_api"`
+}
+
 type APIUrlParameter struct {
 	AppID string `json:"appID" uri:"appID"`
 }

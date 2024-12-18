@@ -27,4 +27,5 @@ type AppRepo interface {
 	GetTenantApp(ctx context.Context, appID, tenantID string) (*po_entity.App, error)
 	GetServiceTokenCount(ctx context.Context, appID string) (int64, error)
 	UpdateEnableAppSite(ctx context.Context, app *po_entity.App) (*po_entity.App, error)
+	UpdateEnableAppApi(ctx context.Context, app *po_entity.App) (*po_entity.App, error)
 }

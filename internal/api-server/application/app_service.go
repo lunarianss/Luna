@@ -331,7 +331,7 @@ func (as *AppService) UpdateEnableAppApi(ctx context.Context, accountID string, 
 
 	enableAPI := util.BoolToInt(enable_api)
 
-	if appRecord.EnableSite == field.BitBool(enableAPI) {
+	if appRecord.EnableAPI == field.BitBool(enableAPI) {
 		return dto.AppRecordToDetail(appRecord, as.config, appConfigRecord, siteRecord), nil
 	}
 

@@ -9,11 +9,12 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 
+	"github.com/lunarianss/Luna/infrastructure/errors"
 	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider/model_provider"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
-	"github.com/lunarianss/Luna/infrastructure/errors"
 	"gopkg.in/yaml.v3"
 )
 
@@ -77,8 +78,17 @@ func (mp *ProviderRuntime) GetProviderSchema() (*ProviderStaticConfiguration, er
 }
 
 func (mp *ProviderRuntime) GetModelInstance(modelType common.ModelType) *biz_entity.AIModelRuntime {
+	var modelTypeStr string
+
 	providerName := filepath.Base(mp.ModelConfPath)
-	modelSchemaPath := fmt.Sprintf("%s/%s", mp.ModelConfPath, modelType)
+
+	if modelType == common.TEXT_EMBEDDING {
+		modelTypeStr = strings.ReplaceAll(string(modelType), "-", "_")
+	} else {
+		modelTypeStr = string(modelType)
+	}
+
+	modelSchemaPath := fmt.Sprintf("%s/%s", mp.ModelConfPath, modelTypeStr)
 	mp.ModelInstanceMap = make(map[string]*biz_entity.AIModelRuntime)
 
 	if _, ok := mp.ModelInstanceMap[fmt.Sprintf("%s.%s", providerName, modelType)]; ok {

@@ -6,8 +6,11 @@ package service
 
 import (
 	"context"
-	"errors"
+	"fmt"
+	"time"
 
+	"github.com/google/uuid"
+	"github.com/lunarianss/Luna/infrastructure/errors"
 	assembler "github.com/lunarianss/Luna/internal/api-server/assembler/chat"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
@@ -15,7 +18,10 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
+	dto_app "github.com/lunarianss/Luna/internal/api-server/dto/app"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
+	"github.com/lunarianss/Luna/internal/infrastructure/code"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
@@ -24,14 +30,17 @@ type AnnotationService struct {
 	providerDomain *domain_service.ProviderDomain
 	accountDomain  *accountDomain.AccountDomain
 	chatDomain     *chatDomain.ChatDomain
+
+	redis *redis.Client
 }
 
-func NewAnnotationService(appDomain *appDomain.AppDomain, providerDomain *domain_service.ProviderDomain, accountDomain *accountDomain.AccountDomain, chatDomain *chatDomain.ChatDomain) *AnnotationService {
+func NewAnnotationService(appDomain *appDomain.AppDomain, providerDomain *domain_service.ProviderDomain, accountDomain *accountDomain.AccountDomain, chatDomain *chatDomain.ChatDomain, redis *redis.Client) *AnnotationService {
 	return &AnnotationService{
 		appDomain:      appDomain,
 		providerDomain: providerDomain,
 		accountDomain:  accountDomain,
 		chatDomain:     chatDomain,
+		redis:          redis,
 	}
 }
 
@@ -119,5 +128,53 @@ func (as *AnnotationService) InsertAnnotationFromMessage(ctx context.Context, ac
 	}
 
 	return nil, nil
+
+}
+
+func (as *AnnotationService) EnableAppAnnotation(ctx context.Context, appID, accountID string, args *dto_app.ApplyAnnotationRequestBody) (*dto_app.ApplyAnnotationResponse, error) {
+
+	accountRecord, err := as.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	tenant, tenantJoin, err := as.accountDomain.GetCurrentTenantOfAccount(ctx, accountRecord.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !tenantJoin.IsEditor() {
+		return nil, errors.WithCode(code.ErrForbidden, "tenant %s don't have the permission to enable app annotation", tenant.Name)
+	}
+
+	enableAnnotationKey := fmt.Sprintf("enable_app_annotation_%s", appID)
+
+	v, err := as.redis.Get(ctx, enableAnnotationKey).Result()
+
+	if err != nil {
+		if !errors.Is(err, redis.Nil) {
+			return nil, err
+		}
+	}
+
+	if v != "" {
+		return dto_app.NewApplyAnnotationProcessing(v), nil
+	}
+
+	jobID := uuid.NewString()
+
+	enableAppAnnotationJobKey := fmt.Sprintf("enable_app_annotation_job_%s", jobID)
+
+	_, err = as.redis.SetNX(ctx, enableAppAnnotationJobKey, "waiting", time.Duration(0)).Result()
+
+	if err != nil {
+		return nil, err
+	}
+
+	// todo 使用 rocketmq 发送异步任务
+
+	return dto_app.NewApplyAnnotationWaiting(jobID), nil
 
 }

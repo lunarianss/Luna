@@ -11,16 +11,16 @@ import (
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
-	controller "github.com/lunarianss/Luna/internal/api-server/interface/gin/v1/chat"
+	controller "github.com/lunarianss/Luna/internal/api-server/interface/gin/v1/annotation"
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
 	repo_impl "github.com/lunarianss/Luna/internal/api-server/repository"
 	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
 	"github.com/lunarianss/Luna/internal/infrastructure/redis"
 )
 
-type ChatRoutes struct{}
+type AnnotationRoutes struct{}
 
-func (a *ChatRoutes) Register(g *gin.Engine) error {
+func (a *AnnotationRoutes) Register(g *gin.Engine) error {
 	gormIns, err := mysql.GetMySQLIns(nil)
 
 	if err != nil {
@@ -49,27 +49,16 @@ func (a *ChatRoutes) Register(g *gin.Engine) error {
 	appDomain := appDomain.NewAppDomain(appRepo, webAppRepo, gormIns)
 	accountDomain := accountDomain.NewAccountDomain(accountRepo, nil, nil, nil, tenantRepo)
 	chatDomain := chatDomain.NewChatDomain(messageRepo, annotationRepo)
-
-	// service
-	chatService := service.NewChatService(appDomain, providerDomain, accountDomain, chatDomain)
 	annotationService := service.NewAnnotationService(appDomain, providerDomain, accountDomain, chatDomain, redisIns)
-	chatController := controller.NewChatController(chatService, annotationService)
+	annotationController := controller.NewAnnotationController(annotationService)
 
 	v1 := g.Group("/v1")
 	modelProviderV1 := v1.Group("/console/api")
 	modelProviderV1.Use(middleware.TokenAuthMiddleware())
-	modelProviderV1.POST("/apps/:appID/chat-messages", chatController.ChatMessage)
-	modelProviderV1.POST("/apps/:appID/audio-to-text", chatController.AudioToChatMessage)
-	modelProviderV1.POST("/apps/:appID/text-to-audio", chatController.TextToAudio)
-	modelProviderV1.POST("/apps/:appID/annotations", chatController.InsertAnnotationFormMessage)
-
-	modelProviderV1.GET("/apps/:appID/chat-messages", chatController.ChatMessageList)
-	modelProviderV1.GET("/apps/:appID/chat-conversations", chatController.ChatConversationList)
-	modelProviderV1.GET("/apps/:appID/annotations/count", chatController.GetAnnotationCount)
-	modelProviderV1.GET("/apps/:appID/chat-conversations/:conversationID", chatController.ConsoleConversationDetail)
+	modelProviderV1.POST("/apps/:appID/annotation-reply/:action", annotationController.AnnotationReply)
 	return nil
 }
 
-func (r *ChatRoutes) GetModule() string {
-	return "chat"
+func (r *AnnotationRoutes) GetModule() string {
+	return "annotation"
 }

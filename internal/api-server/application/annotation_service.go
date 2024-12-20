@@ -8,9 +8,11 @@ import (
 	"context"
 	"errors"
 
+	assembler "github.com/lunarianss/Luna/internal/api-server/assembler/chat"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
+	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
@@ -33,10 +35,10 @@ func NewAnnotationService(appDomain *appDomain.AppDomain, providerDomain *domain
 	}
 }
 
-func (as *AnnotationService) InsertAnnotationFromMessage(ctx context.Context, accountID string, appID string, args *dto.InsertAnnotationFormMessage) (*po_entity.MessageAnnotation, error) {
+func (as *AnnotationService) InsertAnnotationFromMessage(ctx context.Context, accountID string, appID string, args *dto.InsertAnnotationFormMessage) (*dto.MessageAnnotation, error) {
 
 	var (
-		annotation *po_entity.MessageAnnotation
+		bizMessageAnnotation *biz_entity.BizMessageAnnotation
 	)
 
 	accountRecord, err := as.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
@@ -64,11 +66,11 @@ func (as *AnnotationService) InsertAnnotationFromMessage(ctx context.Context, ac
 			return nil, err
 		}
 
-		annotation, err = as.chatDomain.AnnotationRepo.GetMessageAnnotation(ctx, message.ID)
+		bizMessageAnnotation, err = as.chatDomain.AnnotationRepo.GetMessageAnnotation(ctx, message.ID)
 
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				annotation = &po_entity.MessageAnnotation{
+				annotation := &po_entity.MessageAnnotation{
 					AppID:          app.ID,
 					ConversationID: message.ConversationID,
 					MessageID:      message.ID,
@@ -76,7 +78,7 @@ func (as *AnnotationService) InsertAnnotationFromMessage(ctx context.Context, ac
 					Question:       args.Question,
 					AccountID:      accountID,
 				}
-				annotation, err = as.chatDomain.AnnotationRepo.CreateMessageAnnotation(ctx, annotation)
+				bizMessageAnnotation, err = as.chatDomain.AnnotationRepo.CreateMessageAnnotation(ctx, annotation)
 
 				if err != nil {
 					return nil, err
@@ -85,22 +87,20 @@ func (as *AnnotationService) InsertAnnotationFromMessage(ctx context.Context, ac
 				return nil, err
 			}
 		} else {
-			annotation.Content = args.Answer
-			annotation.Question = args.Question
-			if err := as.chatDomain.AnnotationRepo.UpdateMessageAnnotation(ctx, annotation); err != nil {
+			bizMessageAnnotation.Content = args.Answer
+			bizMessageAnnotation.Question = args.Question
+			if err := as.chatDomain.AnnotationRepo.UpdateMessageAnnotation(ctx, bizMessageAnnotation.ID, bizMessageAnnotation.Content, bizMessageAnnotation.Question); err != nil {
 				return nil, err
 			}
 		}
 	} else {
-		annotation = &po_entity.MessageAnnotation{
+		annotation := &po_entity.MessageAnnotation{
 			AppID:     appID,
 			Content:   args.Answer,
 			Question:  args.Question,
 			AccountID: accountID,
 		}
-
-		annotation, err = as.chatDomain.AnnotationRepo.CreateMessageAnnotation(ctx, annotation)
-
+		bizMessageAnnotation, err = as.chatDomain.AnnotationRepo.CreateMessageAnnotation(ctx, annotation)
 		if err != nil {
 			return nil, err
 		}
@@ -110,7 +110,7 @@ func (as *AnnotationService) InsertAnnotationFromMessage(ctx context.Context, ac
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return annotation, nil
+			return assembler.ConvertToAnnotation(bizMessageAnnotation), nil
 		} else {
 			return nil, err
 		}

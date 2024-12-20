@@ -4,7 +4,9 @@
 
 package dto
 
-import biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
+import (
+	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
+)
 
 type Speech2TextResp struct {
 	Text string `json:"text"`
@@ -47,6 +49,34 @@ type PromptMessage struct {
 	Name    string `json:"name"`
 }
 
+type AnnotationAccount struct {
+	ID                string `json:"id" gorm:"column:id"`
+	Name              string `json:"name" gorm:"column:name"`
+	Email             string `json:"email" gorm:"column:email"`
+	Avatar            string `json:"avatar" gorm:"column:avatar"`
+	InterfaceLanguage string `json:"interface_language" gorm:"column:interface_language"`
+	InterfaceTheme    string `json:"interface_theme" gorm:"column:interface_theme"`
+	Timezone          string `json:"timezone" gorm:"column:timezone"`
+	LastLoginIP       string `json:"last_login_ip" gorm:"column:last_login_ip"`
+	LastLoginAt       *int64 `json:"last_login_at" gorm:"column:last_login_at"`
+	CreatedAt         int64  `json:"created_at" gorm:"column:created_at"`
+	IsPasswordSet     bool   `json:"is_password_set"`
+}
+
+type MessageAnnotation struct {
+	ID             string             `json:"id"`
+	AppID          string             `json:"app_id"`
+	ConversationID string             `json:"conversation_id"`
+	MessageID      string             `json:"message_id"`
+	Question       string             `json:"question"`
+	Content        string             `json:"content"`
+	HitCount       int                `json:"hit_count"`
+	AccountID      string             `json:"account_id"`
+	CreatedAt      int64              `json:"created_at"`
+	UpdatedAt      int64              `json:"updated_at"`
+	Account        *AnnotationAccount `json:"account"`
+}
+
 type ListChatMessageItem struct {
 	ID                      string                 `json:"id"`
 	ConversationID          string                 `json:"conversation_id"`
@@ -76,6 +106,7 @@ type ListChatMessageItem struct {
 	MessageFiles            []string               `json:"message_files"`
 	Metadata                map[string]interface{} `json:"metadata"`
 	ParentMessageID         string                 `json:"parent_message_id"`
+	Annotation              *MessageAnnotation     `json:"annotation"`
 }
 
 type ListChatMessagesResponse struct {

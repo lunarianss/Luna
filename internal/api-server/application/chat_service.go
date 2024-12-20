@@ -22,6 +22,7 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime/model_registry"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/lunarianss/Luna/internal/infrastructure/util"
+	"gorm.io/gorm"
 )
 
 type ChatService struct {
@@ -183,7 +184,13 @@ func (s *ChatService) ListConsoleMessagesOfConversation(ctx context.Context, acc
 	hasMore := true
 
 	for _, mr := range messageRecords {
-		messageDto := assembler.ConvertToListMessageDto(mr)
+		annotation, err := s.chatDomain.AnnotationRepo.GetMessageAnnotation(ctx, mr.ID)
+
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, err
+		}
+
+		messageDto := assembler.ConvertToListMessageDto(mr, annotation)
 		messageItems = append(messageItems, messageDto)
 	}
 

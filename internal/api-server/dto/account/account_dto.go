@@ -35,7 +35,6 @@ func AccountConvertToProfile(a *po_entity.Account) (s *GetAccountProfileResp) {
 		LastLoginAt:       a.LastLoginAt,
 		CreatedAt:         a.CreatedAt,
 	}
-
 }
 
 type RefreshTokenResponse struct {

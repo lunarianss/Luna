@@ -29,6 +29,7 @@ type MessageRepo interface {
 
 	// Get
 	GetMessageByID(ctx context.Context, messageID string) (*po_entity.Message, error)
+	GetMessageByApp(ctx context.Context, messageID string, appID string) (*po_entity.Message, error)
 	GetConversationByID(ctx context.Context, conversationID string) (*po_entity.Conversation, error)
 	GetConversationByApp(ctx context.Context, conversationID string, appID string) (*po_entity.Conversation, error)
 	GetConversationByUser(ctx context.Context, appId string, conversationID string, user repository.BaseAccount) (*po_entity.Conversation, error)

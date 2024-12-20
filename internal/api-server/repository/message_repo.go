@@ -354,6 +354,16 @@ func (md *MessageRepoImpl) GetMessageByID(ctx context.Context, messageID string)
 	return &message, nil
 }
 
+func (md *MessageRepoImpl) GetMessageByApp(ctx context.Context, messageID string, appID string) (*po_entity.Message, error) {
+	var message po_entity.Message
+
+	if err := md.db.First(&message, "id = ? AND app_id = ?", messageID, appID).Error; err != nil {
+		return nil, errors.WrapC(err, code.ErrDatabase, "Get message by id-[%s] and app_id-[%s] error", messageID, appID)
+	}
+
+	return &message, nil
+}
+
 func (md *MessageRepoImpl) GetMessageByConversation(ctx context.Context, cID string, messageID string) (*po_entity.Message, error) {
 	var message po_entity.Message
 

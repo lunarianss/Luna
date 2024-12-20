@@ -56,7 +56,7 @@ func (a *WebChatRoutes) Register(g *gin.Engine) error {
 	appRepo := repo_impl.NewAppRepoImpl(gormIns)
 	webAppRepo := repo_impl.NewWebAppRepoImpl(gormIns)
 	messageRepo := repo_impl.NewMessageRepoImpl(gormIns)
-
+	annotationRepo := repo_impl.NewAnnotationRepoImpl(gormIns)
 	providerRepo := repo_impl.NewProviderRepoImpl(gormIns)
 	modelProviderRepo := repo_impl.NewModelProviderRepoImpl(gormIns)
 	providerConfigurationsManager := domain_service.NewProviderConfigurationsManager(providerRepo, modelProviderRepo, "", nil)
@@ -65,7 +65,7 @@ func (a *WebChatRoutes) Register(g *gin.Engine) error {
 	appDomain := appDomain.NewAppDomain(appRepo, webAppRepo, gormIns)
 	webAppDomain := webAppDomain.NewWebAppDomain(webAppRepo)
 	accountDomain := accountDomain.NewAccountDomain(accountRepo, redisIns, config, email, tenantRepo)
-	chatDomain := chatDomain.NewChatDomain(messageRepo)
+	chatDomain := chatDomain.NewChatDomain(messageRepo, annotationRepo)
 
 	// domain
 	providerDomain := domain_service.NewProviderDomain(providerRepo, modelProviderRepo, tenantRepo, providerConfigurationsManager)

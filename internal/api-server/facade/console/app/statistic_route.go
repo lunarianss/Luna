@@ -31,6 +31,7 @@ func (a *StatisticRoutes) Register(g *gin.Engine) error {
 	appRepo := repo_impl.NewAppRepoImpl(gormIns)
 	messageRepo := repo_impl.NewMessageRepoImpl(gormIns)
 	webAppRepo := repo_impl.NewWebAppRepoImpl(gormIns)
+	annotationRepo := repo_impl.NewAnnotationRepoImpl(gormIns)
 	// providerRepo := repo_impl.NewProviderRepoImpl(gormIns)
 	// webAppRepo := repo_impl.NewWebAppRepoImpl(gormIns)
 	// modelProviderRepo := repo_impl.NewModelProviderRepoImpl(gormIns)
@@ -40,7 +41,7 @@ func (a *StatisticRoutes) Register(g *gin.Engine) error {
 	// providerDomain := domain_service.NewProviderDomain(providerRepo, modelProviderRepo, providerConfigurationsManager)
 	appDomain := appDomain.NewAppDomain(appRepo, webAppRepo, gormIns)
 	accountDomain := accountDomain.NewAccountDomain(accountRepo, nil, nil, nil, tenantRepo)
-	chatDomain := chatDomain.NewChatDomain(messageRepo)
+	chatDomain := chatDomain.NewChatDomain(messageRepo, annotationRepo)
 
 	// service
 	statisticService := service.NewStatisticService(chatDomain, accountDomain, appDomain)

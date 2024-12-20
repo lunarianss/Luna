@@ -9,11 +9,13 @@ import (
 )
 
 type ChatDomain struct {
-	MessageRepo repository.MessageRepo
+	MessageRepo    repository.MessageRepo
+	AnnotationRepo repository.AnnotationRepo
 }
 
-func NewChatDomain(messageRepo repository.MessageRepo) *ChatDomain {
+func NewChatDomain(messageRepo repository.MessageRepo, annotationRepo repository.AnnotationRepo) *ChatDomain {
 	return &ChatDomain{
-		MessageRepo: messageRepo,
+		MessageRepo:    messageRepo,
+		AnnotationRepo: annotationRepo,
 	}
 }

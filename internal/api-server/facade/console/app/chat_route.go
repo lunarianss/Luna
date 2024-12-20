@@ -34,18 +34,19 @@ func (a *ChatRoutes) Register(g *gin.Engine) error {
 	providerRepo := repo_impl.NewProviderRepoImpl(gormIns)
 	webAppRepo := repo_impl.NewWebAppRepoImpl(gormIns)
 	modelProviderRepo := repo_impl.NewModelProviderRepoImpl(gormIns)
+	annotationRepo := repo_impl.NewAnnotationRepoImpl(gormIns)
 	providerConfigurationsManager := domain_service.NewProviderConfigurationsManager(providerRepo, modelProviderRepo, "", nil)
 
 	// domain
 	providerDomain := domain_service.NewProviderDomain(providerRepo, modelProviderRepo, tenantRepo, providerConfigurationsManager)
 	appDomain := appDomain.NewAppDomain(appRepo, webAppRepo, gormIns)
 	accountDomain := accountDomain.NewAccountDomain(accountRepo, nil, nil, nil, tenantRepo)
-	chatDomain := chatDomain.NewChatDomain(messageRepo)
+	chatDomain := chatDomain.NewChatDomain(messageRepo, annotationRepo)
 
 	// service
 	chatService := service.NewChatService(appDomain, providerDomain, accountDomain, chatDomain)
-
-	chatController := controller.NewChatController(chatService)
+	annotationService := service.NewAnnotationService(appDomain, providerDomain, accountDomain, chatDomain)
+	chatController := controller.NewChatController(chatService, annotationService)
 
 	v1 := g.Group("/v1")
 	modelProviderV1 := v1.Group("/console/api")
@@ -53,6 +54,8 @@ func (a *ChatRoutes) Register(g *gin.Engine) error {
 	modelProviderV1.POST("/apps/:appID/chat-messages", chatController.ChatMessage)
 	modelProviderV1.POST("/apps/:appID/audio-to-text", chatController.AudioToChatMessage)
 	modelProviderV1.POST("/apps/:appID/text-to-audio", chatController.TextToAudio)
+	modelProviderV1.POST("/apps/:appID/annotations", chatController.InsertAnnotationFormMessage)
+
 	modelProviderV1.GET("/apps/:appID/chat-messages", chatController.ChatMessageList)
 	modelProviderV1.GET("/apps/:appID/chat-conversations", chatController.ChatConversationList)
 	modelProviderV1.GET("/apps/:appID/annotations/count", chatController.GetAnnotationCount)

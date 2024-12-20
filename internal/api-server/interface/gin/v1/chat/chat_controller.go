@@ -10,8 +10,9 @@ import (
 
 type ChatController struct {
 	chatService *service.ChatService
+	annotation  *service.AnnotationService
 }
 
-func NewChatController(chatSrv *service.ChatService) *ChatController {
-	return &ChatController{chatService: chatSrv}
+func NewChatController(chatSrv *service.ChatService, annotation *service.AnnotationService) *ChatController {
+	return &ChatController{chatService: chatSrv, annotation: annotation}
 }

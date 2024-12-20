@@ -43,12 +43,12 @@ func (a *AppRoutes) Register(g *gin.Engine) error {
 	webAppRepo := repo_impl.NewWebAppRepoImpl(gormIns)
 	modelProviderRepo := repo_impl.NewModelProviderRepoImpl(gormIns)
 	providerConfigurationsManager := domain_service.NewProviderConfigurationsManager(providerRepo, modelProviderRepo, "", nil)
-
+	annotationRepo := repo_impl.NewAnnotationRepoImpl(gormIns)
 	// domain
 	providerDomain := domain_service.NewProviderDomain(providerRepo, modelProviderRepo, tenantRepo, providerConfigurationsManager)
 	appDomain := appDomain.NewAppDomain(appRepo, webAppRepo, gormIns)
 	accountDomain := accountDomain.NewAccountDomain(accountRepo, nil, nil, nil, tenantRepo)
-	chatDomain := chatDomain.NewChatDomain(messageRepo)
+	chatDomain := chatDomain.NewChatDomain(messageRepo, annotationRepo)
 
 	// service
 	appService := service.NewAppService(appDomain, providerDomain, accountDomain, gormIns, config)

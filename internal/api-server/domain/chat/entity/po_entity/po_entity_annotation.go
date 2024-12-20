@@ -46,5 +46,3 @@ func (a *AppAnnotationSetting) BeforeCreate(tx *gorm.DB) (err error) {
 	a.ID = uuid.NewString()
 	return
 }
-
-

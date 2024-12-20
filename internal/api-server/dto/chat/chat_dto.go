@@ -243,3 +243,10 @@ type ServiceChatCompletionResponse struct {
 	Metadata       *ServiceChatCompletionMetaDataResponse `json:"metadata"`
 	CreatedAt      int64                                  `json:"created_at"`
 }
+
+type InsertAnnotationFormMessage struct {
+	MessageID       string         `json:"message_id"`
+	Question        string         `json:"question" validate:"required"`
+	Answer          string         `json:"answer" validate:"required"`
+	AnnotationReply map[string]any `json:"annotation_reply"`
+}

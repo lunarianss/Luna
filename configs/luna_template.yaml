@@ -121,3 +121,8 @@ jwt:
   key: xxxx # 服务端密钥
   timeout: 24h # access token 过期时间(小时)
   refresh: 720h # refresh token 过期时间(天)
+
+rocket-mq:
+  endpoint: 127.0.0.1:8081
+  group-name: "Luna_Backend"
+  producer-retry: 3

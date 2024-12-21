@@ -6,13 +6,20 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 
+	"github.com/apache/rocketmq-client-go/v2"
+	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/gin-gonic/gin"
+	"github.com/lunarianss/Luna/infrastructure/errors"
+	"github.com/lunarianss/Luna/infrastructure/log"
 	domain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/account/entity/biz_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/account/entity/po_entity"
 	accountDto "github.com/lunarianss/Luna/internal/api-server/dto/account"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/auth"
+	"github.com/lunarianss/Luna/internal/api-server/event"
+	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/lunarianss/Luna/internal/infrastructure/util"
 	"gorm.io/gorm"
 )
@@ -21,13 +28,15 @@ type AccountService struct {
 	accountDomain *domain.AccountDomain
 	tenantDomain  *domain.TenantDomain
 	db            *gorm.DB
+	mqProducer    rocketmq.Producer
 }
 
-func NewAccountService(accountDomain *domain.AccountDomain, tenantDomain *domain.TenantDomain, db *gorm.DB) *AccountService {
+func NewAccountService(accountDomain *domain.AccountDomain, tenantDomain *domain.TenantDomain, db *gorm.DB, mqProducer rocketmq.Producer) *AccountService {
 	return &AccountService{
 		accountDomain: accountDomain,
 		tenantDomain:  tenantDomain,
 		db:            db,
+		mqProducer:    mqProducer,
 	}
 }
 
@@ -49,7 +58,32 @@ func (s *AccountService) SendEmailCode(ctx context.Context, params *dto.SendEmai
 		return nil, err
 	}
 
-	go s.accountDomain.SendEmailHtml(ctx, language, params.Email, emailCode)
+	sendCodeMessage := event.SendEmailCodeMessage{
+		Language:  language,
+		Email:     params.Email,
+		EmailCode: emailCode,
+	}
+
+	messageBodyData, err := json.Marshal(sendCodeMessage)
+
+	if err != nil {
+		return nil, errors.WithCode(code.ErrEncodingJSON, err.Error())
+	}
+
+	message := &primitive.Message{
+		Topic: event.AuthTopic,
+		Body:  messageBodyData,
+	}
+
+	message = message.WithTag(event.SendEmailCodeTag)
+
+	sendResult, err := s.mqProducer.SendSync(ctx, message)
+
+	if err != nil {
+		return nil, errors.WithCode(code.ErrMQSend, err.Error())
+	}
+
+	log.Infof("MQ-Send-Result %s", sendResult.String())
 
 	return &dto.SendEmailCodeResponse{
 		Data:   tokenUUID,

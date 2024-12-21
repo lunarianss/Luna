@@ -6,7 +6,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	assembler "github.com/lunarianss/Luna/internal/api-server/assembler/chat"
@@ -159,7 +158,7 @@ func (s *ChatService) ListConsoleMessagesOfConversation(ctx context.Context, acc
 	}
 
 	if !tenantJoin.IsEditor() {
-		return nil, errors.WithCode(code.ErrForbidden, fmt.Sprintf("You don't have the permission for %s", tenant.Name))
+		return nil, errors.WithCode(code.ErrForbidden, "You don't have the permission for %s", tenant.Name)
 	}
 
 	app, err := s.appDomain.AppRepo.GetTenantApp(ctx, appID, tenant.ID)
@@ -225,7 +224,7 @@ func (s *ChatService) ListConversations(ctx context.Context, accountID string, a
 	}
 
 	if !tenantJoin.IsEditor() {
-		return nil, errors.WithCode(code.ErrForbidden, fmt.Sprintf("You don't have the permission for %s", tenant.Name))
+		return nil, errors.WithCode(code.ErrForbidden, "You don't have the permission for %s", tenant.Name)
 	}
 
 	app, err := s.appDomain.AppRepo.GetTenantApp(ctx, appID, tenant.ID)
@@ -308,7 +307,7 @@ func (s *ChatService) DetailConversation(ctx context.Context, accountID string, 
 	}
 
 	if !tenantJoin.IsEditor() {
-		return nil, errors.WithCode(code.ErrForbidden, fmt.Sprintf("You don't have the permission for %s", tenant.Name))
+		return nil, errors.WithCode(code.ErrForbidden, "You don't have the permission for %s", tenant.Name)
 	}
 
 	app, err := s.appDomain.AppRepo.GetTenantApp(ctx, appID, tenant.ID)

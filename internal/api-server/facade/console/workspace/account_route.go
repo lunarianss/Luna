@@ -56,7 +56,7 @@ func (a *AccountRoute) Register(g *gin.Engine) error {
 	tenantDomain := domain.NewTenantDomain(tenantRepo)
 
 	// service
-	accountService := service.NewAccountService(accountDomain, tenantDomain, gormIns)
+	accountService := service.NewAccountService(accountDomain, tenantDomain, gormIns, nil)
 
 	accountController := controller.NewAccountController(accountService)
 

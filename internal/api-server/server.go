@@ -5,8 +5,11 @@
 package master
 
 import (
+	"context"
+
 	"github.com/lunarianss/Luna/internal/api-server/config"
 
+	_ "github.com/lunarianss/Luna/internal/api-server/event"
 	_ "github.com/lunarianss/Luna/internal/api-server/facade"
 	_ "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers"
 	_ "github.com/lunarianss/Luna/internal/api-server/validation"
@@ -15,6 +18,7 @@ import (
 	"github.com/lunarianss/Luna/infrastructure/shutdown"
 	"github.com/lunarianss/Luna/internal/infrastructure/email"
 	"github.com/lunarianss/Luna/internal/infrastructure/jwt"
+	"github.com/lunarianss/Luna/internal/infrastructure/mq"
 	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
 	"github.com/lunarianss/Luna/internal/infrastructure/redis"
 	"github.com/lunarianss/Luna/internal/infrastructure/server"
@@ -33,11 +37,24 @@ func (s *LunaApiServer) Run() error {
 		return err
 	}
 
-	if _, err := redis.GetRedisIns(s.AppRuntimeConfig.RedisOptions); err != nil {
+	redis, err := redis.GetRedisIns(s.AppRuntimeConfig.RedisOptions)
+
+	if err != nil {
 		return err
 	}
 
-	if _, err := mysql.GetMySQLIns(s.AppRuntimeConfig.MySQLOptions); err != nil {
+	s.GracefulShutdown.AddShutdownCallback(shutdown.ShutdownFunc(func(s string) error {
+		return redis.Close()
+	}))
+
+	gormDB, err := mysql.GetMySQLIns(s.AppRuntimeConfig.MySQLOptions)
+
+	s.GracefulShutdown.AddShutdownCallback(shutdown.ShutdownFunc(func(s string) error {
+		db, _ := gormDB.DB()
+		return db.Close()
+	}))
+
+	if err != nil {
 		return err
 	}
 
@@ -45,9 +62,33 @@ func (s *LunaApiServer) Run() error {
 		return err
 	}
 
+	mqProducer, err := mq.GetMQProducerIns(s.AppRuntimeConfig.MQOptions)
+
+	if err != nil {
+		return err
+	}
+
+	s.GracefulShutdown.AddShutdownCallback(shutdown.ShutdownFunc(func(s string) error {
+		return mqProducer.Shutdown()
+	}))
+
+	mqConsumer, err := mq.GetMQConsumerIns(s.AppRuntimeConfig.MQOptions)
+
+	if err != nil {
+		return err
+	}
+
+	s.GracefulShutdown.AddShutdownCallback(shutdown.ShutdownFunc(func(s string) error {
+		return mqConsumer.Shutdown()
+	}))
+
 	_ = jwt.NewJWT(s.AppRuntimeConfig.JwtOptions.Key)
 
 	if err := s.APIServer.InitRouter(s.APIServer.Engine); err != nil {
+		return err
+	}
+
+	if err := s.APIServer.InitMQConsumer(context.Background(), s.GracefulShutdown); err != nil {
 		return err
 	}
 

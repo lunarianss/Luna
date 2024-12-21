@@ -12,6 +12,7 @@ import (
 	controller "github.com/lunarianss/Luna/internal/api-server/interface/gin/v1/auth"
 	repo_impl "github.com/lunarianss/Luna/internal/api-server/repository"
 	"github.com/lunarianss/Luna/internal/infrastructure/email"
+	"github.com/lunarianss/Luna/internal/infrastructure/mq"
 	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
 	"github.com/lunarianss/Luna/internal/infrastructure/redis"
 )
@@ -26,6 +27,12 @@ func (a *AuthRoutes) Register(g *gin.Engine) error {
 	}
 
 	redisIns, err := redis.GetRedisIns(nil)
+
+	if err != nil {
+		return err
+	}
+
+	mqProducerIns, err := mq.GetMQProducerIns(nil)
 
 	if err != nil {
 		return err
@@ -53,7 +60,7 @@ func (a *AuthRoutes) Register(g *gin.Engine) error {
 	tenantDomain := domain.NewTenantDomain(tenantRepo)
 
 	// service
-	accountService := service.NewAccountService(accountDomain, tenantDomain, gormIns)
+	accountService := service.NewAccountService(accountDomain, tenantDomain, gormIns, mqProducerIns)
 	accountController := controller.NewAuthController(accountService)
 
 	v1 := g.Group("/v1")

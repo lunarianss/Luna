@@ -154,7 +154,7 @@ func (mpSrv *ModelProviderService) getIconName(providerEntity *biz_entity.Provid
 
 	if iconType == "icon_small" {
 		if providerEntity.IconSmall == nil {
-			return "", errors.WithCode(code.ErrProviderNotHaveIcon, fmt.Sprintf("provider %s not have a small icon", providerEntity.Provider))
+			return "", errors.WithCode(code.ErrProviderNotHaveIcon, "provider %s not have a small icon", providerEntity.Provider)
 		}
 
 		if strings.ToLower(lang) == "zh_hans" {
@@ -164,7 +164,7 @@ func (mpSrv *ModelProviderService) getIconName(providerEntity *biz_entity.Provid
 		}
 	} else {
 		if providerEntity.IconLarge == nil {
-			return "", errors.WithCode(code.ErrProviderNotHaveIcon, fmt.Sprintf("provider %s not have a large icon", providerEntity.Provider))
+			return "", errors.WithCode(code.ErrProviderNotHaveIcon, "provider %s not have a large icon", providerEntity.Provider)
 		}
 
 		if strings.ToLower(lang) == "zh_hans" {

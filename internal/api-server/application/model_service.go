@@ -6,7 +6,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
@@ -225,7 +224,7 @@ func (ms *ModelService) UpdateDefaultModel(ctx context.Context, accountID string
 	}
 
 	if !tenantJoin.IsPrivilegedRole() {
-		return errors.WithCode(code.ErrForbidden, fmt.Sprintf("tenant %s don't have the permission", tenantRecord.Name))
+		return errors.WithCode(code.ErrForbidden, "tenant %s don't have the permission", tenantRecord.Name)
 	}
 
 	providerConfigurations, _, err := ms.providerDomain.GetConfigurations(ctx, tenantRecord.ID)
@@ -242,7 +241,7 @@ func (ms *ModelService) UpdateDefaultModel(ctx context.Context, accountID string
 
 		providerConfiguration, ok := providerConfigurations.Configurations[modelSetting.Provider]
 		if !ok {
-			return errors.WithCode(code.ErrRequiredCorrectProvider, fmt.Sprintf("provider %s is not exist", modelSetting.Provider))
+			return errors.WithCode(code.ErrRequiredCorrectProvider, "provider %s is not exist", modelSetting.Provider)
 		}
 
 		providerModels, err := providerConfiguration.GetProviderModels(ctx, common.ModelType(modelSetting.ModelType), true)
@@ -256,7 +255,7 @@ func (ms *ModelService) UpdateDefaultModel(ctx context.Context, accountID string
 		})
 
 		if findModel == nil {
-			return errors.WithCode(code.ErrRequiredCorrectModel, fmt.Sprintf("model %s is not exist", modelSetting.Model))
+			return errors.WithCode(code.ErrRequiredCorrectModel, "model %s is not exist", modelSetting.Model)
 		}
 
 		originModelType, err := common.ModelType(modelSetting.ModelType).ToOriginModelType()

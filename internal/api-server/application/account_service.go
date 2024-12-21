@@ -67,7 +67,7 @@ func (s *AccountService) SendEmailCode(ctx context.Context, params *dto.SendEmai
 	messageBodyData, err := json.Marshal(sendCodeMessage)
 
 	if err != nil {
-		return nil, errors.WithCode(code.ErrEncodingJSON, err.Error())
+		return nil, errors.WithCode(code.ErrEncodingJSON, "sendCodeMessage json encoding error %s", err.Error())
 	}
 
 	message := &primitive.Message{
@@ -80,7 +80,7 @@ func (s *AccountService) SendEmailCode(ctx context.Context, params *dto.SendEmai
 	sendResult, err := s.mqProducer.SendSync(ctx, message)
 
 	if err != nil {
-		return nil, errors.WithCode(code.ErrMQSend, err.Error())
+		return nil, errors.WithCode(code.ErrMQSend, "mq send sync error when send email code: %s", err.Error())
 	}
 
 	log.Infof("MQ-Send-Result %s", sendResult.String())

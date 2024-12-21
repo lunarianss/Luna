@@ -68,10 +68,10 @@ func (s *ServiceChatService) baseChat(ctx context.Context, app *po_entity.App, t
 
 			endUserRecord, err = s.webAppDomain.WebAppRepo.CreateEndUser(ctx, endUser, nil)
 			if err != nil {
-				return nil, nil, nil, errors.WithCode(code.ErrDatabase, err.Error())
+				return nil, nil, nil, errors.WithCode(code.ErrDatabase, "create end user error: %s", err.Error())
 			}
 		} else {
-			return nil, nil, nil, errors.WithCode(code.ErrDatabase, err.Error())
+			return nil, nil, nil, errors.WithCode(code.ErrDatabase, "get end user error: %s",err.Error())
 		}
 	}
 

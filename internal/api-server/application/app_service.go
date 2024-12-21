@@ -6,7 +6,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
@@ -58,7 +57,7 @@ func (as *AppService) CreateApp(ctx context.Context, accountID string, createApp
 		return nil, err
 	}
 	if !tenantJoin.IsEditor() {
-		return nil, errors.WithCode(code.ErrForbidden, fmt.Sprintf("You don't have the permission for tenant %s", tenantRecord.Name))
+		return nil, errors.WithCode(code.ErrForbidden, "You don't have the permission for tenant %s", tenantRecord.Name)
 	}
 
 	tenantID := tenantRecord.ID
@@ -223,7 +222,7 @@ func (as *AppService) UpdateAppModelConfig(ctx context.Context, modelConfig *cha
 	}
 
 	if !tenantJoin.IsEditor() {
-		return errors.WithCode(code.ErrForbidden, fmt.Sprintf("You don't have the permission for %s", tenant.Name))
+		return errors.WithCode(code.ErrForbidden, "You don't have the permission for %s", tenant.Name)
 	}
 
 	configEntity := assembler.ConvertToConfigEntity(modelConfig)
@@ -262,7 +261,7 @@ func (as *AppService) UpdateEnableAppSite(ctx context.Context, accountID string,
 	}
 
 	if !tenantJoin.IsEditor() {
-		return nil, errors.WithCode(code.ErrForbidden, fmt.Sprintf("You don't have the permission for %s", tenant.Name))
+		return nil, errors.WithCode(code.ErrForbidden, "You don't have the permission for %s", tenant.Name)
 	}
 
 	appRecord, err := as.appDomain.AppRepo.GetTenantApp(ctx, appID, tenant.ID)
@@ -309,7 +308,7 @@ func (as *AppService) UpdateEnableAppApi(ctx context.Context, accountID string, 
 	}
 
 	if !tenantJoin.IsEditor() {
-		return nil, errors.WithCode(code.ErrForbidden, fmt.Sprintf("You don't have the permission for %s", tenant.Name))
+		return nil, errors.WithCode(code.ErrForbidden, "You don't have the permission for %s", tenant.Name)
 	}
 
 	appRecord, err := as.appDomain.AppRepo.GetTenantApp(ctx, appID, tenant.ID)
@@ -408,7 +407,7 @@ func (as *AppService) GenerateServiceToken(ctx context.Context, accountID string
 	}
 
 	if !tenantJoin.IsEditor() {
-		return nil, errors.WithCode(code.ErrForbidden, fmt.Sprintf("You don't have the permission for %s", tenant.Name))
+		return nil, errors.WithCode(code.ErrForbidden, "You don't have the permission for %s", tenant.Name)
 	}
 
 	app, err := as.appDomain.AppRepo.GetTenantApp(ctx, appID, tenant.ID)

@@ -59,20 +59,20 @@ func (ad *AccountDomain) GetEmailTokenData(ctx context.Context, token string) (*
 	v, err := ad.redis.Get(ctx, tokenKey).Result()
 
 	if errors.Is(err, redis.Nil) {
-		return nil, errors.WithCode(code.ErrRedisDataExpire, fmt.Sprintf("redis key %s not found", tokenKey))
+		return nil, errors.WithCode(code.ErrRedisDataExpire, "redis key %s not found", tokenKey)
 	} else if err != nil {
-		return nil, errors.WithCode(code.ErrRedisRuntime, err.Error())
+		return nil, errors.WithCode(code.ErrRedisRuntime, "redis occurred error when get tokenKey %s", err.Error())
 	}
 
 	if err := json.Unmarshal([]byte(v), &tokenData); err != nil {
-		return nil, errors.WithCode(code.ErrDecodingJSON, err.Error())
+		return nil, errors.WithCode(code.ErrDecodingJSON, "occur when decoding token data %s:", err.Error())
 	}
 	return &tokenData, nil
 }
 
 func (ad *AccountDomain) ValidateAndRevokeData(ctx context.Context, email, emailCode, token string, tokenData *biz_entity.EmailTokenData) error {
 	if tokenData.Code != emailCode {
-		return errors.WithCode(code.ErrEmailCode, fmt.Sprintf("email %s, code %s is not valid", email, emailCode))
+		return errors.WithCode(code.ErrEmailCode, "email %s, code %s is not valid", email, emailCode)
 	}
 
 	if tokenData.Email != email {
@@ -119,7 +119,7 @@ func (ad *AccountDomain) GetAccountRefreshTokenKey(accountID string) string {
 func (ad *AccountDomain) RevokeEmailTokenKey(ctx context.Context, token string) error {
 	tokenKey := ad.GetEmailTokenKey(token, biz_entity.EMAIL_CODE_TOKEN)
 	if err := ad.redis.Del(ctx, tokenKey).Err(); err != nil {
-		return errors.WithCode(code.ErrRedisRuntime, err.Error())
+		return errors.WithCode(code.ErrRedisRuntime, "redis delete tokenKey error: %s", err.Error())
 	}
 
 	return nil
@@ -287,7 +287,7 @@ func (ad *AccountDomain) LoadUser(ctx context.Context, userID string) (*po_entit
 	}
 
 	if account.Status == string(po_entity.BANNED) {
-		return nil, errors.WithCode(code.ErrAccountBanned, fmt.Sprintf("account %s, email %s, id %s is already banned", account.Name, account.Email, account.ID))
+		return nil, errors.WithCode(code.ErrAccountBanned, "account %s, email %s, id %s is already banned", account.Name, account.Email, account.ID)
 	}
 
 	tenantJoin, err := ad.TenantRepo.GetCurrentTenantJoinByAccount(ctx, account)
@@ -334,9 +334,9 @@ func (ad *AccountDomain) RefreshToken(ctx context.Context, refreshToken string) 
 	v, err := ad.redis.Get(ctx, ad.GetRefreshTokenKey(refreshToken)).Result()
 
 	if errors.Is(err, redis.Nil) {
-		return nil, errors.WithCode(code.ErrRefreshTokenNotFound, fmt.Sprintf("refresh token %s not found", refreshToken))
+		return nil, errors.WithCode(code.ErrRefreshTokenNotFound, "refresh token %s not found", refreshToken)
 	} else if err != nil {
-		return nil, errors.WithCode(code.ErrRedisRuntime, err.Error())
+		return nil, errors.WithCode(code.ErrRedisRuntime, "redis occurred error when get refresh key: %s", err.Error())
 	}
 
 	account, err := ad.LoadUser(ctx, v)
@@ -346,7 +346,7 @@ func (ad *AccountDomain) RefreshToken(ctx context.Context, refreshToken string) 
 	}
 
 	if account == nil {
-		return nil, errors.WithCode(code.ErrRecordNotFound, fmt.Sprintf("account record %s not found", v))
+		return nil, errors.WithCode(code.ErrRecordNotFound, "account record %s not found", v)
 	}
 
 	newAccessToken, err := ad.GenerateToken(ctx, account)

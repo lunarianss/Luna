@@ -25,6 +25,7 @@ type Options struct {
 	EmailOptions            *options.EmailOptions           `json:"email" mapstructure:"email"`
 	JwtOptions              *options.JwtOptions             `json:"jwt" mapstructure:"jwt"`
 	SystemOptions           *options.SystemOptions          `json:"system" mapstructure:"system"`
+	MQOptions               *options.RocketMQOptions        `json:"rocket-mq" mapstructure:"rocket-mq"`
 }
 
 // NewOptions creates a new Options object with default parameters.
@@ -41,6 +42,7 @@ func NewOptions() *Options {
 		EmailOptions:            options.NewEmailOptions(),
 		JwtOptions:              options.NewJwtOptions(),
 		SystemOptions:           options.NewSystemOptions(),
+		MQOptions:               options.NewRocketMQOptions(),
 	}
 
 	return &o

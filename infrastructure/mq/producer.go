@@ -26,7 +26,7 @@ func NewProducer(opt *options.RocketMQOptions) (*MQProducer, error) {
 			SecretKey: opt.SecretKey,
 			AccessKey: opt.AccessKey,
 		}),
-		producer.WithSendMsgTimeout(6*time.Second),
+		producer.WithSendMsgTimeout(3*time.Second),
 		producer.WithNamespace(opt.Namespace))
 
 	if err != nil {

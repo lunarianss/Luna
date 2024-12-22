@@ -74,7 +74,7 @@ func (td *TenantRepoImpl) HasRoles(ctx context.Context, tenant *po_entity.Tenant
 	}
 
 	var tenantMember []*po_entity.TenantAccountJoin
-	if err := dbIns.Where("role IN ?", roles).Find(&tenantMember).Error; err != nil {
+	if err := dbIns.Where("role IN ? AND tenant_id = ?", roles, tenant.ID).Find(&tenantMember).Error; err != nil {
 		return false, errors.WithCode(code.ErrDatabase, err.Error())
 	}
 

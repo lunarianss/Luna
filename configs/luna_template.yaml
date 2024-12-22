@@ -124,5 +124,9 @@ jwt:
 
 rocket-mq:
   endpoint: 127.0.0.1:8081
-  group-name: "Luna_Backend"
+  group-name: Luna_Backend
   producer-retry: 3
+  consumer-retry: 2
+  namespace: Linux_Production
+  access-key: xxx
+  secret-key: xxx

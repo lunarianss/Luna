@@ -20,7 +20,12 @@ func NewConsumer(opt *options.RocketMQOptions) (*MQConsumer, error) {
 		consumer.WithGroupName(opt.GroupName),
 		consumer.WithNsResolver(primitive.NewPassthroughResolver(opt.Endpoint)),
 		consumer.WithConsumerModel(consumer.Clustering),
-		consumer.WithMaxReconsumeTimes(2),
+		consumer.WithMaxReconsumeTimes(int32(opt.ConsumerRetry)),
+		consumer.WithCredentials(primitive.Credentials{
+			SecretKey: opt.SecretKey,
+			AccessKey: opt.AccessKey,
+		}),
+		consumer.WithNamespace(opt.Namespace),
 	)
 
 	if err != nil {

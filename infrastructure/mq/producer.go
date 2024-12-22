@@ -1,6 +1,8 @@
 package mq
 
 import (
+	"time"
+
 	"github.com/apache/rocketmq-client-go/v2"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/apache/rocketmq-client-go/v2/producer"
@@ -16,7 +18,16 @@ type MQProducer struct {
 func NewProducer(opt *options.RocketMQOptions) (*MQProducer, error) {
 	rlog.SetLogLevel("warn")
 
-	p, err := rocketmq.NewProducer(producer.WithNsResolver(primitive.NewPassthroughResolver(opt.Endpoint)), producer.WithRetry(opt.ProducerRetry), producer.WithGroupName(opt.GroupName))
+	p, err := rocketmq.NewProducer(producer.WithNsResolver(
+		primitive.NewPassthroughResolver(opt.Endpoint)),
+		producer.WithRetry(opt.ProducerRetry),
+		producer.WithGroupName(opt.GroupName),
+		producer.WithCredentials(primitive.Credentials{
+			SecretKey: opt.SecretKey,
+			AccessKey: opt.AccessKey,
+		}),
+		producer.WithSendMsgTimeout(6*time.Second),
+		producer.WithNamespace(opt.Namespace))
 
 	if err != nil {
 		log.Infof("init producer error: %+v", err.Error())

@@ -43,7 +43,7 @@ func (ap *AnnotationRepoImpl) CreateMessageAnnotation(ctx context.Context, annot
 		account po_account.Account
 	)
 	if err := ap.db.Create(annotation).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 
 	if err := ap.db.First(&account, "id = ?", annotation.AccountID).Error; err != nil {
@@ -55,7 +55,7 @@ func (ap *AnnotationRepoImpl) CreateMessageAnnotation(ctx context.Context, annot
 
 func (ap *AnnotationRepoImpl) UpdateMessageAnnotation(ctx context.Context, id, answer, question string) error {
 	if err := ap.db.Model(&po_entity.MessageAnnotation{}).Select("content", "question").Where("id = ?", id).Updates(map[string]string{"content": answer, "question": question}).Error; err != nil {
-		return errors.WithCode(code.ErrDatabase, err.Error())
+		return errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return nil
 }

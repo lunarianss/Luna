@@ -88,7 +88,7 @@ func (ad *WebAppRepoImpl) GenerateUniqueCodeForSite(ctx context.Context) (string
 	siteCode, err := util.GenerateRandomString(16)
 
 	if err != nil {
-		return "", errors.WithCode(code.ErrRunTimeCaller, err.Error())
+		return "", errors.WithSCode(code.ErrRunTimeCaller, err.Error())
 	}
 
 	for {
@@ -111,7 +111,7 @@ func (ad *WebAppRepoImpl) CreateSite(ctx context.Context, site *po_entity.Site, 
 		dbIns = ad.db
 	}
 	if err := dbIns.Create(site).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return site, nil
 
@@ -125,7 +125,7 @@ func (ad *WebAppRepoImpl) CreateInstallApp(ctx context.Context, installApp *po_e
 		dbIns = ad.db
 	}
 	if err := dbIns.Create(installApp).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return installApp, nil
 }
@@ -138,7 +138,7 @@ func (ad *WebAppRepoImpl) CreateEndUser(ctx context.Context, endUser *po_entity.
 		dbIns = ad.db
 	}
 	if err := dbIns.Create(endUser).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return endUser, nil
 }

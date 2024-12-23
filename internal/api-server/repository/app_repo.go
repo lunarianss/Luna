@@ -37,14 +37,14 @@ func (ad *AppRepoImpl) CreateApp(ctx context.Context, tx *gorm.DB, app *po_entit
 	}
 
 	if err := dbIns.Create(app).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return app, nil
 }
 
 func (ad *AppRepoImpl) CreateServiceToken(ctx context.Context, token *po_entity.ApiToken) (*po_entity.ApiToken, error) {
 	if err := ad.db.Create(token).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return token, nil
 }
@@ -59,14 +59,14 @@ func (ad *AppRepoImpl) CreateAppConfig(ctx context.Context, tx *gorm.DB, appConf
 	}
 
 	if err := dbIns.Create(appConfig).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return appConfig, nil
 }
 
 func (ad *AppRepoImpl) UpdateAppConfigID(ctx context.Context, app *po_entity.App) error {
 	if err := ad.db.Model(app).Where("id = ?", app.ID).Update("app_model_config_id", app.AppModelConfigID).Error; err != nil {
-		return errors.WithCode(code.ErrDatabase, err.Error())
+		return errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return nil
 }
@@ -91,19 +91,19 @@ func (ad *AppRepoImpl) CreateAppWithConfig(ctx context.Context, tx *gorm.DB, app
 	}
 
 	if err := dbIns.Create(app).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 
 	appConfig.AppID = app.ID
 
 	if err := dbIns.Create(appConfig).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 
 	app.AppModelConfigID = appConfig.ID
 
 	if err := dbIns.Model(app).Update("app_model_config_id", appConfig.ID).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 
 	return app, nil
@@ -111,14 +111,14 @@ func (ad *AppRepoImpl) CreateAppWithConfig(ctx context.Context, tx *gorm.DB, app
 
 func (ad *AppRepoImpl) UpdateEnableAppSite(ctx context.Context, app *po_entity.App) (*po_entity.App, error) {
 	if err := ad.db.Model(&po_entity.App{}).Select("enable_site", "updated_by", "updated_at").Where("id = ?", app.ID).Updates(app).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return app, nil
 }
 
 func (ad *AppRepoImpl) UpdateEnableAppApi(ctx context.Context, app *po_entity.App) (*po_entity.App, error) {
 	if err := ad.db.Model(&po_entity.App{}).Select("enable_api", "updated_by", "updated_at").Where("id = ?", app.ID).Updates(app).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return app, nil
 }
@@ -127,7 +127,7 @@ func (ad *AppRepoImpl) GetAppByID(ctx context.Context, appID string) (*po_entity
 	var app po_entity.App
 
 	if err := ad.db.First(&app, "id = ?", appID).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return &app, nil
 }
@@ -135,7 +135,7 @@ func (ad *AppRepoImpl) GetAppByID(ctx context.Context, appID string) (*po_entity
 func (ad *AppRepoImpl) GetAppModelConfigById(ctx context.Context, appConfigID, appID string) (*po_entity.AppModelConfig, error) {
 	var appConfig po_entity.AppModelConfig
 	if err := ad.db.First(&appConfig, "id = ? AND app_id = ?", appConfigID, appID).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return &appConfig, nil
 }
@@ -143,7 +143,7 @@ func (ad *AppRepoImpl) GetAppModelConfigById(ctx context.Context, appConfigID, a
 func (ad *AppRepoImpl) GetTenantApp(ctx context.Context, appID, tenantID string) (*po_entity.App, error) {
 	var app po_entity.App
 	if err := ad.db.First(&app, "id = ? AND tenant_id = ? AND status = ?", appID, tenantID, "normal").Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return &app, nil
 }
@@ -182,7 +182,7 @@ func (ad *AppRepoImpl) GenerateServiceToken(ctx context.Context, num int) (strin
 	token, err := util.GenerateRandomString(16)
 
 	if err != nil {
-		return "", errors.WithCode(code.ErrRunTimeCaller, err.Error())
+		return "", errors.WithSCode(code.ErrRunTimeCaller, err.Error())
 	}
 
 	for {

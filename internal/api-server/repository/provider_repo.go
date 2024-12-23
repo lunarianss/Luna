@@ -36,7 +36,7 @@ func (mpd *ProviderRepoImpl) GetTenantProvider(ctx context.Context, tenantId str
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		} else {
-			return nil, errors.WithCode(code.ErrDatabase, err.Error())
+			return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 		}
 	}
 	return provider, nil
@@ -48,7 +48,7 @@ func (mpd *ProviderRepoImpl) GetTenantModelProviders(ctx context.Context, tenant
 	var tenantProviders []*po_entity.Provider
 
 	if err := mpd.db.Where("tenant_id = ? and is_valid = ?", tenantId, 1).Find(&tenantProviders).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return tenantProviders, nil
 }
@@ -117,7 +117,7 @@ func (mpd *ProviderRepoImpl) GetProviderEntity(ctx context.Context, provider str
 
 func (mpd *ProviderRepoImpl) UpdateProvider(ctx context.Context, provider *po_entity.Provider) error {
 	if err := mpd.db.Updates(provider).Error; err != nil {
-		return errors.WithCode(code.ErrDatabase, err.Error())
+		return errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 
 	return nil
@@ -125,7 +125,7 @@ func (mpd *ProviderRepoImpl) UpdateProvider(ctx context.Context, provider *po_en
 
 func (mpd *ProviderRepoImpl) CreateProvider(ctx context.Context, provider *po_entity.Provider) error {
 	if err := mpd.db.Create(provider).Error; err != nil {
-		return errors.WithCode(code.ErrDatabase, err.Error())
+		return errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 
 	return nil

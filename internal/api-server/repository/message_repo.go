@@ -34,7 +34,7 @@ var _ repository.MessageRepo = (*MessageRepoImpl)(nil)
 
 func (md *MessageRepoImpl) CreateMessage(ctx context.Context, message *po_entity.Message) (*po_entity.Message, error) {
 	if err := md.db.Create(message).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return message, nil
 }
@@ -48,34 +48,34 @@ func (md *MessageRepoImpl) DeletePinnedConversation(ctx context.Context, pinnedC
 
 func (md *MessageRepoImpl) CreatePinnedConversation(ctx context.Context, pinnedConversation *po_entity.PinnedConversation) (*po_entity.PinnedConversation, error) {
 	if err := md.db.Create(pinnedConversation).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return pinnedConversation, nil
 }
 
 func (md *MessageRepoImpl) CreateConversation(ctx context.Context, conversation *po_entity.Conversation) (*po_entity.Conversation, error) {
 	if err := md.db.Create(conversation).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return conversation, nil
 }
 
 func (md *MessageRepoImpl) UpdateMessage(ctx context.Context, message *po_entity.Message) error {
 	if err := md.db.Updates(message).Error; err != nil {
-		return errors.WithCode(code.ErrDatabase, err.Error())
+		return errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return nil
 }
 
 func (md *MessageRepoImpl) UpdateConversationUpdateAt(ctx context.Context, appID string, conversation *po_entity.Conversation) error {
 	if err := md.db.Model(conversation).Where("id = ? AND status = ? AND app_id = ?", conversation.ID, "normal", appID).Update("updated_at", conversation.UpdatedAt).Error; err != nil {
-		return errors.WithCode(code.ErrDatabase, err.Error())
+		return errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return nil
 }
 func (md *MessageRepoImpl) UpdateConversationName(ctx context.Context, conversation *po_entity.Conversation) error {
 	if err := md.db.Model(conversation).Where("id = ?", conversation.ID).Select("name", "updated_at").Updates(conversation).Error; err != nil {
-		return errors.WithCode(code.ErrDatabase, err.Error())
+		return errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return nil
 }
@@ -140,7 +140,7 @@ func (md *MessageRepoImpl) StatisticAverageSessionInteraction(ctx context.Contex
 		"start_created_at": startTimeUTC,
 		"end_created_at":   endTimeUTC,
 	}).Scan(&rets).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 
 	return rets, nil
@@ -189,7 +189,7 @@ func (md *MessageRepoImpl) StatisticDailyUsers(ctx context.Context, appID, start
 		"start_created_at": startTimeUTC,
 		"end_created_at":   endTimeUTC,
 	}).Scan(&rets).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 
 	return rets, nil
@@ -205,7 +205,7 @@ func (md *MessageRepoImpl) StatisticDailyConversations(ctx context.Context, appI
 	timezoneIns, err := time.LoadLocation(location)
 
 	if err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 
 	sqlQuery := "SELECT DATE_FORMAT(DATE(CONVERT_TZ(FROM_UNIXTIME(conversations.created_at), '+00:00', @timezone)), '%Y-%m-%d')as date, COUNT(*) as message_count FROM conversations WHERE app_id = @app_id"
@@ -215,7 +215,7 @@ func (md *MessageRepoImpl) StatisticDailyConversations(ctx context.Context, appI
 		startTimeUTC = startTime.UTC().Unix()
 
 		if err != nil {
-			return nil, errors.WithCode(code.ErrDatabase, err.Error())
+			return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 		}
 		sqlQuery += " AND created_at >= @start_created_at"
 	}
@@ -223,7 +223,7 @@ func (md *MessageRepoImpl) StatisticDailyConversations(ctx context.Context, appI
 	if end != "" {
 		endTime, err := time.ParseInLocation("2006-01-02 15:04", end, timezoneIns)
 		if err != nil {
-			return nil, errors.WithCode(code.ErrDatabase, err.Error())
+			return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 		}
 		endTimeUTC = endTime.UTC().Unix()
 		sqlQuery += " AND created_at < @end_created_at"
@@ -237,7 +237,7 @@ func (md *MessageRepoImpl) StatisticDailyConversations(ctx context.Context, appI
 		"start_created_at": startTimeUTC,
 		"end_created_at":   endTimeUTC,
 	}).Scan(&rets).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 
 	return rets, nil
@@ -253,7 +253,7 @@ func (md *MessageRepoImpl) StatisticTokenCosts(ctx context.Context, appID, start
 	timezoneIns, err := time.LoadLocation(location)
 
 	if err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 
 	sqlQuery := "SELECT DATE_FORMAT(DATE(CONVERT_TZ(FROM_UNIXTIME(messages.created_at), '+00:00', @timezone)), '%Y-%m-%d') as date, (SUM(messages.message_tokens) + SUM(messages.answer_tokens)) AS token_count, SUM(total_price) AS total_price FROM messages WHERE app_id = @app_id"
@@ -263,7 +263,7 @@ func (md *MessageRepoImpl) StatisticTokenCosts(ctx context.Context, appID, start
 		startTimeUTC = startTime.UTC().Unix()
 
 		if err != nil {
-			return nil, errors.WithCode(code.ErrDatabase, err.Error())
+			return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 		}
 		sqlQuery += " AND created_at >= @start_created_at"
 	}
@@ -271,7 +271,7 @@ func (md *MessageRepoImpl) StatisticTokenCosts(ctx context.Context, appID, start
 	if end != "" {
 		endTime, err := time.ParseInLocation("2006-01-02 15:04", end, timezoneIns)
 		if err != nil {
-			return nil, errors.WithCode(code.ErrDatabase, err.Error())
+			return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 		}
 		endTimeUTC = endTime.UTC().Unix()
 		sqlQuery += " AND created_at < @end_created_at"
@@ -285,7 +285,7 @@ func (md *MessageRepoImpl) StatisticTokenCosts(ctx context.Context, appID, start
 		"start_created_at": startTimeUTC,
 		"end_created_at":   endTimeUTC,
 	}).Scan(&rets).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 
 	for _, ret := range rets {
@@ -349,7 +349,7 @@ func (md *MessageRepoImpl) GetMessageByID(ctx context.Context, messageID string)
 	var message po_entity.Message
 
 	if err := md.db.First(&message, "id = ?", messageID).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return &message, nil
 }
@@ -368,7 +368,7 @@ func (md *MessageRepoImpl) GetMessageByConversation(ctx context.Context, cID str
 	var message po_entity.Message
 
 	if err := md.db.First(&message, "id = ? AND conversation_id = ?", messageID, cID).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return &message, nil
 }
@@ -377,7 +377,7 @@ func (md *MessageRepoImpl) GetConversationByID(ctx context.Context, conversation
 	var conversation po_entity.Conversation
 
 	if err := md.db.First(&conversation, "id = ?", conversationID).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return &conversation, nil
 }
@@ -385,7 +385,7 @@ func (md *MessageRepoImpl) GetConversationByID(ctx context.Context, conversation
 func (md *MessageRepoImpl) GetMessageCountOfConversation(ctx context.Context, cID string) (int64, error) {
 	var count int64
 	if err := md.db.Model(&po_entity.Message{}).Where("conversation_id = ?", cID).Count(&count).Error; err != nil {
-		return 0, errors.WithCode(code.ErrDatabase, err.Error())
+		return 0, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return count, nil
 }
@@ -394,7 +394,7 @@ func (md *MessageRepoImpl) GetConversationByApp(ctx context.Context, conversatio
 	var conversation po_entity.Conversation
 
 	if err := md.db.First(&conversation, "id = ? AND app_id = ?", conversationID, appID).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return &conversation, nil
 }
@@ -413,7 +413,7 @@ func (md *MessageRepoImpl) GetConversationByUser(ctx context.Context, appID, con
 	}
 
 	if err := db.Where("id = ? AND status = ? AND app_id = ?", conversationID, "normal", appID).First(&conversation).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return &conversation, nil
 }
@@ -499,11 +499,11 @@ func (md *MessageRepoImpl) FindConversationsInConsole(ctx context.Context, page,
 	timezoneIns, err := time.LoadLocation(timezone)
 
 	if err != nil {
-		return nil, 0, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+		return nil, 0, errors.WithSCode(code.ErrRunTimeCaller, err.Error())
 	}
 
 	if err := md.db.Exec("SET SESSION sql_mode = REPLACE(@@sql_mode, 'ONLY_FULL_GROUP_BY', '')").Error; err != nil {
-		return nil, 0, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, 0, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 
 	subQuery := md.db.Model(&po_entity.Conversation{}).Select("conversations.id AS conversation_id, end_users.session_id AS from_end_user_session_id").Joins("LEFT JOIN end_users ON conversations.from_end_user_id = end_users.id")
@@ -520,7 +520,7 @@ func (md *MessageRepoImpl) FindConversationsInConsole(ctx context.Context, page,
 		startTime, err := time.ParseInLocation("2006-01-02 15:04", start, timezoneIns)
 
 		if err != nil {
-			return nil, 0, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+			return nil, 0, errors.WithSCode(code.ErrRunTimeCaller, err.Error())
 		}
 
 		startTimeUTC := startTime.UTC().Unix()
@@ -538,7 +538,7 @@ func (md *MessageRepoImpl) FindConversationsInConsole(ctx context.Context, page,
 		endTime, err := time.ParseInLocation("2006-01-02 15:04", end, timezoneIns)
 
 		if err != nil {
-			return nil, 0, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+			return nil, 0, errors.WithSCode(code.ErrRunTimeCaller, err.Error())
 		}
 		endTimeUTC := endTime.UTC().Unix()
 
@@ -567,7 +567,7 @@ func (md *MessageRepoImpl) FindConversationsInConsole(ctx context.Context, page,
 	}
 
 	if err := mainQuery.Model(&po_entity.Conversation{}).Count(&count).Scopes(mysql.Paginate(page, pageSize)).Find(&conversations).Error; err != nil {
-		return nil, 0, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, 0, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 
 	if err := md.db.Exec("SET SESSION sql_mode = CONCAT(@@sql_mode, ',ONLY_FULL_GROUP_BY')").Error; err != nil {
@@ -594,7 +594,7 @@ func (md *MessageRepoImpl) FindConsoleAppMessages(ctx context.Context, conversat
 		}
 	} else {
 		if err := md.db.Model(&po_entity.Message{}).Order("created_at DESC").Limit(pageSize).Where("conversation_id = ?", conversationID).Count(&count).Find(&ret).Error; err != nil {
-			return nil, 0, errors.WithCode(code.ErrDatabase, err.Error())
+			return nil, 0, errors.WithSCode(code.ErrDatabase, err.Error())
 		}
 	}
 

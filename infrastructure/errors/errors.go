@@ -97,6 +97,7 @@
 package errors
 
 import (
+	"errors"
 	"fmt"
 	"io"
 )
@@ -180,6 +181,14 @@ func (w *withCode) Unwrap() error { return w.cause }
 func WithCode(code int, format string, args ...interface{}) error {
 	return &withCode{
 		err:   fmt.Errorf(format, args...),
+		code:  code,
+		stack: callers(),
+	}
+}
+
+func WithSCode(code int, format string) error {
+	return &withCode{
+		err:   errors.New(format),
 		code:  code,
 		stack: callers(),
 	}

@@ -33,7 +33,7 @@ func (td *TenantRepoImpl) CreateOwnerTenant(ctx context.Context, tenant *po_enti
 	}
 
 	if err := dbIns.Create(tenant).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return tenant, nil
 }
@@ -50,7 +50,7 @@ func (td *TenantRepoImpl) FindTenantJoinByAccount(ctx context.Context, account *
 	}
 
 	if err := dbIns.Scopes(mysql.IDDesc()).Limit(1).Find(&tenantJoin, "account_id = ?", account.ID).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return &tenantJoin, nil
 }
@@ -59,7 +59,7 @@ func (td *TenantRepoImpl) GetTenantByID(ctx context.Context, ID string) (*po_ent
 	var tenant po_entity.Tenant
 
 	if err := td.db.First(&tenant, "id = ?", ID).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return &tenant, nil
 }
@@ -75,7 +75,7 @@ func (td *TenantRepoImpl) HasRoles(ctx context.Context, tenant *po_entity.Tenant
 
 	var tenantMember []*po_entity.TenantAccountJoin
 	if err := dbIns.Where("role IN ? AND tenant_id = ?", roles, tenant.ID).Find(&tenantMember).Error; err != nil {
-		return false, errors.WithCode(code.ErrDatabase, err.Error())
+		return false, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 
 	return len(tenantMember) != 0, nil
@@ -93,7 +93,7 @@ func (td *TenantRepoImpl) FindTenantsJoinByAccount(ctx context.Context, account 
 	var tenantJoinResults []*po_entity.TenantJoinResult
 
 	if err := td.db.Table("tenants").Select("tenants.id as tenant_id, tenant_account_joins.role as tenant_join_role, tenants.name as tenant_name, tenants.plan as tenant_plan, tenants.status as tenant_status, tenants.created_at as tenant_created_at, tenants.updated_at as tenant_updated_at, tenants.custom_config as tenants_custom_config, tenant_account_joins.current as tenant_join_current").Joins("join tenant_account_joins on tenants.id = tenant_account_joins.tenant_id").Scan(&tenantJoinResults).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 
 	return tenantJoinResults, nil
@@ -112,7 +112,7 @@ func (td *TenantRepoImpl) GetTenantJoinOfAccount(ctx context.Context, tenant *po
 	var tenantAccountJoin po_entity.TenantAccountJoin
 
 	if err := dbIns.Find(&tenantAccountJoin, "account_id = ? AND tenant_id = ?", account.ID, tenant.ID).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 
 	return &tenantAccountJoin, nil
@@ -128,7 +128,7 @@ func (td *TenantRepoImpl) UpdateRoleTenantOfAccount(ctx context.Context, ta *po_
 	}
 
 	if err := dbIns.Model(ta).Where("id = ?", ta.ID).Update("role", ta.Role).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 
 	return ta, nil
@@ -165,7 +165,7 @@ func (td *TenantRepoImpl) CreateCurrentTenantJoinOfAccount(ctx context.Context, 
 	}
 
 	if err := dbIns.Create(tenantAccountJoin).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 
 	return tenantAccountJoin, nil

@@ -32,7 +32,7 @@ func (md *ModelProviderRepoImpl) GetTenantModel(ctx context.Context, tenantId, p
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		} else {
-			return nil, errors.WithCode(code.ErrDatabase, err.Error())
+			return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 		}
 	}
 	return model, nil
@@ -40,14 +40,14 @@ func (md *ModelProviderRepoImpl) GetTenantModel(ctx context.Context, tenantId, p
 
 func (md *ModelProviderRepoImpl) UpdateModel(ctx context.Context, model *po_entity.ProviderModel) error {
 	if err := md.db.Updates(model).Error; err != nil {
-		return errors.WithCode(code.ErrDatabase, err.Error())
+		return errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return nil
 }
 
 func (md *ModelProviderRepoImpl) CreateModel(ctx context.Context, model *po_entity.ProviderModel) error {
 	if err := md.db.Create(model).Error; err != nil {
-		return errors.WithCode(code.ErrDatabase, err.Error())
+		return errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return nil
 }
@@ -58,7 +58,7 @@ func (md *ModelProviderRepoImpl) GetTenantDefaultModel(ctx context.Context, tena
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		} else {
-			return nil, errors.WithCode(code.ErrDatabase, err.Error())
+			return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 		}
 	}
 	return &defaultModel, nil
@@ -66,14 +66,14 @@ func (md *ModelProviderRepoImpl) GetTenantDefaultModel(ctx context.Context, tena
 
 func (md *ModelProviderRepoImpl) CreateTenantDefaultModel(ctx context.Context, tenantDefaultModel *po_entity.TenantDefaultModel) (*po_entity.TenantDefaultModel, error) {
 	if err := md.db.Create(tenantDefaultModel).Error; err != nil {
-		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return tenantDefaultModel, nil
 }
 
 func (md *ModelProviderRepoImpl) UpdateTenantDefaultModel(ctx context.Context, tenantDefaultModel *po_entity.TenantDefaultModel) error {
 	if err := md.db.Model(&po_entity.TenantDefaultModel{}).Select("provider_name", "model_name").Where("tenant_id = ? and model_type = ?", tenantDefaultModel.TenantID, tenantDefaultModel.ModelType).Updates(tenantDefaultModel).Error; err != nil {
-		return errors.WithCode(code.ErrDatabase, err.Error())
+		return errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 
 	return nil

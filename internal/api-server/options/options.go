@@ -26,6 +26,7 @@ type Options struct {
 	JwtOptions              *options.JwtOptions             `json:"jwt" mapstructure:"jwt"`
 	SystemOptions           *options.SystemOptions          `json:"system" mapstructure:"system"`
 	MQOptions               *options.RocketMQOptions        `json:"rocket-mq" mapstructure:"rocket-mq"`
+	WeaviateOptions         *options.WeaviateOptions        `json:"weaviate" mapstructure:"weaviate"`
 }
 
 // NewOptions creates a new Options object with default parameters.
@@ -43,6 +44,7 @@ func NewOptions() *Options {
 		JwtOptions:              options.NewJwtOptions(),
 		SystemOptions:           options.NewSystemOptions(),
 		MQOptions:               options.NewRocketMQOptions(),
+		WeaviateOptions:         options.NewWeaviateOptions(),
 	}
 
 	return &o

@@ -7,14 +7,18 @@ package domain_service
 import (
 	"context"
 
+	"github.com/lunarianss/Luna/internal/api-server/domain/dataset/repository"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/dataset"
 )
 
 type DatasetDomain struct {
+	DatasetRepo repository.DatasetRepo
 }
 
-func NewDatasetDomain() *DatasetDomain {
-	return &DatasetDomain{}
+func NewDatasetDomain(datasetRepo repository.DatasetRepo) *DatasetDomain {
+	return &DatasetDomain{
+		DatasetRepo: datasetRepo,
+	}
 }
 
 func (d *DatasetDomain) GetFileUploadConfiguration(ctx context.Context) (*dto.FileUploadConfigurationResponse, error) {

@@ -10,17 +10,19 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/domain/dataset/domain_service"
 	controller "github.com/lunarianss/Luna/internal/api-server/interface/gin/v1/dataset"
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
+	repo_impl "github.com/lunarianss/Luna/internal/api-server/repository"
+	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
 )
 
 type DatasetRoutes struct {
 }
 
 func (a *DatasetRoutes) Register(g *gin.Engine) error {
-	// gormIns, err := mysql.GetMySQLIns(nil)
+	gormIns, err := mysql.GetMySQLIns(nil)
 
-	// if err != nil {
-	// 	return err
-	// }
+	if err != nil {
+		return err
+	}
 
 	// redisIns, err := redis.GetRedisIns(nil)
 
@@ -41,9 +43,11 @@ func (a *DatasetRoutes) Register(g *gin.Engine) error {
 	// 	return err
 	// }
 
+	datasetRepo := repo_impl.NewDatasetRepoImpl(gormIns)
+
 	// domain
 
-	datasetDomain := domain_service.NewDatasetDomain()
+	datasetDomain := domain_service.NewDatasetDomain(datasetRepo)
 	// service
 	datasetService := service.NewDatasetService(datasetDomain)
 	datasetController := controller.NewDatasetController(datasetService)

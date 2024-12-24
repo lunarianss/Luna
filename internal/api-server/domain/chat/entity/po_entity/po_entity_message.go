@@ -5,8 +5,6 @@
 package po_entity
 
 import (
-	"fmt"
-
 	"github.com/google/uuid"
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
@@ -183,7 +181,7 @@ func (msg *PromptMessage) ConvertToRequestData() (map[string]interface{}, error)
 			requestData["role"] = "user"
 			requestData["content"] = subMessage
 		default:
-			return nil, errors.WithCode(code.ErrTypeOfPromptMessage, fmt.Sprintf("value %T is not string or []*promptMessageContent type", msg.Content))
+			return nil, errors.WithCode(code.ErrTypeOfPromptMessage, "value %T is not string or []*promptMessageContent type", msg.Content)
 		}
 	} else if msg.Role == ASSISTANT {
 		requestData["role"] = "assistant"

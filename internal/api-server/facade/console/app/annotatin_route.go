@@ -14,6 +14,7 @@ import (
 	controller "github.com/lunarianss/Luna/internal/api-server/interface/gin/v1/annotation"
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
 	repo_impl "github.com/lunarianss/Luna/internal/api-server/repository"
+	"github.com/lunarianss/Luna/internal/infrastructure/mq"
 	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
 	"github.com/lunarianss/Luna/internal/infrastructure/redis"
 )
@@ -28,6 +29,12 @@ func (a *AnnotationRoutes) Register(g *gin.Engine) error {
 	}
 
 	redisIns, err := redis.GetRedisIns(nil)
+
+	if err != nil {
+		return err
+	}
+
+	mqProducer, err := mq.GetMQProducerIns(nil)
 
 	if err != nil {
 		return err
@@ -49,7 +56,7 @@ func (a *AnnotationRoutes) Register(g *gin.Engine) error {
 	appDomain := appDomain.NewAppDomain(appRepo, webAppRepo, gormIns)
 	accountDomain := accountDomain.NewAccountDomain(accountRepo, nil, nil, nil, tenantRepo)
 	chatDomain := chatDomain.NewChatDomain(messageRepo, annotationRepo)
-	annotationService := service.NewAnnotationService(appDomain, providerDomain, accountDomain, chatDomain, redisIns)
+	annotationService := service.NewAnnotationService(appDomain, providerDomain, accountDomain, chatDomain, redisIns, mqProducer)
 	annotationController := controller.NewAnnotationController(annotationService)
 
 	v1 := g.Group("/v1")

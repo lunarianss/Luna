@@ -6,11 +6,15 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
+	"github.com/apache/rocketmq-client-go/v2"
+	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/google/uuid"
 	"github.com/lunarianss/Luna/infrastructure/errors"
+	"github.com/lunarianss/Luna/infrastructure/log"
 	assembler "github.com/lunarianss/Luna/internal/api-server/assembler/chat"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
@@ -20,6 +24,7 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	dto_app "github.com/lunarianss/Luna/internal/api-server/dto/app"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
+	"github.com/lunarianss/Luna/internal/api-server/event"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
@@ -32,15 +37,18 @@ type AnnotationService struct {
 	chatDomain     *chatDomain.ChatDomain
 
 	redis *redis.Client
+
+	mq rocketmq.Producer
 }
 
-func NewAnnotationService(appDomain *appDomain.AppDomain, providerDomain *domain_service.ProviderDomain, accountDomain *accountDomain.AccountDomain, chatDomain *chatDomain.ChatDomain, redis *redis.Client) *AnnotationService {
+func NewAnnotationService(appDomain *appDomain.AppDomain, providerDomain *domain_service.ProviderDomain, accountDomain *accountDomain.AccountDomain, chatDomain *chatDomain.ChatDomain, redis *redis.Client, mq rocketmq.Producer) *AnnotationService {
 	return &AnnotationService{
 		appDomain:      appDomain,
 		providerDomain: providerDomain,
 		accountDomain:  accountDomain,
 		chatDomain:     chatDomain,
 		redis:          redis,
+		mq:             mq,
 	}
 }
 
@@ -115,7 +123,7 @@ func (as *AnnotationService) InsertAnnotationFromMessage(ctx context.Context, ac
 		}
 	}
 
-	_, err = as.chatDomain.AnnotationRepo.GetAnnotationSetting(ctx, app.ID)
+	_, err = as.chatDomain.AnnotationRepo.GetAnnotationSetting(ctx, app.ID, nil)
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -173,8 +181,34 @@ func (as *AnnotationService) EnableAppAnnotation(ctx context.Context, appID, acc
 		return nil, err
 	}
 
-	// todo 使用 rocketmq 发送异步任务
+	enableAnnotationMessageBody := event.EnableAnnotationReplyTask{
+		JobID:                 jobID,
+		AppID:                 appID,
+		AccountID:             accountID,
+		TenantID:              tenant.ID,
+		ScoreThreshold:        args.ScoreThreshold,
+		EmbeddingProviderName: args.EmbeddingProviderName,
+		EmbeddingModelName:    args.EmbeddingModelName,
+	}
+
+	marshalMessageBody, err := json.Marshal(enableAnnotationMessageBody)
+
+	if err != nil {
+		return nil, err
+	}
+
+	message := &primitive.Message{
+		Topic: event.AnnotationTopic,
+		Body:  marshalMessageBody,
+	}
+
+	sendResult, err := as.mq.SendSync(ctx, message)
+
+	if err != nil {
+		return nil, errors.WithCode(code.ErrMQSend, "mq send sync error when send enable app annotation: %s", err.Error())
+	}
+
+	log.Infof("MQ-Send-Result %s", sendResult.String())
 
 	return dto_app.NewApplyAnnotationWaiting(jobID), nil
-
 }

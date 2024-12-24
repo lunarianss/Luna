@@ -1,6 +1,9 @@
 package po_entity
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -50,4 +53,10 @@ func (a *Dataset) TableName() string {
 func (a *Dataset) BeforeCreate(tx *gorm.DB) (err error) {
 	a.ID = uuid.NewString()
 	return
+}
+
+func (a *Dataset) GetCollectionNameByID(id string) string {
+	id = strings.ReplaceAll(id, "-", "_")
+	return fmt.Sprintf("Vector_index_%s_Node", id)
+
 }

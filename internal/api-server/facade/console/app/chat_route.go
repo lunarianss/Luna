@@ -14,6 +14,7 @@ import (
 	controller "github.com/lunarianss/Luna/internal/api-server/interface/gin/v1/chat"
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
 	repo_impl "github.com/lunarianss/Luna/internal/api-server/repository"
+	"github.com/lunarianss/Luna/internal/infrastructure/mq"
 	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
 	"github.com/lunarianss/Luna/internal/infrastructure/redis"
 )
@@ -28,6 +29,12 @@ func (a *ChatRoutes) Register(g *gin.Engine) error {
 	}
 
 	redisIns, err := redis.GetRedisIns(nil)
+
+	if err != nil {
+		return err
+	}
+
+	mqProducer, err := mq.GetMQProducerIns(nil)
 
 	if err != nil {
 		return err
@@ -52,7 +59,7 @@ func (a *ChatRoutes) Register(g *gin.Engine) error {
 
 	// service
 	chatService := service.NewChatService(appDomain, providerDomain, accountDomain, chatDomain)
-	annotationService := service.NewAnnotationService(appDomain, providerDomain, accountDomain, chatDomain, redisIns)
+	annotationService := service.NewAnnotationService(appDomain, providerDomain, accountDomain, chatDomain, redisIns, mqProducer)
 	chatController := controller.NewChatController(chatService, annotationService)
 
 	v1 := g.Group("/v1")

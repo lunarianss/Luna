@@ -30,6 +30,8 @@ func init() {
 	errors.Enroll(ErrRestfulId, 400, "Error occurred while parse restful id from url")
 	errors.Enroll(ErrRunTimeCaller, 500, "Error occurred while call a system call")
 	errors.Enroll(ErrRunTimeConfig, 500, "Error occurred while runtime config is nil")
+	errors.Enroll(ErrMQSend, 500, "Error occurred while send message to mq")
+	errors.Enroll(ErrConcurrentLock, 500, "Please don't click repeatedly")
 	errors.Enroll(ErrDatabase, 500, "Database error")
 	errors.Enroll(ErrRecordNotFound, 500, "Database record not found")
 	errors.Enroll(ErrScanToField, 400, "Database scan error to field")

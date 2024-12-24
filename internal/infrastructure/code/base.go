@@ -27,7 +27,6 @@ const (
 
 	// ErrResourceNotFound - 404: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 	ErrResourceNotFound
-
 	// ErrRestfulId - 400: Error occurred while parse restful id from url.
 	ErrRestfulId
 	// ErrRunTimeCaller - 500: Error occurred while call a system call.
@@ -36,6 +35,8 @@ const (
 	ErrRunTimeConfig
 	// ErrMQSend - 500: Error occurred while send message to mq.
 	ErrMQSend
+	// ErrConcurrentLock - 500: Please don't click repeatedly.
+	ErrConcurrentLock
 )
 
 // common: database errors.

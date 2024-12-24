@@ -23,6 +23,7 @@ import (
 	"github.com/lunarianss/Luna/internal/infrastructure/redis"
 	"github.com/lunarianss/Luna/internal/infrastructure/server"
 	"github.com/lunarianss/Luna/internal/infrastructure/validation"
+	"github.com/lunarianss/Luna/internal/infrastructure/weaviate"
 )
 
 type LunaApiServer struct {
@@ -99,6 +100,12 @@ func (s *LunaApiServer) Run() error {
 	}
 
 	if err := s.APIServer.InitMQConsumer(context.Background(), s.GracefulShutdown); err != nil {
+		return err
+	}
+
+	_, err = weaviate.GetWeaviateClient(s.AppRuntimeConfig.WeaviateOptions)
+
+	if err != nil {
 		return err
 	}
 

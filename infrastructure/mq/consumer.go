@@ -13,11 +13,11 @@ type MQConsumer struct {
 	mqc rocketmq.PushConsumer
 }
 
-func NewConsumer(opt *options.RocketMQOptions) (*MQConsumer, error) {
+func NewAuthTopicConsumer(opt *options.RocketMQOptions) (*MQConsumer, error) {
 	rlog.SetLogLevel("warn")
 
 	c, err := rocketmq.NewPushConsumer(
-		consumer.WithGroupName(opt.GroupName),
+		consumer.WithGroupName(opt.AuthGroupName),
 		consumer.WithNsResolver(primitive.NewPassthroughResolver(opt.Endpoint)),
 		consumer.WithConsumerModel(consumer.Clustering),
 		consumer.WithMaxReconsumeTimes(int32(opt.ConsumerRetry)),
@@ -26,6 +26,8 @@ func NewConsumer(opt *options.RocketMQOptions) (*MQConsumer, error) {
 			AccessKey: opt.AccessKey,
 		}),
 		consumer.WithNamespace(opt.Namespace),
+		consumer.WithConsumeMessageBatchMaxSize(9),
+		consumer.WithConsumeFromWhere(consumer.ConsumeFromLastOffset),
 	)
 
 	if err != nil {
@@ -36,7 +38,33 @@ func NewConsumer(opt *options.RocketMQOptions) (*MQConsumer, error) {
 	return &MQConsumer{
 		mqc: c,
 	}, nil
+}
 
+func NewAnnotationTopicConsumer(opt *options.RocketMQOptions) (*MQConsumer, error) {
+	rlog.SetLogLevel("warn")
+
+	c, err := rocketmq.NewPushConsumer(
+		consumer.WithGroupName(opt.AnnotationGroupName),
+		consumer.WithNsResolver(primitive.NewPassthroughResolver(opt.Endpoint)),
+		consumer.WithConsumerModel(consumer.Clustering),
+		consumer.WithMaxReconsumeTimes(int32(opt.ConsumerRetry)),
+		consumer.WithCredentials(primitive.Credentials{
+			SecretKey: opt.SecretKey,
+			AccessKey: opt.AccessKey,
+		}),
+		consumer.WithNamespace(opt.Namespace),
+		consumer.WithConsumeMessageBatchMaxSize(1),
+		consumer.WithConsumeFromWhere(consumer.ConsumeFromLastOffset),
+	)
+
+	if err != nil {
+		log.Infof("init producer error: %+v", err.Error())
+		return nil, err
+	}
+
+	return &MQConsumer{
+		mqc: c,
+	}, nil
 }
 
 func (mq *MQConsumer) Shutdown() {

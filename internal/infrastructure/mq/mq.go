@@ -11,10 +11,13 @@ import (
 )
 
 var (
-	once          sync.Once
-	consumerOnce  sync.Once
-	MQProducerIns rocketmq.Producer
-	MQConsumerIns rocketmq.PushConsumer
+	once                   sync.Once
+	authConsumerOnce       sync.Once
+	annotationConsumerOnce sync.Once
+
+	MQProducerIns                rocketmq.Producer
+	MQAuthTopicConsumerIns       rocketmq.PushConsumer
+	MQAnnotationTopicConsumerIns rocketmq.PushConsumer
 )
 
 func GetMQProducerIns(opt *options.RocketMQOptions) (rocketmq.Producer, error) {
@@ -39,24 +42,45 @@ func GetMQProducerIns(opt *options.RocketMQOptions) (rocketmq.Producer, error) {
 
 }
 
-func GetMQConsumerIns(opt *options.RocketMQOptions) (rocketmq.PushConsumer, error) {
+func GetMQAuthTopicConsumerIns(opt *options.RocketMQOptions) (rocketmq.PushConsumer, error) {
 	var (
 		err        error
 		mqConsumer *mq.MQConsumer
 	)
 
-	consumerOnce.Do(func() {
-		mqConsumer, err = mq.NewConsumer(opt)
+	authConsumerOnce.Do(func() {
+		mqConsumer, err = mq.NewAuthTopicConsumer(opt)
 		if err != nil {
 			log.Error(err)
 		}
-		MQConsumerIns = mqConsumer.GetConsumer()
+
+		MQAuthTopicConsumerIns = mqConsumer.GetConsumer()
 	})
 
-	if MQConsumerIns == nil || err != nil {
-		return nil, fmt.Errorf("failed to get mq consumer factory, mqFactory: %+v, error: %w", MQConsumerIns, err)
+	if MQAuthTopicConsumerIns == nil || err != nil {
+		return nil, fmt.Errorf("failed to get mq consumer factory, mqFactory: %+v, error: %w", MQAuthTopicConsumerIns, err)
 	}
 
-	return MQConsumerIns, nil
+	return MQAuthTopicConsumerIns, nil
+}
 
+func GetMQAnnotationTopicConsumerIns(opt *options.RocketMQOptions) (rocketmq.PushConsumer, error) {
+	var (
+		err        error
+		mqConsumer *mq.MQConsumer
+	)
+
+	annotationConsumerOnce.Do(func() {
+		mqConsumer, err = mq.NewAnnotationTopicConsumer(opt)
+		if err != nil {
+			log.Error(err)
+		}
+
+		MQAnnotationTopicConsumerIns = mqConsumer.GetConsumer()
+	})
+
+	if MQAnnotationTopicConsumerIns == nil || err != nil {
+		return nil, fmt.Errorf("failed to get mq consumer factory, mqFactory: %+v, error: %w", MQAnnotationTopicConsumerIns, err)
+	}
+	return MQAnnotationTopicConsumerIns, nil
 }

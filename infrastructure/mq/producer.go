@@ -17,16 +17,14 @@ type MQProducer struct {
 
 func NewProducer(opt *options.RocketMQOptions) (*MQProducer, error) {
 	rlog.SetLogLevel("warn")
-
 	p, err := rocketmq.NewProducer(producer.WithNsResolver(
 		primitive.NewPassthroughResolver(opt.Endpoint)),
 		producer.WithRetry(opt.ProducerRetry),
-		producer.WithGroupName(opt.GroupName),
 		producer.WithCredentials(primitive.Credentials{
 			SecretKey: opt.SecretKey,
 			AccessKey: opt.AccessKey,
 		}),
-		producer.WithSendMsgTimeout(3*time.Second),
+		producer.WithSendMsgTimeout(5*time.Second),
 		producer.WithNamespace(opt.Namespace))
 
 	if err != nil {

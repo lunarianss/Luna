@@ -72,14 +72,24 @@ func (s *LunaApiServer) Run() error {
 		return mqProducer.Shutdown()
 	}))
 
-	mqConsumer, err := mq.GetMQConsumerIns(s.AppRuntimeConfig.MQOptions)
+	// mq consumer
+	mqAuthConsumer, err := mq.GetMQAuthTopicConsumerIns(s.AppRuntimeConfig.MQOptions)
 
 	if err != nil {
 		return err
 	}
 
 	s.GracefulShutdown.AddShutdownCallback(shutdown.ShutdownFunc(func(s string) error {
-		return mqConsumer.Shutdown()
+		return mqAuthConsumer.Shutdown()
+	}))
+
+	mqAnnotationConsumer, err := mq.GetMQAnnotationTopicConsumerIns(s.AppRuntimeConfig.MQOptions)
+
+	if err != nil {
+		return err
+	}
+	s.GracefulShutdown.AddShutdownCallback(shutdown.ShutdownFunc(func(s string) error {
+		return mqAnnotationConsumer.Shutdown()
 	}))
 
 	_ = jwt.NewJWT(s.AppRuntimeConfig.JwtOptions.Key)

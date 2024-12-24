@@ -22,10 +22,6 @@ type SendEmailCodeMessage struct {
 	EmailCode string `json:"email_code"`
 }
 
-type A struct {
-	Name string `json:"name"`
-}
-
 type AuthEvent struct {
 	mq rocketmq.PushConsumer
 }
@@ -33,6 +29,7 @@ type AuthEvent struct {
 func (ae *AuthEvent) GetModule() string {
 	return "mq_consumer_auth_event"
 }
+
 func (ae *AuthEvent) Subscribe(c context.Context, sd *shutdown.GracefulShutdown) error {
 	email, err := email.GetEmailSMTPIns(nil)
 
@@ -50,16 +47,11 @@ func (ae *AuthEvent) Subscribe(c context.Context, sd *shutdown.GracefulShutdown)
 
 	sd.AddShutdownCallback(shutdown.ShutdownFunc(func(s string) error {
 		sig <- struct{}{}
-
-		if ae.mq != nil {
-			ae.mq.Shutdown()
-		}
-
 		return nil
 	}))
 
 	accountDomain := domain_service.NewAccountDomain(nil, nil, config, email, nil)
-	mqConsumer, err := mq.GetMQConsumerIns(nil)
+	mqConsumer, err := mq.GetMQAuthTopicConsumerIns(nil)
 
 	ae.mq = mqConsumer
 
@@ -80,7 +72,6 @@ func (ae *AuthEvent) Subscribe(c context.Context, sd *shutdown.GracefulShutdown)
 				if err := json.Unmarshal(message.Body, &sendMessageBody); err != nil {
 					return consumer.ConsumeRetryLater, err
 				}
-
 				accountDomain.SendEmailHtml(ctx, sendMessageBody.Language, sendMessageBody.Email, sendMessageBody.EmailCode)
 			}
 
@@ -90,11 +81,11 @@ func (ae *AuthEvent) Subscribe(c context.Context, sd *shutdown.GracefulShutdown)
 		err = mqConsumer.Start()
 
 		if err != nil {
-			log.Infof("start producer error: %+v", err.Error())
+			log.Infof("start auth consumer error: %+v", err.Error())
 		}
 
 		<-sig
-		log.Infof("consumer %s exit", ae.GetModule())
+		log.Infof("auth consumer %s exit successfully", ae.GetModule())
 	}()
 
 	return nil

@@ -130,3 +130,8 @@ rocket-mq:
   namespace: Linux_Production
   access-key: xxx
   secret-key: xxx
+
+weaviate:
+  endpoint: 127.0.0.1:8080
+  api-key: xxxx
+  schema: http

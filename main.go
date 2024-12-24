@@ -1,12 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"log"
 )
 
 func main() {
-	err := fmt.Errorf("1233")
 
-	log.Println(err.Error())
+	log.Println(float32(-0.006929283495992422))
+	log.Println(float32(0.12345678))
 }

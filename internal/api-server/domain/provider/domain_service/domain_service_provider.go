@@ -7,7 +7,6 @@ package domain_service
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"slices"
 	"strings"
 
@@ -93,7 +92,7 @@ func (mpd *ProviderDomain) GetModelSchema(ctx context.Context, model string, cre
 			return modelEntity, nil
 		}
 	}
-	return nil, errors.WithCode(code.ErrModelSchemaNotFound, fmt.Sprintf("schema of model %s not found", model))
+	return nil, errors.WithCode(code.ErrModelSchemaNotFound, "schema of model %s not found", model)
 }
 
 func (mpd *ProviderDomain) GetProviderModelBundle(ctx context.Context, tenantId, provider string, modelType common.ModelType) (*biz_entity_provider_config.ProviderModelBundleRuntime, error) {
@@ -106,7 +105,7 @@ func (mpd *ProviderDomain) GetProviderModelBundle(ctx context.Context, tenantId,
 	providerConfiguration, ok := providerConfigurations.Configurations[provider]
 
 	if !ok {
-		return nil, errors.WithCode(code.ErrProviderMapModel, fmt.Sprintf("provider %s not found", provider))
+		return nil, errors.WithCode(code.ErrProviderMapModel, "provider %s not found", provider)
 	}
 
 	providerRuntime, err := mpd.ProviderRepo.GetProviderInstance(ctx, provider)
@@ -122,7 +121,6 @@ func (mpd *ProviderDomain) GetProviderModelBundle(ctx context.Context, tenantId,
 		ProviderInstance:  providerRuntime,
 		ModelTypeInstance: AIModelInstance,
 	}, nil
-
 }
 
 func (mpd *ProviderDomain) GetFirstProviderFirstModel(ctx context.Context, tenantID, modelType string) (string, string, error) {
@@ -140,7 +138,7 @@ func (mpd *ProviderDomain) GetFirstProviderFirstModel(ctx context.Context, tenan
 	}
 
 	if len(firstProviderModels) == 0 {
-		return "", "", errors.WithCode(code.ErrAllModelsEmpty, fmt.Sprintf("tenant %s does not have any type of %s models", tenantID, modelType))
+		return "", "", errors.WithCode(code.ErrAllModelsEmpty, "tenant %s does not have any type of %s models", tenantID, modelType)
 	}
 
 	return firstProviderModels[0].Provider.Provider, firstProviderModels[0].Model, nil
@@ -238,7 +236,7 @@ func (mpd *ProviderDomain) GetDefaultModel(ctx context.Context, tenantId string,
 	}
 
 	if defaultModel == nil {
-		return nil, errors.WithCode(code.ErrDefaultModelNotFound, fmt.Sprintf("default %s model not found", modelType))
+		return nil, errors.WithCode(code.ErrDefaultModelNotFound, "default %s model not found", modelType)
 	}
 
 	providerInstance, err := mpd.ProviderRepo.GetProviderInstance(ctx, defaultModel.ProviderName)
@@ -275,7 +273,7 @@ func (mpd *ProviderDomain) SaveProviderCredentials(ctx context.Context, tenantID
 	providerConfiguration, ok := providerConfigurations.Configurations[provider]
 
 	if !ok {
-		return errors.WithCode(code.ErrProviderMapModel, fmt.Sprintf("when create %s provider credential for provider", provider))
+		return errors.WithCode(code.ErrProviderMapModel, "when create %s provider credential for provider", provider)
 	}
 
 	tenantRecord, err := mpd.TenantRepo.GetTenantByID(ctx, tenantID)

@@ -43,6 +43,8 @@ IAM 系统支持的错误码列表如下：
 | ErrRestfulId | 100008 | 400 | Error occurred while parse restful id from url |
 | ErrRunTimeCaller | 100009 | 500 | Error occurred while call a system call |
 | ErrRunTimeConfig | 100010 | 500 | Error occurred while runtime config is nil |
+| ErrMQSend | 100011 | 500 | Error occurred while send message to mq |
+| ErrConcurrentLock | 100012 | 500 | Please don't click repeatedly |
 | ErrDatabase | 100101 | 500 | Database error |
 | ErrRecordNotFound | 100102 | 500 | Database record not found |
 | ErrScanToField | 100103 | 400 | Database scan error to field |

@@ -10,12 +10,12 @@ var (
 
 type IVectorDB interface {
 	GetType() string
-	Create(ctx context.Context, texts []*Document, embeddings [][]float64, other any) error
+	Create(ctx context.Context, texts []*Document, embeddings [][]float32, other any) error
 	DeleteByMetadataField(ctx context.Context, key string, value string) error
 }
 
 type IEmbeddings interface {
-	EmbedDocuments(ctx context.Context, texts []*Document) ([][]float64, error)
+	EmbedDocuments(ctx context.Context, texts []string) ([][]float32, error)
 }
 
 type Document struct {

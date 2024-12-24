@@ -17,6 +17,7 @@ import (
 	datasetDomain "github.com/lunarianss/Luna/internal/api-server/domain/dataset/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/dataset/entity/biz_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/dataset/entity/po_entity"
+	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	repo_impl "github.com/lunarianss/Luna/internal/api-server/repository"
 	"github.com/lunarianss/Luna/internal/infrastructure/mq"
 	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
@@ -85,14 +86,20 @@ func (ae *AnnotationEvent) Subscribe(c context.Context, sd *shutdown.GracefulShu
 	}))
 
 	// repos
+	tenantRepo := repo_impl.NewTenantRepoImpl(gormIns)
 	appRepo := repo_impl.NewAppRepoImpl(gormIns)
 	messageRepo := repo_impl.NewMessageRepoImpl(gormIns)
+	providerRepo := repo_impl.NewProviderRepoImpl(gormIns)
 	webAppRepo := repo_impl.NewWebAppRepoImpl(gormIns)
-	datasetRepo := repo_impl.NewDatasetRepoImpl(gormIns)
-
+	modelProviderRepo := repo_impl.NewModelProviderRepoImpl(gormIns)
+	providerConfigurationsManager := domain_service.NewProviderConfigurationsManager(providerRepo, modelProviderRepo, "", nil)
 	annotationRepo := repo_impl.NewAnnotationRepoImpl(gormIns)
+	// domain
+	providerDomain := domain_service.NewProviderDomain(providerRepo, modelProviderRepo, tenantRepo, providerConfigurationsManager)
 	appDomain := appDomain.NewAppDomain(appRepo, webAppRepo, gormIns)
 	chatDomain := chatDomain.NewChatDomain(messageRepo, annotationRepo)
+	datasetRepo := repo_impl.NewDatasetRepoImpl(gormIns)
+
 	datasetDomain := datasetDomain.NewDatasetDomain(datasetRepo)
 
 	mqConsumer, err := mq.GetMQAnnotationTopicConsumerIns(nil)
@@ -176,7 +183,7 @@ func (ae *AnnotationEvent) Subscribe(c context.Context, sd *shutdown.GracefulShu
 					})
 				}
 
-				vector, err := vector_db.NewVector(dataset, []string{"doc_id", "annotation_id", "app_id"}, biz_entity.WEAVIATE)
+				vector, err := vector_db.NewVector(c, dataset, []string{"doc_id", "annotation_id", "app_id"}, biz_entity.WEAVIATE, redisIns, providerDomain)
 
 				if err != nil {
 					ae.HandleEnableAnnotationError(ctx, tx, redisIns, enableAppAnnotationJobKey, enableAppAnnotationErrorKey, enableAppAnnotationKey, err)

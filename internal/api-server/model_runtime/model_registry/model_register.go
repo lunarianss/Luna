@@ -6,7 +6,6 @@ package model_registry
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
@@ -22,7 +21,6 @@ const (
 
 type IModelRegistry interface {
 	Invoke(ctx context.Context, queueManager *biz_entity_chat.StreamGenerateQueue, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, user string, promptMessages []*po_entity.PromptMessage, modelRuntime biz_entity.IAIModelRuntime)
-
 	InvokeNonStream(ctx context.Context, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, user string, promptMessages []*po_entity.PromptMessage, modelRuntime biz_entity.IAIModelRuntime) (*biz_entity_chat.LLMResult, error)
 
 	RegisterName() string
@@ -35,6 +33,11 @@ type IAudioModelRegistry interface {
 
 type ITTSModelRegistry interface {
 	Invoke(ctx context.Context, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, user, tenantID string, voice string, modelRuntime biz_entity.IAIModelRuntime, format string, texts []string) error
+	RegisterName() string
+}
+
+type ITextEmbeddingRegistry interface {
+	Embedding(ctx context.Context, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, user string, modelRuntime biz_entity.IAIModelRuntime, inputType string, texts []string) (*biz_entity_chat.TextEmbeddingResult, error)
 	RegisterName() string
 }
 
@@ -51,6 +54,11 @@ var (
 
 	TTSModelRuntimeRegistry = &ModelRegistries[ITTSModelRegistry]{
 		ModelRegistry: make(map[string]ITTSModelRegistry, 5),
+		RWMutex:       &sync.RWMutex{},
+	}
+
+	TextEmbeddingRegistry = &ModelRegistries[ITextEmbeddingRegistry]{
+		ModelRegistry: make(map[string]ITextEmbeddingRegistry, 5),
 		RWMutex:       &sync.RWMutex{},
 	}
 )
@@ -71,6 +79,8 @@ func (mr *ModelRegistries[T]) RegisterLargeModelInstance(modelRegistry T) {
 		mr.ModelRegistry[v.RegisterName()] = modelRegistry
 	case ITTSModelRegistry:
 		mr.ModelRegistry[v.RegisterName()] = modelRegistry
+	case ITextEmbeddingRegistry:
+		mr.ModelRegistry[v.RegisterName()] = modelRegistry
 	default:
 		panic("AI mulit model registry error: ")
 	}
@@ -85,7 +95,7 @@ func (mr *ModelRegistries[T]) Acquire(name string) (T, error) {
 	AIModelIns, ok := mr.ModelRegistry[name]
 
 	if !ok {
-		return zeroT, errors.WithCode(code.ErrNotFoundModelRegistry, fmt.Sprintf("registry %s not found", name))
+		return zeroT, errors.WithCode(code.ErrNotFoundModelRegistry, "registry %s not found", name)
 	}
 
 	return AIModelIns, nil

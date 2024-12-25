@@ -12,6 +12,7 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/domain/dataset/entity/po_entity"
 	"github.com/redis/go-redis/v9"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate"
+	"github.com/weaviate/weaviate-go-client/v4/weaviate/filters"
 	"github.com/weaviate/weaviate/entities/models"
 )
 
@@ -53,12 +54,41 @@ func (wv *WeaviateVector) Create(ctx context.Context, texts []*biz_entity.Docume
 	return nil
 }
 
+func (wv WeaviateVector) ExistsCollection(ctx context.Context) (bool, error) {
+
+	exist, err := wv.client.Schema().ClassExistenceChecker().WithClassName(wv.collectionName).Do(ctx)
+
+	if err != nil {
+		return true, err
+	}
+
+	return exist, err
+
+}
 func (wv *WeaviateVector) DeleteByMetadataField(ctx context.Context, key string, value string) error {
+
+	exist, err := wv.ExistsCollection(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	if exist {
+		_, err := wv.client.Batch().ObjectsBatchDeleter().WithClassName(wv.collectionName).WithOutput("minimal").WithWhere(filters.Where().WithPath([]string{key}).WithOperator(filters.Equal).WithValueText()).Do(ctx)
+
+		if err != nil {
+			return err
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
 func (wv *WeaviateVector) CreateCollection(ctx context.Context) error {
-
 	lockName := fmt.Sprintf("vector_indexing_lock_%s", wv.collectionName)
 	// Create a new lock client.
 	locker := redislock.New(wv.redisIns)
@@ -102,6 +132,7 @@ func (wv *WeaviateVector) CreateCollection(ctx context.Context) error {
 	if err := wv.redisIns.Set(ctx, collectionExistCacheKey, "1", time.Hour*1).Err(); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -118,7 +149,6 @@ func (wv *WeaviateVector) defaultSchema(indexName string) *models.Class {
 }
 
 func (wv *WeaviateVector) addTexts(ctx context.Context, documents []*biz_entity.Document, embeddings [][]float32) error {
-
 	var vectorObjects []*models.Object
 
 	for i, document := range documents {

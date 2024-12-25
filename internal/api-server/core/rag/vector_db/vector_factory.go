@@ -5,6 +5,7 @@ import (
 
 	"github.com/lunarianss/Luna/internal/api-server/core/rag/cache_embedding"
 	weaviate_vector "github.com/lunarianss/Luna/internal/api-server/core/rag/vector_db/weaviate"
+	datsetDomain "github.com/lunarianss/Luna/internal/api-server/domain/dataset/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/dataset/entity/biz_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/dataset/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
@@ -14,13 +15,14 @@ import (
 )
 
 type Vector struct {
-	Attributes      []string
-	Dataset         *po_entity.Dataset
-	VectorProcessor biz_entity.IVectorDB
-	Embeddings      biz_entity.IEmbeddings
-	ProviderDomain  *domain_service.ProviderDomain
-	Vdb             biz_entity.VdbType
+	attributes      []string
+	dataset         *po_entity.Dataset
+	vectorProcessor biz_entity.IVectorDB
+	embeddings      biz_entity.IEmbeddings
+	providerDomain  *domain_service.ProviderDomain
+	vdb             biz_entity.VdbType
 	redis           *redis.Client
+	datasetDomain   *datsetDomain.DatasetDomain
 }
 
 func NewVector(ctx context.Context, dataset *po_entity.Dataset, attributes []string, vdbName biz_entity.VdbType, redis *redis.Client, providerDomain *domain_service.ProviderDomain) (*Vector, error) {
@@ -29,19 +31,19 @@ func NewVector(ctx context.Context, dataset *po_entity.Dataset, attributes []str
 	)
 
 	vector := &Vector{
-		ProviderDomain: providerDomain,
-		Dataset:        dataset,
-		Vdb:            vdbName,
+		providerDomain: providerDomain,
+		dataset:        dataset,
+		vdb:            vdbName,
 		redis:          redis,
 	}
 
-	vector.Embeddings, err = vector.GetEmbeddings(ctx)
+	vector.embeddings, err = vector.GetEmbeddings(ctx)
 
 	if err != nil {
 		return nil, err
 	}
 
-	vector.VectorProcessor, err = vector.InitVectorProcessor(ctx)
+	vector.vectorProcessor, err = vector.InitVectorProcessor(ctx)
 
 	if err != nil {
 		return nil, err
@@ -51,12 +53,12 @@ func NewVector(ctx context.Context, dataset *po_entity.Dataset, attributes []str
 
 func (v *Vector) InitVectorProcessor(ctx context.Context) (biz_entity.IVectorDB, error) {
 
-	if v.Vdb == biz_entity.WEAVIATE {
+	if v.vdb == biz_entity.WEAVIATE {
 		weaviateClient, err := weaviate.GetWeaviateClient(nil)
 		if err != nil {
 			return nil, err
 		}
-		vectorProcessor := weaviate_vector.NewWeaviateVector(v.Dataset, v.Attributes, weaviateClient, v.redis)
+		vectorProcessor := weaviate_vector.NewWeaviateVector(v.dataset, v.attributes, weaviateClient, v.redis)
 
 		return vectorProcessor, nil
 	}
@@ -71,12 +73,13 @@ func (v *Vector) Create(ctx context.Context, texts []*biz_entity.Document) error
 			textStr = append(textStr, text.PageContent)
 		}
 
-		embeddings, err := v.Embeddings.EmbedDocuments(ctx, textStr)
+		embeddings, err := v.embeddings.EmbedDocuments(ctx, textStr)
+
 		if err != nil {
 			return err
 		}
 
-		if err := v.VectorProcessor.Create(ctx, texts, embeddings, nil); err != nil {
+		if err := v.vectorProcessor.Create(ctx, texts, embeddings, nil); err != nil {
 			return err
 		}
 	}
@@ -88,10 +91,10 @@ func (v *Vector) DeleteByMetadataField(ctx context.Context, key string, value st
 }
 
 func (v *Vector) GetEmbeddings(ctx context.Context) (cache_embedding.ICacheEmbedding, error) {
-	embeddingModel, err := v.ProviderDomain.GetModelInstance(ctx, v.Dataset.TenantID, v.Dataset.EmbeddingModelProvider, v.Dataset.EmbeddingModel, common.TEXT_EMBEDDING)
+	embeddingModel, err := v.providerDomain.GetModelInstance(ctx, v.dataset.TenantID, v.dataset.EmbeddingModelProvider, v.dataset.EmbeddingModel, common.TEXT_EMBEDDING)
 
 	if err != nil {
 		return nil, err
 	}
-	return cache_embedding.NewCacheEmbedding(embeddingModel, v.Dataset.UpdatedBy), nil
+	return cache_embedding.NewCacheEmbedding(embeddingModel, v.dataset.UpdatedBy, v.datasetDomain), nil
 }

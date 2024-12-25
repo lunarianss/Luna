@@ -40,6 +40,17 @@ func (dr *DatasetRepoImpl) CreateDatasetCollectionBinding(ctx context.Context, c
 
 }
 
+func (dr *DatasetRepoImpl) GetProviderHashEmbedding(ctx context.Context, model string, hash string, provider string) (*po_entity.Embedding, error) {
+
+	var embedding po_entity.Embedding
+
+	if err := dr.db.Where("model_name = ? AND hash = ? AND provider_name", model, hash, provider).First(&embedding).Error; err != nil {
+		return nil, err
+	}
+
+	return &embedding, nil
+}
+
 func (dr *DatasetRepoImpl) GetDatasetCollectionBinding(ctx context.Context, providerName string, modelName string, collectionType string, tx *gorm.DB) (*po_entity.DatasetCollectionBinding, error) {
 
 	var dbIns *gorm.DB
@@ -78,4 +89,20 @@ func (dr *DatasetRepoImpl) GetDatasetCollectionBinding(ctx context.Context, prov
 	}
 
 	return datasetCollection, nil
+}
+
+func (dr *DatasetRepoImpl) CreateProviderHashEmbedding(ctx context.Context, embedding *po_entity.Embedding, tx *gorm.DB) (*po_entity.Embedding, error) {
+	var dbIns *gorm.DB
+
+	if tx != nil {
+		dbIns = tx
+	} else {
+		dbIns = dr.db
+	}
+
+	if err := dbIns.Create(embedding).Error; err != nil {
+		return nil, err
+	}
+
+	return embedding, nil
 }

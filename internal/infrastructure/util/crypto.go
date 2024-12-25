@@ -6,6 +6,7 @@ package util
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 )
@@ -25,4 +26,11 @@ func GenerateRefreshToken(length int) (string, error) {
 	token := hex.EncodeToString(tokenBytes)
 
 	return token, nil
+}
+
+func GenerateTextHash(text string) string {
+	hashText := text + "None"
+	hash := sha256.New()
+	hash.Write([]byte(hashText))
+	return hex.EncodeToString(hash.Sum(nil))
 }

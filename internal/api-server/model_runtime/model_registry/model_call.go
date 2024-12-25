@@ -22,6 +22,8 @@ type IModelRegistryCall interface {
 	InvokeSpeechToText(ctx context.Context, audioFileContent []byte, user string, filename string) (string, error)
 
 	InvokeTextToSpeech(ctx context.Context, modelParameters map[string]interface{}, user string, voice string, format string, texts []string) error
+
+	InvokeTextEmbedding(ctx context.Context, modelParameters map[string]interface{}, user string, inputType string, texts []string) (*biz_entity_chat.TextEmbeddingResult, error)
 }
 
 type modelRegistryCall struct {
@@ -32,7 +34,7 @@ type modelRegistryCall struct {
 	ModelRuntime biz_entity.IAIModelRuntime
 }
 
-func NewModelRegisterCaller(model, modelType, provider string, credentials map[string]interface{}, modelRuntime biz_entity.IAIModelRuntime) *modelRegistryCall {
+func NewModelRegisterCaller(model, modelType, provider string, credentials map[string]interface{}, modelRuntime biz_entity.IAIModelRuntime) IModelRegistryCall {
 	return &modelRegistryCall{
 		Model:        model,
 		ModelType:    modelType,
@@ -40,7 +42,6 @@ func NewModelRegisterCaller(model, modelType, provider string, credentials map[s
 		Credentials:  credentials,
 		ModelRuntime: modelRuntime,
 	}
-
 }
 
 func (ac *modelRegistryCall) InvokeLLM(ctx context.Context, promptMessage []*po_entity.PromptMessage, queueManager *biz_entity_chat.StreamGenerateQueue, modelParameters map[string]interface{}, tools interface{}, stop []string, user string, callbacks interface{}) {
@@ -112,4 +113,18 @@ func (ac *modelRegistryCall) InvokeTextToSpeech(ctx context.Context, modelParame
 		return err
 	}
 	return nil
+}
+
+func (ac *modelRegistryCall) InvokeTextEmbedding(ctx context.Context, modelParameters map[string]interface{}, user string, inputType string, texts []string) (*biz_entity_chat.TextEmbeddingResult, error) {
+
+	modelKeyMapInvoke := fmt.Sprintf("%s/%s", ac.Provider, ac.ModelType)
+
+	log.Infof("invoke %s", modelKeyMapInvoke)
+
+	AIModelIns, err := TextEmbeddingRegistry.Acquire(modelKeyMapInvoke)
+
+	if err != nil {
+		return nil, err
+	}
+	return AIModelIns.Embedding(ctx, ac.Model, ac.Credentials, modelParameters, user, ac.ModelRuntime, inputType, texts)
 }

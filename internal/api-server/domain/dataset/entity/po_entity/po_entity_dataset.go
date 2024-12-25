@@ -1,6 +1,8 @@
 package po_entity
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"strings"
 
@@ -59,4 +61,45 @@ func (a *Dataset) GetCollectionNameByID(id string) string {
 	id = strings.ReplaceAll(id, "-", "_")
 	return fmt.Sprintf("Vector_index_%s_Node", id)
 
+}
+
+type Embedding struct {
+	ID           string `json:"id" gorm:"id"`
+	ModelName    string `json:"model_name" gorm:"model_name"`
+	Hash         string `json:"hash" gorm:"hash"`
+	Embedding    []byte `json:"embedding" gorm:"embedding"`
+	CreatedAt    int64  `json:"created_at" gorm:"created_at"`
+	ProviderName string `json:"provider_name" gorm:"provider_name"`
+}
+
+func (a *Embedding) TableName() string {
+	return "embeddings"
+}
+
+func (a *Embedding) BeforeCreate(tx *gorm.DB) (err error) {
+	a.ID = uuid.NewString()
+	return
+}
+
+func (a *Embedding) GetEmbeddings() ([]float32, error) {
+	buf := bytes.NewBuffer(a.Embedding)
+	decoder := gob.NewDecoder(buf)
+	var embeddingData []float32
+
+	if err := decoder.Decode(&embeddingData); err != nil {
+		return nil, err
+	}
+	return embeddingData, nil
+}
+
+func (a *Embedding) SetEmbedding() ([]byte, error) {
+	var buf bytes.Buffer
+	encoder := gob.NewEncoder(&buf)
+	err := encoder.Encode(a.Embedding)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }

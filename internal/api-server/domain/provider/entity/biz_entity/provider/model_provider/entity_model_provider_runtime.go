@@ -47,11 +47,11 @@ func (a *AIModelRuntime) GetModelPositionMap() (map[string]int, error) {
 	}
 
 	if err != nil {
-		return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+		return nil, errors.WithSCode(code.ErrRunTimeCaller, err.Error())
 	}
 
 	if err := yaml.Unmarshal(positionContext, &modelPosition); err != nil {
-		return nil, errors.WithCode(code.ErrDecodingJSON, err.Error())
+		return nil, errors.WithSCode(code.ErrDecodingJSON, err.Error())
 	}
 
 	for i, v := range modelPosition {
@@ -76,7 +76,7 @@ func (a *AIModelRuntime) PredefinedModels() ([]*AIModelStaticConfiguration, erro
 	}
 
 	if err != nil {
-		return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+		return nil, errors.WithSCode(code.ErrRunTimeCaller, err.Error())
 	}
 	modelPosition, err := a.GetModelPositionMap()
 
@@ -96,11 +96,11 @@ func (a *AIModelRuntime) PredefinedModels() ([]*AIModelStaticConfiguration, erro
 		AIModelEntity.FetchFrom = common.PREDEFINED_MODEL_FROM
 		AIModelEntityContent, err := os.ReadFile(modelSchemaYamlPath)
 		if err != nil {
-			return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+			return nil, errors.WithSCode(code.ErrRunTimeCaller, err.Error())
 		}
 
 		if err := yaml.Unmarshal(AIModelEntityContent, AIModelEntity); err != nil {
-			return nil, errors.WithCode(code.ErrDecodingYaml, fmt.Sprintf("when decoding model %s of path,  failed: %s", modelSchemaYamlPath, err.Error()))
+			return nil, errors.WithCode(code.ErrDecodingYaml, "when decoding model %s of path,  failed: %s", modelSchemaYamlPath, err.Error())
 		}
 
 		if AIModelEntity.Label == nil {
@@ -159,7 +159,7 @@ func (a *AIModelRuntime) GetModelSchema(modelName string, credentials any) (*AIM
 		}
 	}
 
-	return nil, errors.WithCode(code.ErrModelSchemaNotFound, fmt.Sprintf("model schema %s is not found", modelName))
+	return nil, errors.WithCode(code.ErrModelSchemaNotFound, "model schema %s is not found", modelName)
 }
 
 func (a *AIModelRuntime) GetPrice(model string, credentials any, priceType PriceType, tokens int64) (*PriceInfo, error) {
@@ -174,7 +174,7 @@ func (a *AIModelRuntime) GetPrice(model string, credentials any, priceType Price
 	}
 
 	if modelSchema.Pricing == nil {
-		return NewFreePriceInfo(), errors.WithCode(code.ErrModelNotHavePrice, fmt.Sprintf("model %s not have price info", model))
+		return NewFreePriceInfo(), errors.WithCode(code.ErrModelNotHavePrice, "model %s not have price info", model)
 	}
 
 	priceConfig = modelSchema.Pricing
@@ -229,7 +229,7 @@ func (a *AIModelRuntime) GetTTSVoice(model string, credentials any, language str
 	voices, ok := modelSchema.ModelProperties[common.VOICES]
 
 	if !ok {
-		return nil, errors.WithCode(code.ErrTTSModelNotVoice, fmt.Sprintf("model %s doesn't have voice", model))
+		return nil, errors.WithCode(code.ErrTTSModelNotVoice, "model %s doesn't have voice", model)
 	}
 
 	if v, ok := voices.([]any); ok {
@@ -243,7 +243,7 @@ func (a *AIModelRuntime) GetTTSVoice(model string, credentials any, language str
 			TTSProviderConfig = append(TTSProviderConfig, ttsConfig)
 		}
 	} else {
-		return nil, errors.WithCode(code.ErrTTSModelNotVoice, fmt.Sprintf("voice have a incorrect format in model %s", model))
+		return nil, errors.WithCode(code.ErrTTSModelNotVoice, "voice have a incorrect format in model %s", model)
 	}
 
 	for _, ttsConfig := range TTSProviderConfig {

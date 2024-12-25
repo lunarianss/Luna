@@ -44,11 +44,11 @@ func (f *ModelProviderFactory) GetPositionMap(fileDir string) (map[string]int, [
 	positionFileContent, err := os.ReadFile(positionFilePath)
 
 	if err != nil {
-		return nil, nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+		return nil, nil, errors.WithSCode(code.ErrRunTimeCaller, err.Error())
 	}
 
 	if err := yaml.Unmarshal(positionFileContent, &positionInfo); err != nil {
-		return nil, nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+		return nil, nil, errors.WithSCode(code.ErrRunTimeCaller, err.Error())
 	}
 
 	positionIndexMap := make(map[string]int)
@@ -86,7 +86,7 @@ func (f *ModelProviderFactory) GetProviderInstance(provider string) (*biz_entity
 	providerExtension, ok := providerMap[provider]
 
 	if !ok {
-		return nil, errors.WithCode(code.ErrProviderMapModel, fmt.Sprintf("invalid provider: %v", provider))
+		return nil, errors.WithCode(code.ErrProviderMapModel, "invalid provider: %v", provider)
 	}
 
 	return providerExtension.ProviderInstance, nil
@@ -159,7 +159,7 @@ func (f *ModelProviderFactory) resolveProviderDirInfo() ([]fs.DirEntry, string, 
 	dirEntries, err := os.ReadDir(fileDir)
 
 	if err != nil {
-		return nil, "", "", errors.WithCode(code.ErrRunTimeCaller, err.Error())
+		return nil, "", "", errors.WithSCode(code.ErrRunTimeCaller, err.Error())
 	}
 
 	return dirEntries, fullFilePath, fileDir, nil

@@ -79,10 +79,6 @@ func (wv *WeaviateVector) DeleteByMetadataField(ctx context.Context, key string,
 		if err != nil {
 			return err
 		}
-
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil

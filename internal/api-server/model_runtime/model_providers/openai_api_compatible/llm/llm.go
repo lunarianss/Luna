@@ -92,14 +92,14 @@ func (m *openApiCompactLargeLanguageModel) generateNonStream(ctx context.Context
 
 	if !ok || endpointUrl == "" {
 
-		return nil, errors.WithCode(code.ErrModelNotHaveEndPoint, fmt.Sprintf("Model %s not have endpoint url", m.Model))
+		return nil, errors.WithCode(code.ErrModelNotHaveEndPoint, "Model %s not have endpoint url", m.Model)
 	}
 
 	endpointUrlStr, ok := endpointUrl.(string)
 
 	if !ok {
 
-		return nil, errors.WithCode(code.ErrModelNotHaveEndPoint, fmt.Sprintf("Model %s not have endpoint url", m.Model))
+		return nil, errors.WithCode(code.ErrModelNotHaveEndPoint, "Model %s not have endpoint url", m.Model)
 	}
 
 	if !strings.HasSuffix(endpointUrlStr, "/") {
@@ -121,7 +121,7 @@ func (m *openApiCompactLargeLanguageModel) generateNonStream(ctx context.Context
 		endpointJoinUrl, err := url.JoinPath(endpointUrlStr, "chat/completions")
 
 		if err != nil {
-			return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+			return nil, errors.WithSCode(code.ErrRunTimeCaller, err.Error())
 		}
 		endpointUrlStr = endpointJoinUrl
 
@@ -153,13 +153,13 @@ func (m *openApiCompactLargeLanguageModel) generateNonStream(ctx context.Context
 	requestBodyData, err := json.Marshal(requestData)
 
 	if err != nil {
-		return nil, errors.WithCode(code.ErrEncodingJSON, err.Error())
+		return nil, errors.WithSCode(code.ErrEncodingJSON, err.Error())
 	}
 
 	req, err := http.NewRequest("POST", endpointUrlStr, bytes.NewReader(requestBodyData))
 
 	if err != nil {
-		return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+		return nil, errors.WithSCode(code.ErrRunTimeCaller, err.Error())
 	}
 
 	if len(headers) > 0 {
@@ -170,7 +170,7 @@ func (m *openApiCompactLargeLanguageModel) generateNonStream(ctx context.Context
 
 	response, err := client.Do(req)
 	if err != nil {
-		return nil, errors.WithCode(code.ErrCallLargeLanguageModel, err.Error())
+		return nil, errors.WithSCode(code.ErrCallLargeLanguageModel, err.Error())
 	}
 
 	defer response.Body.Close()
@@ -184,7 +184,7 @@ func (m *openApiCompactLargeLanguageModel) handleNoStreamResponse(_ context.Cont
 	var responseJSON biz_entity_chat.OpenaiResponse
 
 	if err := json.NewDecoder(response.Body).Decode(&responseJSON); err != nil {
-		return nil, errors.WithCode(code.ErrDecodingJSON, err.Error())
+		return nil, errors.WithSCode(code.ErrDecodingJSON, err.Error())
 	}
 
 	choices := responseJSON.Choices
@@ -296,14 +296,14 @@ func (m *openApiCompactLargeLanguageModel) generate(ctx context.Context) {
 	endpointUrl, ok := m.Credentials["endpoint_url"]
 
 	if !ok || endpointUrl == "" {
-		m.PushErr(errors.WithCode(code.ErrModelNotHaveEndPoint, fmt.Sprintf("Model %s not have endpoint url", m.Model)))
+		m.PushErr(errors.WithCode(code.ErrModelNotHaveEndPoint, "Model %s not have endpoint url", m.Model))
 		return
 	}
 
 	endpointUrlStr, ok := endpointUrl.(string)
 
 	if !ok {
-		m.PushErr(errors.WithCode(code.ErrModelNotHaveEndPoint, fmt.Sprintf("Model %s not have endpoint url", m.Model)))
+		m.PushErr(errors.WithCode(code.ErrModelNotHaveEndPoint, "Model %s not have endpoint url", m.Model))
 		return
 	}
 
@@ -326,7 +326,7 @@ func (m *openApiCompactLargeLanguageModel) generate(ctx context.Context) {
 		endpointJoinUrl, err := url.JoinPath(endpointUrlStr, "chat/completions")
 
 		if err != nil {
-			m.PushErr(errors.WithCode(code.ErrRunTimeCaller, err.Error()))
+			m.PushErr(errors.WithSCode(code.ErrRunTimeCaller, err.Error()))
 			return
 		}
 		endpointUrlStr = endpointJoinUrl
@@ -360,14 +360,14 @@ func (m *openApiCompactLargeLanguageModel) generate(ctx context.Context) {
 	requestBodyData, err := json.Marshal(requestData)
 
 	if err != nil {
-		m.PushErr(errors.WithCode(code.ErrEncodingJSON, err.Error()))
+		m.PushErr(errors.WithSCode(code.ErrEncodingJSON, err.Error()))
 		return
 	}
 
 	req, err := http.NewRequest("POST", endpointUrlStr, bytes.NewReader(requestBodyData))
 
 	if err != nil {
-		m.PushErr(errors.WithCode(code.ErrRunTimeCaller, err.Error()))
+		m.PushErr(errors.WithSCode(code.ErrRunTimeCaller, err.Error()))
 		return
 	}
 
@@ -379,7 +379,7 @@ func (m *openApiCompactLargeLanguageModel) generate(ctx context.Context) {
 
 	response, err := client.Do(req)
 	if err != nil {
-		m.PushErr(errors.WithCode(code.ErrCallLargeLanguageModel, err.Error()))
+		m.PushErr(errors.WithSCode(code.ErrCallLargeLanguageModel, err.Error()))
 		return
 	}
 
@@ -531,7 +531,7 @@ func (m *openApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 	m.Delimiter, ok = delimiter.(string)
 
 	if !ok {
-		m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrConvertDelimiterString, fmt.Sprintf("Can't convert delimiter %+v to string", delimiter)))
+		m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrConvertDelimiterString, "Can't convert delimiter %+v to string", delimiter))
 		return
 	}
 
@@ -577,7 +577,7 @@ func (m *openApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 		err := json.Unmarshal([]byte(chunk), &chunkJson)
 
 		if err != nil {
-			m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrEncodingJSON, fmt.Sprintf("JSON data %+v could not be decoded, failed: %+v", chunk, err.Error())))
+			m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrEncodingJSON, "JSON data %+v could not be decoded, failed: %+v", chunk, err.Error()))
 			return
 		}
 
@@ -588,11 +588,11 @@ func (m *openApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 					apiByteErr, err := json.Marshal(apiMapErr)
 
 					if err != nil {
-						m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrEncodingJSON, err.Error()))
+						m.sendErrorChunkToQueue(ctx, errors.WithSCode(code.ErrEncodingJSON, err.Error()))
 						return
 					}
 
-					m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrCallLargeLanguageModel, string(apiByteErr)))
+					m.sendErrorChunkToQueue(ctx, errors.WithSCode(code.ErrCallLargeLanguageModel, string(apiByteErr)))
 					return
 				}
 			}
@@ -664,7 +664,7 @@ func (m *openApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 	}
 
 	if err := scanner.Err(); err != nil {
-		m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrRunTimeCaller, err.Error()))
+		m.sendErrorChunkToQueue(ctx, errors.WithSCode(code.ErrRunTimeCaller, err.Error()))
 		return
 	}
 

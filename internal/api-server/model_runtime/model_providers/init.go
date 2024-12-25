@@ -22,4 +22,8 @@ import (
 	// tts
 	// tongyi/tts
 	_ "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers/tongyi/tts"
+
+	// embedding
+	// tongyi/embedding
+	_ "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers/tongyi/text_embedding"
 )

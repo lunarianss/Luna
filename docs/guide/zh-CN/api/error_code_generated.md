@@ -28,6 +28,7 @@ IAM 系统支持的错误码列表如下：
 | ErrAppSiteDisabled | 110105 | 400 | Site is disabled |
 | ErrAppApiDisabled | 110106 | 400 | Api is disabled |
 | ErrAppTokenExceed | 110107 | 400 | Count of app token is exceeded |
+| ErrNotFoundJobID | 110108 | 400 | Not found job ID |
 | ErrEmailCode | 110301 | 500 | Error occurred when email code is incorrect |
 | ErrTokenEmail | 110302 | 500 | Error occurred when email is incorrect |
 | ErrTenantAlreadyExist | 110303 | 500 | Error occurred when tenant is already exist |

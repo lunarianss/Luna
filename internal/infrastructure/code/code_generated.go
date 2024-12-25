@@ -15,6 +15,7 @@ func init() {
 	errors.Enroll(ErrAppSiteDisabled, 400, "Site is disabled")
 	errors.Enroll(ErrAppApiDisabled, 400, "Api is disabled")
 	errors.Enroll(ErrAppTokenExceed, 400, "Count of app token is exceeded")
+	errors.Enroll(ErrNotFoundJobID, 400, "Not found job ID")
 	errors.Enroll(ErrEmailCode, 500, "Error occurred when email code is incorrect")
 	errors.Enroll(ErrTokenEmail, 500, "Error occurred when email is incorrect")
 	errors.Enroll(ErrTenantAlreadyExist, 500, "Error occurred when tenant is already exist")

@@ -19,4 +19,6 @@ const (
 	ErrAppApiDisabled
 	// ErrAppTokenExceed - 400: Count of app token is exceeded.
 	ErrAppTokenExceed
+	// ErrNotFoundJobID - 400: Not found job ID.
+	ErrNotFoundJobID
 )

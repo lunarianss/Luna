@@ -139,6 +139,49 @@ func (as *AnnotationService) InsertAnnotationFromMessage(ctx context.Context, ac
 
 }
 
+func (as *AnnotationService) EnableAppAnnotationStatus(ctx context.Context, appID, accountID, jobID, action string) (*dto_app.ApplyAnnotationStatusResponse, error) {
+
+	accountRecord, err := as.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	tenant, tenantJoin, err := as.accountDomain.GetCurrentTenantOfAccount(ctx, accountRecord.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !tenantJoin.IsEditor() {
+		return nil, errors.WithCode(code.ErrForbidden, "tenant %s don't have the permission to enable app annotation", tenant.Name)
+	}
+
+	appEnableJobKey := fmt.Sprintf("%s_app_annotation_job_%s", action, jobID)
+
+	val, err := as.redis.Get(ctx, appEnableJobKey).Result()
+
+	if err != nil {
+		return nil, errors.WithSCode(code.ErrNotFoundJobID, err.Error())
+	}
+
+	var errorMsg string
+	if val == "error" {
+		appAnnotationErrorKey := fmt.Sprintf("%s_app_annotation_error_%s", action, jobID)
+		errorMsg, err = as.redis.Get(ctx, appAnnotationErrorKey).Result()
+		if err != nil {
+			errorMsg = "Occurred internal server when get error info"
+			log.Errorf("occurred error %s when get key from redis", err.Error())
+		}
+	}
+
+	return &dto_app.ApplyAnnotationStatusResponse{
+		JobID:        jobID,
+		JobStatus:    val,
+		ErrorMessage: errorMsg,
+	}, nil
+}
+
 func (as *AnnotationService) EnableAppAnnotation(ctx context.Context, appID, accountID string, args *dto_app.ApplyAnnotationRequestBody) (*dto_app.ApplyAnnotationResponse, error) {
 
 	accountRecord, err := as.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)

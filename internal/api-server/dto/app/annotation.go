@@ -1,8 +1,14 @@
 package dto
 
 type ApplyAnnotationRequestUrl struct {
-	Action string `json:"action" uri:"action"`
-	AppID  string `json:"appID" uri:"appID"`
+	Action string `json:"action" uri:"action" validate:"required"`
+	AppID  string `json:"appID" uri:"appID" validate:"required"`
+}
+
+type ApplyAnnotationStatusRequestUrl struct {
+	Action string `json:"action" uri:"action" validate:"required"`
+	AppID  string `json:"appID" uri:"appID" validate:"required"`
+	JobID  string `json:"jobID" uri:"jobID" validate:"required"`
 }
 
 type ApplyAnnotationRequestBody struct {
@@ -14,6 +20,12 @@ type ApplyAnnotationRequestBody struct {
 type ApplyAnnotationResponse struct {
 	JobID     string `json:"job_id"`
 	JobStatus string `json:"job_status"`
+}
+
+type ApplyAnnotationStatusResponse struct {
+	JobID        string `json:"job_id"`
+	JobStatus    string `json:"job_status"`
+	ErrorMessage string `json:"error_msg"`
 }
 
 func NewApplyAnnotationProcessing(jobID string) *ApplyAnnotationResponse {

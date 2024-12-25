@@ -82,6 +82,17 @@ type AppDetailRequest struct {
 	AppID string `uri:"appID" validate:"required"`
 }
 
+type AnnotationSettingEmbeddingModel struct {
+	EmbeddingProviderName string `json:"embedding_provider_name,omitempty"`
+	EmbeddingModelName    string `json:"embedding_model_name,omitempty"`
+}
+type AnnotationSettingResponse struct {
+	Enabled        bool                             `json:"enabled"`
+	ID             string                           `json:"id,omitempty"`
+	ScoreThreshold float64                          `json:"score_threshold,omitempty"`
+	EmbeddingModel *AnnotationSettingEmbeddingModel `json:"embedding_model,omitempty"`
+}
+
 type AppDetail struct {
 	ID                  string                   `json:"id"`
 	Name                string                   `json:"name"`

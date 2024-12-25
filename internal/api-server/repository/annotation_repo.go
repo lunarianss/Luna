@@ -8,6 +8,7 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/repository"
+	po_dataset "github.com/lunarianss/Luna/internal/api-server/domain/dataset/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"gorm.io/gorm"
 )
@@ -76,7 +77,8 @@ func (ap *AnnotationRepoImpl) GetAnnotationSettingWithCreate(ctx context.Context
 		dbIns = ap.db
 	}
 	var (
-		annotationSetting *po_entity.AppAnnotationSetting
+		annotationSetting   *biz_entity.AnnotationSettingWithBinding
+		poAnnotationSetting *po_entity.AppAnnotationSetting
 	)
 
 	annotationSetting, err := ap.GetAnnotationSetting(ctx, appID, dbIns)
@@ -94,13 +96,14 @@ func (ap *AnnotationRepoImpl) GetAnnotationSettingWithCreate(ctx context.Context
 			UpdatedUserID:       accountID,
 		}
 
-		annotationSetting, err = ap.CreateAppAnnotationSetting(ctx, setting, dbIns)
+		poAnnotationSetting, err = ap.CreateAppAnnotationSetting(ctx, setting, dbIns)
 
 		if err != nil {
 			return nil, err
 		}
 	}
-	return annotationSetting, nil
+
+	return poAnnotationSetting, nil
 }
 
 func (ap *AnnotationRepoImpl) CreateMessageAnnotation(ctx context.Context, annotation *po_entity.MessageAnnotation) (*biz_entity.BizMessageAnnotation, error) {
@@ -125,7 +128,7 @@ func (ap *AnnotationRepoImpl) UpdateMessageAnnotation(ctx context.Context, id, a
 	return nil
 }
 
-func (ap *AnnotationRepoImpl) GetAnnotationSetting(ctx context.Context, appID string, tx *gorm.DB) (*po_entity.AppAnnotationSetting, error) {
+func (ap *AnnotationRepoImpl) GetAnnotationSetting(ctx context.Context, appID string, tx *gorm.DB) (*biz_entity.AnnotationSettingWithBinding, error) {
 
 	var dbIns *gorm.DB
 
@@ -139,5 +142,12 @@ func (ap *AnnotationRepoImpl) GetAnnotationSetting(ctx context.Context, appID st
 	if err := dbIns.First(&ma, "app_id = ?", appID).Error; err != nil {
 		return nil, errors.WrapC(err, code.ErrDatabase, "Get annotation setting by appID-[%s] not exists", appID)
 	}
-	return &ma, nil
+
+	var binding po_dataset.DatasetCollectionBinding
+
+	if err := dbIns.First(&binding, "id = ?", ma.CollectionBindingID).Error; err != nil {
+		return nil, errors.WrapC(err, code.ErrDatabase, "Get collection binding by ID-[%s] not exists", ma.CollectionBindingID)
+	}
+
+	return biz_entity.ConvertPoAnnotationSetting(&ma, &binding), nil
 }

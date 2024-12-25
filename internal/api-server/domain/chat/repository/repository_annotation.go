@@ -16,7 +16,7 @@ type AnnotationRepo interface {
 	UpdateMessageAnnotation(ctx context.Context, id, answer, question string) error
 	// Get
 	GetMessageAnnotation(ctx context.Context, messageID string) (*biz_entity.BizMessageAnnotation, error)
-	GetAnnotationSetting(ctx context.Context, appID string, tx *gorm.DB) (*po_entity.AppAnnotationSetting, error)
+	GetAnnotationSetting(ctx context.Context, appID string, tx *gorm.DB) (*biz_entity.AnnotationSettingWithBinding, error)
 	GetAnnotationSettingWithCreate(ctx context.Context, appID string, scoreThreshold float64, bindingID string, accountID string, tx *gorm.DB) (*po_entity.AppAnnotationSetting, error)
 	// Find
 	FindAppAnnotations(ctx context.Context, appID string) ([]*po_entity.MessageAnnotation, error)

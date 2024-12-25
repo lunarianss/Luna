@@ -10,6 +10,7 @@ import (
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
+	datasetDomain "github.com/lunarianss/Luna/internal/api-server/domain/dataset/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	controller "github.com/lunarianss/Luna/internal/api-server/interface/gin/v1/chat"
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
@@ -50,16 +51,17 @@ func (a *ChatRoutes) Register(g *gin.Engine) error {
 	modelProviderRepo := repo_impl.NewModelProviderRepoImpl(gormIns)
 	annotationRepo := repo_impl.NewAnnotationRepoImpl(gormIns)
 	providerConfigurationsManager := domain_service.NewProviderConfigurationsManager(providerRepo, modelProviderRepo, "", nil)
+	datasetRepo := repo_impl.NewDatasetRepoImpl(gormIns)
 
 	// domain
 	providerDomain := domain_service.NewProviderDomain(providerRepo, modelProviderRepo, tenantRepo, providerConfigurationsManager)
 	appDomain := appDomain.NewAppDomain(appRepo, webAppRepo, gormIns)
 	accountDomain := accountDomain.NewAccountDomain(accountRepo, nil, nil, nil, tenantRepo)
 	chatDomain := chatDomain.NewChatDomain(messageRepo, annotationRepo)
-
+	datasetDomain := datasetDomain.NewDatasetDomain(datasetRepo)
 	// service
 	chatService := service.NewChatService(appDomain, providerDomain, accountDomain, chatDomain)
-	annotationService := service.NewAnnotationService(appDomain, providerDomain, accountDomain, chatDomain, redisIns, mqProducer)
+	annotationService := service.NewAnnotationService(appDomain, providerDomain, accountDomain, chatDomain, redisIns, mqProducer, datasetDomain)
 	chatController := controller.NewChatController(chatService, annotationService)
 
 	v1 := g.Group("/v1")

@@ -21,6 +21,7 @@ import (
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
+	datasetDomain "github.com/lunarianss/Luna/internal/api-server/domain/dataset/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	dto_app "github.com/lunarianss/Luna/internal/api-server/dto/app"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
@@ -35,13 +36,13 @@ type AnnotationService struct {
 	providerDomain *domain_service.ProviderDomain
 	accountDomain  *accountDomain.AccountDomain
 	chatDomain     *chatDomain.ChatDomain
-
-	redis *redis.Client
+	datasetDomain  *datasetDomain.DatasetDomain
+	redis          *redis.Client
 
 	mq rocketmq.Producer
 }
 
-func NewAnnotationService(appDomain *appDomain.AppDomain, providerDomain *domain_service.ProviderDomain, accountDomain *accountDomain.AccountDomain, chatDomain *chatDomain.ChatDomain, redis *redis.Client, mq rocketmq.Producer) *AnnotationService {
+func NewAnnotationService(appDomain *appDomain.AppDomain, providerDomain *domain_service.ProviderDomain, accountDomain *accountDomain.AccountDomain, chatDomain *chatDomain.ChatDomain, redis *redis.Client, mq rocketmq.Producer, datasetDomain *datasetDomain.DatasetDomain) *AnnotationService {
 	return &AnnotationService{
 		appDomain:      appDomain,
 		providerDomain: providerDomain,
@@ -49,6 +50,7 @@ func NewAnnotationService(appDomain *appDomain.AppDomain, providerDomain *domain
 		chatDomain:     chatDomain,
 		redis:          redis,
 		mq:             mq,
+		datasetDomain:  datasetDomain,
 	}
 }
 
@@ -179,6 +181,49 @@ func (as *AnnotationService) EnableAppAnnotationStatus(ctx context.Context, appI
 		JobID:        jobID,
 		JobStatus:    val,
 		ErrorMessage: errorMsg,
+	}, nil
+}
+
+func (as *AnnotationService) GetAnnotationSetting(ctx context.Context, accountID string, appID string) (*dto_app.AnnotationSettingResponse, error) {
+	tenant, tenantJoin, err := as.accountDomain.GetCurrentTenantOfAccount(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !tenantJoin.IsEditor() {
+		return nil, errors.WithCode(code.ErrForbidden, "You don't have the permission for %s", tenant.Name)
+	}
+
+	app, err := as.appDomain.AppRepo.GetTenantApp(ctx, appID, tenant.ID)
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.WithSCode(code.ErrResourceNotFound, err.Error())
+		}
+		return nil, err
+	}
+
+	annotationSetting, err := as.chatDomain.AnnotationRepo.GetAnnotationSetting(ctx, app.ID, nil)
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return &dto_app.AnnotationSettingResponse{
+				Enabled: false,
+			}, nil
+		} else {
+			return nil, err
+		}
+	}
+
+	return &dto_app.AnnotationSettingResponse{
+		Enabled:        true,
+		ID:             annotationSetting.ID,
+		ScoreThreshold: annotationSetting.ScoreThreshold,
+		EmbeddingModel: &dto_app.AnnotationSettingEmbeddingModel{
+			EmbeddingProviderName: annotationSetting.CollectionBindingDetail.ProviderName,
+			EmbeddingModelName:    annotationSetting.CollectionBindingDetail.ModelName,
+		},
 	}, nil
 }
 

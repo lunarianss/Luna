@@ -2,14 +2,15 @@ package weaviate_vector
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/bsm/redislock"
 	"github.com/go-openapi/strfmt"
+	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/internal/api-server/domain/dataset/entity/biz_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/dataset/entity/po_entity"
+	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/redis/go-redis/v9"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate/filters"
@@ -59,10 +60,10 @@ func (wv WeaviateVector) ExistsCollection(ctx context.Context) (bool, error) {
 	exist, err := wv.client.Schema().ClassExistenceChecker().WithClassName(wv.collectionName).Do(ctx)
 
 	if err != nil {
-		return true, err
+		return true, errors.WithSCode(code.ErrVDB, err.Error())
 	}
 
-	return exist, err
+	return exist, nil
 
 }
 func (wv *WeaviateVector) DeleteByMetadataField(ctx context.Context, key string, value string) error {
@@ -75,12 +76,10 @@ func (wv *WeaviateVector) DeleteByMetadataField(ctx context.Context, key string,
 
 	if exist {
 		_, err := wv.client.Batch().ObjectsBatchDeleter().WithClassName(wv.collectionName).WithOutput("minimal").WithWhere(filters.Where().WithPath([]string{key}).WithOperator(filters.Equal).WithValueText()).Do(ctx)
-
 		if err != nil {
-			return err
+			return errors.WithSCode(code.ErrVDB, err.Error())
 		}
 	}
-
 	return nil
 }
 
@@ -95,7 +94,7 @@ func (wv *WeaviateVector) CreateCollection(ctx context.Context) error {
 		if errors.Is(err, redislock.ErrNotObtained) {
 			return nil
 		} else {
-			return err
+			return errors.WithSCode(code.ErrRedis, err.Error())
 		}
 	}
 
@@ -106,7 +105,7 @@ func (wv *WeaviateVector) CreateCollection(ctx context.Context) error {
 	val, err := wv.redisIns.Get(ctx, collectionExistCacheKey).Result()
 
 	if err != nil {
-		return err
+		return errors.WithSCode(code.ErrRedis, err.Error())
 	}
 
 	if val != "" && val == "1" {
@@ -116,17 +115,17 @@ func (wv *WeaviateVector) CreateCollection(ctx context.Context) error {
 	exist, err := wv.client.Schema().ClassExistenceChecker().WithClassName(wv.collectionName).Do(ctx)
 
 	if err != nil {
-		return err
+		return errors.WithSCode(code.ErrVDB, err.Error())
 	}
 
 	if !exist {
 		if err = wv.client.Schema().ClassCreator().WithClass(wv.defaultSchema(wv.collectionName)).Do(ctx); err != nil {
-			return err
+			return errors.WithSCode(code.ErrVDB, err.Error())
 		}
 	}
 
 	if err := wv.redisIns.Set(ctx, collectionExistCacheKey, "1", time.Hour*1).Err(); err != nil {
-		return err
+		return errors.WithSCode(code.ErrRedis, err.Error())
 	}
 
 	return nil
@@ -172,7 +171,7 @@ func (wv *WeaviateVector) addTexts(ctx context.Context, documents []*biz_entity.
 	_, err := batcher.Do(ctx)
 
 	if err != nil {
-		return err
+		return errors.WithSCode(code.ErrVDB, err.Error())
 	}
 
 	return nil

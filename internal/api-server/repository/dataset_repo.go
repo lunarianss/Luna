@@ -106,3 +106,19 @@ func (dr *DatasetRepoImpl) CreateProviderHashEmbedding(ctx context.Context, embe
 
 	return embedding, nil
 }
+
+func (dr *DatasetRepoImpl) BatchCreateProviderHashEmbedding(ctx context.Context, embeddings []*po_entity.Embedding, tx *gorm.DB) ([]*po_entity.Embedding, error) {
+
+	var dbIns *gorm.DB
+
+	if tx != nil {
+		dbIns = tx
+	} else {
+		dbIns = dr.db
+	}
+
+	if err := dbIns.CreateInBatches(&embeddings, 100).Error; err != nil {
+		return nil, err
+	}
+	return embeddings, nil
+}

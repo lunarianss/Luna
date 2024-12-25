@@ -44,11 +44,13 @@ IAM 系统支持的错误码列表如下：
 | ErrRestfulId | 100008 | 400 | Error occurred while parse restful id from url |
 | ErrRunTimeCaller | 100009 | 500 | Error occurred while call a system call |
 | ErrRunTimeConfig | 100010 | 500 | Error occurred while runtime config is nil |
-| ErrMQSend | 100011 | 500 | Error occurred while send message to mq |
+| ErrMQSend | 100011 | 500 | Error occurred while send sync message |
 | ErrConcurrentLock | 100012 | 500 | Please don't click repeatedly |
 | ErrDatabase | 100101 | 500 | Database error |
 | ErrRecordNotFound | 100102 | 500 | Database record not found |
 | ErrScanToField | 100103 | 400 | Database scan error to field |
+| ErrVDB | 100104 | 400 | Vector Database error |
+| ErrRedis | 100105 | 400 | Redis error |
 | ErrEncrypt | 100201 | 401 | Error occurred while encrypting the user password |
 | ErrSignatureInvalid | 100202 | 401 | Signature is invalid |
 | ErrExpired | 100203 | 401 | Token expired |

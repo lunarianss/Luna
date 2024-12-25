@@ -3,6 +3,7 @@ package event
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -128,7 +129,12 @@ func (ae *AnnotationEvent) Subscribe(c context.Context, sd *shutdown.GracefulShu
 				app, err := appDomain.AppRepo.GetTenantApp(c, enableAnnotationBody.AppID, enableAnnotationBody.TenantID)
 
 				if err != nil {
-					return consumer.ConsumeRetryLater, err
+					if errors.Is(err, gorm.ErrRecordNotFound) {
+						log.Errorf("app not fond when execute annotation job: %s", err.Error())
+						continue
+					} else {
+						return consumer.ConsumeRetryLater, err
+					}
 				}
 
 				messageAnnotations, err := chatDomain.AnnotationRepo.FindAppAnnotations(ctx, app.ID)
@@ -138,9 +144,7 @@ func (ae *AnnotationEvent) Subscribe(c context.Context, sd *shutdown.GracefulShu
 				}
 
 				enableAppAnnotationKey := fmt.Sprintf("enable_app_annotation_%s", enableAnnotationBody.AppID)
-
 				enableAppAnnotationJobKey := fmt.Sprintf("enable_app_annotation_job_%s", enableAnnotationBody.JobID)
-
 				enableAppAnnotationErrorKey := fmt.Sprintf("enable_app_annotation_error_%s", enableAnnotationBody.JobID)
 
 				tx := gormIns.Begin()
@@ -169,7 +173,7 @@ func (ae *AnnotationEvent) Subscribe(c context.Context, sd *shutdown.GracefulShu
 				}
 
 				if len(messageAnnotations) == 0 {
-					return consumer.ConsumeSuccess, nil
+					continue
 				}
 
 				for _, messageAnnotation := range messageAnnotations {
@@ -183,7 +187,7 @@ func (ae *AnnotationEvent) Subscribe(c context.Context, sd *shutdown.GracefulShu
 					})
 				}
 
-				vector, err := vector_db.NewVector(c, dataset, []string{"doc_id", "annotation_id", "app_id"}, biz_entity.WEAVIATE, redisIns, providerDomain)
+				vector, err := vector_db.NewVector(c, dataset, []string{"doc_id", "annotation_id", "app_id"}, biz_entity.WEAVIATE, redisIns, providerDomain, tx)
 
 				if err != nil {
 					ae.HandleEnableAnnotationError(ctx, tx, redisIns, enableAppAnnotationJobKey, enableAppAnnotationErrorKey, enableAppAnnotationKey, err)

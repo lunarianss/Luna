@@ -33,7 +33,7 @@ const (
 	ErrRunTimeCaller
 	// ErrRunTimeConfig - 500: Error occurred while runtime config is nil.
 	ErrRunTimeConfig
-	// ErrMQSend - 500: Error occurred while send message to mq.
+	// ErrMQSend - 500: Error occurred while send sync message.
 	ErrMQSend
 	// ErrConcurrentLock - 500: Please don't click repeatedly.
 	ErrConcurrentLock
@@ -47,6 +47,10 @@ const (
 	ErrRecordNotFound
 	// ErrScanToField - 400: Database scan error to field.
 	ErrScanToField
+	// ErrVDB - 400: Vector Database error.
+	ErrVDB
+	// ErrRedis - 400: Redis error.
+	ErrRedis
 )
 
 // common: authorization and authentication errors.

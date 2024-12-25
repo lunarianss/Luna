@@ -25,12 +25,14 @@ type cacheEmbedding struct {
 	modelAllIntegrate *biz_entity.ModelIntegratedInstance
 	user              string
 	datasetDomain     *domain_service.DatasetDomain
+	tx                *gorm.DB
 }
 
-func NewCacheEmbedding(modelAllIntegrate *biz_entity.ModelIntegratedInstance, user string, datasetDomain *domain_service.DatasetDomain) *cacheEmbedding {
+func NewCacheEmbedding(modelAllIntegrate *biz_entity.ModelIntegratedInstance, user string, datasetDomain *domain_service.DatasetDomain, tx *gorm.DB) *cacheEmbedding {
 	return &cacheEmbedding{
 		modelAllIntegrate: modelAllIntegrate,
 		user:              user,
+		tx:                tx,
 		datasetDomain:     datasetDomain,
 	}
 }
@@ -45,6 +47,7 @@ func (ce *cacheEmbedding) EmbedDocuments(ctx context.Context, texts []string) ([
 		embeddingQueueEmbeddingsCache [][]float32
 		hashCacheEmbeddings           []string
 		embeddingQueueTexts           []string
+		batchCreatedEmbedding         []*po_entity.Embedding
 	)
 
 	for i, text := range texts {
@@ -132,7 +135,13 @@ func (ce *cacheEmbedding) EmbedDocuments(ctx context.Context, texts []string) ([
 						continue
 					}
 					hashCacheEmbeddings = append(hashCacheEmbeddings, hash)
+					batchCreatedEmbedding = append(batchCreatedEmbedding, createEmbedding)
 				}
+			}
+
+			if batchCreated, err := ce.datasetDomain.DatasetRepo.BatchCreateProviderHashEmbedding(ctx, batchCreatedEmbedding, ce.tx); err != nil {
+				util.LogCompleteInfo(batchCreated)
+				return nil, err
 			}
 		}
 	}

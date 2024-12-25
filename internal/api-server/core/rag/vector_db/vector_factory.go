@@ -12,6 +12,7 @@ import (
 	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
 	"github.com/lunarianss/Luna/internal/infrastructure/weaviate"
 	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
 )
 
 type Vector struct {
@@ -23,9 +24,10 @@ type Vector struct {
 	vdb             biz_entity.VdbType
 	redis           *redis.Client
 	datasetDomain   *datsetDomain.DatasetDomain
+	tx              *gorm.DB
 }
 
-func NewVector(ctx context.Context, dataset *po_entity.Dataset, attributes []string, vdbName biz_entity.VdbType, redis *redis.Client, providerDomain *domain_service.ProviderDomain) (*Vector, error) {
+func NewVector(ctx context.Context, dataset *po_entity.Dataset, attributes []string, vdbName biz_entity.VdbType, redis *redis.Client, providerDomain *domain_service.ProviderDomain, tx *gorm.DB) (*Vector, error) {
 	var (
 		err error
 	)
@@ -35,6 +37,7 @@ func NewVector(ctx context.Context, dataset *po_entity.Dataset, attributes []str
 		dataset:        dataset,
 		vdb:            vdbName,
 		redis:          redis,
+		tx:             tx,
 	}
 
 	vector.embeddings, err = vector.GetEmbeddings(ctx)
@@ -83,6 +86,7 @@ func (v *Vector) Create(ctx context.Context, texts []*biz_entity.Document) error
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -96,5 +100,5 @@ func (v *Vector) GetEmbeddings(ctx context.Context) (cache_embedding.ICacheEmbed
 	if err != nil {
 		return nil, err
 	}
-	return cache_embedding.NewCacheEmbedding(embeddingModel, v.dataset.UpdatedBy, v.datasetDomain), nil
+	return cache_embedding.NewCacheEmbedding(embeddingModel, v.dataset.UpdatedBy, v.datasetDomain, v.tx), nil
 }

@@ -46,8 +46,26 @@ func (ae *AnnotationEvent) GetModule() string {
 	return "mq_consumer_annotation_event"
 }
 
-func (ae *AnnotationEvent) HandleEnableAnnotationError(ctx context.Context, tx *gorm.DB, redisIns *redisV9.Client, jobKey string, errorKey string, appKey string, err error) {
+func (ae *AnnotationEvent) HandleEnableAnnotationSuccess(ctx context.Context, tx *gorm.DB, redisIns *redisV9.Client, jobKey string, errorKey string, appKey string) error {
+	if err := redisIns.SetEx(ctx, jobKey, "completed", 600*time.Second).Err(); err != nil {
+		ae.HandleEnableAnnotationError(ctx, tx, redisIns, jobKey, errorKey, appKey, err)
+		return err
+	}
 
+	if err := redisIns.Del(ctx, appKey).Err(); err != nil {
+		log.Errorf("delete appAnnotationKey %s in redis: %s", appKey, err.Error())
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		ae.HandleEnableAnnotationError(ctx, tx, redisIns, jobKey, errorKey, appKey, err)
+		return err
+	}
+
+	return nil
+}
+
+func (ae *AnnotationEvent) HandleEnableAnnotationError(ctx context.Context, tx *gorm.DB, redisIns *redisV9.Client, jobKey string, errorKey string, appKey string, err error) {
+	log.Errorf("%#+v", err)
 	if err := redisIns.SetEx(ctx, jobKey, "error", 600*time.Second).Err(); err != nil {
 		log.Errorf("set jobKey %s in redis when rollback enable-annotation process, error: %s", jobKey, err)
 	}
@@ -98,7 +116,7 @@ func (ae *AnnotationEvent) Subscribe(c context.Context, sd *shutdown.GracefulShu
 	// domain
 	providerDomain := domain_service.NewProviderDomain(providerRepo, modelProviderRepo, tenantRepo, providerConfigurationsManager)
 	appDomain := appDomain.NewAppDomain(appRepo, webAppRepo, gormIns)
-	chatDomain := chatDomain.NewChatDomain(messageRepo, annotationRepo)
+	chatDomainService := chatDomain.NewChatDomain(messageRepo, annotationRepo)
 	datasetRepo := repo_impl.NewDatasetRepoImpl(gormIns)
 
 	datasetDomain := datasetDomain.NewDatasetDomain(datasetRepo)
@@ -137,7 +155,7 @@ func (ae *AnnotationEvent) Subscribe(c context.Context, sd *shutdown.GracefulShu
 					}
 				}
 
-				messageAnnotations, err := chatDomain.AnnotationRepo.FindAppAnnotations(ctx, app.ID)
+				messageAnnotations, err := chatDomainService.AnnotationRepo.FindAppAnnotations(ctx, app.ID)
 
 				if err != nil {
 					return consumer.ConsumeRetryLater, err
@@ -156,7 +174,7 @@ func (ae *AnnotationEvent) Subscribe(c context.Context, sd *shutdown.GracefulShu
 					return consumer.ConsumeRetryLater, err
 				}
 
-				_, err = chatDomain.AnnotationRepo.GetAnnotationSettingWithCreate(ctx, enableAnnotationBody.AppID, enableAnnotationBody.ScoreThreshold, datasetCollection.ID, enableAnnotationBody.AccountID, tx)
+				_, err = chatDomainService.AnnotationRepo.GetAnnotationSettingWithCreate(ctx, enableAnnotationBody.AppID, enableAnnotationBody.ScoreThreshold, datasetCollection.ID, enableAnnotationBody.AccountID, tx)
 
 				if err != nil {
 					ae.HandleEnableAnnotationError(ctx, tx, redisIns, enableAppAnnotationJobKey, enableAppAnnotationErrorKey, enableAppAnnotationKey, err)
@@ -173,7 +191,11 @@ func (ae *AnnotationEvent) Subscribe(c context.Context, sd *shutdown.GracefulShu
 				}
 
 				if len(messageAnnotations) == 0 {
-					continue
+					if err := ae.HandleEnableAnnotationSuccess(ctx, tx, redisIns, enableAppAnnotationJobKey, enableAppAnnotationErrorKey, enableAppAnnotationKey); err != nil {
+						return consumer.ConsumeRetryLater, err
+					} else {
+						return consumer.ConsumeSuccess, nil
+					}
 				}
 
 				for _, messageAnnotation := range messageAnnotations {
@@ -187,7 +209,7 @@ func (ae *AnnotationEvent) Subscribe(c context.Context, sd *shutdown.GracefulShu
 					})
 				}
 
-				vector, err := vector_db.NewVector(c, dataset, []string{"doc_id", "annotation_id", "app_id"}, biz_entity.WEAVIATE, redisIns, providerDomain, tx)
+				vector, err := vector_db.NewVector(c, dataset, []string{"doc_id", "annotation_id", "app_id"}, biz_entity.WEAVIATE, redisIns, providerDomain, tx, datasetDomain, enableAnnotationBody.AccountID)
 
 				if err != nil {
 					ae.HandleEnableAnnotationError(ctx, tx, redisIns, enableAppAnnotationJobKey, enableAppAnnotationErrorKey, enableAppAnnotationKey, err)
@@ -204,13 +226,8 @@ func (ae *AnnotationEvent) Subscribe(c context.Context, sd *shutdown.GracefulShu
 					return consumer.ConsumeRetryLater, err
 				}
 
-				if err := redisIns.SetEx(ctx, enableAppAnnotationKey, "completed", 600*time.Second).Err(); err != nil {
-					ae.HandleEnableAnnotationError(ctx, tx, redisIns, enableAppAnnotationJobKey, enableAppAnnotationErrorKey, enableAppAnnotationKey, err)
+				if err := ae.HandleEnableAnnotationSuccess(ctx, tx, redisIns, enableAppAnnotationJobKey, enableAppAnnotationErrorKey, enableAppAnnotationKey); err != nil {
 					return consumer.ConsumeRetryLater, err
-				}
-
-				if err := redisIns.Del(ctx, enableAppAnnotationKey).Err(); err != nil {
-					log.Errorf("delete appAnnotationKey %s in redis: %s", enableAppAnnotationKey, err.Error())
 				}
 			}
 			return consumer.ConsumeSuccess, nil

@@ -9,7 +9,7 @@ CREATE TABLE embeddings (
     model_name VARCHAR(255) NOT NULL,
     hash VARCHAR(64) NOT NULL,
     embedding LONGBLOB NOT NULL,
-    create_at int(10) NOT NULL,
+    created_at int(10) NOT NULL,
     UNIQUE KEY embedding_hash_idx (model_name,hash,provider_name)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 

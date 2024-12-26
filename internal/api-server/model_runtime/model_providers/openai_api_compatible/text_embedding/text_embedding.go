@@ -25,14 +25,15 @@ type openApiCompactLargeLanguageModel struct {
 	credentials map[string]interface{}
 	model       string
 	texts       []string
-	biz_entity_model.AIModelRuntime
+	biz_entity_model.IAIModelRuntime
 }
 
-func NewOpenApiCompactLargeLanguageModel(ctx context.Context, model string, credentials map[string]interface{}, texts []string) *openApiCompactLargeLanguageModel {
+func NewOpenApiCompactLargeLanguageModel(ctx context.Context, model string, credentials map[string]interface{}, texts []string, modelRuntime biz_entity_model.IAIModelRuntime) *openApiCompactLargeLanguageModel {
 	return &openApiCompactLargeLanguageModel{
-		model:       model,
-		credentials: credentials,
-		texts:       texts,
+		model:           model,
+		credentials:     credentials,
+		texts:           texts,
+		IAIModelRuntime: modelRuntime,
 	}
 }
 
@@ -77,7 +78,7 @@ func (o *openApiCompactLargeLanguageModel) Invoke(ctx context.Context) (*biz_ent
 		Timeout: time.Duration(300) * time.Second,
 	}
 
-	log.Infof("Invoke llm request body %+v", requestData)
+	log.Infof("Invoke text-embedding request body %+v", requestData)
 	requestBodyData, err := json.Marshal(requestData)
 
 	if err != nil {
@@ -108,7 +109,7 @@ func (o *openApiCompactLargeLanguageModel) Invoke(ctx context.Context) (*biz_ent
 		return nil, errors.WithSCode(code.ErrDecodingJSON, err.Error())
 	}
 
-	log.Info("Text embedding response %+v", LLMResult)
+	log.Info("Text embedding response %+v", len(LLMResult.Data))
 
 	for _, embedding := range LLMResult.Data {
 		batchEmbedding = append(batchEmbedding, embedding.Embedding)

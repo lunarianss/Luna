@@ -2,7 +2,6 @@ package cache_embedding
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"math"
 	"slices"
@@ -38,7 +37,7 @@ func NewCacheEmbedding(modelAllIntegrate *biz_entity.ModelIntegratedInstance, us
 }
 
 func (ce *cacheEmbedding) EmbedDocuments(ctx context.Context, texts []string) ([][]float32, error) {
-	var textEmbeddings = make([][]float32, 0, len(texts))
+	var textEmbeddings = make([][]float32, len(texts))
 	var (
 		maxChunks int
 		// 需要向量化的数组索引
@@ -90,6 +89,8 @@ func (ce *cacheEmbedding) EmbedDocuments(ctx context.Context, texts []string) ([
 
 		if maxChunksAny == nil {
 			maxChunks = 1
+		} else {
+			maxChunks = maxChunksAny.(int)
 		}
 
 		for i := 0; i < len(embeddingQueueTexts); i += maxChunks {
@@ -114,7 +115,6 @@ func (ce *cacheEmbedding) EmbedDocuments(ctx context.Context, texts []string) ([
 				hash := util.GenerateTextHash(texts[embeddingIndex])
 				embeddingObject := embeddingQueueEmbeddingsCache[i]
 				textEmbeddings[embeddingIndex] = embeddingObject
-				byteEmbeddingObject, err := json.Marshal(embeddingObject)
 
 				if err != nil {
 					log.Errorf("occur error: %s when marshal embeddingObject %v", err, embeddingObject)
@@ -126,9 +126,9 @@ func (ce *cacheEmbedding) EmbedDocuments(ctx context.Context, texts []string) ([
 						ModelName:    ce.modelAllIntegrate.Model,
 						ProviderName: ce.modelAllIntegrate.Provider,
 						Hash:         hash,
-						Embedding:    byteEmbeddingObject,
 					}
-					createEmbedding.Embedding, err = createEmbedding.SetEmbedding()
+
+					createEmbedding.Embedding, err = createEmbedding.SetEmbedding(embeddingObject)
 
 					if err != nil {
 						log.Errorf("occurred error: %s when convert embedding to gob")

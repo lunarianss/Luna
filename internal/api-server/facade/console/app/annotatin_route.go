@@ -66,7 +66,7 @@ func (a *AnnotationRoutes) Register(g *gin.Engine) error {
 	modelProviderV1 := v1.Group("/console/api")
 	modelProviderV1.Use(middleware.TokenAuthMiddleware())
 	modelProviderV1.POST("/apps/:appID/annotation-reply/:action", annotationController.AnnotationReply)
-	modelProviderV1.GET("/apps/:appID/annotation-reply/:action/status/:jobID", annotationController.AnnotationReply)
+	modelProviderV1.GET("/apps/:appID/annotation-reply/:action/status/:jobID", annotationController.AnnotationReplyStatus)
 	modelProviderV1.GET("/apps/:appID/annotation-setting", annotationController.GetAnnotationSetting)
 	return nil
 }

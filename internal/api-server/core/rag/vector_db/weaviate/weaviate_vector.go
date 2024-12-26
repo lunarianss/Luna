@@ -75,7 +75,7 @@ func (wv *WeaviateVector) DeleteByMetadataField(ctx context.Context, key string,
 	}
 
 	if exist {
-		_, err := wv.client.Batch().ObjectsBatchDeleter().WithClassName(wv.collectionName).WithOutput("minimal").WithWhere(filters.Where().WithPath([]string{key}).WithOperator(filters.Equal).WithValueText()).Do(ctx)
+		_, err := wv.client.Batch().ObjectsBatchDeleter().WithClassName(wv.collectionName).WithOutput("minimal").WithWhere(filters.Where().WithPath([]string{key}).WithOperator(filters.Equal).WithValueText(value)).Do(ctx)
 		if err != nil {
 			return errors.WithSCode(code.ErrVDB, err.Error())
 		}
@@ -105,7 +105,9 @@ func (wv *WeaviateVector) CreateCollection(ctx context.Context) error {
 	val, err := wv.redisIns.Get(ctx, collectionExistCacheKey).Result()
 
 	if err != nil {
-		return errors.WithSCode(code.ErrRedis, err.Error())
+		if !errors.Is(err, redis.Nil) {
+			return errors.WithSCode(code.ErrRedis, err.Error())
+		}
 	}
 
 	if val != "" && val == "1" {

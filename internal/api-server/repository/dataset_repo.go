@@ -44,7 +44,7 @@ func (dr *DatasetRepoImpl) GetProviderHashEmbedding(ctx context.Context, model s
 
 	var embedding po_entity.Embedding
 
-	if err := dr.db.Where("model_name = ? AND hash = ? AND provider_name", model, hash, provider).First(&embedding).Error; err != nil {
+	if err := dr.db.Where("model_name = ? AND hash = ? AND provider_name = ?", model, hash, provider).First(&embedding).Error; err != nil {
 		return nil, err
 	}
 

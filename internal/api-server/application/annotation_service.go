@@ -290,6 +290,7 @@ func (as *AnnotationService) EnableAppAnnotation(ctx context.Context, appID, acc
 		Body:  marshalMessageBody,
 	}
 
+	message.WithTag(event.EnableAnnotationReplyTag)
 	sendResult, err := as.mq.SendSync(ctx, message)
 
 	if err != nil {

@@ -31,7 +31,7 @@ func (m *tongyiTextEmbedding) Register() {
 
 func (m *tongyiTextEmbedding) Embedding(ctx context.Context, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, user string, modelRuntime biz_entity.IAIModelRuntime, inputType string, texts []string) (*biz_entity_chat.TextEmbeddingResult, error) {
 	credentials = m.addCustomParameters(credentials)
-	m.IOpenApiCompactTextEmbeddingModel = text_embedding.NewOpenApiCompactLargeLanguageModel(ctx, model, credentials, texts)
+	m.IOpenApiCompactTextEmbeddingModel = text_embedding.NewOpenApiCompactLargeLanguageModel(ctx, model, credentials, texts, modelRuntime)
 	return m.IOpenApiCompactTextEmbeddingModel.Invoke(ctx)
 
 }

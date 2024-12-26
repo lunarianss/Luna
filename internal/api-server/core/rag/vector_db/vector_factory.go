@@ -25,9 +25,10 @@ type Vector struct {
 	redis           *redis.Client
 	datasetDomain   *datsetDomain.DatasetDomain
 	tx              *gorm.DB
+	account         string
 }
 
-func NewVector(ctx context.Context, dataset *po_entity.Dataset, attributes []string, vdbName biz_entity.VdbType, redis *redis.Client, providerDomain *domain_service.ProviderDomain, tx *gorm.DB) (*Vector, error) {
+func NewVector(ctx context.Context, dataset *po_entity.Dataset, attributes []string, vdbName biz_entity.VdbType, redis *redis.Client, providerDomain *domain_service.ProviderDomain, tx *gorm.DB, datasetDomain *datsetDomain.DatasetDomain, account string) (*Vector, error) {
 	var (
 		err error
 	)
@@ -38,6 +39,8 @@ func NewVector(ctx context.Context, dataset *po_entity.Dataset, attributes []str
 		vdb:            vdbName,
 		redis:          redis,
 		tx:             tx,
+		datasetDomain:  datasetDomain,
+		account:        account,
 	}
 
 	vector.embeddings, err = vector.GetEmbeddings(ctx)
@@ -91,7 +94,7 @@ func (v *Vector) Create(ctx context.Context, texts []*biz_entity.Document) error
 }
 
 func (v *Vector) DeleteByMetadataField(ctx context.Context, key string, value string) error {
-	return nil
+	return v.vectorProcessor.DeleteByMetadataField(ctx, key, value)
 }
 
 func (v *Vector) GetEmbeddings(ctx context.Context) (cache_embedding.ICacheEmbedding, error) {
@@ -100,5 +103,5 @@ func (v *Vector) GetEmbeddings(ctx context.Context) (cache_embedding.ICacheEmbed
 	if err != nil {
 		return nil, err
 	}
-	return cache_embedding.NewCacheEmbedding(embeddingModel, v.dataset.UpdatedBy, v.datasetDomain, v.tx), nil
+	return cache_embedding.NewCacheEmbedding(embeddingModel, v.account, v.datasetDomain, v.tx), nil
 }

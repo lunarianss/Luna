@@ -50,7 +50,7 @@ func WriteResponse(c *gin.Context, err error, data interface{}) {
 
 func WriteBindErrResponse(c *gin.Context, err error) {
 	if errs, ok := err.(validator.ValidationErrors); ok {
-		WriteResponse(c, errors.WithCode(code.ErrValidation, validation.TranslateValidate(errs)), nil)
+		WriteResponse(c, errors.WithSCode(code.ErrValidation, validation.TranslateValidate(errs)), nil)
 	} else {
 		WriteResponse(c, errors.WithCode(code.ErrBind, err.Error(), nil), nil)
 	}

@@ -87,7 +87,7 @@ func (ap *AnnotationRepoImpl) GetAnnotationSettingWithCreate(ctx context.Context
 		return nil, err
 	}
 
-	if annotationSetting.ID == "" {
+	if annotationSetting == nil {
 		setting := &po_entity.AppAnnotationSetting{
 			AppID:               appID,
 			ScoreThreshold:      scoreThreshold,

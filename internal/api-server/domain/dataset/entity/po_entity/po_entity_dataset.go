@@ -60,16 +60,15 @@ func (a *Dataset) BeforeCreate(tx *gorm.DB) (err error) {
 func (a *Dataset) GetCollectionNameByID(id string) string {
 	id = strings.ReplaceAll(id, "-", "_")
 	return fmt.Sprintf("Vector_index_%s_Node", id)
-
 }
 
 type Embedding struct {
-	ID           string `json:"id" gorm:"id"`
-	ModelName    string `json:"model_name" gorm:"model_name"`
-	Hash         string `json:"hash" gorm:"hash"`
-	Embedding    []byte `json:"embedding" gorm:"embedding"`
-	CreatedAt    int64  `json:"created_at" gorm:"created_at"`
-	ProviderName string `json:"provider_name" gorm:"provider_name"`
+	ID           string `json:"id" gorm:"column:id"`
+	ModelName    string `json:"model_name" gorm:"column:model_name"`
+	Hash         string `json:"hash" gorm:"column:hash"`
+	Embedding    []byte `json:"embedding" gorm:"column:embedding"`
+	CreatedAt    int64  `json:"created_at" gorm:"column:created_at"`
+	ProviderName string `json:"provider_name" gorm:"column:provider_name"`
 }
 
 func (a *Embedding) TableName() string {
@@ -89,13 +88,15 @@ func (a *Embedding) GetEmbeddings() ([]float32, error) {
 	if err := decoder.Decode(&embeddingData); err != nil {
 		return nil, err
 	}
+
 	return embeddingData, nil
 }
 
-func (a *Embedding) SetEmbedding() ([]byte, error) {
+func (a *Embedding) SetEmbedding(embeddingVector []float32) ([]byte, error) {
 	var buf bytes.Buffer
 	encoder := gob.NewEncoder(&buf)
-	err := encoder.Encode(a.Embedding)
+
+	err := encoder.Encode(embeddingVector)
 
 	if err != nil {
 		return nil, err

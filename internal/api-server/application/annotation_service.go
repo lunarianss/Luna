@@ -26,6 +26,7 @@ import (
 	dto_app "github.com/lunarianss/Luna/internal/api-server/dto/app"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 	"github.com/lunarianss/Luna/internal/api-server/event"
+	"github.com/lunarianss/Luna/internal/api-server/event/event_handler"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
@@ -125,7 +126,7 @@ func (as *AnnotationService) InsertAnnotationFromMessage(ctx context.Context, ac
 		}
 	}
 
-	_, err = as.chatDomain.AnnotationRepo.GetAnnotationSetting(ctx, app.ID, nil)
+	annotationSetting, err := as.chatDomain.AnnotationRepo.GetAnnotationSetting(ctx, app.ID, nil)
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -134,11 +135,37 @@ func (as *AnnotationService) InsertAnnotationFromMessage(ctx context.Context, ac
 			return nil, err
 		}
 	} else {
-		// todo rocketmq 异步消息
+		addAnnotationBody := &event_handler.AddAnnotationTask{
+			AnnotationID:        bizMessageAnnotation.ID,
+			Question:            bizMessageAnnotation.Question,
+			TenantID:            tenant.ID,
+			AppID:               appID,
+			CollectionBindingID: annotationSetting.CollectionBindingID,
+			AccountID:           accountID,
+		}
+
+		marshalMessageBody, err := json.Marshal(addAnnotationBody)
+
+		if err != nil {
+			return nil, err
+		}
+
+		message := &primitive.Message{
+			Topic: event.AnnotationTopic,
+			Body:  marshalMessageBody,
+		}
+
+		message.WithTag(event.AddAnnotationTag)
+		sendResult, err := as.mq.SendSync(ctx, message)
+
+		if err != nil {
+			return nil, errors.WithCode(code.ErrMQSend, "mq send sync error when send enable app annotation: %s", err.Error())
+		}
+
+		log.Infof("MQ-Send-Result %s", sendResult.String())
 	}
 
 	return nil, nil
-
 }
 
 func (as *AnnotationService) EnableAppAnnotationStatus(ctx context.Context, appID, accountID, jobID, action string) (*dto_app.ApplyAnnotationStatusResponse, error) {
@@ -269,7 +296,7 @@ func (as *AnnotationService) EnableAppAnnotation(ctx context.Context, appID, acc
 		return nil, err
 	}
 
-	enableAnnotationMessageBody := event.EnableAnnotationReplyTask{
+	enableAnnotationMessageBody := &event_handler.EnableAnnotationReplyTask{
 		JobID:                 jobID,
 		AppID:                 appID,
 		AccountID:             accountID,

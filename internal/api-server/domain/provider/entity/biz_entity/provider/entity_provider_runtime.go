@@ -47,14 +47,14 @@ func (mp *ProviderRuntime) GetProviderSchema() (*ProviderStaticConfiguration, er
 	providerContent, err := os.ReadFile(providerSchemaPath)
 
 	if err != nil {
-		return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+		return nil, errors.WithSCode(code.ErrRunTimeCaller, err.Error())
 	}
 
 	provider := &ProviderStaticConfiguration{}
 	err = yaml.Unmarshal(providerContent, provider)
 
 	if err != nil {
-		return nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+		return nil, errors.WithSCode(code.ErrRunTimeCaller, err.Error())
 	}
 
 	if provider.ModelCredentialSchema != nil {

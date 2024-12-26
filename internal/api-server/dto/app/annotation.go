@@ -12,7 +12,7 @@ type ApplyAnnotationStatusRequestUrl struct {
 }
 
 type ApplyAnnotationRequestBody struct {
-	ScoreThreshold        float64 `json:"score_threshold" validate:"required"`
+	ScoreThreshold        float32 `json:"score_threshold" validate:"required"`
 	EmbeddingProviderName string  `json:"embedding_provider_name" validate:"required"`
 	EmbeddingModelName    string  `json:"embedding_model_name" validate:"required"`
 }

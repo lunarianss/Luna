@@ -68,7 +68,7 @@ func (ap *AnnotationRepoImpl) FindAppAnnotations(ctx context.Context, appID stri
 	return annotations, nil
 }
 
-func (ap *AnnotationRepoImpl) GetAnnotationSettingWithCreate(ctx context.Context, appID string, scoreThreshold float64, bindingID string, accountID string, tx *gorm.DB) (*po_entity.AppAnnotationSetting, error) {
+func (ap *AnnotationRepoImpl) GetAnnotationSettingWithCreate(ctx context.Context, appID string, scoreThreshold float32, bindingID string, accountID string, tx *gorm.DB) (*po_entity.AppAnnotationSetting, error) {
 
 	var dbIns *gorm.DB
 

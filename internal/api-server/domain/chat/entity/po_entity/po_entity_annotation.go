@@ -30,7 +30,7 @@ func (a *MessageAnnotation) BeforeCreate(tx *gorm.DB) (err error) {
 type AppAnnotationSetting struct {
 	ID                  string  `json:"id" gorm:"column:id"`
 	AppID               string  `json:"app_id" gorm:"column:app_id"`
-	ScoreThreshold      float64 `json:"score_threshold" gorm:"column:score_threshold"`
+	ScoreThreshold      float32 `json:"score_threshold" gorm:"column:score_threshold"`
 	CollectionBindingID string  `json:"collection_binding_id" gorm:"column:collection_binding_id"`
 	CreatedUserID       string  `json:"created_user_id" gorm:"column:created_user_id"`
 	CreatedAt           int64   `json:"created_at" gorm:"column:created_at"`

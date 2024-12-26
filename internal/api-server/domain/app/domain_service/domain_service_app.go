@@ -6,7 +6,6 @@ package domain_service
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
@@ -37,7 +36,7 @@ func (ad *AppDomain) GetTemplate(ctx context.Context, mode string) (*biz_entity.
 	appTemplate, ok := biz_entity.DefaultAppTemplates[biz_entity.AppMode(mode)]
 
 	if !ok {
-		return nil, errors.WithCode(code.ErrAppMapMode, fmt.Sprintf("Invalid node template: %v", mode))
+		return nil, errors.WithCode(code.ErrAppMapMode, "Invalid node template: %v", mode)
 	}
 	return &appTemplate, nil
 }

@@ -6,6 +6,7 @@ package dto
 
 import (
 	"github.com/lunarianss/Luna/internal/api-server/config"
+	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	po_entity_web_app "github.com/lunarianss/Luna/internal/api-server/domain/web_app/entity/po_entity"
 )
@@ -89,33 +90,81 @@ type AnnotationSettingEmbeddingModel struct {
 type AnnotationSettingResponse struct {
 	Enabled        bool                             `json:"enabled"`
 	ID             string                           `json:"id,omitempty"`
-	ScoreThreshold float64                          `json:"score_threshold,omitempty"`
+	ScoreThreshold float32                          `json:"score_threshold,omitempty"`
 	EmbeddingModel *AnnotationSettingEmbeddingModel `json:"embedding_model,omitempty"`
 }
 
 type AppDetail struct {
-	ID                  string                   `json:"id"`
-	Name                string                   `json:"name"`
-	Description         string                   `json:"description"`
-	Mode                string                   `json:"mode"`
-	Icon                string                   `json:"icon"`
-	IconType            string                   `json:"icon_type"`
-	IconBackground      string                   `json:"icon_background"`
-	EnableSite          int                      `json:"enable_site"`
-	EnableApi           int                      `json:"enable_api"`
-	ModelConfig         po_entity.AppModelConfig `json:"model_config"`
-	Workflow            map[string]interface{}   `json:"workflow"`
-	UseIconAsAnswerIcon int                      `json:"use_icon_as_answer_icon"`
-	APIBaseUrl          string                   `json:"api_base_url"`
-	CreatedAt           int                      `json:"created_at"`
-	UpdatedAt           int                      `json:"updated_at"`
-	CreatedBy           string                   `json:"created_by"`
-	UpdatedBy           string                   `json:"updated_by"`
-	DeletedTools        []interface{}            `json:"deleted_tools"`
-	SiteDetail          *SiteDetail              `json:"site"`
+	ID                  string                     `json:"id"`
+	Name                string                     `json:"name"`
+	Description         string                     `json:"description"`
+	Mode                string                     `json:"mode"`
+	Icon                string                     `json:"icon"`
+	IconType            string                     `json:"icon_type"`
+	IconBackground      string                     `json:"icon_background"`
+	EnableSite          int                        `json:"enable_site"`
+	EnableApi           int                        `json:"enable_api"`
+	ModelConfig         *biz_entity.AppModelConfig `json:"model_config"`
+	Workflow            map[string]interface{}     `json:"workflow"`
+	UseIconAsAnswerIcon int                        `json:"use_icon_as_answer_icon"`
+	APIBaseUrl          string                     `json:"api_base_url"`
+	CreatedAt           int                        `json:"created_at"`
+	UpdatedAt           int                        `json:"updated_at"`
+	CreatedBy           string                     `json:"created_by"`
+	UpdatedBy           string                     `json:"updated_by"`
+	DeletedTools        []interface{}              `json:"deleted_tools"`
+	SiteDetail          *SiteDetail                `json:"site"`
 }
 
-func AppRecordToDetail(app *po_entity.App, config *config.Config, modelConfig *po_entity.AppModelConfig, siteRecord *po_entity_web_app.Site) *AppDetail {
+type AppModelConfigDtoEnable struct {
+	Enabled bool `json:"enabled"`
+}
+
+// Model holds the model-specific configuration.
+type ModelDto struct {
+	Provider         string                 `json:"provider"`
+	Name             string                 `json:"name"`
+	Mode             string                 `json:"mode"`
+	CompletionParams map[string]interface{} `json:"completion_params"`
+}
+
+type UserInput struct {
+	Label     string   `json:"label"`
+	Variable  string   `json:"variable"`
+	Required  bool     `json:"required"`
+	MaxLength int      `json:"max_length"`
+	Default   string   `json:"default"`
+	Options   []string `json:"options"`
+}
+
+type UserInputForm map[string]*UserInput
+
+type AppModelConfigDto struct {
+	AppID                         string                  `json:"appId"`
+	ModelID                       string                  `json:"model_id"`
+	OpeningStatement              string                  `json:"opening_statement"`
+	SuggestedQuestions            []string                `json:"suggested_questions"`
+	SuggestedQuestionsAfterAnswer AppModelConfigDtoEnable `json:"suggested_questions_after_answer"`
+	MoreLikeThis                  AppModelConfigDtoEnable `json:"more_like_this"`
+	Model                         ModelDto                `json:"model"`
+	UserInputForm                 []UserInputForm         `json:"user_input_form"`
+	PrePrompt                     string                  `json:"pre_prompt"`
+	AgentMode                     map[string]interface{}  `json:"agent_mode"`
+	SpeechToText                  AppModelConfigDtoEnable `json:"speech_to_text"`
+	SensitiveWordAvoidance        map[string]interface{}  `json:"sensitive_word_avoidance"`
+	RetrieverResource             AppModelConfigDtoEnable `json:"retriever_resource"`
+	DatasetQueryVariable          string                  `json:"dataset_query_variable"`
+	PromptType                    string                  `json:"prompt_type"`
+	ChatPromptConfig              map[string]interface{}  `json:"chat_prompt_config"`
+	CompletionPromptConfig        map[string]interface{}  `json:"completion_prompt_config"`
+	DatasetConfigs                map[string]interface{}  `json:"dataset_configs"`
+	FileUpload                    map[string]interface{}  `json:"file_upload"`
+	TextToSpeech                  AppModelConfigDtoEnable `json:"text_to_speech"`
+	ExternalDataTools             []string                `json:"external_data_tools" `
+	Configs                       map[string]interface{}  `json:"configs"`
+}
+
+func AppRecordToDetail(app *po_entity.App, config *config.Config, modelConfig *biz_entity.AppModelConfig, siteRecord *po_entity_web_app.Site) *AppDetail {
 
 	appDetail := &AppDetail{
 		ID:                  app.ID,
@@ -132,7 +181,7 @@ func AppRecordToDetail(app *po_entity.App, config *config.Config, modelConfig *p
 		CreatedBy:           app.CreatedBy,
 		UpdatedBy:           app.UpdatedBy,
 		UseIconAsAnswerIcon: int(app.UseIconAsAnswerIcon),
-		ModelConfig:         *modelConfig,
+		ModelConfig:         modelConfig,
 		SiteDetail:          SiteRecordToSiteDetail(siteRecord, config),
 		APIBaseUrl:          config.SystemOptions.ApiBaseUrl,
 	}
@@ -188,7 +237,7 @@ func AppRecordToDetail(app *po_entity.App, config *config.Config, modelConfig *p
 	}
 
 	if appDetail.ModelConfig.UserInputForm == nil {
-		appDetail.ModelConfig.UserInputForm = make([]po_entity.UserInputForm, 0)
+		appDetail.ModelConfig.UserInputForm = make([]biz_entity.UserInputForm, 0)
 	}
 
 	return appDetail

@@ -356,7 +356,7 @@ func (s *ChatService) DetailConversation(ctx context.Context, accountID string, 
 		if err != nil {
 			return nil, err
 		}
-		conversationJoin.ModelConfig = biz_entity.ConvertToAppConfigBizEntity(appConf)
+		conversationJoin.ModelConfig = biz_entity.ConvertToAppConfigBizEntity(appConf, nil)
 		conversationJoin.ModelConfig.ModelID = conversationRecord.ModelID
 		conversationJoin.ModelConfig.Provider = conversationRecord.ModelProvider
 	}

@@ -26,7 +26,7 @@ type EnableAnnotationReplyTask struct {
 	AppID                 string  `json:"app_id"`
 	AccountID             string  `json:"account_id"`
 	TenantID              string  `json:"tenant_id"`
-	ScoreThreshold        float64 `json:"score_threshold"`
+	ScoreThreshold        float32 `json:"score_threshold"`
 	EmbeddingProviderName string  `json:"embedding_provider_name"`
 	EmbeddingModelName    string  `json:"embedding_model_name"`
 }

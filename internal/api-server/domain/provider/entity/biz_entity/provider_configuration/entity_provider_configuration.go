@@ -7,7 +7,6 @@ package biz_entity
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"slices"
 
 	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
@@ -99,7 +98,7 @@ func (pcm *ProviderConfigurations) GetConfigurationByProvider(ctx context.Contex
 			return configuration, nil
 		}
 	}
-	return nil, errors.WithCode(code.ErrRequiredCorrectProvider, fmt.Sprintf("provider %s not found", provider))
+	return nil, errors.WithCode(code.ErrRequiredCorrectProvider, "provider %s not found", provider)
 }
 
 func (pcm *ProviderConfigurations) GetProviderRepo() repository.ProviderRepo {
@@ -289,7 +288,7 @@ func (pc *ProviderConfiguration) validateProviderCredentials(ctx context.Context
 		if slices.Contains(secretVariables, key) {
 			encryptedData, err := util.Encrypt(value.(string), tenant.EncryptPublicKey)
 			if err != nil {
-				return nil, nil, errors.WithCode(code.ErrRunTimeCaller, err.Error())
+				return nil, nil, errors.WithSCode(code.ErrRunTimeCaller, err.Error())
 			}
 			credentials[key] = encryptedData
 		}
@@ -322,7 +321,7 @@ func (pc *ProviderConfiguration) AddOrUpdateCustomProviderCredentials(ctx contex
 	byteCredentials, err := json.Marshal(credentials)
 
 	if err != nil {
-		return errors.WithCode(code.ErrEncodingJSON, err.Error())
+		return errors.WithSCode(code.ErrEncodingJSON, err.Error())
 	}
 
 	if providerRecord != nil {
@@ -362,7 +361,7 @@ func (pc *ProviderConfiguration) AddOrUpdateCustomModelCredentials(ctx context.C
 	byteCredentials, err := json.Marshal(credentials)
 
 	if err != nil {
-		return errors.WithCode(code.ErrEncodingJSON, err.Error())
+		return errors.WithSCode(code.ErrEncodingJSON, err.Error())
 	}
 
 	if modelRecord != nil {
@@ -400,6 +399,5 @@ func (pc *ProviderConfiguration) validateModelCredentials(ctx context.Context, c
 		return nil, nil, err
 	}
 
-	// credentials 对 apikey 进行 validate and encrypt
 	return model, credentials, nil
 }

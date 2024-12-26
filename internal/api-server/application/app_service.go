@@ -16,6 +16,7 @@ import (
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
+	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
 	biz_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
@@ -35,12 +36,13 @@ type AppService struct {
 	appDomain      *appDomain.AppDomain
 	providerDomain *domain_service.ProviderDomain
 	accountDomain  *accountDomain.AccountDomain
+	chatDomain     *chatDomain.ChatDomain
 	db             *gorm.DB
 	config         *config.Config
 }
 
-func NewAppService(appDomain *appDomain.AppDomain, providerDomain *domain_service.ProviderDomain, accountDomain *accountDomain.AccountDomain, db *gorm.DB, config *config.Config) *AppService {
-	return &AppService{appDomain: appDomain, providerDomain: providerDomain, accountDomain: accountDomain, db: db, config: config}
+func NewAppService(appDomain *appDomain.AppDomain, providerDomain *domain_service.ProviderDomain, accountDomain *accountDomain.AccountDomain, chatDomain *chatDomain.ChatDomain, db *gorm.DB, config *config.Config) *AppService {
+	return &AppService{appDomain: appDomain, providerDomain: providerDomain, accountDomain: accountDomain, db: db, config: config, chatDomain: chatDomain}
 }
 
 func (as *AppService) CreateApp(ctx context.Context, accountID string, createAppRequest *dto.CreateAppRequest) (*dto.CreateAppResponse, error) {
@@ -204,13 +206,39 @@ func (as AppService) AppDetail(ctx context.Context, accountID string, appID stri
 		return nil, err
 	}
 
+	annotationSetting, err := as.chatDomain.AnnotationRepo.GetAnnotationSetting(ctx, appID, nil)
+
+	var annotationConfig *biz_entity.AppAnnotationReply
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			annotationConfig = &biz_entity.AppAnnotationReply{
+				Enabled: false,
+			}
+		} else {
+			return nil, err
+		}
+	} else {
+		annotationConfig = &biz_entity.AppAnnotationReply{
+			ID:             annotationSetting.ID,
+			Enabled:        true,
+			ScoreThreshold: float32(annotationSetting.ScoreThreshold),
+			EmbeddingModel: &biz_entity.AppAnnotationEmbeddingModel{
+				EmbeddingProviderName: annotationSetting.CollectionBindingDetail.ProviderName,
+				EmbeddingModelName:    annotationSetting.CollectionBindingDetail.ModelName,
+			},
+		}
+	}
+
+	appConfigBiz := biz_entity.ConvertToAppConfigBizEntity(appConfigRecord, annotationConfig)
+
 	siteRecord, err := as.appDomain.WebAppRepo.GetSiteByAppID(ctx, appID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return dto.AppRecordToDetail(appRecord, as.config, appConfigRecord, siteRecord), nil
+	return dto.AppRecordToDetail(appRecord, as.config, appConfigBiz, siteRecord), nil
 }
 
 func (as *AppService) UpdateAppModelConfig(ctx context.Context, modelConfig *chatDto.AppModelConfigDto, appID string, accountID string) error {
@@ -284,7 +312,7 @@ func (as *AppService) UpdateEnableAppSite(ctx context.Context, accountID string,
 	enableSite := util.BoolToInt(enable_site)
 
 	if appRecord.EnableSite == field.BitBool(enableSite) {
-		return dto.AppRecordToDetail(appRecord, as.config, appConfigRecord, siteRecord), nil
+		return dto.AppRecordToDetail(appRecord, as.config, biz_entity.ConvertToAppConfigBizEntity(appConfigRecord, nil), siteRecord), nil
 	}
 
 	appRecord.EnableSite = field.BitBool(enableSite)
@@ -297,7 +325,7 @@ func (as *AppService) UpdateEnableAppSite(ctx context.Context, accountID string,
 		return nil, err
 	}
 
-	return dto.AppRecordToDetail(appRecord, as.config, appConfigRecord, siteRecord), nil
+	return dto.AppRecordToDetail(appRecord, as.config, biz_entity.ConvertToAppConfigBizEntity(appConfigRecord, nil), siteRecord), nil
 }
 
 func (as *AppService) UpdateEnableAppApi(ctx context.Context, accountID string, appID string, enable_api bool) (*dto.AppDetail, error) {
@@ -331,7 +359,7 @@ func (as *AppService) UpdateEnableAppApi(ctx context.Context, accountID string, 
 	enableAPI := util.BoolToInt(enable_api)
 
 	if appRecord.EnableAPI == field.BitBool(enableAPI) {
-		return dto.AppRecordToDetail(appRecord, as.config, appConfigRecord, siteRecord), nil
+		return dto.AppRecordToDetail(appRecord, as.config, biz_entity.ConvertToAppConfigBizEntity(appConfigRecord, nil), siteRecord), nil
 	}
 
 	appRecord.EnableAPI = field.BitBool(enableAPI)
@@ -344,7 +372,7 @@ func (as *AppService) UpdateEnableAppApi(ctx context.Context, accountID string, 
 		return nil, err
 	}
 
-	return dto.AppRecordToDetail(appRecord, as.config, appConfigRecord, siteRecord), nil
+	return dto.AppRecordToDetail(appRecord, as.config, biz_entity.ConvertToAppConfigBizEntity(appConfigRecord, nil), siteRecord), nil
 }
 
 type TaskData struct {

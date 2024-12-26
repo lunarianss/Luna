@@ -100,6 +100,7 @@ type AppModelConfig struct {
 	ExternalDataTools             []string               `json:"external_data_tools" gorm:"column:external_data_tools;serializer:json"`
 	FileUpload                    map[string]interface{} `json:"file_upload" gorm:"column:file_upload;serializer:json"`
 	TextToSpeech                  AppModelConfigEnable   `json:"text_to_speech" gorm:"column:text_to_speech;serializer:json"`
+	AppAnnotationReply            *AppAnnotationReply    `json:"annotation_reply"`
 }
 
 func (a *AppModelConfig) ConvertToAppConfigPoEntity() *po_entity.AppModelConfig {
@@ -194,7 +195,19 @@ func ConvertToUserInputBizEntity(userInputs []po_entity.UserInputForm) []UserInp
 	return returnUserInput
 }
 
-func ConvertToAppConfigBizEntity(a *po_entity.AppModelConfig) *AppModelConfig {
+type AppAnnotationEmbeddingModel struct {
+	EmbeddingProviderName string `json:"embedding_provider_name,omitempty"`
+	EmbeddingModelName    string `json:"embedding_model_name,omitempty"`
+}
+
+type AppAnnotationReply struct {
+	ID             string                       `json:"id,omitempty"`
+	Enabled        bool                         `json:"enabled"`
+	ScoreThreshold float32                      `json:"score_threshold,omitempty"`
+	EmbeddingModel *AppAnnotationEmbeddingModel `json:"embedding_model,omitempty"`
+}
+
+func ConvertToAppConfigBizEntity(a *po_entity.AppModelConfig, annotation *AppAnnotationReply) *AppModelConfig {
 	return &AppModelConfig{
 		AppID:                         a.AppID,
 		Provider:                      a.Provider,
@@ -221,5 +234,6 @@ func ConvertToAppConfigBizEntity(a *po_entity.AppModelConfig) *AppModelConfig {
 		ExternalDataTools:             a.ExternalDataTools,
 		FileUpload:                    a.FileUpload,
 		TextToSpeech:                  AppModelConfigEnable(a.TextToSpeech), // 注意类型转换
+		AppAnnotationReply:            annotation,
 	}
 }

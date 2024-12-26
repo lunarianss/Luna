@@ -6,7 +6,6 @@ package app_chat_generator
 
 import (
 	"context"
-	"fmt"
 	"runtime/debug"
 	"time"
 
@@ -60,12 +59,12 @@ func NewChatAppGenerator(appDomain *appDomain.AppDomain, providerDomain *domain_
 func (g *ChatAppGenerator) getAppModelConfig(ctx context.Context, appModel *po_entity.App, conversation *po_entity_chat.Conversation) (*po_entity.AppModelConfig, error) {
 	if conversation == nil {
 		if appModel.AppModelConfigID == "" {
-			return nil, errors.WithCode(code.ErrAppNotFoundRelatedConfig, fmt.Sprintf("app %s not found related config", appModel.Name))
+			return nil, errors.WithCode(code.ErrAppNotFoundRelatedConfig, "app %s not found related config", appModel.Name)
 		}
 		return g.AppDomain.AppRepo.GetAppModelConfigById(ctx, appModel.AppModelConfigID, appModel.ID)
 	} else {
 		if appModel.AppModelConfigID == "" {
-			return nil, errors.WithCode(code.ErrAppNotFoundRelatedConfig, fmt.Sprintf("conversation %s not found related config", appModel.Name))
+			return nil, errors.WithCode(code.ErrAppNotFoundRelatedConfig, "conversation %s not found related config", appModel.Name)
 		}
 		return g.AppDomain.AppRepo.GetAppModelConfigById(ctx, conversation.AppModelConfigID, appModel.ID)
 	}
@@ -111,7 +110,7 @@ func (g *ChatAppGenerator) baseGenerate(c context.Context, appModel *po_entity.A
 	modelConfigManager := app_config.NewChatAppConfigManager(g.ProviderDomain)
 	if args.ModelConfig.AppID != "" {
 		if invokeFrom != biz_entity_app_generate.Debugger {
-			return nil, nil, nil, errors.WithCode(code.ErrOnlyOverrideConfigInDebugger, fmt.Sprintf("mode %s is not debugger, so it cannot override", invokeFrom))
+			return nil, nil, nil, errors.WithCode(code.ErrOnlyOverrideConfigInDebugger, "mode %s is not debugger, so it cannot override", invokeFrom)
 		}
 
 		overrideModelConfigMap, err = modelConfigManager.ConfigValidate(c, appModel.TenantID, &args.ModelConfig)

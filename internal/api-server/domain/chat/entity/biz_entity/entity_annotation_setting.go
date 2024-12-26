@@ -17,7 +17,7 @@ type CollectionBingDetail struct {
 type AnnotationSettingWithBinding struct {
 	ID                      string                `json:"id"`
 	AppID                   string                `json:"app_id"`
-	ScoreThreshold          float64               `json:"score_threshold"`
+	ScoreThreshold          float32               `json:"score_threshold"`
 	CollectionBindingID     string                `json:"collection_binding_id"`
 	CreatedUserID           string                `json:"created_user_id"`
 	CreatedAt               int64                 `json:"created_at"`

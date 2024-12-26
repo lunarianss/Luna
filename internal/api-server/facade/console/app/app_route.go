@@ -47,7 +47,7 @@ func (a *AppRoutes) Register(g *gin.Engine) error {
 	chatDomain := chatDomain.NewChatDomain(messageRepo, annotationRepo)
 
 	// service
-	appService := service.NewAppService(appDomain, providerDomain, accountDomain, gormIns, config)
+	appService := service.NewAppService(appDomain, providerDomain, accountDomain, chatDomain, gormIns, config)
 	chatService := service.NewChatService(appDomain, providerDomain, accountDomain, chatDomain)
 
 	appController := controller.NewAppController(appService, chatService)

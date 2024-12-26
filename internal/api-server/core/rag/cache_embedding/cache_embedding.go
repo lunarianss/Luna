@@ -146,6 +146,6 @@ func (ce *cacheEmbedding) EmbedDocuments(ctx context.Context, texts []string) ([
 		}
 	}
 
-	log.Info("Text embedding result by AI and DB cache:  %v", textEmbeddings)
+	log.Info("Text embedding result by AI and DB cache:  %v", len(textEmbeddings))
 	return textEmbeddings, nil
 }

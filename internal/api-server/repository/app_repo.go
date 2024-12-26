@@ -143,7 +143,7 @@ func (ad *AppRepoImpl) GetAppModelConfigById(ctx context.Context, appConfigID, a
 func (ad *AppRepoImpl) GetTenantApp(ctx context.Context, appID, tenantID string) (*po_entity.App, error) {
 	var app po_entity.App
 	if err := ad.db.First(&app, "id = ? AND tenant_id = ? AND status = ?", appID, tenantID, "normal").Error; err != nil {
-		return nil, errors.WrapC(err, code.ErrDatabase, "error %s when get tenant app", err.Error())
+		return nil, errors.WrapC(err, code.ErrDatabase, "Get tenant app by id-[%s] tenant-[%s] error: %s", appID, tenantID, err.Error())
 	}
 	return &app, nil
 }

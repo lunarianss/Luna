@@ -12,5 +12,6 @@ type DatasetRepo interface {
 	CreateProviderHashEmbedding(ctx context.Context, embedding *po_entity.Embedding, tx *gorm.DB) (*po_entity.Embedding, error)
 	BatchCreateProviderHashEmbedding(ctx context.Context, embeddings []*po_entity.Embedding, tx *gorm.DB) ([]*po_entity.Embedding, error)
 	GetDatasetCollectionBinding(ctx context.Context, providerName string, modelName string, collectionType string, tb *gorm.DB) (*po_entity.DatasetCollectionBinding, error)
+	GetDatasetCollectionBindingByIDAndType(ctx context.Context, id string, cType string) (*po_entity.DatasetCollectionBinding, error)
 	GetProviderHashEmbedding(ctx context.Context, model string, hash string, provider string) (*po_entity.Embedding, error)
 }

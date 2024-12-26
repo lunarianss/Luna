@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
+	"github.com/lunarianss/Luna/infrastructure/log"
 	po_account "github.com/lunarianss/Luna/internal/api-server/domain/account/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
@@ -44,11 +45,11 @@ func (ap *AnnotationRepoImpl) GetMessageAnnotation(ctx context.Context, messageI
 		account po_account.Account
 	)
 	if err := ap.db.First(&ma, "message_id = ?", messageID).Error; err != nil {
-		return nil, errors.WrapC(err, code.ErrDatabase, "Get annotation by messageID-[%s] not exists", messageID)
+		return nil, errors.WrapC(err, code.ErrDatabase, "Get annotation by messageID-[%s] error: %s", messageID, err.Error())
 	}
 
 	if err := ap.db.First(&account, "id = ?", ma.AccountID).Error; err != nil {
-		return nil, errors.WrapC(err, code.ErrDatabase, "Get account by accountID-[%s] not exists", ma.AccountID)
+		return nil, errors.WrapC(err, code.ErrDatabase, "Get account by accountID-[%s] error: %s", ma.AccountID, err.Error())
 	}
 
 	return biz_entity.ConvertToBizMessageAnnotation(&ma, &account), nil
@@ -115,14 +116,15 @@ func (ap *AnnotationRepoImpl) CreateMessageAnnotation(ctx context.Context, annot
 	}
 
 	if err := ap.db.First(&account, "id = ?", annotation.AccountID).Error; err != nil {
-		return nil, errors.WrapC(err, code.ErrDatabase, "Get account by accountID-[%s] not exists", annotation.AccountID)
+		return nil, errors.WrapC(err, code.ErrDatabase, "Get account by accountID-[%s] error: %s", annotation.AccountID, err.Error())
 	}
 
 	return biz_entity.ConvertToBizMessageAnnotation(annotation, &account), nil
 }
 
 func (ap *AnnotationRepoImpl) UpdateMessageAnnotation(ctx context.Context, id, answer, question string) error {
-	if err := ap.db.Model(&po_entity.MessageAnnotation{}).Select("content", "question").Where("id = ?", id).Updates(map[string]string{"content": answer, "question": question}).Error; err != nil {
+	log.Info(id, answer, question)
+	if err := ap.db.Model(&po_entity.MessageAnnotation{}).Select("content", "question").Where("id = ?", id).Updates(map[string]interface{}{"content": answer, "question": question}).Error; err != nil {
 		return errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return nil
@@ -140,13 +142,13 @@ func (ap *AnnotationRepoImpl) GetAnnotationSetting(ctx context.Context, appID st
 
 	var ma po_entity.AppAnnotationSetting
 	if err := dbIns.First(&ma, "app_id = ?", appID).Error; err != nil {
-		return nil, errors.WrapC(err, code.ErrDatabase, "Get annotation setting by appID-[%s] not exists", appID)
+		return nil, errors.WrapC(err, code.ErrDatabase, "Get annotation setting by appID-[%s] error: %s", appID, err.Error())
 	}
 
 	var binding po_dataset.DatasetCollectionBinding
 
 	if err := dbIns.First(&binding, "id = ?", ma.CollectionBindingID).Error; err != nil {
-		return nil, errors.WrapC(err, code.ErrDatabase, "Get collection binding by ID-[%s] not exists", ma.CollectionBindingID)
+		return nil, errors.WrapC(err, code.ErrDatabase, "Get collection binding by ID-[%s] not error: %s", ma.CollectionBindingID, err.Error())
 	}
 
 	return biz_entity.ConvertPoAnnotationSetting(&ma, &binding), nil

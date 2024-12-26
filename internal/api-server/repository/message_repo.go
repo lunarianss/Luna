@@ -358,7 +358,7 @@ func (md *MessageRepoImpl) GetMessageByApp(ctx context.Context, messageID string
 	var message po_entity.Message
 
 	if err := md.db.First(&message, "id = ? AND app_id = ?", messageID, appID).Error; err != nil {
-		return nil, errors.WrapC(err, code.ErrDatabase, "Get message by id-[%s] and app_id-[%s] error", messageID, appID)
+		return nil, errors.WrapC(err, code.ErrDatabase, "Get message by id-[%s] and app_id-[%s] error: %s", messageID, appID, err.Error())
 	}
 
 	return &message, nil

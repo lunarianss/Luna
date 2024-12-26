@@ -2,11 +2,12 @@ package repo_impl
 
 import (
 	"context"
-	"errors"
 
 	"github.com/google/uuid"
+	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/internal/api-server/domain/dataset/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/dataset/repository"
+	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"gorm.io/gorm"
 )
 
@@ -49,6 +50,17 @@ func (dr *DatasetRepoImpl) GetProviderHashEmbedding(ctx context.Context, model s
 	}
 
 	return &embedding, nil
+}
+
+func (dr *DatasetRepoImpl) GetDatasetCollectionBindingByIDAndType(ctx context.Context, id string, cType string) (*po_entity.DatasetCollectionBinding, error) {
+	var datasetCollection po_entity.DatasetCollectionBinding
+
+	err := dr.db.Where("id = ? AND type = ?", id, cType).First(&datasetCollection).Error
+
+	if err != nil {
+		return nil, errors.WrapC(err, code.ErrDatabase, "Get dataset collection binding by id-[%s] and type-[%s] error: %s", id, cType, err.Error())
+	}
+	return &datasetCollection, nil
 }
 
 func (dr *DatasetRepoImpl) GetDatasetCollectionBinding(ctx context.Context, providerName string, modelName string, collectionType string, tx *gorm.DB) (*po_entity.DatasetCollectionBinding, error) {

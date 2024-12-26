@@ -1,44 +1,103 @@
 package main
 
 import (
-	"bytes"
-	"encoding/gob"
+	"context"
 	"fmt"
+	"time"
+
+	"github.com/fatih/color"
+	"github.com/lunarianss/Luna/infrastructure/log"
+	"github.com/lunarianss/Luna/internal/infrastructure/util"
+	"github.com/weaviate/weaviate-go-client/v4/weaviate"
+	"github.com/weaviate/weaviate-go-client/v4/weaviate/auth"
+	"github.com/weaviate/weaviate-go-client/v4/weaviate/graphql"
 )
 
+type WeaviateConsole struct {
+	client *weaviate.Client
+}
+
+func NewWeaviateClient() (*weaviate.Client, error) {
+	log.NewStdWithOptions()
+	cfg := weaviate.Config{
+		Host:       "127.0.0.1:8080",
+		Scheme:     "http",
+		AuthConfig: auth.ApiKey{Value: "WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih"},
+		Timeout:    60 * time.Second,
+	}
+
+	client, err := weaviate.NewClient(cfg)
+
+	if err != nil {
+		return nil, err
+	}
+
+	live, err := client.Misc().LiveChecker().Do(context.Background())
+
+	if err != nil {
+		return nil, err
+	}
+
+	if live {
+		fmt.Println(color.GreenString("weaviate is live!"))
+	}
+
+	return client, nil
+}
+
+func (wc *WeaviateConsole) GetAllCollectionDefined() {
+	context := context.Background()
+	schema, err := wc.client.Schema().Getter().
+		Do(context)
+
+	if err != nil {
+		panic(err)
+	}
+	fmt.Sprintln("========= All Collection Start ========")
+	util.LogCompleteInfo(schema)
+	fmt.Sprintln("========= All Collection End   ========")
+}
+
+func (wc *WeaviateConsole) GetCollectionObjects(className string) {
+	ctx := context.Background()
+	client, err := NewWeaviateClient()
+
+	if err != nil {
+		panic(err)
+	}
+
+	response, err := client.GraphQL().Get().
+		WithClassName(className).
+		WithFields(graphql.Field{Name: "text"}, graphql.Field{Name: "doc_id"}, graphql.Field{Name: "app_id"}, graphql.Field{Name: "annotation_id"}, graphql.Field{Name: "_additional", Fields: []graphql.Field{
+			// {Name: "vector"},
+			{Name: "id"},
+		}}).
+		Do(ctx)
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("========= Collection %s Objects Start ========\n", className)
+	util.LogCompleteInfo(response)
+	fmt.Printf("========= Collection %s  Objects End   ========\n", className)
+}
+
+func NewConsole() *WeaviateConsole {
+	client, err := NewWeaviateClient()
+
+	if err != nil {
+		panic(err)
+	}
+
+	return &WeaviateConsole{
+		client,
+	}
+}
 func main() {
-	// 定义一个 []float32 类型的数据
-	data := []float32{1.1, 2.2, 3.3, 4.4, 5.5}
+	console := NewConsole()
 
-	// 使用 bytes.Buffer 创建一个 buffer 来保存编码后的数据
-	var buf bytes.Buffer
+	// console.GetAllCollectionDefined()
 
-	// 创建一个 gob 编码器
-	encoder := gob.NewEncoder(&buf)
-
-	// 编码 []float32 数据到 buffer
-	err := encoder.Encode(data)
-	if err != nil {
-		fmt.Println("编码错误:", err)
-		return
-	}
-
-	// 打印编码后的字节流
-	fmt.Println("编码后的数据:", buf.Bytes())
-
-	// 创建一个解码器
-	decoder := gob.NewDecoder(&buf)
-
-	// 定义一个变量来接收解码后的数据
-	var decodedData []float32
-
-	// 解码字节流到 decodedData
-	err = decoder.Decode(&decodedData)
-	if err != nil {
-		fmt.Println("解码错误:", err)
-		return
-	}
-
-	// 打印解码后的数据
-	fmt.Println("解码后的数据:", decodedData)
+	console.GetCollectionObjects("Vector_index_9a532b60_a004_425e_a952_fa5f33c6cdd1_Node")
 }

@@ -8,25 +8,38 @@ import (
 	"context"
 
 	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/token_buffer_memory"
+	"github.com/lunarianss/Luna/internal/api-server/core/app_feature"
+
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
+	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
+
+	datasetDomain "github.com/lunarianss/Luna/internal/api-server/domain/dataset/domain_service"
+	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime/model_registry"
+	"github.com/redis/go-redis/v9"
 )
 
 type appChatRunner struct {
 	*AppBaseChatRunner
-	AppDomain  *domain_service.AppDomain
-	ChatDomain *chatDomain.ChatDomain
+	AppDomain      *domain_service.AppDomain
+	ChatDomain     *chatDomain.ChatDomain
+	ProviderDomain *providerDomain.ProviderDomain
+	DatasetDomain  *datasetDomain.DatasetDomain
+	redis          *redis.Client
 }
 
-func NewAppChatRunner(appBaseChatRunner *AppBaseChatRunner, appDomain *domain_service.AppDomain, chatDomain *chatDomain.ChatDomain) *appChatRunner {
+func NewAppChatRunner(appBaseChatRunner *AppBaseChatRunner, appDomain *domain_service.AppDomain, chatDomain *chatDomain.ChatDomain, providerDomain *providerDomain.ProviderDomain, datasetDomain *datasetDomain.DatasetDomain, redis *redis.Client) *appChatRunner {
 	return &appChatRunner{
 		AppBaseChatRunner: appBaseChatRunner,
 		AppDomain:         appDomain,
 		ChatDomain:        chatDomain,
+		ProviderDomain:    providerDomain,
+		DatasetDomain:     datasetDomain,
+		redis:             redis,
 	}
 }
 
@@ -86,4 +99,8 @@ func (r *appChatRunner) RunNonStream(ctx context.Context, applicationGenerateEnt
 	}
 
 	return modelInstance.InvokeLLMNonStream(ctx, promptMessages, applicationGenerateEntity.ModelConf.Parameters, nil, stop, applicationGenerateEntity.UserID, nil)
+}
+
+func (r *appChatRunner) QueryAppAnnotationToReply(ctx context.Context, appRecord *po_entity.App, message *po_entity_chat.Message, query, accountID, invokeFrom string) (*po_entity_chat.MessageAnnotation, error) {
+	return app_feature.NewAnnotationReplyFeature(r.ChatDomain, r.DatasetDomain, r.ProviderDomain, r.redis).Query(ctx, appRecord, message, query, accountID, invokeFrom)
 }

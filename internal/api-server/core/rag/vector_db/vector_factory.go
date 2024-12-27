@@ -103,5 +103,18 @@ func (v *Vector) GetEmbeddings(ctx context.Context) (cache_embedding.ICacheEmbed
 	if err != nil {
 		return nil, err
 	}
-	return cache_embedding.NewCacheEmbedding(embeddingModel, v.account, v.datasetDomain, v.tx), nil
+	return cache_embedding.NewCacheEmbedding(embeddingModel, v.account, v.datasetDomain, v.tx, v.redis), nil
+}
+
+func (v *Vector) SearchByVector(ctx context.Context, query string, topK int, scoreThreshold float32) ([]*biz_entity.Document, error) {
+
+	var queryVector []float32
+
+	queryVector, err := v.embeddings.EmbedQuery(ctx, query)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return v.vectorProcessor.SearchByVector(ctx, queryVector, topK, scoreThreshold)
 }

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/infrastructure/log"
@@ -25,6 +26,7 @@ import (
 	biz_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/common/repository"
+	datasetDomain "github.com/lunarianss/Luna/internal/api-server/domain/dataset/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
@@ -44,14 +46,18 @@ type ChatAppGenerator struct {
 	AppDomain      *appDomain.AppDomain
 	ProviderDomain *domain_service.ProviderDomain
 	chatDomain     *chatDomain.ChatDomain
+	DatasetDomain  *datasetDomain.DatasetDomain
+	redis          *redis.Client
 }
 
-func NewChatAppGenerator(appDomain *appDomain.AppDomain, providerDomain *domain_service.ProviderDomain, chatDomain *chatDomain.ChatDomain) *ChatAppGenerator {
+func NewChatAppGenerator(appDomain *appDomain.AppDomain, providerDomain *domain_service.ProviderDomain, chatDomain *chatDomain.ChatDomain, datasetDomain *datasetDomain.DatasetDomain, redis *redis.Client) *ChatAppGenerator {
 
 	return &ChatAppGenerator{
 		AppDomain:      appDomain,
 		ProviderDomain: providerDomain,
 		chatDomain:     chatDomain,
+		DatasetDomain:  datasetDomain,
+		redis:          redis,
 	}
 
 }
@@ -224,7 +230,7 @@ func (g *ChatAppGenerator) ListenQueue(queueManager *biz_entity_chat.StreamGener
 
 func (g *ChatAppGenerator) generateNonStream(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, conversationID string, messageID string) (*biz_entity_chat.LLMResult, error) {
 
-	appRunner := app_chat_runner.NewAppChatRunner(app_chat_runner.NewAppBaseChatRunner(), g.AppDomain, g.chatDomain)
+	appRunner := app_chat_runner.NewAppChatRunner(app_chat_runner.NewAppBaseChatRunner(), g.AppDomain, g.chatDomain, g.ProviderDomain, g.DatasetDomain, g.redis)
 
 	message, err := g.chatDomain.MessageRepo.GetMessageByID(ctx, messageID)
 
@@ -251,7 +257,7 @@ func (g *ChatAppGenerator) generateGoRoutine(ctx context.Context, applicationGen
 		}
 	}()
 
-	appRunner := app_chat_runner.NewAppChatRunner(app_chat_runner.NewAppBaseChatRunner(), g.AppDomain, g.chatDomain)
+	appRunner := app_chat_runner.NewAppChatRunner(app_chat_runner.NewAppBaseChatRunner(), g.AppDomain, g.chatDomain, g.ProviderDomain, g.DatasetDomain, g.redis)
 
 	message, err := g.chatDomain.MessageRepo.GetMessageByID(ctx, messageID)
 

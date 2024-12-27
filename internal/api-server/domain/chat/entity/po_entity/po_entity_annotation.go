@@ -46,3 +46,26 @@ func (a *AppAnnotationSetting) BeforeCreate(tx *gorm.DB) (err error) {
 	a.ID = uuid.NewString()
 	return
 }
+
+type AppAnnotationHitHistory struct {
+	ID                 string  `json:"id" gorm:"column:id"`
+	AppID              string  `json:"app_id" gorm:"column:app_id"`
+	AnnotationID       string  `json:"annotation_id" gorm:"column:annotation_id"`
+	Source             string  `json:"source" gorm:"column:source"`
+	Question           string  `json:"question" gorm:"column:question"`
+	AccountID          string  `json:"account_id" gorm:"column:account_id"`
+	CreatedAt          int     `json:"created_at" gorm:"column:created_at"`
+	Score              float32 `json:"score" gorm:"column:score"`
+	MessageID          string  `json:"message_id" gorm:"column:message_id"`
+	AnnotationQuestion string  `json:"annotation_question" gorm:"column:annotation_question"`
+	AnnotationContent  string  `json:"annotation_content" gorm:"column:annotation_content"`
+}
+
+func (*AppAnnotationHitHistory) TableName() string {
+	return "app_annotation_hit_histories"
+}
+
+func (a *AppAnnotationHitHistory) BeforeCreate(tx *gorm.DB) (err error) {
+	a.ID = uuid.NewString()
+	return
+}

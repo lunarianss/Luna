@@ -16,6 +16,7 @@ import (
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
+	datasetDomain "github.com/lunarianss/Luna/internal/api-server/domain/dataset/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	biz_entity_provider "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
 	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
@@ -24,6 +25,7 @@ import (
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime/model_registry"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
@@ -34,6 +36,8 @@ type ServiceChatService struct {
 	chatDomain     *chatDomain.ChatDomain
 	providerDomain *domain_service.ProviderDomain
 	config         *config.Config
+	datasetDomain  *datasetDomain.DatasetDomain
+	redis          *redis.Client
 }
 
 func NewServiceChatService(webAppDomain *webAppDomain.WebAppDomain, accountDomain *accountDomain.AccountDomain, appDomain *appDomain.AppDomain, config *config.Config, providerDomain *domain_service.ProviderDomain, chatDomain *chatDomain.ChatDomain) *ServiceChatService {
@@ -71,11 +75,11 @@ func (s *ServiceChatService) baseChat(ctx context.Context, app *po_entity.App, t
 				return nil, nil, nil, errors.WithCode(code.ErrDatabase, "create end user error: %s", err.Error())
 			}
 		} else {
-			return nil, nil, nil, errors.WithCode(code.ErrDatabase, "get end user error: %s",err.Error())
+			return nil, nil, nil, errors.WithCode(code.ErrDatabase, "get end user error: %s", err.Error())
 		}
 	}
 
-	chatAppGenerator := app_chat_generator.NewChatAppGenerator(s.appDomain, s.providerDomain, s.chatDomain)
+	chatAppGenerator := app_chat_generator.NewChatAppGenerator(s.appDomain, s.providerDomain, s.chatDomain, s.datasetDomain, s.redis)
 
 	chatMessageBodyDto := assembler.ConvertToCreateChatMessageBody(args)
 

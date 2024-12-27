@@ -2,22 +2,27 @@ package cache_embedding
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"math"
 	"slices"
+	"time"
 
+	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/infrastructure/log"
 	"github.com/lunarianss/Luna/internal/api-server/domain/dataset/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/dataset/entity/po_entity"
 	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_configuration"
 	"github.com/lunarianss/Luna/internal/api-server/model_runtime/model_registry"
+	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/lunarianss/Luna/internal/infrastructure/util"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
 type ICacheEmbedding interface {
 	EmbedDocuments(ctx context.Context, texts []string) ([][]float32, error)
+	EmbedQuery(ctx context.Context, text string) ([]float32, error)
 }
 
 type cacheEmbedding struct {
@@ -25,14 +30,16 @@ type cacheEmbedding struct {
 	user              string
 	datasetDomain     *domain_service.DatasetDomain
 	tx                *gorm.DB
+	redis             *redis.Client
 }
 
-func NewCacheEmbedding(modelAllIntegrate *biz_entity.ModelIntegratedInstance, user string, datasetDomain *domain_service.DatasetDomain, tx *gorm.DB) *cacheEmbedding {
+func NewCacheEmbedding(modelAllIntegrate *biz_entity.ModelIntegratedInstance, user string, datasetDomain *domain_service.DatasetDomain, tx *gorm.DB, redis *redis.Client) ICacheEmbedding {
 	return &cacheEmbedding{
 		modelAllIntegrate: modelAllIntegrate,
 		user:              user,
 		tx:                tx,
 		datasetDomain:     datasetDomain,
+		redis:             redis,
 	}
 }
 
@@ -148,4 +155,53 @@ func (ce *cacheEmbedding) EmbedDocuments(ctx context.Context, texts []string) ([
 
 	log.Info("Text embedding result by AI and DB cache:  %v", len(textEmbeddings))
 	return textEmbeddings, nil
+}
+
+func (ce *cacheEmbedding) EmbedQuery(ctx context.Context, text string) ([]float32, error) {
+
+	hash := util.GenerateTextHash(text)
+
+	embeddingCacheKey := fmt.Sprintf("%s_%s_%s", ce.modelAllIntegrate.Provider, ce.modelAllIntegrate.Model, hash)
+
+	val, err := ce.redis.Get(ctx, embeddingCacheKey).Result()
+
+	if err != nil {
+		if !errors.Is(err, redis.Nil) {
+			return nil, errors.WithSCode(code.ErrRedis, err.Error())
+		}
+	}
+
+	if val != "" {
+		if err := ce.redis.Expire(ctx, embeddingCacheKey, 600*time.Second).Err(); err != nil {
+			return nil, errors.WithSCode(code.ErrRedis, err.Error())
+		}
+		return util.DecodeBase64ToFloat32(val)
+	}
+
+	caller := model_registry.NewModelRegisterCaller(ce.modelAllIntegrate.Model, string(common.TEXT_EMBEDDING), ce.modelAllIntegrate.Provider, ce.modelAllIntegrate.Credentials, ce.modelAllIntegrate.ModelTypeInstance)
+
+	embeddingResults, err := caller.InvokeTextEmbedding(ctx, nil, ce.user, "document", []string{text})
+
+	if err != nil {
+		return nil, err
+	}
+
+	embeddingResult := embeddingResults.Embeddings[0]
+
+	embeddingResult, err = util.NormalizeVector(embeddingResult)
+
+	if err != nil {
+		return nil, errors.WithSCode(code.ErrRunTimeCaller, err.Error())
+	}
+
+	embeddingVectorBase64, err := util.EncodeFloat32ToBase64(embeddingResult)
+
+	if err != nil {
+		return nil, errors.WithSCode(code.ErrEncodingBase64, err.Error())
+	}
+
+	if err := ce.redis.SetEx(ctx, embeddingCacheKey, embeddingVectorBase64, 600*time.Second).Err(); err != nil {
+		return nil, errors.WithSCode(code.ErrRedis, err.Error())
+	}
+	return embeddingResult, nil
 }

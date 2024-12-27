@@ -2,7 +2,10 @@ package weaviate_vector
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/bsm/redislock"
@@ -14,6 +17,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate/filters"
+	"github.com/weaviate/weaviate-go-client/v4/weaviate/graphql"
 	"github.com/weaviate/weaviate/entities/models"
 )
 
@@ -53,6 +57,89 @@ func (wv *WeaviateVector) Create(ctx context.Context, texts []*biz_entity.Docume
 		return err
 	}
 	return nil
+}
+
+func (wv *WeaviateVector) SearchByVector(ctx context.Context, queryFloat []float32, topK int, scoreThreshold float32) ([]*biz_entity.Document, error) {
+
+	var (
+		documents   []*biz_entity.Document
+		hitDocument []*biz_entity.Document
+	)
+
+	if topK == 0 {
+		topK = 4
+	}
+
+	response, err := wv.client.GraphQL().Get().WithClassName(wv.collectionName).WithFields(
+		graphql.Field{Name: "text"},
+		graphql.Field{Name: "doc_id"},
+		graphql.Field{Name: "app_id"},
+		graphql.Field{Name: "annotation_id"},
+		graphql.Field{Name: "_additional", Fields: []graphql.Field{
+			{Name: "vector"},
+			{Name: "distance"},
+		}}).WithLimit(topK).WithNearVector(wv.client.GraphQL().NearVectorArgBuilder().
+		WithVector(queryFloat)).Do(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(response.Errors) > 0 {
+		var errorMessage []string
+		for _, errGraphQL := range response.Errors {
+			errorMessage = append(errorMessage, errGraphQL.Message)
+		}
+		return nil, errors.WithCode(code.ErrVDBQueryError, "occurred error when similarity search %s", strings.Join(errorMessage, " | "))
+	}
+
+	collectionInfoMap, ok := response.Data["GET"].(map[string]any)
+
+	if !ok {
+		return nil, errors.WithSCode(code.ErrVDBConstructError, "data['GET'] is not map[string]any")
+	}
+
+	collectionInfoMapByte, err := json.Marshal(collectionInfoMap)
+
+	if err != nil {
+		return nil, errors.WithSCode(code.ErrEncodingJSON, err.Error())
+	}
+	var collectionInfo biz_entity.SimilaritySearchVDBResponse
+
+	if err := json.Unmarshal(collectionInfoMapByte, &collectionInfo); err != nil {
+		return nil, errors.WithSCode(code.ErrDecodingJSON, err.Error())
+	}
+
+	objectsInfo, ok := collectionInfo[wv.collectionName]
+
+	if !ok {
+		return nil, errors.WithSCode(code.ErrVDBConstructError, "data['collection_name'] is not  exist")
+	}
+
+	for _, objectInfo := range objectsInfo {
+		score := 1 - objectInfo.Additional.Distance
+		documents = append(documents, &biz_entity.Document{
+			PageContent: objectInfo.Text,
+			Vector:      objectInfo.Additional.Vector,
+			Score:       score,
+			Metadata: map[string]string{
+				"annotation_id": objectInfo.AnnotationID,
+				"app_id":        objectInfo.AppID,
+				"doc_id":        objectInfo.AnnotationID,
+			},
+		})
+	}
+
+	for _, documentScore := range documents {
+		if documentScore.Score > scoreThreshold {
+			hitDocument = append(hitDocument, documentScore)
+		}
+	}
+
+	sort.Slice(hitDocument, func(i, j int) bool {
+		return hitDocument[i].Score > hitDocument[j].Score
+	})
+	return hitDocument, nil
 }
 
 func (wv WeaviateVector) ExistsCollection(ctx context.Context) (bool, error) {

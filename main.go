@@ -69,7 +69,7 @@ func (wc *WeaviateConsole) GetCollectionObjects(className string) {
 	response, err := client.GraphQL().Get().
 		WithClassName(className).
 		WithFields(graphql.Field{Name: "text"}, graphql.Field{Name: "doc_id"}, graphql.Field{Name: "app_id"}, graphql.Field{Name: "annotation_id"}, graphql.Field{Name: "_additional", Fields: []graphql.Field{
-			// {Name: "vector"},
+			{Name: "vector"},
 			{Name: "id"},
 		}}).
 		Do(ctx)
@@ -100,4 +100,8 @@ func main() {
 	// console.GetAllCollectionDefined()
 
 	console.GetCollectionObjects("Vector_index_9a532b60_a004_425e_a952_fa5f33c6cdd1_Node")
+
+	var a []string = nil
+
+	fmt.Println(len(a))
 }

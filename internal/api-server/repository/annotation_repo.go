@@ -55,6 +55,18 @@ func (ap *AnnotationRepoImpl) GetMessageAnnotation(ctx context.Context, messageI
 	return biz_entity.ConvertToBizMessageAnnotation(&ma, &account), nil
 }
 
+func (ap *AnnotationRepoImpl) GetAnnotationByID(ctx context.Context, id string) (*po_entity.MessageAnnotation, error) {
+	var (
+		ma po_entity.MessageAnnotation
+	)
+
+	if err := ap.db.First(&ma, "id = ?", id).Error; err != nil {
+		return nil, errors.WrapC(err, code.ErrDatabase, "Get annotation by id-[%s] error: %s", id, err.Error())
+	}
+
+	return &ma, nil
+}
+
 func (ap *AnnotationRepoImpl) FindAppAnnotations(ctx context.Context, appID string) ([]*po_entity.MessageAnnotation, error) {
 
 	var (
@@ -152,4 +164,26 @@ func (ap *AnnotationRepoImpl) GetAnnotationSetting(ctx context.Context, appID st
 	}
 
 	return biz_entity.ConvertPoAnnotationSetting(&ma, &binding), nil
+}
+
+func (ap *AnnotationRepoImpl) CreateAppAnnotationHistory(ctx context.Context, history *po_entity.AppAnnotationHitHistory) (*po_entity.AppAnnotationHitHistory, error) {
+
+	tx := ap.db.Begin()
+	if err := tx.Model(&po_entity.MessageAnnotation{}).
+		Where("id = ?", history.AnnotationID).
+		UpdateColumn("hit_count", gorm.Expr("hit_count + ?", 1)).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	if err := tx.Create(history).Error; err != nil {
+		tx.Rollback()
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return nil, err
+	}
+
+	return history, nil
 }

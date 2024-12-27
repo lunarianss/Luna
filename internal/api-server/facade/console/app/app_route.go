@@ -7,17 +7,25 @@ import (
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
+	datasetDomain "github.com/lunarianss/Luna/internal/api-server/domain/dataset/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	controller "github.com/lunarianss/Luna/internal/api-server/interface/gin/v1/app"
 	"github.com/lunarianss/Luna/internal/api-server/middleware"
 	repo_impl "github.com/lunarianss/Luna/internal/api-server/repository"
 	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
+	"github.com/lunarianss/Luna/internal/infrastructure/redis"
 )
 
 type AppRoutes struct{}
 
 func (a *AppRoutes) Register(g *gin.Engine) error {
 	gormIns, err := mysql.GetMySQLIns(nil)
+
+	if err != nil {
+		return err
+	}
+
+	redisIns, err := redis.GetRedisIns(nil)
 
 	if err != nil {
 		return err
@@ -40,7 +48,10 @@ func (a *AppRoutes) Register(g *gin.Engine) error {
 	modelProviderRepo := repo_impl.NewModelProviderRepoImpl(gormIns)
 	providerConfigurationsManager := domain_service.NewProviderConfigurationsManager(providerRepo, modelProviderRepo, "", nil)
 	annotationRepo := repo_impl.NewAnnotationRepoImpl(gormIns)
+	datasetRepo := repo_impl.NewDatasetRepoImpl(gormIns)
+
 	// domain
+	datasetDomain := datasetDomain.NewDatasetDomain(datasetRepo)
 	providerDomain := domain_service.NewProviderDomain(providerRepo, modelProviderRepo, tenantRepo, providerConfigurationsManager)
 	appDomain := appDomain.NewAppDomain(appRepo, webAppRepo, gormIns)
 	accountDomain := accountDomain.NewAccountDomain(accountRepo, nil, nil, nil, tenantRepo)
@@ -48,7 +59,7 @@ func (a *AppRoutes) Register(g *gin.Engine) error {
 
 	// service
 	appService := service.NewAppService(appDomain, providerDomain, accountDomain, chatDomain, gormIns, config)
-	chatService := service.NewChatService(appDomain, providerDomain, accountDomain, chatDomain)
+	chatService := service.NewChatService(appDomain, providerDomain, accountDomain, chatDomain, datasetDomain, redisIns)
 
 	appController := controller.NewAppController(appService, chatService)
 

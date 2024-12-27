@@ -175,6 +175,7 @@ func (ce *cacheEmbedding) EmbedQuery(ctx context.Context, text string) ([]float3
 		if err := ce.redis.Expire(ctx, embeddingCacheKey, 600*time.Second).Err(); err != nil {
 			return nil, errors.WithSCode(code.ErrRedis, err.Error())
 		}
+
 		return util.DecodeBase64ToFloat32(val)
 	}
 

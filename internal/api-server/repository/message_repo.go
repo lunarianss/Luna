@@ -68,9 +68,7 @@ func (md *MessageRepoImpl) UpdateMessage(ctx context.Context, message *po_entity
 }
 
 func (md *MessageRepoImpl) UpdateMessageMetadata(ctx context.Context, message *po_entity.Message) error {
-	if err := md.db.Model(&po_entity.Message{}).Select("message_metadata").Update("message_metadata", message.MessageMetadata).Error; err != nil {
-		return errors.WithSCode(code.ErrDatabase, err.Error())
-	}
+
 	return nil
 }
 

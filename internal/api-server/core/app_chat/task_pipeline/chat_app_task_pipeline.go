@@ -137,13 +137,11 @@ func (tpp *chatAppTaskPipeline) process_stream_chunk_queue(c context.Context) {
 					},
 				},
 			}
-
 			tpp.Message.MessageMetadata = tpp.taskState.Metadata
-
-			if err := tpp.MessageRepo.UpdateMessageMetadata(c, tpp.Message); err != nil {
-				log.Errorf("failed to flush message to stream response: %v", err)
-				tpp.sendFallBackMessageEnd()
-			}
+			// if err := tpp.MessageRepo.UpdateMessageMetadata(c, tpp.Message); err != nil {
+			// 	log.Errorf("failed to flush message to stream response: %#+v", err)
+			// 	tpp.sendFallBackMessageEnd()
+			// }
 		}
 	}
 }

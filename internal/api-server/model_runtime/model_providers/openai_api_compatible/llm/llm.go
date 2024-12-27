@@ -18,7 +18,6 @@ import (
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/infrastructure/log"
-	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_chat_runner"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	biz_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
@@ -33,7 +32,6 @@ type IOpenApiCompactLargeLanguage interface {
 }
 
 type openApiCompactLargeLanguageModel struct {
-	*app_chat_runner.AppBaseChatRunner
 	*biz_entity_chat.StreamGenerateQueue
 	biz_entity.IAIModelRuntime
 	FullAssistantContent string
@@ -50,12 +48,11 @@ type openApiCompactLargeLanguageModel struct {
 
 func NewOpenApiCompactLargeLanguageModel(promptMessages []*po_entity_chat.PromptMessage, modelParameters map[string]interface{}, credentials map[string]interface{}, model string, modelRuntime biz_entity.IAIModelRuntime) *openApiCompactLargeLanguageModel {
 	return &openApiCompactLargeLanguageModel{
-		PromptMessages:    promptMessages,
-		Credentials:       credentials,
-		ModelParameters:   modelParameters,
-		Model:             model,
-		IAIModelRuntime:   modelRuntime,
-		AppBaseChatRunner: app_chat_runner.NewAppBaseChatRunner(),
+		PromptMessages:  promptMessages,
+		Credentials:     credentials,
+		ModelParameters: modelParameters,
+		Model:           model,
+		IAIModelRuntime: modelRuntime,
 	}
 }
 
@@ -669,4 +666,42 @@ func (m *openApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 	}
 
 	m.sendStreamFinalChunkToQueue(ctx, messageID, finishReason, m.FullAssistantContent, usage)
+}
+
+func (runner *openApiCompactLargeLanguageModel) HandleInvokeResultStream(ctx context.Context, invokeResult *biz_entity_chat.LLMResultChunk, streamGenerator *biz_entity_chat.StreamGenerateQueue, end bool, err error) {
+
+	if err != nil && invokeResult == nil {
+		streamGenerator.Final(&biz_entity_chat.QueueErrorEvent{
+			AppQueueEvent: biz_entity_chat.NewAppQueueEvent(biz_entity_chat.Error),
+			Err:           err,
+		})
+		return
+	}
+
+	if end {
+		llmResult := &biz_entity_chat.LLMResult{
+			Model:         invokeResult.Model,
+			PromptMessage: invokeResult.PromptMessage,
+			Reason:        invokeResult.Delta.FinishReason,
+			Message: &biz_entity_chat.AssistantPromptMessage{
+				PromptMessage: &po_entity_chat.PromptMessage{
+					Content: invokeResult.Delta.Message.Content,
+				},
+			},
+			Usage: invokeResult.Delta.Usage,
+		}
+
+		event := biz_entity_chat.NewAppQueueEvent(biz_entity_chat.MessageEnd)
+		streamGenerator.Final(&biz_entity_chat.QueueMessageEndEvent{
+			AppQueueEvent: event,
+			LLMResult:     llmResult,
+		})
+		return
+	}
+
+	event := biz_entity_chat.NewAppQueueEvent(biz_entity_chat.LLMChunk)
+	streamGenerator.Push(&biz_entity_chat.QueueLLMChunkEvent{
+		AppQueueEvent: event,
+		Chunk:         invokeResult})
+
 }

@@ -23,4 +23,5 @@ type AnnotationRepo interface {
 	GetAnnotationSettingWithCreate(ctx context.Context, appID string, scoreThreshold float32, bindingID string, accountID string, tx *gorm.DB) (*po_entity.AppAnnotationSetting, error)
 	// Find
 	FindAppAnnotations(ctx context.Context, appID string) ([]*po_entity.MessageAnnotation, error)
+	FindAppAnnotationsInLog(ctx context.Context, appID string, page, pageSize int, keyword string) ([]*po_entity.MessageAnnotation, int64, error)
 }

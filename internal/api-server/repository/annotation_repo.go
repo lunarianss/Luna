@@ -2,6 +2,7 @@ package repo_impl
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/infrastructure/log"
@@ -11,6 +12,7 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/repository"
 	po_dataset "github.com/lunarianss/Luna/internal/api-server/domain/dataset/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
+	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
 	"gorm.io/gorm"
 )
 
@@ -76,6 +78,27 @@ func (ap *AnnotationRepoImpl) GetAnnotationByID(ctx context.Context, id string) 
 	}
 
 	return &ma, nil
+}
+
+func (ap *AnnotationRepoImpl) FindAppAnnotationsInLog(ctx context.Context, appID string, page, pageSize int, keyword string) ([]*po_entity.MessageAnnotation, int64, error) {
+	var (
+		annotations []*po_entity.MessageAnnotation
+		count       int64
+	)
+
+	db := ap.db.Model(&po_entity.MessageAnnotation{}).Scopes(mysql.Paginate(page, pageSize)).Where("app_id = ?", appID)
+
+	if keyword != "" {
+		keyWordFilter := fmt.Sprintf("%%%s%%", keyword)
+		db = db.Where("question LIKE ? OR content LIKE ?", keyWordFilter, keyWordFilter)
+	}
+
+	if err := db.Order("id DESC").Count(&count).Find(&annotations).Error; err != nil {
+		return nil, count, errors.WithSCode(code.ErrDatabase, err.Error())
+	}
+
+	return annotations, count, nil
+
 }
 
 func (ap *AnnotationRepoImpl) FindAppAnnotations(ctx context.Context, appID string) ([]*po_entity.MessageAnnotation, error) {

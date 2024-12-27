@@ -41,3 +41,25 @@ func NewApplyAnnotationWaiting(jobID string) *ApplyAnnotationResponse {
 		JobStatus: "waiting",
 	}
 }
+
+type ListAnnotationsArgs struct {
+	Page    int    `json:"page" form:"page"`
+	Limit   int    `json:"limit" form:"limit"`
+	Keyword string `json:"keyword" form:"keyword"`
+}
+
+type ListAnnotationItem struct {
+	ID        string `json:"id"`
+	Question  string `json:"question"`
+	Answer    string `json:"answer"`
+	HitCount  int    `json:"hit_count"`
+	CreatedAt int64  `json:"created_at"`
+}
+
+type ListAnnotationResponse struct {
+	HasMore bool                  `json:"has_more"`
+	Limit   int                   `json:"limit"`
+	Total   int64                 `json:"total"`
+	Page    int                   `json:"page"`
+	Data    []*ListAnnotationItem `json:"data"`
+}

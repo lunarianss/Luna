@@ -261,6 +261,12 @@ func (tpp *chatAppTaskPipeline) messageEndToStreamResponse() error {
 		ConversationID: tpp.Message.ConversationID,
 	}
 
+	if annotation_reply, ok := tpp.taskState.Metadata["annotation_reply"]; ok {
+		if annotation_replyMap, ok := annotation_reply.(map[string]any); ok {
+			messageEndResponse.Metadata.AnnotationReply = annotation_replyMap
+		}
+	}
+
 	chatBotResponse := biz_entity.NewChatBotAppEndStreamResponse(tpp.ApplicationGenerateEntity.ConversationID, tpp.Message.ID, tpp.Message.CreatedAt, messageEndResponse)
 
 	endStreamBytes, err := json.Marshal(chatBotResponse)

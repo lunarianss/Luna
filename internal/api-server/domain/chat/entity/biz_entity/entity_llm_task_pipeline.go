@@ -84,7 +84,8 @@ type MessageAudioEndStreamResponse struct {
 }
 
 type MetaDataUsage struct {
-	Usage *LLMUsage `json:"usage"`
+	Usage           *LLMUsage              `json:"usage"`
+	AnnotationReply map[string]interface{} `json:"annotation_reply,omitempty"`
 }
 
 // MessageEndStreamResponse entity

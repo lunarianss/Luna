@@ -72,6 +72,11 @@ type QueueMessageEndEvent struct {
 	LLMResult *LLMResult `json:"llm_result"`
 }
 
+type QueueAnnotationReplyEvent struct {
+	*AppQueueEvent
+	MessageAnnotationID string `json:"message_annotation_id"`
+}
+
 type QueueMessage struct {
 	TaskID  string      `json:"task_id"`
 	AppMode string      `json:"app_mode"`

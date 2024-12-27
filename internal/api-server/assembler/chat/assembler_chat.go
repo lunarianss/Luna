@@ -72,7 +72,6 @@ func ConvertToListMessageDto(message *po_entity.Message, annotation *biz_entity.
 		FeedBacks:               make([]string, 0),
 		AgentThoughts:           make([]string, 0),
 		MessageFiles:            make([]string, 0),
-		Metadata:                make(map[string]interface{}),
 		Annotation:              ConvertToAnnotation(annotation),
 	}
 }

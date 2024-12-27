@@ -31,7 +31,7 @@ const (
 )
 
 type ChatAppTaskState struct {
-	Metadata  any
+	Metadata  map[string]any
 	LLMResult *LLMResult
 }
 

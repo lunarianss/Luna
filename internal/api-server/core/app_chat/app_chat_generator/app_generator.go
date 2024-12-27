@@ -190,7 +190,7 @@ func (g *ChatAppGenerator) GenerateNonStream(c context.Context, appModel *po_ent
 		return nil, err
 	}
 
-	err = task_pipeline.NewNonStreamTaskPipeline(applicationGenerateEntity, g.chatDomain.MessageRepo, messageRecord, llmResult).ProcessNonStream(c)
+	err = task_pipeline.NewNonStreamTaskPipeline(applicationGenerateEntity, g.chatDomain.MessageRepo, messageRecord, llmResult, nil).ProcessNonStream(c)
 
 	if err != nil {
 		return nil, err
@@ -219,7 +219,7 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, 
 
 	go g.ListenQueue(queueManager)
 
-	task_pipeline.NewChatAppTaskPipeline(applicationGenerateEntity, streamResultChunkQueue, streamFinalChunkQueue, g.chatDomain.MessageRepo, messageRecord).Process(c)
+	task_pipeline.NewChatAppTaskPipeline(applicationGenerateEntity, streamResultChunkQueue, streamFinalChunkQueue, g.chatDomain.MessageRepo, messageRecord, g.chatDomain.AnnotationRepo).Process(c)
 
 	return nil
 }

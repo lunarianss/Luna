@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/lunarianss/Luna/infrastructure/log"
 	"github.com/lunarianss/Luna/internal/api-server/core/rag/vector_db"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
@@ -115,6 +116,8 @@ func (arf *annotationReplyFeature) Query(ctx context.Context, app *po_entity.App
 		}
 		return annotation, nil
 	}
+
+	log.Infof("Query Similarity Vector %+v", hitDocuments)
 
 	return nil, nil
 }

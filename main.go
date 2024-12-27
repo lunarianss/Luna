@@ -104,4 +104,8 @@ func main() {
 	var a []string = nil
 
 	fmt.Println(len(a))
+
+	var c = []string{"你", "好"}
+
+	fmt.Println(c[1:])
 }

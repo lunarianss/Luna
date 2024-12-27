@@ -25,16 +25,18 @@ type chatAppTaskPipeline struct {
 	StreamFinalChunkQueue     chan *biz_entity.MessageQueueMessage
 	Message                   *po_entity.Message
 	MessageRepo               repository.MessageRepo
+	AnnotationRepo            repository.AnnotationRepo
 	flusher                   http.Flusher
 	sender                    io.Writer
 	taskState                 *biz_entity.ChatAppTaskState
 }
 
-func NewNonStreamTaskPipeline(applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, messageRepo repository.MessageRepo, message *po_entity.Message, llmResult *biz_entity.LLMResult) *chatAppTaskPipeline {
+func NewNonStreamTaskPipeline(applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, messageRepo repository.MessageRepo, message *po_entity.Message, llmResult *biz_entity.LLMResult, annotationRepo repository.AnnotationRepo) *chatAppTaskPipeline {
 	return &chatAppTaskPipeline{
 		ApplicationGenerateEntity: applicationGenerateEntity,
 		Message:                   message,
 		MessageRepo:               messageRepo,
+		AnnotationRepo:            annotationRepo,
 		taskState: &biz_entity.ChatAppTaskState{
 			LLMResult: llmResult,
 		},
@@ -45,13 +47,14 @@ func NewChatAppTaskPipeline(
 	applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity,
 	streamResultChunkQueue chan *biz_entity.MessageQueueMessage,
 	streamFinalChunkQueue chan *biz_entity.MessageQueueMessage,
-	messageRepo repository.MessageRepo, message *po_entity.Message) *chatAppTaskPipeline {
+	messageRepo repository.MessageRepo, message *po_entity.Message, annotationRepo repository.AnnotationRepo) *chatAppTaskPipeline {
 	return &chatAppTaskPipeline{
 		ApplicationGenerateEntity: applicationGenerateEntity,
 		StreamResultChunkQueue:    streamResultChunkQueue,
 		StreamFinalChunkQueue:     streamFinalChunkQueue,
 		Message:                   message,
 		MessageRepo:               messageRepo,
+		AnnotationRepo:            annotationRepo,
 		taskState: &biz_entity.ChatAppTaskState{
 			LLMResult: biz_entity.NewEmptyLLMResult(),
 		},
@@ -103,7 +106,7 @@ func (tpp *chatAppTaskPipeline) sendFallBackMessageEnd() {
 	}
 }
 
-func (tpp *chatAppTaskPipeline) process_stream_chunk_queue() {
+func (tpp *chatAppTaskPipeline) process_stream_chunk_queue(c context.Context) {
 
 	for v := range tpp.StreamResultChunkQueue {
 		if chunkEvent, ok := v.Event.(*biz_entity.QueueLLMChunkEvent); ok {
@@ -113,6 +116,31 @@ func (tpp *chatAppTaskPipeline) process_stream_chunk_queue() {
 				tpp.taskState.LLMResult.Message.Content = deltaText.(string) + content
 			}
 			if err := tpp.messageChunkToStreamResponse(deltaText.(string)); err != nil {
+				log.Errorf("failed to flush message to stream response: %v", err)
+				tpp.sendFallBackMessageEnd()
+			}
+		} else if chunkEvent, ok := v.Event.(*biz_entity.QueueAnnotationReplyEvent); ok {
+
+			annotation, err := tpp.AnnotationRepo.GetAnnotationByID(c, chunkEvent.MessageAnnotationID)
+
+			if err != nil {
+				log.Errorf("failed to flush message to stream response: %v", err)
+				tpp.sendFallBackMessageEnd()
+			}
+
+			tpp.taskState.Metadata = map[string]interface{}{
+				"annotation_reply": map[string]interface{}{
+					"id": annotation.ID,
+					"account": map[string]interface{}{
+						"id":   annotation.AccountID,
+						"name": "Luna User",
+					},
+				},
+			}
+
+			tpp.Message.MessageMetadata = tpp.taskState.Metadata
+
+			if err := tpp.MessageRepo.UpdateMessageMetadata(c, tpp.Message); err != nil {
 				log.Errorf("failed to flush message to stream response: %v", err)
 				tpp.sendFallBackMessageEnd()
 			}
@@ -144,7 +172,7 @@ func (tpp *chatAppTaskPipeline) process_stream_end_chunk_queue(c context.Context
 }
 
 func (tpp *chatAppTaskPipeline) process_stream_response(c context.Context) {
-	tpp.process_stream_chunk_queue()
+	tpp.process_stream_chunk_queue(c)
 	tpp.process_stream_end_chunk_queue(c)
 }
 
@@ -267,6 +295,7 @@ func (tpp *chatAppTaskPipeline) saveMessage(c context.Context) error {
 	messageRecord.AnswerUnitPrice = tpp.taskState.LLMResult.Usage.CompletionUnitPrice
 	messageRecord.TotalPrice = tpp.taskState.LLMResult.Usage.TotalPrice
 	messageRecord.Currency = tpp.taskState.LLMResult.Usage.Currency
+	messageRecord.MessageMetadata = tpp.taskState.Metadata
 
 	if err := tpp.MessageRepo.UpdateMessage(c, messageRecord); err != nil {
 		return err

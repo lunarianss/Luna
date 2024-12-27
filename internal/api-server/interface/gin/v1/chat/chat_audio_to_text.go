@@ -36,14 +36,14 @@ func (ac *ChatController) AudioToChatMessage(c *gin.Context) {
 	audioFile, err := c.FormFile("file")
 
 	if err != nil {
-		core.WriteResponse(c, errors.WithCode(code.ErrRunTimeCaller, err.Error()), nil)
+		core.WriteResponse(c, errors.WithSCode(code.ErrRunTimeCaller, err.Error()), nil)
 		return
 	}
 
 	audioFileOpen, err := audioFile.Open()
 
 	if err != nil {
-		core.WriteResponse(c, errors.WithCode(code.ErrRunTimeCaller, err.Error()), nil)
+		core.WriteResponse(c, errors.WithSCode(code.ErrRunTimeCaller, err.Error()), nil)
 		return
 	}
 
@@ -52,17 +52,17 @@ func (ac *ChatController) AudioToChatMessage(c *gin.Context) {
 	audioFileContent, err = io.ReadAll(audioFileOpen)
 
 	if err != nil {
-		core.WriteResponse(c, errors.WithCode(code.ErrRunTimeCaller, err.Error()), nil)
+		core.WriteResponse(c, errors.WithSCode(code.ErrRunTimeCaller, err.Error()), nil)
 		return
 	}
 
 	if audioFile.Size == 0 {
-		core.WriteResponse(c, errors.WithCode(code.ErrAudioFileEmpty, ""), nil)
+		core.WriteResponse(c, errors.WithSCode(code.ErrAudioFileEmpty, ""), nil)
 		return
 	}
 
 	if audioFile.Size > FILE_SIZE_LIMIT {
-		core.WriteResponse(c, errors.WithCode(code.ErrAudioFileToLarge, ""), nil)
+		core.WriteResponse(c, errors.WithSCode(code.ErrAudioFileToLarge, ""), nil)
 		return
 	}
 

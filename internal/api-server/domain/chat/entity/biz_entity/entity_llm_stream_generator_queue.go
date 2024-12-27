@@ -70,6 +70,11 @@ func (sgq *StreamGenerateQueue) Final(chunk IQueueEvent) {
 	sgq.StreamFinalChunkQueue <- sgq.constructMessageQueue(chunk)
 }
 
+func (sgq *StreamGenerateQueue) FinalManual(chunk IQueueEvent) {
+	defer sgq.Close()
+	sgq.StreamFinalChunkQueue <- sgq.constructMessageQueue(chunk)
+}
+
 func (sgq *StreamGenerateQueue) constructMessageQueue(chunk IQueueEvent) *MessageQueueMessage {
 	return &MessageQueueMessage{
 		Event:          chunk,

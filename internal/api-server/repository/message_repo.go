@@ -67,6 +67,13 @@ func (md *MessageRepoImpl) UpdateMessage(ctx context.Context, message *po_entity
 	return nil
 }
 
+func (md *MessageRepoImpl) UpdateMessageMetadata(ctx context.Context, message *po_entity.Message) error {
+	if err := md.db.Model(&po_entity.Message{}).Select("message_metadata").Update("message_metadata", message.MessageMetadata).Error; err != nil {
+		return errors.WithSCode(code.ErrDatabase, err.Error())
+	}
+	return nil
+}
+
 func (md *MessageRepoImpl) UpdateConversationUpdateAt(ctx context.Context, appID string, conversation *po_entity.Conversation) error {
 	if err := md.db.Model(conversation).Where("id = ? AND status = ? AND app_id = ?", conversation.ID, "normal", appID).Update("updated_at", conversation.UpdatedAt).Error; err != nil {
 		return errors.WithSCode(code.ErrDatabase, err.Error())

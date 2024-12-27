@@ -93,7 +93,7 @@ func (wv *WeaviateVector) SearchByVector(ctx context.Context, queryFloat []float
 		return nil, errors.WithCode(code.ErrVDBQueryError, "occurred error when similarity search %s", strings.Join(errorMessage, " | "))
 	}
 
-	collectionInfoMap, ok := response.Data["GET"].(map[string]any)
+	collectionInfoMap, ok := response.Data["Get"].(map[string]any)
 
 	if !ok {
 		return nil, errors.WithSCode(code.ErrVDBConstructError, "data['GET'] is not map[string]any")

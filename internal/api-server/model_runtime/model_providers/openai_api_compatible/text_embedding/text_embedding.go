@@ -109,8 +109,6 @@ func (o *openApiCompactLargeLanguageModel) Invoke(ctx context.Context) (*biz_ent
 		return nil, errors.WithSCode(code.ErrDecodingJSON, err.Error())
 	}
 
-	log.Info("Text embedding response %+v", len(LLMResult.Data))
-
 	for _, embedding := range LLMResult.Data {
 		batchEmbedding = append(batchEmbedding, embedding.Embedding)
 	}

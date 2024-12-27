@@ -21,6 +21,23 @@ type LLMUsage struct {
 	Latency             float64 `json:"latency"`
 }
 
+func NewEmptyLLMUsage() *LLMUsage {
+	return &LLMUsage{
+		PromptTokens:        0,
+		PromptUnitPrice:     0,
+		PromptPriceUnit:     0,
+		PromptPrice:         0,
+		CompletionTokens:    0,
+		CompletionUnitPrice: 0,
+		CompletionPriceUnit: 0,
+		CompletionPrice:     0,
+		TotalTokens:         0,
+		TotalPrice:          0,
+		Currency:            "",
+		Latency:             0,
+	}
+}
+
 type LLMResultChunkDelta struct {
 	Index        int                     `json:"index"`
 	Message      *AssistantPromptMessage `json:"message"`

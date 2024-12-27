@@ -99,12 +99,11 @@ type ListChatMessageItem struct {
 	WorkflowRunID           string                 `json:"workflow_run_id"`
 	Status                  string                 `json:"status"`
 	Error                   string                 `json:"error"`
-	MessageMetadata         map[string]interface{} `json:"message_metadata"`
+	MessageMetadata         map[string]interface{} `json:"metadata"`
 	InvokeFrom              string                 `json:"invoke_from"`
 	FeedBacks               []string               `json:"feedbacks"`
 	AgentThoughts           []string               `json:"agent_thoughts"`
 	MessageFiles            []string               `json:"message_files"`
-	Metadata                map[string]interface{} `json:"metadata"`
 	ParentMessageID         string                 `json:"parent_message_id"`
 	Annotation              *MessageAnnotation     `json:"annotation"`
 }

@@ -24,6 +24,7 @@ type MessageRepo interface {
 
 	// Update
 	UpdateMessage(ctx context.Context, message *po_entity.Message) error
+	UpdateMessageMetadata(ctx context.Context, message *po_entity.Message) error
 	UpdateConversationUpdateAt(ctx context.Context, appID string, conversation *po_entity.Conversation) error
 	UpdateConversationName(ctx context.Context, conversation *po_entity.Conversation) error
 

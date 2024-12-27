@@ -69,6 +69,7 @@ func (a *AnnotationRoutes) Register(g *gin.Engine) error {
 	modelProviderV1.GET("/apps/:appID/annotation-reply/:action/status/:jobID", annotationController.AnnotationReplyStatus)
 	modelProviderV1.GET("/apps/:appID/annotation-setting", annotationController.GetAnnotationSetting)
 	modelProviderV1.GET("/apps/:appID/annotations", annotationController.AnnotationList)
+	modelProviderV1.GET("/apps/:appID/annotations/:annotationID/hit-histories", annotationController.ListHitAnnotation)
 	return nil
 }
 

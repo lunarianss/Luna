@@ -24,4 +24,5 @@ type AnnotationRepo interface {
 	// Find
 	FindAppAnnotations(ctx context.Context, appID string) ([]*po_entity.MessageAnnotation, error)
 	FindAppAnnotationsInLog(ctx context.Context, appID string, page, pageSize int, keyword string) ([]*po_entity.MessageAnnotation, int64, error)
+	FindAppHitAnnotationsInLog(ctx context.Context, appID string, annotationID string, page, pageSize int) ([]*po_entity.AppAnnotationHitHistory, int64, error)
 }

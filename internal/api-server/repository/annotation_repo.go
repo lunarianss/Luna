@@ -80,6 +80,22 @@ func (ap *AnnotationRepoImpl) GetAnnotationByID(ctx context.Context, id string) 
 	return &ma, nil
 }
 
+func (ap *AnnotationRepoImpl) FindAppHitAnnotationsInLog(ctx context.Context, appID string, annotationID string, page, pageSize int) ([]*po_entity.AppAnnotationHitHistory, int64, error) {
+
+	var (
+		hitAnnotations []*po_entity.AppAnnotationHitHistory
+		count          int64
+	)
+
+	db := ap.db.Model(&po_entity.AppAnnotationHitHistory{}).Where("app_id = ? AND annotation_id = ?", appID, annotationID).Count(&count).Scopes(mysql.Paginate(page, pageSize))
+
+	if err := db.Order("id DESC").Find(&hitAnnotations).Error; err != nil {
+		return nil, count, errors.WithSCode(code.ErrDatabase, err.Error())
+	}
+
+	return hitAnnotations, count, nil
+}
+
 func (ap *AnnotationRepoImpl) FindAppAnnotationsInLog(ctx context.Context, appID string, page, pageSize int, keyword string) ([]*po_entity.MessageAnnotation, int64, error) {
 	var (
 		annotations []*po_entity.MessageAnnotation

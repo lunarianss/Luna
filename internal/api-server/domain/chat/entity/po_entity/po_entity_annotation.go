@@ -54,7 +54,7 @@ type AppAnnotationHitHistory struct {
 	Source             string  `json:"source" gorm:"column:source"`
 	Question           string  `json:"question" gorm:"column:question"`
 	AccountID          string  `json:"account_id" gorm:"column:account_id"`
-	CreatedAt          int     `json:"created_at" gorm:"column:created_at"`
+	CreatedAt          int64   `json:"created_at" gorm:"column:created_at"`
 	Score              float32 `json:"score" gorm:"column:score"`
 	MessageID          string  `json:"message_id" gorm:"column:message_id"`
 	AnnotationQuestion string  `json:"annotation_question" gorm:"column:annotation_question"`

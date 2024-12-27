@@ -43,9 +43,19 @@ func NewApplyAnnotationWaiting(jobID string) *ApplyAnnotationResponse {
 }
 
 type ListAnnotationsArgs struct {
-	Page    int    `json:"page" form:"page"`
-	Limit   int    `json:"limit" form:"limit"`
+	Page    int    `json:"page" form:"page" validate:"required"`
+	Limit   int    `json:"limit" form:"limit" validate:"required"`
 	Keyword string `json:"keyword" form:"keyword"`
+}
+
+type ListHitAnnotationsRequest struct {
+	AppID        string `uri:"appID" validate:"required"`
+	AnnotationID string `uri:"annotationID" validate:"required"`
+}
+
+type ListHitAnnotationsArgs struct {
+	Page  int `json:"page" form:"page" validate:"required"`
+	Limit int `json:"limit" form:"limit" validate:"required"`
 }
 
 type ListAnnotationItem struct {
@@ -56,10 +66,28 @@ type ListAnnotationItem struct {
 	CreatedAt int64  `json:"created_at"`
 }
 
+type ListHitAnnotationItem struct {
+	ID        string  `json:"id"`
+	Source    string  `json:"source"`
+	Score     float32 `json:"score"`
+	Question  string  `json:"question"`
+	Match     string  `json:"match"`
+	Response  string  `json:"response"`
+	CreatedAt int64   `json:"created_at"`
+}
+
 type ListAnnotationResponse struct {
 	HasMore bool                  `json:"has_more"`
 	Limit   int                   `json:"limit"`
 	Total   int64                 `json:"total"`
 	Page    int                   `json:"page"`
 	Data    []*ListAnnotationItem `json:"data"`
+}
+
+type ListHitAnnotationResponse struct {
+	HasMore bool                     `json:"has_more"`
+	Limit   int                      `json:"limit"`
+	Total   int64                    `json:"total"`
+	Page    int                      `json:"page"`
+	Data    []*ListHitAnnotationItem `json:"data"`
 }

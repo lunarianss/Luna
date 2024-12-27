@@ -86,7 +86,7 @@ type AnnotationCreateAccount struct {
 type AnnotationHistory struct {
 	Annotation              string                   `json:"annotation_id"`
 	AnnotationCreateAccount *AnnotationCreateAccount `json:"annotation_create_account"`
-	CreatedAt               int                      `json:"created_at"`
+	CreatedAt               int64                    `json:"created_at"`
 }
 
 type ListChatMessageItem struct {

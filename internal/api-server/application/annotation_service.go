@@ -297,7 +297,70 @@ func (as *AnnotationService) ListAnnotations(ctx context.Context, appID, account
 		})
 	}
 
+	if len(annotationItems) == 0 {
+		annotationItems = make([]*dto_app.ListAnnotationItem, 0)
+	}
+
 	return &dto_app.ListAnnotationResponse{
+		Data:    annotationItems,
+		Page:    args.Page,
+		Limit:   args.Limit,
+		Total:   count,
+		HasMore: len(annotationItems) == args.Limit,
+	}, nil
+}
+
+func (as *AnnotationService) ListHitAnnotations(ctx context.Context, appID, annotationID, accountID string, args *dto_app.ListHitAnnotationsArgs) (*dto_app.ListHitAnnotationResponse, error) {
+
+	var (
+		annotationItems []*dto_app.ListHitAnnotationItem
+	)
+	accountRecord, err := as.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	tenant, tenantJoin, err := as.accountDomain.GetCurrentTenantOfAccount(ctx, accountRecord.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !tenantJoin.IsEditor() {
+		return nil, errors.WithCode(code.ErrForbidden, "tenant %s don't have the permission to enable app annotation", tenant.Name)
+	}
+
+	app, err := as.appDomain.AppRepo.GetTenantApp(ctx, appID, tenant.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	hitAnnotations, count, err := as.chatDomain.AnnotationRepo.FindAppHitAnnotationsInLog(ctx, app.ID, annotationID, args.Page, args.Limit)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, hitAnnotation := range hitAnnotations {
+
+		annotationItems = append(annotationItems, &dto_app.ListHitAnnotationItem{
+			ID:        hitAnnotation.ID,
+			Source:    hitAnnotation.Source,
+			Score:     hitAnnotation.Score,
+			Question:  hitAnnotation.Question,
+			Match:     hitAnnotation.AnnotationQuestion,
+			Response:  hitAnnotation.AnnotationContent,
+			CreatedAt: hitAnnotation.CreatedAt,
+		})
+	}
+
+	if len(annotationItems) == 0 {
+		annotationItems = make([]*dto_app.ListHitAnnotationItem, 0)
+	}
+
+	return &dto_app.ListHitAnnotationResponse{
 		Data:    annotationItems,
 		Page:    args.Page,
 		Limit:   args.Limit,

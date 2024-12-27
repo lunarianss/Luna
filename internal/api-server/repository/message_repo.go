@@ -354,7 +354,7 @@ func (md *MessageRepoImpl) GetMessageByID(ctx context.Context, messageID string)
 	var message po_entity.Message
 
 	if err := md.db.First(&message, "id = ?", messageID).Error; err != nil {
-		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
+		return nil, errors.WrapC(err, code.ErrDatabase, "get message by id-[%s] error: %s", messageID, err.Error())
 	}
 	return &message, nil
 }

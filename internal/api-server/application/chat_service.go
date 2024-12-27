@@ -11,9 +11,11 @@ import (
 	assembler "github.com/lunarianss/Luna/internal/api-server/assembler/chat"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_chat_generator"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
+	"github.com/lunarianss/Luna/internal/api-server/domain/account/entity/po_entity"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
+	po_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	datasetDomain "github.com/lunarianss/Luna/internal/api-server/domain/dataset/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	biz_entity_provider "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
@@ -151,6 +153,10 @@ func (s *ChatService) Generate(ctx context.Context, appID, accountID string, arg
 
 func (s *ChatService) ListConsoleMessagesOfConversation(ctx context.Context, accountID, appID string, args *dto.ListChatMessageQuery) (*dto.ListChatMessagesResponse, error) {
 
+	var (
+		annotationAccount *po_entity.Account
+		annotationBinding *po_chat.MessageAnnotation
+	)
 	accountRecord, err := s.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
 
 	if err != nil {
@@ -195,7 +201,29 @@ func (s *ChatService) ListConsoleMessagesOfConversation(ctx context.Context, acc
 			return nil, err
 		}
 
-		messageDto := assembler.ConvertToListMessageDto(mr, annotation)
+		annotationHistory, err := s.chatDomain.AnnotationRepo.GetMessageAnnotationHistory(ctx, mr.ID)
+
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, err
+		}
+
+		if annotationHistory != nil {
+			annotationBinding, err = s.chatDomain.AnnotationRepo.GetAnnotationByID(ctx, annotationHistory.AnnotationID)
+
+			if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, err
+			}
+		}
+
+		if annotationBinding != nil {
+			annotationAccount, err = s.accountDomain.AccountRepo.GetAccountByID(ctx, annotationBinding.AccountID)
+
+			if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, err
+			}
+		}
+
+		messageDto := assembler.ConvertToListMessageDto(mr, annotation, annotationHistory, annotationAccount)
 		messageItems = append(messageItems, messageDto)
 	}
 

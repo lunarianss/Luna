@@ -55,6 +55,17 @@ func (ap *AnnotationRepoImpl) GetMessageAnnotation(ctx context.Context, messageI
 	return biz_entity.ConvertToBizMessageAnnotation(&ma, &account), nil
 }
 
+func (ap *AnnotationRepoImpl) GetMessageAnnotationHistory(ctx context.Context, messageID string) (*po_entity.AppAnnotationHitHistory, error) {
+	var (
+		ma po_entity.AppAnnotationHitHistory
+	)
+
+	if err := ap.db.First(&ma, "message_id = ?", messageID).Error; err != nil {
+		return nil, errors.WrapC(err, code.ErrDatabase, "Get annotation by message-[%s] error: %s", messageID, err.Error())
+	}
+	return &ma, nil
+}
+
 func (ap *AnnotationRepoImpl) GetAnnotationByID(ctx context.Context, id string) (*po_entity.MessageAnnotation, error) {
 	var (
 		ma po_entity.MessageAnnotation

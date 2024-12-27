@@ -47,7 +47,7 @@ func WebTokenAuthMiddleware() gin.HandlerFunc {
 		}
 
 		if lunaClaims.AppCode == "" || lunaClaims.AppID == "" || lunaClaims.EndUserID == "" {
-			core.WriteResponse(c, errors.WithCode(code.ErrTokenInvalid, "there is no web app info after parse web token"), nil)
+			core.WriteResponse(c, errors.WithSCode(code.ErrTokenInvalid, "there is no web app info after parse web token"), nil)
 			c.Abort()
 			return
 		}
@@ -60,7 +60,7 @@ func WebTokenAuthMiddleware() gin.HandlerFunc {
 		gormIns, err := mysql.GetMySQLIns(nil)
 
 		if err != nil {
-			core.WriteResponse(c, errors.WithCode(code.ErrDatabase, err.Error()), nil)
+			core.WriteResponse(c, errors.WithSCode(code.ErrDatabase, err.Error()), nil)
 			c.Abort()
 			return
 		}
@@ -69,18 +69,18 @@ func WebTokenAuthMiddleware() gin.HandlerFunc {
 
 		if err := gormIns.First(&app, "id = ?", lunaClaims.AppID).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				core.WriteResponse(c, errors.WithCode(code.ErrResourceNotFound, err.Error()), nil)
+				core.WriteResponse(c, errors.WithSCode(code.ErrResourceNotFound, err.Error()), nil)
 				c.Abort()
 				return
 			} else {
-				core.WriteResponse(c, errors.WithCode(code.ErrDatabase, err.Error()), nil)
+				core.WriteResponse(c, errors.WithSCode(code.ErrDatabase, err.Error()), nil)
 				c.Abort()
 				return
 			}
 		}
 
 		if app.EnableSite == 0 {
-			core.WriteResponse(c, errors.WithCode(code.ErrAppSiteDisabled, ""), nil)
+			core.WriteResponse(c, errors.WithSCode(code.ErrAppSiteDisabled, ""), nil)
 			c.Abort()
 			return
 		}

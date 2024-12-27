@@ -77,6 +77,18 @@ type MessageAnnotation struct {
 	Account        *AnnotationAccount `json:"account"`
 }
 
+type AnnotationCreateAccount struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
+type AnnotationHistory struct {
+	Annotation              string                   `json:"annotation_id"`
+	AnnotationCreateAccount *AnnotationCreateAccount `json:"annotation_create_account"`
+	CreatedAt               int                      `json:"created_at"`
+}
+
 type ListChatMessageItem struct {
 	ID                      string                 `json:"id"`
 	ConversationID          string                 `json:"conversation_id"`
@@ -106,6 +118,7 @@ type ListChatMessageItem struct {
 	MessageFiles            []string               `json:"message_files"`
 	ParentMessageID         string                 `json:"parent_message_id"`
 	Annotation              *MessageAnnotation     `json:"annotation"`
+	AnnotationHistory       *AnnotationHistory     `json:"annotation_hit_history"`
 }
 
 type ListChatMessagesResponse struct {

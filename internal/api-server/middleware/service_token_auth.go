@@ -34,7 +34,7 @@ func ServiceTokenAuthMiddleware() gin.HandlerFunc {
 		gormIns, err := mysql.GetMySQLIns(nil)
 
 		if err != nil {
-			core.WriteResponse(c, errors.WithCode(code.ErrDatabase, err.Error()), nil)
+			core.WriteResponse(c, errors.WithSCode(code.ErrDatabase, err.Error()), nil)
 			c.Abort()
 			return
 		}
@@ -43,18 +43,18 @@ func ServiceTokenAuthMiddleware() gin.HandlerFunc {
 
 		if err := gormIns.First(&apiToken, "token = ? AND type = ?", tokenString, "app").Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				core.WriteResponse(c, errors.WithCode(code.ErrResourceNotFound, err.Error()), nil)
+				core.WriteResponse(c, errors.WithSCode(code.ErrResourceNotFound, err.Error()), nil)
 				c.Abort()
 				return
 			} else {
-				core.WriteResponse(c, errors.WithCode(code.ErrDatabase, err.Error()), nil)
+				core.WriteResponse(c, errors.WithSCode(code.ErrDatabase, err.Error()), nil)
 				c.Abort()
 				return
 			}
 		}
 
 		if err := gormIns.Model(&po_entity.ApiToken{}).Where("id = ?", apiToken.ID).Update("last_used_at", time.Now().UTC().Unix()).Error; err != nil {
-			core.WriteResponse(c, errors.WithCode(code.ErrDatabase, err.Error()), nil)
+			core.WriteResponse(c, errors.WithSCode(code.ErrDatabase, err.Error()), nil)
 			c.Abort()
 			return
 		}
@@ -65,24 +65,24 @@ func ServiceTokenAuthMiddleware() gin.HandlerFunc {
 
 		if err := gormIns.First(&app, "id = ?", appID).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				core.WriteResponse(c, errors.WithCode(code.ErrResourceNotFound, err.Error()), nil)
+				core.WriteResponse(c, errors.WithSCode(code.ErrResourceNotFound, err.Error()), nil)
 				c.Abort()
 				return
 			} else {
-				core.WriteResponse(c, errors.WithCode(code.ErrDatabase, err.Error()), nil)
+				core.WriteResponse(c, errors.WithSCode(code.ErrDatabase, err.Error()), nil)
 				c.Abort()
 				return
 			}
 		}
 
 		if app.Status != "normal" {
-			core.WriteResponse(c, errors.WithCode(code.ErrAppStatusNotNormal, ""), nil)
+			core.WriteResponse(c, errors.WithSCode(code.ErrAppStatusNotNormal, ""), nil)
 			c.Abort()
 			return
 		}
 
 		if app.EnableAPI == 0 {
-			core.WriteResponse(c, errors.WithCode(code.ErrAppApiDisabled, ""), nil)
+			core.WriteResponse(c, errors.WithSCode(code.ErrAppApiDisabled, ""), nil)
 			c.Abort()
 			return
 		}
@@ -91,18 +91,18 @@ func ServiceTokenAuthMiddleware() gin.HandlerFunc {
 
 		if err := gormIns.First(&tenant, "id = ?", app.TenantID).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				core.WriteResponse(c, errors.WithCode(code.ErrResourceNotFound, err.Error()), nil)
+				core.WriteResponse(c, errors.WithSCode(code.ErrResourceNotFound, err.Error()), nil)
 				c.Abort()
 				return
 			} else {
-				core.WriteResponse(c, errors.WithCode(code.ErrDatabase, err.Error()), nil)
+				core.WriteResponse(c, errors.WithSCode(code.ErrDatabase, err.Error()), nil)
 				c.Abort()
 				return
 			}
 		}
 
 		if tenant.Status == "archive" {
-			core.WriteResponse(c, errors.WithCode(code.ErrTenantStatusArchive, ""), nil)
+			core.WriteResponse(c, errors.WithSCode(code.ErrTenantStatusArchive, ""), nil)
 			c.Abort()
 			return
 		}

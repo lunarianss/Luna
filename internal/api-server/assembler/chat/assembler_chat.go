@@ -43,13 +43,13 @@ func ConvertToAnnotationAccount(a *po_account.Account) (s *dto.AnnotationAccount
 }
 
 // ConvertToListMessageDto converts a Message from po_entity to ListChatMessageItem.
-func ConvertToListMessageDto(message *po_entity.Message, annotation *biz_entity.BizMessageAnnotation) *dto.ListChatMessageItem {
-	return &dto.ListChatMessageItem{
+func ConvertToListMessageDto(message *po_entity.Message, annotation *biz_entity.BizMessageAnnotation, history *po_entity.AppAnnotationHitHistory, account *po_account.Account) *dto.ListChatMessageItem {
+	messageItem := &dto.ListChatMessageItem{
 		ID:                      message.ID,
 		ConversationID:          message.ConversationID,
 		Inputs:                  message.Inputs,
 		Query:                   message.Query,
-		Message:                 ConvertPromptMessageDto(message.Message), // 假设这两个类型兼容
+		Message:                 ConvertPromptMessageDto(message.Message),
 		MessageTokens:           message.MessageTokens,
 		MessageUnitPrice:        message.MessageUnitPrice,
 		Answer:                  message.Answer,
@@ -74,6 +74,20 @@ func ConvertToListMessageDto(message *po_entity.Message, annotation *biz_entity.
 		MessageFiles:            make([]string, 0),
 		Annotation:              ConvertToAnnotation(annotation),
 	}
+
+	if account != nil && history != nil {
+		messageItem.AnnotationHistory = &dto.AnnotationHistory{
+			Annotation: history.AnnotationID,
+			AnnotationCreateAccount: &dto.AnnotationCreateAccount{
+				ID:    account.ID,
+				Name:  account.Name,
+				Email: account.Email,
+			},
+			CreatedAt: history.CreatedAt,
+		}
+	}
+
+	return messageItem
 }
 
 func ConvertPromptMessageDto(messages []*po_entity.PromptMessage) []*dto.PromptMessage {

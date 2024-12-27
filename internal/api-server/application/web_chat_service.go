@@ -35,7 +35,7 @@ type WebChatService struct {
 	redis          *redis.Client
 }
 
-func NewWebChatService(webAppDomain *webAppDomain.WebAppDomain, accountDomain *accountDomain.AccountDomain, appDomain *appDomain.AppDomain, config *config.Config, providerDomain *domain_service.ProviderDomain, chatDomain *chatDomain.ChatDomain) *WebChatService {
+func NewWebChatService(webAppDomain *webAppDomain.WebAppDomain, accountDomain *accountDomain.AccountDomain, appDomain *appDomain.AppDomain, config *config.Config, providerDomain *domain_service.ProviderDomain, chatDomain *chatDomain.ChatDomain, datasetDomain *datasetDomain.DatasetDomain, redis *redis.Client) *WebChatService {
 	return &WebChatService{
 		webAppDomain:   webAppDomain,
 		accountDomain:  accountDomain,
@@ -43,6 +43,8 @@ func NewWebChatService(webAppDomain *webAppDomain.WebAppDomain, accountDomain *a
 		config:         config,
 		providerDomain: providerDomain,
 		chatDomain:     chatDomain,
+		datasetDomain:  datasetDomain,
+		redis:          redis,
 	}
 }
 

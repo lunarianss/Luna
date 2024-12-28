@@ -17,10 +17,10 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 
+	"github.com/lunarianss/Luna/internal/api-server/core/model_runtime/model_registry"
 	datasetDomain "github.com/lunarianss/Luna/internal/api-server/domain/dataset/domain_service"
 	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
-	"github.com/lunarianss/Luna/internal/api-server/model_runtime/model_registry"
 	"github.com/redis/go-redis/v9"
 )
 

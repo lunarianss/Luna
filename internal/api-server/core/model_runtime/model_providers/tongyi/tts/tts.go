@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lunarianss/Luna/internal/api-server/core/model_runtime/model_providers/tongyi/base"
+	provider_register "github.com/lunarianss/Luna/internal/api-server/core/model_runtime/model_registry"
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider/model_provider"
-	"github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers/tongyi/base"
-	provider_register "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_registry"
 )
 
 type TongyiTTSModel struct {

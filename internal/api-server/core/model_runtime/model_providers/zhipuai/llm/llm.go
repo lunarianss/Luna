@@ -7,11 +7,11 @@ package llm
 import (
 	"context"
 
+	"github.com/lunarianss/Luna/internal/api-server/core/model_runtime/model_providers/openai_api_compatible/llm"
+	provider_register "github.com/lunarianss/Luna/internal/api-server/core/model_runtime/model_registry"
 	biz_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider/model_provider"
-	"github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers/openai_api_compatible/llm"
-	provider_register "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_registry"
 )
 
 type zhipuLargeLanguageModel struct {

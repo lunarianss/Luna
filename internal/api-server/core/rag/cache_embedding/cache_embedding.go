@@ -9,11 +9,11 @@ import (
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/infrastructure/log"
+	"github.com/lunarianss/Luna/internal/api-server/core/model_runtime/model_registry"
 	"github.com/lunarianss/Luna/internal/api-server/domain/dataset/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/dataset/entity/po_entity"
 	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_configuration"
-	"github.com/lunarianss/Luna/internal/api-server/model_runtime/model_registry"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/lunarianss/Luna/internal/infrastructure/util"
 	"github.com/redis/go-redis/v9"
@@ -152,8 +152,6 @@ func (ce *cacheEmbedding) EmbedDocuments(ctx context.Context, texts []string) ([
 			}
 		}
 	}
-
-	log.Info("Text embedding result by AI and DB cache:  %v", len(textEmbeddings))
 	return textEmbeddings, nil
 }
 

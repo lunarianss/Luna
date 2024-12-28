@@ -10,6 +10,7 @@ import (
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/internal/api-server/config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_chat_generator"
+	"github.com/lunarianss/Luna/internal/api-server/core/model_runtime/model_registry"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
@@ -19,7 +20,6 @@ import (
 	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
 	webAppDomain "github.com/lunarianss/Luna/internal/api-server/domain/web_app/domain_service"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
-	"github.com/lunarianss/Luna/internal/api-server/model_runtime/model_registry"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/redis/go-redis/v9"
 )

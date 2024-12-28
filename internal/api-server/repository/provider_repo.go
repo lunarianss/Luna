@@ -11,10 +11,10 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
+	model_providers "github.com/lunarianss/Luna/internal/api-server/core/model_runtime/model_providers"
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/repository"
-	model_providers "github.com/lunarianss/Luna/internal/api-server/model_runtime/model_providers"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
 )

@@ -37,8 +37,12 @@ func AccountConvertToProfile(a *po_entity.Account) (s *GetAccountProfileResp) {
 	}
 }
 
-type RefreshTokenResponse struct {
+type TokenPair struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
-	Result       string `json:"result"`
+}
+
+type RefreshTokenResponse struct {
+	Data   *TokenPair `json:"data"`
+	Result string     `json:"result"`
 }

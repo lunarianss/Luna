@@ -155,9 +155,11 @@ func (ad *AccountService) RefreshToken(ctx context.Context, refreshToken string)
 	}
 
 	return &accountDto.RefreshTokenResponse{
-		AccessToken:  tokenPair.AccessToken,
-		RefreshToken: tokenPair.RefreshToken,
-		Result:       "success",
+		Data: &accountDto.TokenPair{
+			AccessToken:  tokenPair.AccessToken,
+			RefreshToken: refreshToken,
+		},
+		Result: "success",
 	}, nil
 }
 

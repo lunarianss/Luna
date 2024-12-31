@@ -58,11 +58,11 @@ type ToolParameter struct {
 	Placeholder      *common.I18nObject     `json:"placeholder" yaml:"placeholder"`             // The placeholder presented to the user
 	Type             ToolParameterType      `json:"type" yaml:"type"`                           // The type of the parameter
 	Form             ToolParameterForm      `json:"form" yaml:"form"`                           // The form of the parameter, schema/form/llm
-	LLMDescription   *string                `json:"llm_description" yaml:"llm_description"`     // Description set by LLM
-	Required         *bool                  `json:"required" yaml:"required"`                   // Whether the parameter is required
+	LLMDescription   string                 `json:"llm_description" yaml:"llm_description"`     // Description set by LLM
+	Required         bool                   `json:"required" yaml:"required"`                   // Whether the parameter is required
 	Default          any                    `json:"default" yaml:"default"`                     // Default value for the parameter
-	Min              *float64               `json:"min" yaml:"min"`                             // Minimum value
-	Max              *float64               `json:"max" yaml:"max"`                             // Maximum value
+	Min              float64                `json:"min" yaml:"min"`                             // Minimum value
+	Max              float64                `json:"max" yaml:"max"`                             // Maximum value
 	Options          []*ToolParameterOption `json:"options" yaml:"options"`                     // Options for select type
 }
 

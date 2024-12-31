@@ -31,6 +31,6 @@ type UserTool struct {
 	Name        string             `json:"name"`        // Identifier
 	Label       *common.I18nObject `json:"label"`       // Label
 	Description *common.I18nObject `json:"description"` // Description
-	Parameters  []ToolParameter    `json:"parameters"`  // List of tool parameters
+	Parameters  []*ToolParameter   `json:"parameters"`  // List of tool parameters
 	Labels      []string           `json:"labels"`      // List of labels
 }

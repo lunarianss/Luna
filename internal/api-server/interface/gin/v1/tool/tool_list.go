@@ -7,8 +7,24 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/lunarianss/Luna/internal/infrastructure/core"
+	"github.com/lunarianss/Luna/internal/infrastructure/util"
 )
 
 func (tc *ToolController) List(c *gin.Context) {
-	core.WriteResponse(c, nil, []any{})
+
+	userID, err := util.GetUserIDFromGin(c)
+
+	if err != nil {
+		core.WriteResponse(c, err, nil)
+		return
+	}
+
+	tools, err := tc.toolService.GetBuiltInTools(c, userID)
+
+	if err != nil {
+		core.WriteResponse(c, err, nil)
+		return
+	}
+
+	core.WriteResponse(c, nil, tools)
 }

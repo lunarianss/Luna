@@ -4,9 +4,14 @@
 
 package controller
 
+import service "github.com/lunarianss/Luna/internal/api-server/application"
+
 type ToolController struct {
+	toolService *service.ToolService
 }
 
-func NewTagController() *ToolController {
-	return &ToolController{}
+func NewToolController(toolService *service.ToolService) *ToolController {
+	return &ToolController{
+		toolService: toolService,
+	}
 }

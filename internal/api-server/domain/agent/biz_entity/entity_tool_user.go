@@ -14,6 +14,6 @@ type UserToolProvider struct {
 	OriginalCredentials map[string]interface{} `json:"original_credentials" `  // Original credentials
 	IsTeamAuthorization bool                   `json:"is_team_authorization" ` // Is team authorization required
 	AllowDelete         bool                   `json:"allow_delete" `          // Allow deletion
-	Tools               []UserTool             `json:"tools"`                  // List of tools
+	Tools               []*UserTool            `json:"tools"`                  // List of tools
 	Labels              []string               `json:"labels"`                 // List of labels
 }

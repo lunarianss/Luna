@@ -43,3 +43,7 @@ func (ts *ToolService) GetBuiltInTools(ctx context.Context, accountID string) ([
 func (ts *ToolService) GetBuiltInLabels(ctx context.Context) ([]*biz_entity.ToolLabel, error) {
 	return ts.agentDomain.ListBuiltInLabels(ctx)
 }
+
+func (ts *ToolService) GetIconPath(ctx context.Context, provider string) (string, error) {
+	return ts.agentDomain.ResolveProviderPath(provider)
+}

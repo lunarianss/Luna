@@ -6,6 +6,7 @@ import (
 
 	"github.com/lunarianss/Luna/internal/api-server/core/tools"
 	"github.com/lunarianss/Luna/internal/api-server/domain/agent/biz_entity"
+	"github.com/lunarianss/Luna/internal/infrastructure/util"
 )
 
 type AgentDomain struct {
@@ -40,6 +41,7 @@ func (ad *AgentDomain) ListBuiltInTools(ctx context.Context, tenantID string) ([
 			userProvider.Tools = append(userProvider.Tools, ad.BuiltInToolToUserTool(tool, nil, tenantID, userProvider.Labels))
 		}
 
+		util.PatchI18nObject(userProvider)
 		result = append(result, userProvider)
 	}
 

@@ -78,6 +78,7 @@ func (tm *ToolManager) unMarshalTools() error {
 
 	return nil
 }
+
 func (tm *ToolManager) unMarshalProvider() error {
 	for _, providerRuntime := range tm.providerRuntimes {
 		confPath := providerRuntime.ConfPath
@@ -94,6 +95,33 @@ func (tm *ToolManager) unMarshalProvider() error {
 		}
 	}
 	return nil
+}
+
+func (tm *ToolManager) ResolveProviderPath(provider string) (string, error) {
+	_, fullFilePath, _, ok := runtime.Caller(0)
+
+	providerRuntime := &biz_entity.ToolProviderRuntime{
+		ToolProviderStatic: &biz_entity.ToolProviderStatic{},
+	}
+
+	if !ok {
+		return "", errors.WithSCode(code.ErrRunTimeCaller, "Fail to get runtime caller info")
+	}
+
+	toolsDir := filepath.Join(filepath.Dir(fullFilePath), "provider", "builtin", provider)
+	toolProviderPath := fmt.Sprintf("%s/%s.yaml", toolsDir, provider)
+
+	toolBytes, err := os.ReadFile(toolProviderPath)
+
+	if err != nil {
+		return "", errors.WithSCode(code.ErrRunTimeCaller, err.Error())
+	}
+
+	if err := yaml.Unmarshal(toolBytes, providerRuntime.ToolProviderStatic); err != nil {
+		return "", errors.WithSCode(code.ErrDecodingYaml, err.Error())
+	}
+
+	return fmt.Sprintf("%s/_assets/%s", toolsDir, providerRuntime.Identity.Icon), nil
 }
 
 func (tm *ToolManager) resolveRuntimePath() error {

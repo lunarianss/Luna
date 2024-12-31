@@ -42,9 +42,12 @@ func (a *ToolRoutes) Register(g *gin.Engine) error {
 	toolController := controller.NewToolController(toolService)
 
 	v1 := g.Group("/v1")
-	toolV1 := v1.Group("/console/api")
+	toolV1 := v1.Group("/console/api/workspaces/current")
 	toolV1.Use(middleware.TokenAuthMiddleware())
-	toolV1.GET("/workspaces/current/tools/builtin", toolController.List)
+	toolV1.GET("/tools/builtin", toolController.List)
+	toolV1.GET("/tools/api", toolController.ListAPI)
+	toolV1.GET("/tools/workflow", toolController.ListAPI)
+	toolV1.GET("/tool-labels", toolController.ListLabels)
 	return nil
 }
 

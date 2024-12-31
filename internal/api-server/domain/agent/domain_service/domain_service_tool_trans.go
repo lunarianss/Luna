@@ -31,6 +31,7 @@ func (tf *ToolTransformService) BuiltInProviderToUserProvider(providerRuntime *b
 		IsTeamAuthorization: false,
 		Tools:               make([]*biz_entity.UserTool, 0),
 		Labels:              providerRuntime.GetToolLabels(),
+		AllowDelete:         true,
 	}
 
 	for key := range providerRuntime.CredentialsSchema {

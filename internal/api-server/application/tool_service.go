@@ -39,3 +39,7 @@ func (ts *ToolService) GetBuiltInTools(ctx context.Context, accountID string) ([
 
 	return ts.agentDomain.ListBuiltInTools(ctx, tenant.ID)
 }
+
+func (ts *ToolService) GetBuiltInLabels(ctx context.Context) ([]*biz_entity.ToolLabel, error) {
+	return ts.agentDomain.ListBuiltInLabels(ctx)
+}

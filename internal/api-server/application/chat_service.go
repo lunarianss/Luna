@@ -142,10 +142,14 @@ func (s *ChatService) Generate(ctx context.Context, appID, accountID string, arg
 		return err
 	}
 
-	chatAppGenerator := app_chat_generator.NewChatAppGenerator(s.appDomain, s.providerDomain, s.chatDomain, s.datasetDomain, s.redis)
+	if appModel.Mode == string(biz_entity.CHAT) {
+		chatAppGenerator := app_chat_generator.NewChatAppGenerator(s.appDomain, s.providerDomain, s.chatDomain, s.datasetDomain, s.redis)
 
-	if err := chatAppGenerator.Generate(ctx, appModel, accountRecord, args, invokeFrom, true); err != nil {
-		return err
+		if err := chatAppGenerator.Generate(ctx, appModel, accountRecord, args, invokeFrom, true); err != nil {
+			return err
+		}
+	} else if appModel.Mode == string(biz_entity.AGENT_CHAT) {
+
 	}
 
 	return nil

@@ -41,4 +41,6 @@ const (
 	ErrTTSWebSocketWrite
 	// ErrTencentARS - 500: Tencent ARS service error.
 	ErrTencentARS
+	// ErrNotStreamAgent - 500: Agent Chat App does not support blocking mode.
+	ErrNotStreamAgent
 )

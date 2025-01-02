@@ -20,23 +20,23 @@ import (
 )
 
 type chatAppTaskPipeline struct {
-	ApplicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity
-	StreamResultChunkQueue    chan *biz_entity.MessageQueueMessage
-	StreamFinalChunkQueue     chan *biz_entity.MessageQueueMessage
-	Message                   *po_entity.Message
-	MessageRepo               repository.MessageRepo
-	AnnotationRepo            repository.AnnotationRepo
-	flusher                   http.Flusher
-	sender                    io.Writer
-	taskState                 *biz_entity.ChatAppTaskState
+	biz_entity_app_generate.BasedAppGenerateEntity
+	StreamResultChunkQueue chan *biz_entity.MessageQueueMessage
+	StreamFinalChunkQueue  chan *biz_entity.MessageQueueMessage
+	Message                *po_entity.Message
+	MessageRepo            repository.MessageRepo
+	AnnotationRepo         repository.AnnotationRepo
+	flusher                http.Flusher
+	sender                 io.Writer
+	taskState              *biz_entity.ChatAppTaskState
 }
 
-func NewNonStreamTaskPipeline(applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, messageRepo repository.MessageRepo, message *po_entity.Message, llmResult *biz_entity.LLMResult, annotationRepo repository.AnnotationRepo) *chatAppTaskPipeline {
+func NewNonStreamTaskPipeline(applicationGenerateEntity biz_entity_app_generate.BasedAppGenerateEntity, messageRepo repository.MessageRepo, message *po_entity.Message, llmResult *biz_entity.LLMResult, annotationRepo repository.AnnotationRepo) *chatAppTaskPipeline {
 	return &chatAppTaskPipeline{
-		ApplicationGenerateEntity: applicationGenerateEntity,
-		Message:                   message,
-		MessageRepo:               messageRepo,
-		AnnotationRepo:            annotationRepo,
+		BasedAppGenerateEntity: applicationGenerateEntity,
+		Message:                message,
+		MessageRepo:            messageRepo,
+		AnnotationRepo:         annotationRepo,
 		taskState: &biz_entity.ChatAppTaskState{
 			LLMResult: llmResult,
 		},
@@ -44,17 +44,17 @@ func NewNonStreamTaskPipeline(applicationGenerateEntity *biz_entity_app_generate
 }
 
 func NewChatAppTaskPipeline(
-	applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity,
+	applicationGenerateEntity biz_entity_app_generate.BasedAppGenerateEntity,
 	streamResultChunkQueue chan *biz_entity.MessageQueueMessage,
 	streamFinalChunkQueue chan *biz_entity.MessageQueueMessage,
 	messageRepo repository.MessageRepo, message *po_entity.Message, annotationRepo repository.AnnotationRepo) *chatAppTaskPipeline {
 	return &chatAppTaskPipeline{
-		ApplicationGenerateEntity: applicationGenerateEntity,
-		StreamResultChunkQueue:    streamResultChunkQueue,
-		StreamFinalChunkQueue:     streamFinalChunkQueue,
-		Message:                   message,
-		MessageRepo:               messageRepo,
-		AnnotationRepo:            annotationRepo,
+		BasedAppGenerateEntity: applicationGenerateEntity,
+		StreamResultChunkQueue: streamResultChunkQueue,
+		StreamFinalChunkQueue:  streamFinalChunkQueue,
+		Message:                message,
+		MessageRepo:            messageRepo,
+		AnnotationRepo:         annotationRepo,
 		taskState: &biz_entity.ChatAppTaskState{
 			LLMResult: biz_entity.NewEmptyLLMResult(),
 		},
@@ -180,12 +180,12 @@ func (tpp *chatAppTaskPipeline) messageChunkToStreamResponse(answer string) erro
 		Answer:               answer,
 		FromVariableSelector: make([]string, 0),
 		StreamResponse: &biz_entity.StreamResponse{
-			TaskID: tpp.ApplicationGenerateEntity.TaskID,
+			TaskID: tpp.GetTaskID(),
 			Event:  biz_entity.StreamEventMessage,
 		},
 	}
 
-	chatBotResponse := biz_entity.NewChatBotAppStreamResponse(tpp.ApplicationGenerateEntity.ConversationID, tpp.Message.ID, tpp.Message.CreatedAt, messageChunkResponse)
+	chatBotResponse := biz_entity.NewChatBotAppStreamResponse(tpp.GetConversationID(), tpp.Message.ID, tpp.Message.CreatedAt, messageChunkResponse)
 
 	streamBytes, err := json.Marshal(chatBotResponse)
 
@@ -223,7 +223,7 @@ func (tpp *chatAppTaskPipeline) messageErrToStreamResponse(ctx context.Context, 
 
 	messageErrResponse := &biz_entity.ErrorStreamResponse{
 		StreamResponse: &biz_entity.StreamResponse{
-			TaskID: tpp.ApplicationGenerateEntity.TaskID,
+			TaskID: tpp.GetTaskID(),
 			Event:  biz_entity.StreamEventError,
 		},
 		Err:     errStr,
@@ -232,7 +232,7 @@ func (tpp *chatAppTaskPipeline) messageErrToStreamResponse(ctx context.Context, 
 		Status:  500,
 	}
 
-	chatBotResponse := biz_entity.NewChatBotAppErrStreamResponse(tpp.ApplicationGenerateEntity.ConversationID, tpp.Message.ID, tpp.Message.CreatedAt, messageErrResponse)
+	chatBotResponse := biz_entity.NewChatBotAppErrStreamResponse(tpp.GetConversationID(), tpp.Message.ID, tpp.Message.CreatedAt, messageErrResponse)
 
 	errorStreamBytes, err := json.Marshal(chatBotResponse)
 
@@ -251,7 +251,7 @@ func (tpp *chatAppTaskPipeline) messageEndToStreamResponse() error {
 	messageEndResponse := &biz_entity.MessageEndStreamResponse{
 		ID: tpp.Message.ID,
 		StreamResponse: &biz_entity.StreamResponse{
-			TaskID: tpp.ApplicationGenerateEntity.TaskID,
+			TaskID: tpp.GetTaskID(),
 			Event:  biz_entity.StreamEventMessageEnd,
 		},
 		Metadata: &biz_entity.MetaDataUsage{
@@ -267,7 +267,7 @@ func (tpp *chatAppTaskPipeline) messageEndToStreamResponse() error {
 		}
 	}
 
-	chatBotResponse := biz_entity.NewChatBotAppEndStreamResponse(tpp.ApplicationGenerateEntity.ConversationID, tpp.Message.ID, tpp.Message.CreatedAt, messageEndResponse)
+	chatBotResponse := biz_entity.NewChatBotAppEndStreamResponse(tpp.GetConversationID(), tpp.Message.ID, tpp.Message.CreatedAt, messageEndResponse)
 
 	endStreamBytes, err := json.Marshal(chatBotResponse)
 

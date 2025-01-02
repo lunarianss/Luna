@@ -6,7 +6,6 @@ package app_model_config
 
 import (
 	"context"
-	"fmt"
 	"slices"
 	"strings"
 
@@ -60,7 +59,7 @@ func (m *ModelConfigManager) ValidateAndSetDefaults(ctx context.Context, tenantI
 	}
 
 	if !slices.Contains(modelIDs, config.Model.Name) {
-		return nil, nil, errors.WithCode(code.ErrRequiredCorrectModel, fmt.Sprintf("model %s not found in %s", config.Model.Name, strings.Join(modelIDs, ",")))
+		return nil, nil, errors.WithCode(code.ErrRequiredCorrectModel, "model %s not found in %s", config.Model.Name, strings.Join(modelIDs, ","))
 	}
 
 	for _, availableModel := range availableModels {

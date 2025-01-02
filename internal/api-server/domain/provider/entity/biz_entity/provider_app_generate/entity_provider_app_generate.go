@@ -9,6 +9,12 @@ import (
 	biz_entity_provider_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_configuration"
 )
 
+type BasedAppGenerateEntity interface {
+	GetModel() string
+	GetTaskID() string
+	GetConversationID() string
+}
+
 // Define types for your enums
 type InvokeFrom string
 
@@ -70,8 +76,8 @@ type EasyUIBasedAppGenerateEntity struct {
 // ConversationAppGenerateEntity struct
 type ConversationAppGenerateEntity struct {
 	*AppGenerateEntity
-	ConversationID  *string `json:"conversation_id"`
-	ParentMessageID *string `json:"parent_message_id"`
+	ConversationID  string `json:"conversation_id"`
+	ParentMessageID string `json:"parent_message_id"`
 }
 
 // ChatAppGenerateEntity struct
@@ -79,6 +85,36 @@ type ChatAppGenerateEntity struct {
 	*EasyUIBasedAppGenerateEntity
 	ConversationID  string `json:"conversation_id"`
 	ParentMessageID string `json:"parent_message_id"`
+}
+
+func (cag *ChatAppGenerateEntity) GetModel() string {
+	return cag.ModelConf.Model
+}
+
+func (cag *ChatAppGenerateEntity) GetTaskID() string {
+	return cag.EasyUIBasedAppGenerateEntity.TaskID
+}
+
+func (cag *ChatAppGenerateEntity) GetConversationID() string {
+	return cag.ConversationID
+}
+
+type AgentChatAppGenerateEntity struct {
+	*EasyUIBasedAppGenerateEntity
+	*ConversationAppGenerateEntity
+	*biz_entity_app_config.AgentEntity
+}
+
+func (cag *AgentChatAppGenerateEntity) GetModel() string {
+	return cag.EasyUIBasedAppGenerateEntity.ModelConf.Model
+}
+
+func (cag *AgentChatAppGenerateEntity) GetTaskID() string {
+	return cag.EasyUIBasedAppGenerateEntity.TaskID
+}
+
+func (cag *AgentChatAppGenerateEntity) GetConversationID() string {
+	return cag.ConversationID
 }
 
 type AdvancedChatMessageEntity struct {

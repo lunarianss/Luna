@@ -137,6 +137,24 @@ type UserInput struct {
 	Options   []string `json:"options"`
 }
 
+type AgentTools struct {
+	Enabled        bool           `json:"enabled"`
+	ProviderID     string         `json:"provider_id"`
+	ProviderName   string         `json:"provider_name"`
+	ProviderType   string         `json:"provider_type"`
+	ToolLabel      string         `json:"tool_label"`
+	ToolName       string         `json:"tool_name"`
+	ToolParameters map[string]any `json:"tool_parameters"`
+}
+
+type AgentMode struct {
+	Enabled        bool          `json:"enabled"`
+	MaxInteraction int           `json:"max_interaction"`
+	Prompt         string        `json:"prompt"`
+	Strategy       string        `json:"strategy"`
+	Tools          []*AgentTools `json:"tools"`
+}
+
 type UserInputForm map[string]*UserInput
 
 type AppModelConfigDto struct {
@@ -149,7 +167,7 @@ type AppModelConfigDto struct {
 	Model                         ModelDto                `json:"model"`
 	UserInputForm                 []UserInputForm         `json:"user_input_form"`
 	PrePrompt                     string                  `json:"pre_prompt"`
-	AgentMode                     map[string]interface{}  `json:"agent_mode"`
+	AgentMode                     *AgentMode              `json:"agent_mode"`
 	SpeechToText                  AppModelConfigDtoEnable `json:"speech_to_text"`
 	SensitiveWordAvoidance        map[string]interface{}  `json:"sensitive_word_avoidance"`
 	RetrieverResource             AppModelConfigDtoEnable `json:"retriever_resource"`
@@ -195,15 +213,6 @@ func AppRecordToDetail(app *po_entity.App, config *config.Config, modelConfig *b
 			"enabled": false,
 			"type":    "",
 			"configs": []any{},
-		}
-	}
-
-	if appDetail.ModelConfig.AgentMode == nil {
-		appDetail.ModelConfig.AgentMode = map[string]any{
-			"enabled":  false,
-			"strategy": nil,
-			"tools":    []any{},
-			"prompt":   nil,
 		}
 	}
 

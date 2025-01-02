@@ -21,6 +21,24 @@ const (
 	CHANNEL       AppMode = "channel"
 )
 
+type AgentTools struct {
+	Enabled        bool           `json:"enabled"`
+	ProviderID     string         `json:"provider_id"`
+	ProviderName   string         `json:"provider_name"`
+	ProviderType   string         `json:"provider_type"`
+	ToolLabel      string         `json:"tool_label"`
+	ToolName       string         `json:"tool_name"`
+	ToolParameters map[string]any `json:"tool_parameters"`
+}
+
+type AgentMode struct {
+	Enabled        bool          `json:"enabled"`
+	MaxInteraction int           `json:"max_interaction"`
+	Prompt         string        `json:"prompt"`
+	Strategy       string        `json:"strategy"`
+	Tools          []*AgentTools `json:"tools"`
+}
+
 // App represents the app table in the database
 type App struct {
 	ID                  string        `gorm:"column:id" json:"id"`
@@ -96,7 +114,7 @@ type AppModelConfig struct {
 	Model                         ModelInfo              `json:"model" gorm:"column:model;serializer:json"`
 	UserInputForm                 []UserInputForm        `json:"user_input_form" gorm:"column:user_input_form;serializer:json"`
 	PrePrompt                     string                 `json:"pre_prompt" gorm:"column:pre_prompt;serializer:json"`
-	AgentMode                     map[string]interface{} `json:"agent_mode" gorm:"column:agent_mode;serializer:json"`
+	AgentMode                     *AgentMode             `json:"agent_mode" gorm:"column:agent_mode;serializer:json"`
 	SpeechToText                  AppModelConfigEnable   `json:"speech_to_text" gorm:"column:speech_to_text;serializer:json"`
 	SensitiveWordAvoidance        map[string]interface{} `json:"sensitive_word_avoidance" gorm:"column:sensitive_word_avoidance;serializer:json"`
 	RetrieverResource             AppModelConfigEnable   `json:"retriever_resource" gorm:"column:retriever_resource;serializer:json"`

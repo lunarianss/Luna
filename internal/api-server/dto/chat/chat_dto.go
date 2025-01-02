@@ -210,6 +210,24 @@ type UserInput struct {
 
 type UserInputForm map[string]*UserInput
 
+type AgentTools struct {
+	Enabled        bool           `json:"enabled"`
+	ProviderID     string         `json:"provider_id"`
+	ProviderName   string         `json:"provider_name"`
+	ProviderType   string         `json:"provider_type"`
+	ToolLabel      string         `json:"tool_label"`
+	ToolName       string         `json:"tool_name"`
+	ToolParameters map[string]any `json:"tool_parameters"`
+}
+
+type AgentMode struct {
+	Enabled        bool          `json:"enabled"`
+	MaxInteraction int           `json:"max_interaction"`
+	Prompt         string        `json:"prompt"`
+	Strategy       string        `json:"strategy"`
+	Tools          []*AgentTools `json:"tools"`
+}
+
 type AppModelConfigDto struct {
 	AppID                         string                  `json:"appId"`
 	ModelID                       string                  `json:"model_id"`
@@ -220,7 +238,7 @@ type AppModelConfigDto struct {
 	Model                         ModelDto                `json:"model"`
 	UserInputForm                 []UserInputForm         `json:"user_input_form"`
 	PrePrompt                     string                  `json:"pre_prompt"`
-	AgentMode                     map[string]interface{}  `json:"agent_mode"`
+	AgentMode                     *AgentMode              `json:"agent_mode"`
 	SpeechToText                  AppModelConfigDtoEnable `json:"speech_to_text"`
 	SensitiveWordAvoidance        map[string]interface{}  `json:"sensitive_word_avoidance"`
 	RetrieverResource             AppModelConfigDtoEnable `json:"retriever_resource"`

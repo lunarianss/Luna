@@ -20,7 +20,7 @@ func ConvertToConfigEntity(dtoAppConfig *dto.AppModelConfigDto) *biz_entity.AppM
 		Model:                         ConvertToModelEntity(dtoAppConfig.Model),
 		UserInputForm:                 ConvertToUserInputEntity(dtoAppConfig.UserInputForm),
 		PrePrompt:                     dtoAppConfig.PrePrompt,
-		AgentMode:                     dtoAppConfig.AgentMode,
+		AgentMode:                     ConvertToBizAgentMode(dtoAppConfig.AgentMode),
 		SpeechToText:                  biz_entity.AppModelConfigEnable(dtoAppConfig.SpeechToText),
 		SensitiveWordAvoidance:        dtoAppConfig.SensitiveWordAvoidance,
 		RetrieverResource:             biz_entity.AppModelConfigEnable(dtoAppConfig.RetrieverResource),
@@ -79,4 +79,36 @@ func ConvertToServiceTokens(serviceTokens []*po_entity.ApiToken) []*appDto.Gener
 		})
 	}
 	return dtoServiceTokens
+}
+
+func ConvertToBizAgentTools(agentTools []*dto.AgentTools) []*biz_entity.AgentTools {
+	poAgentTools := make([]*biz_entity.AgentTools, len(agentTools))
+
+	for _, agentTool := range agentTools {
+		poAgentTools = append(poAgentTools, &biz_entity.AgentTools{
+			Enabled:        agentTool.Enabled,
+			ProviderID:     agentTool.ProviderID,
+			ProviderName:   agentTool.ProviderName,
+			ProviderType:   agentTool.ProviderType,
+			ToolLabel:      agentTool.ToolLabel,
+			ToolName:       agentTool.ToolName,
+			ToolParameters: agentTool.ToolParameters,
+		})
+	}
+	return poAgentTools
+}
+
+func ConvertToBizAgentMode(agentMode *dto.AgentMode) *biz_entity.AgentMode {
+	if agentMode == nil {
+		return &biz_entity.AgentMode{
+			Tools: make([]*biz_entity.AgentTools, 0),
+		}
+	}
+	return &biz_entity.AgentMode{
+		Enabled:        agentMode.Enabled,
+		MaxInteraction: agentMode.MaxInteraction,
+		Prompt:         agentMode.Prompt,
+		Strategy:       agentMode.Strategy,
+		Tools:          ConvertToBizAgentTools(agentMode.Tools),
+	}
 }

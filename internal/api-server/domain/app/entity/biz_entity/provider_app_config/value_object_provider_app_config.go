@@ -72,6 +72,24 @@ type UserInput struct {
 	Options   []string `json:"options"`
 }
 
+type AgentTools struct {
+	Enabled        bool           `json:"enabled"`
+	ProviderID     string         `json:"provider_id"`
+	ProviderName   string         `json:"provider_name"`
+	ProviderType   string         `json:"provider_type"`
+	ToolLabel      string         `json:"tool_label"`
+	ToolName       string         `json:"tool_name"`
+	ToolParameters map[string]any `json:"tool_parameters"`
+}
+
+type AgentMode struct {
+	Enabled        bool          `json:"enabled"`
+	MaxInteraction int           `json:"max_interaction"`
+	Prompt         string        `json:"prompt"`
+	Strategy       string        `json:"strategy"`
+	Tools          []*AgentTools `json:"tools"`
+}
+
 type UserInputForm map[string]*UserInput
 
 type AppModelConfig struct {
@@ -88,7 +106,7 @@ type AppModelConfig struct {
 	Model                         ModelInfo              `json:"model" gorm:"column:model;serializer:json"`
 	UserInputForm                 []UserInputForm        `json:"user_input_form" gorm:"column:user_input_form;serializer:json"`
 	PrePrompt                     string                 `json:"pre_prompt" gorm:"column:pre_prompt;serializer:json"`
-	AgentMode                     map[string]interface{} `json:"agent_mode" gorm:"column:agent_mode;serializer:json"`
+	AgentMode                     *AgentMode             `json:"agent_mode" gorm:"column:agent_mode;serializer:json"`
 	SpeechToText                  AppModelConfigEnable   `json:"speech_to_text" gorm:"column:speech_to_text;serializer:json"`
 	SensitiveWordAvoidance        map[string]interface{} `json:"sensitive_word_avoidance" gorm:"column:sensitive_word_avoidance;serializer:json"`
 	RetrieverResource             AppModelConfigEnable   `json:"retriever_resource" gorm:"column:retriever_resource;serializer:json"`
@@ -113,15 +131,15 @@ func (a *AppModelConfig) ConvertToAppConfigPoEntity() *po_entity.AppModelConfig 
 		UpdatedAt:                     a.UpdatedAt,
 		OpeningStatement:              a.OpeningStatement,
 		SuggestedQuestions:            a.SuggestedQuestions,
-		SuggestedQuestionsAfterAnswer: po_entity.AppModelConfigEnable(a.SuggestedQuestionsAfterAnswer), // 注意类型转换
-		MoreLikeThis:                  po_entity.AppModelConfigEnable(a.MoreLikeThis),                  // 注意类型转换
-		Model:                         ConvertToModelPoEntity(a.Model),                                 // 假设 Model 是直接可以赋值的，如果不是需要进行类型转换
+		SuggestedQuestionsAfterAnswer: po_entity.AppModelConfigEnable(a.SuggestedQuestionsAfterAnswer),
+		MoreLikeThis:                  po_entity.AppModelConfigEnable(a.MoreLikeThis),
+		Model:                         ConvertToModelPoEntity(a.Model),
 		UserInputForm:                 ConvertToUserInputPoEntity(a.UserInputForm),
 		PrePrompt:                     a.PrePrompt,
-		AgentMode:                     a.AgentMode,
-		SpeechToText:                  po_entity.AppModelConfigEnable(a.SpeechToText), // 注意类型转换
+		AgentMode:                     ConvertToAgentMode(a.AgentMode),
+		SpeechToText:                  po_entity.AppModelConfigEnable(a.SpeechToText),
 		SensitiveWordAvoidance:        a.SensitiveWordAvoidance,
-		RetrieverResource:             po_entity.AppModelConfigEnable(a.RetrieverResource), // 注意类型转换
+		RetrieverResource:             po_entity.AppModelConfigEnable(a.RetrieverResource),
 		DatasetQueryVariable:          a.DatasetQueryVariable,
 		PromptType:                    a.PromptType,
 		ChatPromptConfig:              a.ChatPromptConfig,
@@ -129,7 +147,7 @@ func (a *AppModelConfig) ConvertToAppConfigPoEntity() *po_entity.AppModelConfig 
 		DatasetConfigs:                a.DatasetConfigs,
 		ExternalDataTools:             a.ExternalDataTools,
 		FileUpload:                    a.FileUpload,
-		TextToSpeech:                  po_entity.AppModelConfigEnable(a.TextToSpeech), // 注意类型转换
+		TextToSpeech:                  po_entity.AppModelConfigEnable(a.TextToSpeech),
 	}
 }
 
@@ -150,6 +168,72 @@ func ConvertToModelBizEntity(entityModel po_entity.ModelInfo) ModelInfo {
 		Name:             entityModel.Name,
 		Mode:             entityModel.Mode,
 		CompletionParams: entityModel.CompletionParams,
+	}
+}
+
+func ConvertToAgentTools(agentTools []*AgentTools) []*po_entity.AgentTools {
+	poAgentTools := make([]*po_entity.AgentTools, len(agentTools))
+
+	for _, agentTool := range agentTools {
+		poAgentTools = append(poAgentTools, &po_entity.AgentTools{
+			Enabled:        agentTool.Enabled,
+			ProviderID:     agentTool.ProviderID,
+			ProviderName:   agentTool.ProviderName,
+			ProviderType:   agentTool.ProviderType,
+			ToolLabel:      agentTool.ToolLabel,
+			ToolName:       agentTool.ToolName,
+			ToolParameters: agentTool.ToolParameters,
+		})
+	}
+	return poAgentTools
+}
+
+func ConvertToAgentMode(agentMode *AgentMode) *po_entity.AgentMode {
+	if agentMode == nil {
+		return &po_entity.AgentMode{
+			Tools: make([]*po_entity.AgentTools, 0),
+		}
+	}
+
+	return &po_entity.AgentMode{
+		Enabled:        agentMode.Enabled,
+		MaxInteraction: agentMode.MaxInteraction,
+		Prompt:         agentMode.Prompt,
+		Strategy:       agentMode.Strategy,
+		Tools:          ConvertToAgentTools(agentMode.Tools),
+	}
+}
+
+func ConvertToBizAgentTools(agentTools []*po_entity.AgentTools) []*AgentTools {
+	poAgentTools := make([]*AgentTools, len(agentTools))
+
+	for _, agentTool := range agentTools {
+		poAgentTools = append(poAgentTools, &AgentTools{
+			Enabled:        agentTool.Enabled,
+			ProviderID:     agentTool.ProviderID,
+			ProviderName:   agentTool.ProviderName,
+			ProviderType:   agentTool.ProviderType,
+			ToolLabel:      agentTool.ToolLabel,
+			ToolName:       agentTool.ToolName,
+			ToolParameters: agentTool.ToolParameters,
+		})
+	}
+	return poAgentTools
+}
+
+func ConvertToBizAgentMode(agentMode *po_entity.AgentMode) *AgentMode {
+	if agentMode == nil {
+		return &AgentMode{
+			Tools: make([]*AgentTools, 0),
+		}
+	}
+
+	return &AgentMode{
+		Enabled:        agentMode.Enabled,
+		MaxInteraction: agentMode.MaxInteraction,
+		Prompt:         agentMode.Prompt,
+		Strategy:       agentMode.Strategy,
+		Tools:          ConvertToBizAgentTools(agentMode.Tools),
 	}
 }
 
@@ -222,7 +306,7 @@ func ConvertToAppConfigBizEntity(a *po_entity.AppModelConfig, annotation *AppAnn
 		Model:                         ConvertToModelBizEntity(a.Model),                      // 假设 Model 是直接可以赋值的，如果不是需要进行类型转换
 		UserInputForm:                 ConvertToUserInputBizEntity(a.UserInputForm),
 		PrePrompt:                     a.PrePrompt,
-		AgentMode:                     a.AgentMode,
+		AgentMode:                     ConvertToBizAgentMode(a.AgentMode),
 		SpeechToText:                  AppModelConfigEnable(a.SpeechToText), // 注意类型转换
 		SensitiveWordAvoidance:        a.SensitiveWordAvoidance,
 		RetrieverResource:             AppModelConfigEnable(a.RetrieverResource), // 注意类型转换

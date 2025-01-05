@@ -19,6 +19,8 @@ const (
 	ErrRequiredOverrideConfig
 	// ErrNotFoundModelRegistry - 500: Model registry is not found in the model registry list.
 	ErrNotFoundModelRegistry
+	// ErrNotFoundToolRegistry - 500: tool registry is not found in the tool registry list.
+	ErrNotFoundToolRegistry
 	// ErrRequiredPromptMessage - 500: Prompt type is required when convert to prompt template.
 	ErrRequiredPromptType
 	// ErrQuotaExceed - 500: Your quota for Luna Hosted Model Provider has been exhausted,Please go to Settings -> Model Provider to complete your own provider credentials.
@@ -43,4 +45,6 @@ const (
 	ErrTencentARS
 	// ErrNotStreamAgent - 500: Agent Chat App does not support blocking mode.
 	ErrNotStreamAgent
+	// ErrInvokeTool - 500: Failed to invoke agent tool.
+	ErrInvokeTool
 )

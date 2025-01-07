@@ -4,8 +4,8 @@ import (
 	"context"
 
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
-	"github.com/lunarianss/Luna/internal/api-server/domain/agent/biz_entity"
 	agentDomain "github.com/lunarianss/Luna/internal/api-server/domain/agent/domain_service"
+	"github.com/lunarianss/Luna/internal/api-server/domain/agent/entity/biz_entity"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 )
 

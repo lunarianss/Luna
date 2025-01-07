@@ -20,7 +20,7 @@ const (
 )
 
 type IToolCallRegistry interface {
-	Invoke(ctx context.Context, userID string, toolParameters []byte, toolRuntime *biz_entity.ToolRuntimeConfiguration) (*biz_entity.ToolInvokeMessage, error)
+	Invoke(ctx context.Context, userID string, toolParameters []byte, toolRuntime *biz_entity.ToolRuntimeConfiguration) ([]*biz_entity.ToolInvokeMessage, error)
 	Register() string
 }
 

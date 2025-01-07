@@ -63,6 +63,12 @@ type ErrorStreamResponse struct {
 	Code    string `json:"code"`
 }
 
+type AgentMessageStreamResponse struct {
+	*StreamResponse
+	ID     string `json:"id"`
+	Answer string `json:"answer"`
+}
+
 // MessageStreamResponse entity
 type MessageStreamResponse struct {
 	*StreamResponse
@@ -152,11 +158,39 @@ type ChatBotAppStreamResponse struct {
 	CreatedAt      int64  `json:"created_at"`
 }
 
+type AgentChatBotAppStreamResponse struct {
+	*AgentMessageStreamResponse
+	ConversationID string `json:"conversation_id"`
+	MessageID      string `json:"message_id"`
+	CreatedAt      int64  `json:"created_at"`
+}
+
+type AgentThoughtStreamResponse struct {
+	*StreamResponse
+	ID           string                    `json:"id"`
+	Position     int                       `json:"position"`
+	Thought      string                    `json:"thought"`
+	Observation  map[string]string         `json:"observation"`
+	Tool         string                    `json:"tool"`
+	ToolLabels   string                    `json:"tool_labels"`
+	ToolInputs   map[string]map[string]any `json:"tool_input"`
+	MessageFiles []string                  `json:"message_files"`
+}
+
 func NewChatBotAppStreamResponse(cID, mID string, createAt int64, streamResp *MessageStreamResponse) *ChatBotAppStreamResponse {
 	return &ChatBotAppStreamResponse{
 		ConversationID:        cID,
 		MessageID:             mID,
 		CreatedAt:             createAt,
 		MessageStreamResponse: streamResp,
+	}
+}
+
+func NewAgentChatBotAppStreamResponse(cID, mID string, createAt int64, streamResp *AgentMessageStreamResponse) *AgentChatBotAppStreamResponse {
+	return &AgentChatBotAppStreamResponse{
+		ConversationID:             cID,
+		MessageID:                  mID,
+		CreatedAt:                  createAt,
+		AgentMessageStreamResponse: streamResp,
 	}
 }

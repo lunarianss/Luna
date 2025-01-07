@@ -350,7 +350,7 @@ func (g *ChatAppGenerator) InitGenerateRecords(ctx context.Context, chatAppGener
 		ConversationID:          conversationRecord.ID,
 		Inputs:                  chatAppGenerateEntity.Inputs,
 		Query:                   chatAppGenerateEntity.Query,
-		Message:                 make([]*po_entity_chat.PromptMessage, 0),
+		Message:                 make([]any, 0),
 		MessageTokens:           0,
 		MessageUnitPrice:        0,
 		MessagePriceUnit:        0,

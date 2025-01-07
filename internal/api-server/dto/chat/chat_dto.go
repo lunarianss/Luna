@@ -94,7 +94,7 @@ type ListChatMessageItem struct {
 	ConversationID          string                 `json:"conversation_id"`
 	Inputs                  map[string]interface{} `json:"inputs"`
 	Query                   string                 `json:"query"`
-	Message                 []*PromptMessage       `json:"message"`
+	Message                 []any                  `json:"message"`
 	MessageTokens           int64                  `json:"message_tokens"`
 	MessageUnitPrice        float64                `json:"message_unit_price"`
 	Answer                  string                 `json:"answer"`

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/lunarianss/Luna/internal/api-server/config"
-	"github.com/lunarianss/Luna/internal/api-server/domain/agent/biz_entity"
+	"github.com/lunarianss/Luna/internal/api-server/domain/agent/entity/biz_entity"
 	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
 )
 

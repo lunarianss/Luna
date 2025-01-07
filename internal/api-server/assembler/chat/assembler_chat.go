@@ -49,7 +49,7 @@ func ConvertToListMessageDto(message *po_entity.Message, annotation *biz_entity.
 		ConversationID:          message.ConversationID,
 		Inputs:                  message.Inputs,
 		Query:                   message.Query,
-		Message:                 ConvertPromptMessageDto(message.Message),
+		Message:                 message.Message,
 		MessageTokens:           message.MessageTokens,
 		MessageUnitPrice:        message.MessageUnitPrice,
 		Answer:                  message.Answer,
@@ -90,7 +90,7 @@ func ConvertToListMessageDto(message *po_entity.Message, annotation *biz_entity.
 	return messageItem
 }
 
-func ConvertPromptMessageDto(messages []*po_entity.PromptMessage) []*dto.PromptMessage {
+func ConvertPromptMessageDto(messages []po_entity.IPromptMessage) []*dto.PromptMessage {
 	var pms []*dto.PromptMessage
 
 	if len(messages) == 0 {
@@ -99,9 +99,9 @@ func ConvertPromptMessageDto(messages []*po_entity.PromptMessage) []*dto.PromptM
 
 	for _, msg := range messages {
 		pms = append(pms, &dto.PromptMessage{
-			Role:    string(msg.Role),
-			Content: msg.Content.(string),
-			Name:    msg.Name,
+			Role:    string(msg.GetRole()),
+			Content: msg.GetContent(),
+			Name:    msg.GetName(),
 		})
 	}
 

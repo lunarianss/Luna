@@ -12,6 +12,7 @@ import (
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
 	biz_entity_provider_config "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_configuration"
+	"github.com/lunarianss/Luna/internal/infrastructure/util"
 )
 
 type AppBaseChatRunner struct {
@@ -28,6 +29,7 @@ func (r *AppBaseChatRunner) OrganizePromptMessage(ctx context.Context, appRecord
 		stop           []string
 		err            error
 	)
+
 	if promptTemplateEntity.PromptType == string(biz_entity_app_config.SIMPLE) {
 		simplePrompt := prompt.SimplePromptTransform{}
 
@@ -47,8 +49,10 @@ func (r *AppBaseChatRunner) DirectOutStream(applicationGenerateEntity biz_entity
 	for i, token := range text {
 		tokenStr := string(token)
 		llmResultChunk := &biz_entity.LLMResultChunk{
-			Model:         applicationGenerateEntity.GetModel(),
-			PromptMessage: promptMessages,
+			Model: applicationGenerateEntity.GetModel(),
+			PromptMessage: util.ConvertToInterfaceSlice(promptMessages, func(pm *po_entity_chat.PromptMessage) po_entity_chat.IPromptMessage {
+				return pm
+			}),
 			Delta: &biz_entity.LLMResultChunkDelta{
 				Index:   index,
 				Message: biz_entity.NewAssistantPromptMessage(tokenStr),
@@ -65,10 +69,12 @@ func (r *AppBaseChatRunner) DirectOutStream(applicationGenerateEntity biz_entity
 	queueManager.FinalManual(&biz_entity.QueueMessageEndEvent{
 		AppQueueEvent: biz_entity.NewAppQueueEvent(biz_entity.MessageEnd),
 		LLMResult: &biz_entity.LLMResult{
-			Model:         applicationGenerateEntity.GetModel(),
-			PromptMessage: promptMessages,
-			Message:       biz_entity.NewAssistantPromptMessage(text),
-			Usage:         biz_entity.NewEmptyLLMUsage(),
+			Model: applicationGenerateEntity.GetModel(),
+			PromptMessage: util.ConvertToInterfaceSlice(promptMessages, func(pm *po_entity_chat.PromptMessage) po_entity_chat.IPromptMessage {
+				return pm
+			}),
+			Message: biz_entity.NewAssistantPromptMessage(text),
+			Usage:   biz_entity.NewEmptyLLMUsage(),
 		},
 	})
 }

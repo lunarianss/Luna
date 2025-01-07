@@ -62,7 +62,6 @@ func (sgq *StreamGenerateQueue) PushErr(err error) {
 }
 
 func (sgq *StreamGenerateQueue) Push(chunk IQueueEvent) {
-
 	sgq.StreamResultChunkQueue <- sgq.constructMessageQueue(chunk)
 }
 

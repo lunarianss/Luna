@@ -32,3 +32,11 @@ func SliceReverse[T interface{}](slice []T) []T {
 	}
 	return slice
 }
+
+func ConvertToInterfaceSlice[T any, I any](input []T, toInterface func(T) I) []I {
+	result := make([]I, len(input))
+	for i, v := range input {
+		result[i] = toInterface(v)
+	}
+	return result
+}

@@ -39,11 +39,12 @@ func (a *ToolRoutes) Register(g *gin.Engine) error {
 	tenantRepo := repo_impl.NewTenantRepoImpl(gormIns)
 	appRepo := repo_impl.NewAppRepoImpl(gormIns)
 	webAppRepo := repo_impl.NewWebAppRepoImpl(gormIns)
+	agentRepo := repo_impl.NewAgentRepoImpl(gormIns)
 
 	appDomain := appDomain.NewAppDomain(appRepo, webAppRepo, gormIns)
 	accountDomain := accountDomain.NewAccountDomain(accountRepo, nil, nil, nil, tenantRepo)
 
-	agentDomain := agentDomain.NewAgentDomain(agentDomain.NewToolTransformService(config), tools.NewToolManager())
+	agentDomain := agentDomain.NewAgentDomain(agentDomain.NewToolTransformService(config), tools.NewToolManager(), agentRepo)
 	// service
 	toolService := service.NewToolService(accountDomain, appDomain, agentDomain)
 

@@ -61,7 +61,7 @@ func (st *StableDiffusionTool) Register() string {
 	return "stability/stability_text2image"
 }
 
-func (st *StableDiffusionTool) Invoke(ctx context.Context, userID string, toolParameters []byte, toolRuntime *biz_entity.ToolRuntimeConfiguration) (*biz_entity.ToolInvokeMessage, error) {
+func (st *StableDiffusionTool) Invoke(ctx context.Context, userID string, toolParameters []byte, toolRuntime *biz_entity.ToolRuntimeConfiguration) ([]*biz_entity.ToolInvokeMessage, error) {
 
 	if err := st.parseParameter(toolParameters, toolRuntime); err != nil {
 		return nil, err
@@ -85,9 +85,9 @@ func (st *StableDiffusionTool) Invoke(ctx context.Context, userID string, toolPa
 		return nil, errors.WithCode(code.ErrInvokeTool, "failed to invoke stable diffusion tool error: %s", body)
 	}
 
-	return st.CreateBlobMessage(body, map[string]any{
+	return []*biz_entity.ToolInvokeMessage{st.CreateBlobMessage(body, map[string]any{
 		"mime_type": "image/png",
-	}, "image"), nil
+	}, "image")}, nil
 }
 
 func (st *StableDiffusionTool) parseParameter(parameter []byte, toolRuntime *biz_entity.ToolRuntimeConfiguration) error {

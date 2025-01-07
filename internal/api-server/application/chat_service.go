@@ -9,10 +9,12 @@ import (
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	assembler "github.com/lunarianss/Luna/internal/api-server/assembler/chat"
+	app_agent_chat_generator "github.com/lunarianss/Luna/internal/api-server/core/app_chat/agent_chat_generator"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_chat_generator"
 	"github.com/lunarianss/Luna/internal/api-server/core/model_runtime/model_registry"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/account/entity/po_entity"
+	agentDomain "github.com/lunarianss/Luna/internal/api-server/domain/agent/domain_service"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
@@ -34,10 +36,11 @@ type ChatService struct {
 	accountDomain  *accountDomain.AccountDomain
 	chatDomain     *chatDomain.ChatDomain
 	datasetDomain  *datasetDomain.DatasetDomain
+	agentDomain    *agentDomain.AgentDomain
 	redis          *redis.Client
 }
 
-func NewChatService(appDomain *appDomain.AppDomain, providerDomain *domain_service.ProviderDomain, accountDomain *accountDomain.AccountDomain, chatDomain *chatDomain.ChatDomain, datasetDomain *datasetDomain.DatasetDomain, redis *redis.Client) *ChatService {
+func NewChatService(appDomain *appDomain.AppDomain, providerDomain *domain_service.ProviderDomain, accountDomain *accountDomain.AccountDomain, chatDomain *chatDomain.ChatDomain, datasetDomain *datasetDomain.DatasetDomain, agentDomain *agentDomain.AgentDomain, redis *redis.Client) *ChatService {
 	return &ChatService{
 		appDomain:      appDomain,
 		providerDomain: providerDomain,
@@ -45,6 +48,7 @@ func NewChatService(appDomain *appDomain.AppDomain, providerDomain *domain_servi
 		chatDomain:     chatDomain,
 		datasetDomain:  datasetDomain,
 		redis:          redis,
+		agentDomain:    agentDomain,
 	}
 }
 
@@ -150,6 +154,11 @@ func (s *ChatService) Generate(ctx context.Context, appID, accountID string, arg
 		}
 	} else if appModel.Mode == string(biz_entity.AGENT_CHAT) {
 
+		chatAppGenerator := app_agent_chat_generator.NewChatAppGenerator(s.appDomain, s.providerDomain, s.chatDomain, s.datasetDomain, s.redis, s.agentDomain)
+
+		if err := chatAppGenerator.Generate(ctx, appModel, accountRecord, args, invokeFrom, true); err != nil {
+			return err
+		}
 	}
 
 	return nil

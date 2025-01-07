@@ -411,7 +411,9 @@ func (as *AppService) GeneratePrompt(ctx context.Context, accountID string, args
 
 	modelCaller := model_registry.NewModelRegisterCaller(args.ModelConfig.Name, string(common.LLM), args.ModelConfig.Provider, modelIns.Credentials, modelIns.ModelTypeInstance)
 
-	llmResult, err := modelCaller.InvokeLLMNonStream(ctx, promptMessages, modelParameters, nil, nil, accountID, nil)
+	llmResult, err := modelCaller.InvokeLLMNonStream(ctx, util.ConvertToInterfaceSlice(promptMessages, func(pm *po_entity_chat.PromptMessage) po_entity_chat.IPromptMessage {
+		return pm
+	}), modelParameters, nil, nil, accountID, nil)
 
 	if err != nil {
 		return nil, err

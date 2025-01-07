@@ -5,7 +5,8 @@ import (
 	"sync"
 
 	"github.com/lunarianss/Luna/internal/api-server/core/tools"
-	"github.com/lunarianss/Luna/internal/api-server/domain/agent/biz_entity"
+	"github.com/lunarianss/Luna/internal/api-server/domain/agent/entity/biz_entity"
+	"github.com/lunarianss/Luna/internal/api-server/domain/agent/repository"
 	"github.com/lunarianss/Luna/internal/infrastructure/util"
 )
 
@@ -13,13 +14,16 @@ type AgentDomain struct {
 	*ToolTransformService
 	*tools.ToolManager
 	*sync.RWMutex
+
+	repository.AgentRepo
 }
 
-func NewAgentDomain(ts *ToolTransformService, tm *tools.ToolManager) *AgentDomain {
+func NewAgentDomain(ts *ToolTransformService, tm *tools.ToolManager, agentRepo repository.AgentRepo) *AgentDomain {
 	return &AgentDomain{
 		ToolTransformService: ts,
 		ToolManager:          tm,
 		RWMutex:              &sync.RWMutex{},
+		AgentRepo:            agentRepo,
 	}
 }
 

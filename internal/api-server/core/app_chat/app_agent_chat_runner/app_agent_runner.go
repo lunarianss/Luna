@@ -9,7 +9,10 @@ import (
 
 	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/token_buffer_memory"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_feature"
+	"github.com/lunarianss/Luna/internal/infrastructure/util"
 
+	agentDomain "github.com/lunarianss/Luna/internal/api-server/domain/agent/domain_service"
+	biz_entity_agent "github.com/lunarianss/Luna/internal/api-server/domain/agent/entity/biz_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
@@ -26,21 +29,31 @@ import (
 
 type appAgentChatRunner struct {
 	*AppBaseAgentChatRunner
-	AppDomain      *domain_service.AppDomain
-	ChatDomain     *chatDomain.ChatDomain
-	ProviderDomain *providerDomain.ProviderDomain
-	DatasetDomain  *datasetDomain.DatasetDomain
-	redis          *redis.Client
+	AppDomain                   *domain_service.AppDomain
+	agentDomain                 *agentDomain.AgentDomain
+	ChatDomain                  *chatDomain.ChatDomain
+	ProviderDomain              *providerDomain.ProviderDomain
+	DatasetDomain               *datasetDomain.DatasetDomain
+	redis                       *redis.Client
+	tenantID                    string
+	userID                      string
+	appConfig                   *biz_entity_app_config.AgentChatAppConfig
+	application_generate_entity *biz_entity_app_generate.AgentChatAppGenerateEntity
 }
 
-func NewAppAgentChatRunner(appBaseChatRunner *AppBaseAgentChatRunner, appDomain *domain_service.AppDomain, chatDomain *chatDomain.ChatDomain, providerDomain *providerDomain.ProviderDomain, datasetDomain *datasetDomain.DatasetDomain, redis *redis.Client) *appAgentChatRunner {
+func NewAppAgentChatRunner(appBaseChatRunner *AppBaseAgentChatRunner, appDomain *domain_service.AppDomain, chatDomain *chatDomain.ChatDomain, providerDomain *providerDomain.ProviderDomain, datasetDomain *datasetDomain.DatasetDomain, redis *redis.Client, agentDomain *agentDomain.AgentDomain, tenantID string, userID string, appConfig *biz_entity_app_config.AgentChatAppConfig, application_generate_entity *biz_entity_app_generate.AgentChatAppGenerateEntity) *appAgentChatRunner {
 	return &appAgentChatRunner{
-		AppBaseAgentChatRunner: appBaseChatRunner,
-		AppDomain:              appDomain,
-		ChatDomain:             chatDomain,
-		ProviderDomain:         providerDomain,
-		DatasetDomain:          datasetDomain,
-		redis:                  redis,
+		AppBaseAgentChatRunner:      appBaseChatRunner,
+		AppDomain:                   appDomain,
+		ChatDomain:                  chatDomain,
+		ProviderDomain:              providerDomain,
+		DatasetDomain:               datasetDomain,
+		redis:                       redis,
+		agentDomain:                 agentDomain,
+		tenantID:                    tenantID,
+		userID:                      userID,
+		appConfig:                   appConfig,
+		application_generate_entity: application_generate_entity,
 	}
 }
 
@@ -79,9 +92,9 @@ func (r *appAgentChatRunner) baseRun(ctx context.Context, applicationGenerateEnt
 	return modelInstance, promptMessages, stop, appRecord, nil
 }
 
-func (r *appAgentChatRunner) Run(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.AgentChatAppGenerateEntity, message *po_entity_chat.Message, conversation *po_entity_chat.Conversation, queueManager *biz_entity.StreamGenerateQueue) {
+func (r *appAgentChatRunner) Run(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.AgentChatAppGenerateEntity, message *po_entity_chat.Message, conversation *po_entity_chat.Conversation, queueManager *biz_entity.StreamGenerateQueue, taskScheduler IAgentChatAppTaskScheduler, flusher biz_entity_agent.AgentFlusher) {
 
-	modelInstance, promptMessages, _, app, err := r.baseRun(ctx, applicationGenerateEntity, conversation)
+	modelCaller, promptMessages, stop, app, err := r.baseRun(ctx, applicationGenerateEntity, conversation)
 
 	if err != nil {
 		queueManager.PushErr(err)
@@ -109,11 +122,96 @@ func (r *appAgentChatRunner) Run(ctx context.Context, applicationGenerateEntity 
 	}
 
 	if applicationGenerateEntity.Strategy == biz_entity_app_config.FUNCTION_CALLING {
-		NewFunctionCallAgentRunner(applicationGenerateEntity, conversation, modelInstance).Run(message, message.Query)
-	}
+		toolRuntimeMap, promptToolMessage, err := r.InitPromptTools()
 
+		if err != nil {
+			queueManager.PushErr(err)
+			return
+		}
+
+		go modelCaller.InvokeLLM(ctx, util.ConvertToInterfaceSlice(promptMessages, func(pm *po_entity_chat.PromptMessage) po_entity_chat.IPromptMessage {
+			return pm
+		}), queueManager, applicationGenerateEntity.ModelConf.Parameters, promptToolMessage, stop, applicationGenerateEntity.UserID, nil)
+
+		agentRunner := NewFunctionCallAgentRunner(app.TenantID, applicationGenerateEntity, conversation, r.agentDomain, queueManager, flusher, promptToolMessage, util.ConvertToInterfaceSlice(promptMessages, func(pm *po_entity_chat.PromptMessage) po_entity_chat.IPromptMessage {
+			return pm
+		}), toolRuntimeMap, modelCaller, "builtin")
+
+		taskScheduler.SetFunctionCallRunner(agentRunner)
+
+		taskScheduler.Process(ctx)
+	}
 }
 
 func (r *appAgentChatRunner) QueryAppAnnotationToReply(ctx context.Context, appRecord *po_entity.App, message *po_entity_chat.Message, query, accountID, invokeFrom string) (*po_entity_chat.MessageAnnotation, error) {
 	return app_feature.NewAnnotationReplyFeature(r.ChatDomain, r.DatasetDomain, r.ProviderDomain, r.redis).Query(ctx, appRecord, message, query, accountID, invokeFrom)
+}
+
+func (r *appAgentChatRunner) InitPromptTools() (map[string]*biz_entity_agent.ToolRuntimeConfiguration, []*biz_entity.PromptMessageTool, error) {
+	var (
+		promptMessageTools []*biz_entity.PromptMessageTool
+		toolInstance       = make(map[string]*biz_entity_agent.ToolRuntimeConfiguration)
+	)
+
+	for _, tool := range r.appConfig.AgentEntity.Tools {
+		promptTool, toolRuntime, err := r.convertToolToPromptMessageTool(tool)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		toolInstance[tool.ToolName] = toolRuntime
+		promptMessageTools = append(promptMessageTools, promptTool)
+	}
+
+	return toolInstance, promptMessageTools, nil
+}
+
+func (r *appAgentChatRunner) convertToolToPromptMessageTool(tool *biz_entity_app_config.AgentToolEntity) (*biz_entity.PromptMessageTool, *biz_entity_agent.ToolRuntimeConfiguration, error) {
+	toolRuntime, err := r.agentDomain.GetAgentToolRuntime(r.tenantID, r.appConfig.AppID, tool, "builtin")
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	promptMessageTool := &biz_entity.PromptMessageTool{
+		Name:        tool.ToolName,
+		Description: toolRuntime.Description.LLM,
+		Parameters:  biz_entity.NewPromptMessageToolParameter(),
+	}
+
+	parameters := toolRuntime.GetAllRuntimeParameters()
+
+	for _, parameter := range parameters {
+		if parameter.Form != biz_entity_agent.LLMForm {
+			continue
+		}
+
+		if parameter.Type == biz_entity_agent.FileType || parameter.Type == biz_entity_agent.FilesType || parameter.Type == biz_entity_agent.SystemFilesType {
+			continue
+		}
+
+		var enum []string
+
+		if parameter.Type == biz_entity_agent.SelectType {
+			for _, opt := range parameter.Options {
+				enum = append(enum, opt.Value)
+			}
+		}
+
+		promptMessageTool.Parameters.Properties[parameter.Name] = &biz_entity.PromptMessageToolProperty{
+			Type:        parameter.Type.AsNormalType(),
+			Description: parameter.LLMDescription,
+		}
+
+		if len(enum) > 0 {
+			promptMessageTool.Parameters.Properties[parameter.Name].Enum = enum
+		}
+
+		if parameter.Required {
+			promptMessageTool.Parameters.Required = append(promptMessageTool.Parameters.Required, parameter.Name)
+		}
+	}
+
+	return promptMessageTool, toolRuntime, nil
 }

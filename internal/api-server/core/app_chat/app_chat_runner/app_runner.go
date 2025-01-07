@@ -9,6 +9,7 @@ import (
 
 	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/token_buffer_memory"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_feature"
+	"github.com/lunarianss/Luna/internal/infrastructure/util"
 
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
@@ -107,7 +108,9 @@ func (r *appChatRunner) Run(ctx context.Context, applicationGenerateEntity *biz_
 		}
 	}
 
-	modelInstance.InvokeLLM(ctx, promptMessages, queueManager, applicationGenerateEntity.ModelConf.Parameters, nil, stop, applicationGenerateEntity.UserID, nil)
+	modelInstance.InvokeLLM(ctx, util.ConvertToInterfaceSlice(promptMessages, func(pm *po_entity_chat.PromptMessage) po_entity_chat.IPromptMessage {
+		return pm
+	}), queueManager, applicationGenerateEntity.ModelConf.Parameters, nil, stop, applicationGenerateEntity.UserID, nil)
 }
 
 func (r *appChatRunner) RunNonStream(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, message *po_entity_chat.Message, conversation *po_entity_chat.Conversation) (*biz_entity.LLMResult, error) {
@@ -127,15 +130,19 @@ func (r *appChatRunner) RunNonStream(ctx context.Context, applicationGenerateEnt
 
 		if annotation != nil {
 			return &biz_entity.LLMResult{
-				Model:         applicationGenerateEntity.ModelConf.Model,
-				PromptMessage: promptMessages,
-				Message:       biz_entity.NewAssistantPromptMessage(annotation.Content),
-				Usage:         biz_entity.NewEmptyLLMUsage(),
+				Model: applicationGenerateEntity.ModelConf.Model,
+				PromptMessage: util.ConvertToInterfaceSlice(promptMessages, func(pm *po_entity_chat.PromptMessage) po_entity_chat.IPromptMessage {
+					return pm
+				}),
+				Message: biz_entity.NewAssistantPromptMessage(annotation.Content),
+				Usage:   biz_entity.NewEmptyLLMUsage(),
 			}, nil
 		}
 	}
 
-	return modelInstance.InvokeLLMNonStream(ctx, promptMessages, applicationGenerateEntity.ModelConf.Parameters, nil, stop, applicationGenerateEntity.UserID, nil)
+	return modelInstance.InvokeLLMNonStream(ctx, util.ConvertToInterfaceSlice(promptMessages, func(pm *po_entity_chat.PromptMessage) po_entity_chat.IPromptMessage {
+		return pm
+	}), applicationGenerateEntity.ModelConf.Parameters, nil, stop, applicationGenerateEntity.UserID, nil)
 }
 
 func (r *appChatRunner) QueryAppAnnotationToReply(ctx context.Context, appRecord *po_entity.App, message *po_entity_chat.Message, query, accountID, invokeFrom string) (*po_entity_chat.MessageAnnotation, error) {

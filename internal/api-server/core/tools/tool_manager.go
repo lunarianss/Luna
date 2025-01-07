@@ -8,17 +8,21 @@ import (
 	"strings"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
-	"github.com/lunarianss/Luna/internal/api-server/domain/agent/biz_entity"
+	"github.com/lunarianss/Luna/internal/api-server/domain/agent/entity/biz_entity"
+	biz_app_config "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"gopkg.in/yaml.v3"
 )
 
 type ToolManager struct {
 	providerRuntimes []*biz_entity.ToolProviderRuntime
+	providerMap      map[string]*biz_entity.ToolProviderRuntime
 }
 
 func NewToolManager() *ToolManager {
-	return &ToolManager{}
+	return &ToolManager{
+		providerMap: make(map[string]*biz_entity.ToolProviderRuntime),
+	}
 }
 
 func (tm *ToolManager) ListBuiltInProviders() ([]*biz_entity.ToolProviderRuntime, error) {
@@ -93,6 +97,7 @@ func (tm *ToolManager) unMarshalProvider() error {
 		if err := yaml.Unmarshal(toolBytes, providerRuntime.ToolProviderStatic); err != nil {
 			return errors.WithSCode(code.ErrDecodingYaml, err.Error())
 		}
+		tm.providerMap[providerRuntime.Identity.Name] = providerRuntime
 	}
 	return nil
 }
@@ -155,4 +160,50 @@ func (tm *ToolManager) resolveRuntimePath() error {
 
 	tm.providerRuntimes = providerRuntimes
 	return nil
+}
+
+func (tm *ToolManager) getToolRuntime(providerType, providerID, toolName, tenantID, invokeFrom, toolInvokeForm string) (*biz_entity.ToolRuntimeConfiguration, error) {
+
+	if providerType == "builtin" {
+		toolRuntime := tm.getBuiltinTool(providerID, toolName)
+		return toolRuntime, nil
+	}
+
+	return nil, nil
+}
+
+func (tm *ToolManager) GetAgentToolRuntime(tenantID, appID string, agentTool *biz_app_config.AgentToolEntity, invokeFrom string) (*biz_entity.ToolRuntimeConfiguration, error) {
+	if _, err := tm.ListBuiltInProviders(); err != nil {
+		return nil, err
+	}
+
+	toolRuntime, err := tm.getToolRuntime(string(agentTool.ProviderType), agentTool.ProviderID, agentTool.ToolName, tenantID, invokeFrom, string(biz_entity.AgentInvoke))
+
+	if err != nil {
+		return nil, err
+	}
+
+	parameters := toolRuntime.GetAllRuntimeParameters()
+
+	for _, parameter := range parameters {
+		if parameter.Form == biz_entity.FormForm {
+			if toolRuntime.RuntimeParameters == nil {
+				toolRuntime.RuntimeParameters = make(map[string]any)
+			}
+			toolRuntime.RuntimeParameters[parameter.Name] = tm.initRuntimeParameter(parameter, agentTool.ToolParameters)
+		}
+	}
+	return toolRuntime, nil
+}
+
+func (tm *ToolManager) initRuntimeParameter(parameterRule *biz_entity.ToolParameter, parameters map[string]any) any {
+	return parameters[parameterRule.Name]
+}
+
+func (tm *ToolManager) getBuiltinTool(provider, toolName string) *biz_entity.ToolRuntimeConfiguration {
+	return tm.getBuiltInProvider(provider).GetTool(toolName)
+}
+
+func (tm *ToolManager) getBuiltInProvider(provider string) *biz_entity.ToolProviderRuntime {
+	return tm.providerMap[provider]
 }

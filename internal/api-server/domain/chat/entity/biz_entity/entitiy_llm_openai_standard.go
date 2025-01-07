@@ -32,3 +32,25 @@ type OpenaiResponse struct {
 	Usage             *OpenaiUsage    `json:"usage"`
 	SystemFingerprint string          `json:"system_fingerprint"`
 }
+
+type ToolCallFunction struct {
+	Name      string         `json:"name"`
+	Arguments map[string]any `json:"arguments"`
+}
+
+type ToolCall struct {
+	ID       string            `json:"id"`
+	Type     string            `json:"type"`
+	Function *ToolCallFunction `json:"function"`
+}
+
+type ToolCallStreamFunction struct {
+	Name      string `json:"name"`
+	Arguments []byte `json:"arguments"`
+}
+
+type ToolCallStream struct {
+	ID       string                  `json:"id"`
+	Type     string                  `json:"type"`
+	Function *ToolCallStreamFunction `json:"function"`
+}

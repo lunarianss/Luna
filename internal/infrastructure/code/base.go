@@ -103,10 +103,10 @@ const (
 	// ErrDecodingYaml - 500: Yaml data could not be decoded.
 	ErrDecodingYaml
 
-	// ErrEncodingBase64 - 500: base64 data could not be encoded.
+	// ErrEncodingBase64 - 500: Base64 data could not be encoded.
 	ErrEncodingBase64
 
-	// ErrDecodingBase64 - 500: base64 data could not be decoded.
+	// ErrDecodingBase64 - 500: Base64 data could not be decoded.
 	ErrDecodingBase64
 )
 

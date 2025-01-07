@@ -47,4 +47,6 @@ const (
 	ErrNotStreamAgent
 	// ErrInvokeTool - 500: Failed to invoke agent tool.
 	ErrInvokeTool
+	// ErrInvokeToolUnConvertAble - 500: Failed to convert to tool message.
+	ErrInvokeToolUnConvertAble
 )

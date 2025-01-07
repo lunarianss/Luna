@@ -28,15 +28,15 @@ func NewTongyiLargeLanguageModel() *tongyiLargeLanguageModel {
 
 var _ provider_register.IModelRegistry = (*tongyiLargeLanguageModel)(nil)
 
-func (m *tongyiLargeLanguageModel) Invoke(ctx context.Context, queueManager *biz_entity_chat.StreamGenerateQueue, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, user string, promptMessages []*po_entity.PromptMessage, modelRuntime biz_entity.IAIModelRuntime) {
+func (m *tongyiLargeLanguageModel) Invoke(ctx context.Context, queueManager *biz_entity_chat.StreamGenerateQueue, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, user string, promptMessages []po_entity.IPromptMessage, modelRuntime biz_entity.IAIModelRuntime, tools []*biz_entity_chat.PromptMessageTool) {
 	credentials = m.addCustomParameters(credentials)
-	m.IOpenApiCompactLargeLanguage = llm.NewOpenApiCompactLargeLanguageModel(promptMessages, modelParameters, credentials, model, modelRuntime)
+	m.IOpenApiCompactLargeLanguage = llm.NewOpenApiCompactLargeLanguageModel(promptMessages, modelParameters, credentials, model, modelRuntime, tools)
 	m.IOpenApiCompactLargeLanguage.Invoke(ctx, queueManager)
 }
 
-func (m *tongyiLargeLanguageModel) InvokeNonStream(ctx context.Context, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, user string, promptMessages []*po_entity.PromptMessage, modelRuntime biz_entity.IAIModelRuntime) (*biz_entity_chat.LLMResult, error) {
+func (m *tongyiLargeLanguageModel) InvokeNonStream(ctx context.Context, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, user string, promptMessages []po_entity.IPromptMessage, modelRuntime biz_entity.IAIModelRuntime) (*biz_entity_chat.LLMResult, error) {
 	credentials = m.addCustomParameters(credentials)
-	m.IOpenApiCompactLargeLanguage = llm.NewOpenApiCompactLargeLanguageModel(promptMessages, modelParameters, credentials, model, modelRuntime)
+	m.IOpenApiCompactLargeLanguage = llm.NewOpenApiCompactLargeLanguageModel(promptMessages, modelParameters, credentials, model, modelRuntime, nil)
 	return m.IOpenApiCompactLargeLanguage.InvokeNonStream(ctx)
 }
 

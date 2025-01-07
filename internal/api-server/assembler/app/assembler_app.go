@@ -82,7 +82,7 @@ func ConvertToServiceTokens(serviceTokens []*po_entity.ApiToken) []*appDto.Gener
 }
 
 func ConvertToBizAgentTools(agentTools []*dto.AgentTools) []*biz_entity.AgentTools {
-	poAgentTools := make([]*biz_entity.AgentTools, len(agentTools))
+	poAgentTools := make([]*biz_entity.AgentTools, 0, len(agentTools))
 
 	for _, agentTool := range agentTools {
 		poAgentTools = append(poAgentTools, &biz_entity.AgentTools{

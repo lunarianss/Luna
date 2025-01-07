@@ -13,6 +13,8 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/task_pipeline"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_agent_config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_model_config"
+	agentDomain "github.com/lunarianss/Luna/internal/api-server/domain/agent/domain_service"
+	"github.com/lunarianss/Luna/internal/api-server/domain/agent/entity/biz_entity"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
@@ -40,9 +42,11 @@ type AgentChatGenerator struct {
 	chatDomain     *chatDomain.ChatDomain
 	DatasetDomain  *datasetDomain.DatasetDomain
 	redis          *redis.Client
+	agentDomain    *agentDomain.AgentDomain
+	appConfig      *biz_entity_app_config.AgentChatAppConfig
 }
 
-func NewChatAppGenerator(appDomain *appDomain.AppDomain, providerDomain *domain_service.ProviderDomain, chatDomain *chatDomain.ChatDomain, datasetDomain *datasetDomain.DatasetDomain, redis *redis.Client) *AgentChatGenerator {
+func NewChatAppGenerator(appDomain *appDomain.AppDomain, providerDomain *domain_service.ProviderDomain, chatDomain *chatDomain.ChatDomain, datasetDomain *datasetDomain.DatasetDomain, redis *redis.Client, agentDomain *agentDomain.AgentDomain) *AgentChatGenerator {
 
 	return &AgentChatGenerator{
 		AppDomain:      appDomain,
@@ -50,6 +54,7 @@ func NewChatAppGenerator(appDomain *appDomain.AppDomain, providerDomain *domain_
 		chatDomain:     chatDomain,
 		DatasetDomain:  datasetDomain,
 		redis:          redis,
+		agentDomain:    agentDomain,
 	}
 }
 
@@ -125,6 +130,8 @@ func (acg *AgentChatGenerator) Generate(c context.Context, appModel *po_entity.A
 
 	appConfig, err := modelConfigManager.GetAppConfig(c, appModel, appModelConfig, conversationRecord, overrideModelConfigMap)
 
+	acg.appConfig = appConfig
+
 	if err != nil {
 		return err
 	}
@@ -147,10 +154,6 @@ func (acg *AgentChatGenerator) Generate(c context.Context, appModel *po_entity.A
 	}
 
 	applicationGenerateEntity := &biz_entity_app_generate.AgentChatAppGenerateEntity{
-		ConversationAppGenerateEntity: &biz_entity_app_generate.ConversationAppGenerateEntity{
-			ConversationID:  conversationID,
-			ParentMessageID: parentMessageID,
-		},
 		EasyUIBasedAppGenerateEntity: &biz_entity_app_generate.EasyUIBasedAppGenerateEntity{
 			AppConfig: appConfig.EasyUIBasedAppConfig,
 			ModelConf: modelConf,
@@ -165,7 +168,9 @@ func (acg *AgentChatGenerator) Generate(c context.Context, appModel *po_entity.A
 			},
 			Query: query,
 		},
-		AgentEntity: appConfig.AgentEntity,
+		AgentEntity:     appConfig.AgentEntity,
+		ConversationID:  conversationID,
+		ParentMessageID: parentMessageID,
 	}
 
 	conversationRecord, messageRecord, err = acg.InitGenerateRecords(c, applicationGenerateEntity, conversationRecord)
@@ -182,16 +187,20 @@ func (acg *AgentChatGenerator) Generate(c context.Context, appModel *po_entity.A
 		po_entity.AppMode("agent-chat"),
 		string(invokeFrom))
 
-	go acg.generateGoRoutine(c, applicationGenerateEntity, conversationRecord.ID, messageRecord.ID, queueManager)
+	taskScheduler := app_agent_chat_runner.NewAgentChatAppTaskScheduler(applicationGenerateEntity, streamResultChunkQueue, streamFinalChunkQueue, acg.chatDomain.MessageRepo, messageRecord, acg.chatDomain.AnnotationRepo, nil)
+
+	flusher := task_pipeline.NewAgentChatFlusher(applicationGenerateEntity, acg.agentDomain.AgentRepo, messageRecord)
+
+	flusher.InitFlusher(c)
 
 	go acg.ListenQueue(queueManager)
 
-	task_pipeline.NewChatAppTaskPipeline(applicationGenerateEntity, streamResultChunkQueue, streamFinalChunkQueue, acg.chatDomain.MessageRepo, messageRecord, acg.chatDomain.AnnotationRepo).Process(c)
+	acg.generateGoRoutine(c, applicationGenerateEntity, conversationRecord.ID, messageRecord.ID, queueManager, taskScheduler, flusher)
 
 	return nil
 }
 
-func (g *AgentChatGenerator) generateGoRoutine(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.AgentChatAppGenerateEntity, conversationID string, messageID string, queueManager *biz_entity_chat.StreamGenerateQueue) {
+func (g *AgentChatGenerator) generateGoRoutine(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.AgentChatAppGenerateEntity, conversationID string, messageID string, queueManager *biz_entity_chat.StreamGenerateQueue, taskPipeline app_agent_chat_runner.IAgentChatAppTaskScheduler, flusher biz_entity.AgentFlusher) {
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -200,7 +209,7 @@ func (g *AgentChatGenerator) generateGoRoutine(ctx context.Context, applicationG
 		}
 	}()
 
-	appRunner := app_agent_chat_runner.NewAppAgentChatRunner(app_agent_chat_runner.NewAppBaseAgentChatRunner(app_chat_runner.NewAppBaseChatRunner()), g.AppDomain, g.chatDomain, g.ProviderDomain, g.DatasetDomain, g.redis)
+	appRunner := app_agent_chat_runner.NewAppAgentChatRunner(app_agent_chat_runner.NewAppBaseAgentChatRunner(app_chat_runner.NewAppBaseChatRunner()), g.AppDomain, g.chatDomain, g.ProviderDomain, g.DatasetDomain, g.redis, g.agentDomain, applicationGenerateEntity.AppConfig.TenantID, applicationGenerateEntity.UserID, g.appConfig, applicationGenerateEntity)
 
 	message, err := g.chatDomain.MessageRepo.GetMessageByID(ctx, messageID)
 
@@ -216,7 +225,7 @@ func (g *AgentChatGenerator) generateGoRoutine(ctx context.Context, applicationG
 		return
 	}
 
-	appRunner.Run(ctx, applicationGenerateEntity, message, conversation, queueManager)
+	appRunner.Run(ctx, applicationGenerateEntity, message, conversation, queueManager, taskPipeline, flusher)
 }
 
 func (g *AgentChatGenerator) ListenQueue(queueManager *biz_entity_chat.StreamGenerateQueue) {
@@ -297,7 +306,7 @@ func (g *AgentChatGenerator) InitGenerateRecords(ctx context.Context, chatAppGen
 		ConversationID:          conversationRecord.ID,
 		Inputs:                  chatAppGenerateEntity.EasyUIBasedAppGenerateEntity.Inputs,
 		Query:                   chatAppGenerateEntity.EasyUIBasedAppGenerateEntity.Query,
-		Message:                 make([]*po_entity_chat.PromptMessage, 0),
+		Message:                 make([]any, 0),
 		MessageTokens:           0,
 		MessageUnitPrice:        0,
 		MessagePriceUnit:        0,

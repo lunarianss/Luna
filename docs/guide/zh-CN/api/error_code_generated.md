@@ -29,6 +29,8 @@ IAM 系统支持的错误码列表如下：
 | ErrAppApiDisabled | 110106 | 400 | Api is disabled |
 | ErrAppTokenExceed | 110107 | 400 | Count of app token is exceeded |
 | ErrNotFoundJobID | 110108 | 400 | Not found job ID |
+| ErrVDBQueryError | 110109 | 400 | Occurred error when vector similarity search |
+| ErrVDBConstructError | 110110 | 400 | Occurred error when construct vdb response |
 | ErrEmailCode | 110301 | 500 | Error occurred when email code is incorrect |
 | ErrTokenEmail | 110302 | 500 | Error occurred when email is incorrect |
 | ErrTenantAlreadyExist | 110303 | 500 | Error occurred when tenant is already exist |
@@ -66,6 +68,8 @@ IAM 系统支持的错误码列表如下：
 | ErrInvalidYaml | 100306 | 500 | Data is not valid Yaml |
 | ErrEncodingYaml | 100307 | 500 | Yaml data could not be encoded |
 | ErrDecodingYaml | 100308 | 500 | Yaml data could not be decoded |
+| ErrEncodingBase64 | 100309 | 500 | Base64 data could not be encoded |
+| ErrDecodingBase64 | 100310 | 500 | Base64 data could not be decoded |
 | ErrTokenGenerate | 100401 | 500 | Error occurred when Token generate |
 | ErrTokenExpired | 100402 | 500 | Error occurred when Token expired |
 | ErrTokenInvalid | 100403 | 401 | Token invalid |
@@ -99,6 +103,8 @@ IAM 系统支持的错误码列表如下：
 | ErrContextTimeout | 110216 | 500 | Context timeout |
 | ErrTTSWebSocketWrite | 110217 | 500 | Failed to write tts websocket message |
 | ErrTencentARS | 110218 | 500 | Tencent ARS service error |
+| ErrNotStreamAgent | 110219 | 500 | Agent Chat App does not support blocking mode |
+| ErrInvokeTool | 110220 | 500 | Failed to invoke agent tool |
 | ErrProviderMapModel | 110001 | 500 | Error occurred while attempt to index from providerMpa using provider |
 | ErrProviderNotHaveIcon | 110002 | 500 | Error occurred while provider entity doesn't have icon property |
 | ErrToOriginModelType | 110003 | 500 | Error occurred while convert to origin model type |

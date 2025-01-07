@@ -14,26 +14,24 @@ import (
 )
 
 type IModelRegistryCall interface {
-	Invoke(ctx context.Context, toolParameters []byte) (*biz_entity.ToolInvokeMessage, error)
+	Invoke(ctx context.Context, toolParameters []byte) ([]*biz_entity.ToolInvokeMessage, error)
 }
 
 type modelRegistryCall struct {
-	provider    string
 	toolRuntime *biz_entity.ToolRuntimeConfiguration
 	userID      string
 }
 
-func NewModelRegisterCaller(provider string, userID string, toolRuntime *biz_entity.ToolRuntimeConfiguration) IModelRegistryCall {
+func NewModelRegisterCaller(userID string, toolRuntime *biz_entity.ToolRuntimeConfiguration) IModelRegistryCall {
 	return &modelRegistryCall{
-		provider:    provider,
 		toolRuntime: toolRuntime,
 		userID:      userID,
 	}
 }
 
-func (ac *modelRegistryCall) Invoke(ctx context.Context, toolParameters []byte) (*biz_entity.ToolInvokeMessage, error) {
+func (ac *modelRegistryCall) Invoke(ctx context.Context, toolParameters []byte) ([]*biz_entity.ToolInvokeMessage, error) {
 
-	toolKeyMapInvoke := fmt.Sprintf("%s/%s", ac.provider, ac.toolRuntime.Identity.Name)
+	toolKeyMapInvoke := fmt.Sprintf("%s/%s", ac.toolRuntime.Identity.Provider, ac.toolRuntime.Identity.Name)
 
 	log.Infof("invoke %s", toolKeyMapInvoke)
 

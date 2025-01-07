@@ -10,6 +10,7 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/config"
 
 	_ "github.com/lunarianss/Luna/internal/api-server/core/model_runtime/model_providers"
+	_ "github.com/lunarianss/Luna/internal/api-server/core/tools/provider"
 	_ "github.com/lunarianss/Luna/internal/api-server/event"
 	_ "github.com/lunarianss/Luna/internal/api-server/facade"
 	_ "github.com/lunarianss/Luna/internal/api-server/validation"

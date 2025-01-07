@@ -1,4 +1,4 @@
-package task_pipeline
+package app_agent_chat_runner
 
 import (
 	"context"
@@ -13,6 +13,7 @@ import (
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/infrastructure/log"
+	repo_agent "github.com/lunarianss/Luna/internal/api-server/domain/agent/repository"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/repository"
 	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
@@ -20,60 +21,65 @@ import (
 	"github.com/lunarianss/Luna/internal/infrastructure/util"
 )
 
-type chatAppTaskPipeline struct {
+type IAgentChatAppTaskScheduler interface {
+	Process(ctx context.Context)
+	SetFunctionCallRunner(*FunctionCallAgentRunner)
+}
+
+type agentChatAppTaskScheduler struct {
 	biz_entity_app_generate.BasedAppGenerateEntity
 	StreamResultChunkQueue chan *biz_entity.MessageQueueMessage
 	StreamFinalChunkQueue  chan *biz_entity.MessageQueueMessage
 	Message                *po_entity.Message
 	MessageRepo            repository.MessageRepo
 	AnnotationRepo         repository.AnnotationRepo
-	flusher                http.Flusher
-	sender                 io.Writer
-	taskState              *biz_entity.ChatAppTaskState
+	AgentRepo              repo_agent.AgentRepo
+
+	flusher   http.Flusher
+	sender    io.Writer
+	taskState *biz_entity.ChatAppTaskState
+	runner    *FunctionCallAgentRunner
 }
 
-func NewNonStreamTaskPipeline(applicationGenerateEntity biz_entity_app_generate.BasedAppGenerateEntity, messageRepo repository.MessageRepo, message *po_entity.Message, llmResult *biz_entity.LLMResult, annotationRepo repository.AnnotationRepo) *chatAppTaskPipeline {
-	return &chatAppTaskPipeline{
-		BasedAppGenerateEntity: applicationGenerateEntity,
-		Message:                message,
-		MessageRepo:            messageRepo,
-		AnnotationRepo:         annotationRepo,
-		taskState: &biz_entity.ChatAppTaskState{
-			LLMResult: llmResult,
-		},
-	}
-}
-
-func NewChatAppTaskPipeline(
+func NewAgentChatAppTaskScheduler(
 	applicationGenerateEntity biz_entity_app_generate.BasedAppGenerateEntity,
 	streamResultChunkQueue chan *biz_entity.MessageQueueMessage,
 	streamFinalChunkQueue chan *biz_entity.MessageQueueMessage,
-	messageRepo repository.MessageRepo, message *po_entity.Message, annotationRepo repository.AnnotationRepo) *chatAppTaskPipeline {
-	return &chatAppTaskPipeline{
+	messageRepo repository.MessageRepo, message *po_entity.Message, annotationRepo repository.AnnotationRepo, runner *FunctionCallAgentRunner) *agentChatAppTaskScheduler {
+	return &agentChatAppTaskScheduler{
 		BasedAppGenerateEntity: applicationGenerateEntity,
 		StreamResultChunkQueue: streamResultChunkQueue,
 		StreamFinalChunkQueue:  streamFinalChunkQueue,
 		Message:                message,
 		MessageRepo:            messageRepo,
 		AnnotationRepo:         annotationRepo,
+		runner:                 runner,
 		taskState: &biz_entity.ChatAppTaskState{
 			LLMResult: biz_entity.NewEmptyLLMResult(),
 		},
 	}
 }
 
-func (tpp *chatAppTaskPipeline) Process(ctx context.Context) {
+func (tpp *agentChatAppTaskScheduler) SetFunctionCallRunner(runner *FunctionCallAgentRunner) {
+	tpp.runner = runner
+}
+
+func (tpp *agentChatAppTaskScheduler) Process(ctx context.Context) {
 	if !tpp.setFlush(ctx) {
 		return
 	}
+
+	if err := tpp.runner.Run(ctx, tpp.Message, tpp.Message.Query, tpp.StreamResultChunkQueue); err != nil {
+		if err := tpp.messageErrToStreamResponse(ctx, err); err != nil {
+			log.Errorf("failed to flush message to stream response: %v", err)
+			tpp.sendFallBackMessageEnd()
+		}
+	}
+
 	tpp.process_stream_response(ctx)
 }
 
-func (tpp *chatAppTaskPipeline) ProcessNonStream(ctx context.Context) error {
-	return tpp.saveMessage(ctx)
-}
-
-func (tpp *chatAppTaskPipeline) ManualFlush(streamString string) error {
+func (tpp *agentChatAppTaskScheduler) flush(streamString string) error {
 	if _, err := fmt.Fprintf(tpp.sender, "data: %s\n\n", streamString); err != nil {
 		return err
 	}
@@ -81,15 +87,7 @@ func (tpp *chatAppTaskPipeline) ManualFlush(streamString string) error {
 	return nil
 }
 
-func (tpp *chatAppTaskPipeline) flush(streamString string) error {
-	if _, err := fmt.Fprintf(tpp.sender, "data: %s\n\n", streamString); err != nil {
-		return err
-	}
-	tpp.flusher.Flush()
-	return nil
-}
-
-func (tpp *chatAppTaskPipeline) setFlush(c context.Context) bool {
+func (tpp *agentChatAppTaskScheduler) setFlush(c context.Context) bool {
 
 	ginContext, ok := c.(*gin.Context)
 
@@ -109,53 +107,13 @@ func (tpp *chatAppTaskPipeline) setFlush(c context.Context) bool {
 	return true
 }
 
-func (tpp *chatAppTaskPipeline) sendFallBackMessageEnd() {
+func (tpp *agentChatAppTaskScheduler) sendFallBackMessageEnd() {
 	if err := tpp.flush("data: {\"event\": \"message_end\"}\n\n"); err != nil {
 		log.Errorf("failed to send fallback message end to stream response: %v", err)
 	}
 }
 
-func (tpp *chatAppTaskPipeline) process_stream_chunk_queue(c context.Context) {
-
-	for v := range tpp.StreamResultChunkQueue {
-		if chunkEvent, ok := v.Event.(*biz_entity.QueueLLMChunkEvent); ok {
-			deltaText := chunkEvent.Chunk.Delta.Message.Content
-
-			if content, ok := tpp.taskState.LLMResult.Message.Content.(string); ok {
-				tpp.taskState.LLMResult.Message.Content = deltaText.(string) + content
-			}
-			if err := tpp.messageChunkToStreamResponse(deltaText.(string)); err != nil {
-				log.Errorf("failed to flush message to stream response: %v", err)
-				tpp.sendFallBackMessageEnd()
-			}
-		} else if chunkEvent, ok := v.Event.(*biz_entity.QueueAnnotationReplyEvent); ok {
-
-			annotation, err := tpp.AnnotationRepo.GetAnnotationByID(c, chunkEvent.MessageAnnotationID)
-
-			if err != nil {
-				log.Errorf("failed to flush message to stream response: %v", err)
-				tpp.sendFallBackMessageEnd()
-			}
-
-			tpp.taskState.Metadata = map[string]interface{}{
-				"annotation_reply": map[string]interface{}{
-					"id": annotation.ID,
-					"account": map[string]interface{}{
-						"id":   annotation.AccountID,
-						"name": "Luna User",
-					},
-				},
-			}
-			tpp.Message.MessageMetadata = tpp.taskState.Metadata
-			// if err := tpp.MessageRepo.UpdateMessageMetadata(c, tpp.Message); err != nil {
-			// 	log.Errorf("failed to flush message to stream response: %#+v", err)
-			// 	tpp.sendFallBackMessageEnd()
-			// }
-		}
-	}
-}
-
-func (tpp *chatAppTaskPipeline) process_stream_end_chunk_queue(c context.Context) {
+func (tpp *agentChatAppTaskScheduler) process_stream_end_chunk_queue(c context.Context) {
 	for v := range tpp.StreamFinalChunkQueue {
 		if mc, ok := v.Event.(*biz_entity.QueueMessageEndEvent); ok {
 			tpp.taskState.LLMResult = mc.LLMResult
@@ -178,38 +136,11 @@ func (tpp *chatAppTaskPipeline) process_stream_end_chunk_queue(c context.Context
 	}
 }
 
-func (tpp *chatAppTaskPipeline) process_stream_response(c context.Context) {
-	tpp.process_stream_chunk_queue(c)
+func (tpp *agentChatAppTaskScheduler) process_stream_response(c context.Context) {
 	tpp.process_stream_end_chunk_queue(c)
 }
 
-func (tpp *chatAppTaskPipeline) messageChunkToStreamResponse(answer string) error {
-	messageChunkResponse := &biz_entity.MessageStreamResponse{
-		ID:                   tpp.Message.ID,
-		Answer:               answer,
-		FromVariableSelector: make([]string, 0),
-		StreamResponse: &biz_entity.StreamResponse{
-			TaskID: tpp.GetTaskID(),
-			Event:  biz_entity.StreamEventMessage,
-		},
-	}
-
-	chatBotResponse := biz_entity.NewChatBotAppStreamResponse(tpp.GetConversationID(), tpp.Message.ID, tpp.Message.CreatedAt, messageChunkResponse)
-
-	streamBytes, err := json.Marshal(chatBotResponse)
-
-	if err != nil {
-		return err
-	}
-
-	if err := tpp.flush(string(streamBytes)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (tpp *chatAppTaskPipeline) messageErrToStreamResponse(ctx context.Context, err error) error {
+func (tpp *agentChatAppTaskScheduler) messageErrToStreamResponse(ctx context.Context, err error) error {
 
 	var errStr = "Internal Server Error, please contact support."
 
@@ -256,7 +187,7 @@ func (tpp *chatAppTaskPipeline) messageErrToStreamResponse(ctx context.Context, 
 	return nil
 }
 
-func (tpp *chatAppTaskPipeline) messageEndToStreamResponse() error {
+func (tpp *agentChatAppTaskScheduler) messageEndToStreamResponse() error {
 	messageEndResponse := &biz_entity.MessageEndStreamResponse{
 		ID: tpp.Message.ID,
 		StreamResponse: &biz_entity.StreamResponse{
@@ -290,7 +221,7 @@ func (tpp *chatAppTaskPipeline) messageEndToStreamResponse() error {
 	return nil
 }
 
-func (tpp *chatAppTaskPipeline) saveMessage(c context.Context) error {
+func (tpp *agentChatAppTaskScheduler) saveMessage(c context.Context) error {
 	messageRecord, err := tpp.MessageRepo.GetMessageByID(c, tpp.Message.ID)
 
 	if err != nil {

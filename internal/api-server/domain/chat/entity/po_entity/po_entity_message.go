@@ -58,7 +58,7 @@ type Message struct {
 	ConversationID          string                                `gorm:"column:conversation_id" json:"conversation_id"`
 	Inputs                  map[string]interface{}                `gorm:"column:inputs;serializer:json" json:"inputs"`
 	Query                   string                                `gorm:"column:query" json:"query"`
-	Message                 []*PromptMessage                      `gorm:"column:message;serializer:json" json:"message"`
+	Message                 []any                      `gorm:"column:message;serializer:json" json:"message"`
 	MessageTokens           int64                                 `gorm:"column:message_tokens" json:"message_tokens"`
 	MessageUnitPrice        float64                               `gorm:"column:message_unit_price" json:"message_unit_price"`
 	Answer                  string                                `gorm:"column:answer" json:"answer"`
@@ -132,31 +132,28 @@ type PromptMessageContent struct {
 	Data string                   `json:"data"`
 }
 
+type IPromptMessage interface {
+	GetRole() string
+	GetContent() string
+	GetName() string
+	ConvertToRequestData() (map[string]interface{}, error)
+}
+
 type PromptMessage struct {
 	Role    PromptMessageRole `json:"role"`
 	Content any               `json:"content"`
 	Name    string            `json:"name"`
 }
 
-func NewSystemMessage(content any) *PromptMessage {
-	return &PromptMessage{
-		Role:    SYSTEM,
-		Content: content,
-	}
+func (pm *PromptMessage) GetRole() string {
+	return string(pm.Role)
 }
 
-func NewAssistantMessage(content any) *PromptMessage {
-	return &PromptMessage{
-		Role:    ASSISTANT,
-		Content: content,
-	}
+func (pm *PromptMessage) GetContent() string {
+	return pm.Content.(string)
 }
-
-func NewUserMessage(content any) *PromptMessage {
-	return &PromptMessage{
-		Role:    USER,
-		Content: content,
-	}
+func (pm *PromptMessage) GetName() string {
+	return pm.Name
 }
 
 func (msg *PromptMessage) ConvertToRequestData() (map[string]interface{}, error) {
@@ -192,4 +189,56 @@ func (msg *PromptMessage) ConvertToRequestData() (map[string]interface{}, error)
 	}
 
 	return requestData, nil
+}
+
+type ToolPromptMessage struct {
+	*PromptMessage
+	ToolCallID string `json:"tool_call_id"`
+}
+
+func (pm *ToolPromptMessage) GetRole() string {
+	return string(pm.Role)
+}
+
+func (pm *ToolPromptMessage) GetContent() string {
+	return pm.Content.(string)
+}
+func (pm *ToolPromptMessage) GetName() string {
+	return pm.Name
+}
+
+func (msg *ToolPromptMessage) ConvertToRequestData() (map[string]interface{}, error) {
+	var requestData = make(map[string]interface{})
+
+	switch content := msg.Content.(type) {
+	case string:
+		requestData["role"] = "tool"
+		requestData["content"] = content
+		requestData["tool_call_id"] = msg.ToolCallID
+	default:
+		return nil, errors.WithCode(code.ErrTypeOfPromptMessage, "value %T is not string type", msg.Content)
+	}
+
+	return requestData, nil
+}
+
+func NewSystemMessage(content any) *PromptMessage {
+	return &PromptMessage{
+		Role:    SYSTEM,
+		Content: content,
+	}
+}
+
+func NewAssistantMessage(content any) *PromptMessage {
+	return &PromptMessage{
+		Role:    ASSISTANT,
+		Content: content,
+	}
+}
+
+func NewUserMessage(content any) *PromptMessage {
+	return &PromptMessage{
+		Role:    USER,
+		Content: content,
+	}
 }

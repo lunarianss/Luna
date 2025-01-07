@@ -13,6 +13,7 @@ type BasedAppGenerateEntity interface {
 	GetModel() string
 	GetTaskID() string
 	GetConversationID() string
+	GetQuery() string
 }
 
 // Define types for your enums
@@ -99,9 +100,14 @@ func (cag *ChatAppGenerateEntity) GetConversationID() string {
 	return cag.ConversationID
 }
 
+func (cag *ChatAppGenerateEntity) GetQuery() string {
+	return cag.Query
+}
+
 type AgentChatAppGenerateEntity struct {
 	*EasyUIBasedAppGenerateEntity
-	*ConversationAppGenerateEntity
+	ConversationID  string `json:"conversation_id"`
+	ParentMessageID string `json:"parent_message_id"`
 	*biz_entity_app_config.AgentEntity
 }
 
@@ -115,6 +121,10 @@ func (cag *AgentChatAppGenerateEntity) GetTaskID() string {
 
 func (cag *AgentChatAppGenerateEntity) GetConversationID() string {
 	return cag.ConversationID
+}
+
+func (cag *AgentChatAppGenerateEntity) GetQuery() string {
+	return cag.Query
 }
 
 type AdvancedChatMessageEntity struct {

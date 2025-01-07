@@ -21,8 +21,8 @@ const (
 	ErrAppTokenExceed
 	// ErrNotFoundJobID - 400: Not found job ID.
 	ErrNotFoundJobID
-	// ErrVDBQueryError - 400: occurred error when vector similarity search.
+	// ErrVDBQueryError - 400: Occurred error when vector similarity search.
 	ErrVDBQueryError
-	// ErrVDBConstructError - 400: occurred error when construct vdb response.
+	// ErrVDBConstructError - 400: Occurred error when construct vdb response.
 	ErrVDBConstructError
 )

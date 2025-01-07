@@ -172,7 +172,7 @@ func ConvertToModelBizEntity(entityModel po_entity.ModelInfo) ModelInfo {
 }
 
 func ConvertToAgentTools(agentTools []*AgentTools) []*po_entity.AgentTools {
-	poAgentTools := make([]*po_entity.AgentTools, len(agentTools))
+	poAgentTools := make([]*po_entity.AgentTools, 0, len(agentTools))
 
 	for _, agentTool := range agentTools {
 		poAgentTools = append(poAgentTools, &po_entity.AgentTools{
@@ -205,7 +205,8 @@ func ConvertToAgentMode(agentMode *AgentMode) *po_entity.AgentMode {
 }
 
 func ConvertToBizAgentTools(agentTools []*po_entity.AgentTools) []*AgentTools {
-	poAgentTools := make([]*AgentTools, len(agentTools))
+
+	poAgentTools := make([]*AgentTools, 0, len(agentTools))
 
 	for _, agentTool := range agentTools {
 		poAgentTools = append(poAgentTools, &AgentTools{

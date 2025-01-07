@@ -60,6 +60,15 @@ type QueueLLMChunkEvent struct {
 	Chunk *LLMResultChunk `json:"chunk"`
 }
 
+type QueueAgentMessageEvent struct {
+	*AppQueueEvent
+	Chunk *LLMResultChunk `json:"chunk"`
+}
+
+type QueueAgentThoughtEvent struct {
+	AgentThoughtID string `json:"agent_thought_id"`
+	*AppQueueEvent
+}
 type QueueTextChunkEvent struct {
 	*AppQueueEvent
 	Text                 string    `json:"text"`

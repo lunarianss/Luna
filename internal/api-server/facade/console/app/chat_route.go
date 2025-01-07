@@ -7,7 +7,10 @@ package route
 import (
 	"github.com/gin-gonic/gin"
 	service "github.com/lunarianss/Luna/internal/api-server/application"
+	"github.com/lunarianss/Luna/internal/api-server/config"
+	"github.com/lunarianss/Luna/internal/api-server/core/tools"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
+	agentDomain "github.com/lunarianss/Luna/internal/api-server/domain/agent/domain_service"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
 	datasetDomain "github.com/lunarianss/Luna/internal/api-server/domain/dataset/domain_service"
@@ -41,6 +44,13 @@ func (a *ChatRoutes) Register(g *gin.Engine) error {
 		return err
 	}
 
+	// config
+	config, err := config.GetLunaRuntimeConfig()
+
+	if err != nil {
+		return err
+	}
+
 	// repos
 	accountRepo := repo_impl.NewAccountRepoImpl(gormIns)
 	tenantRepo := repo_impl.NewTenantRepoImpl(gormIns)
@@ -52,15 +62,16 @@ func (a *ChatRoutes) Register(g *gin.Engine) error {
 	annotationRepo := repo_impl.NewAnnotationRepoImpl(gormIns)
 	providerConfigurationsManager := domain_service.NewProviderConfigurationsManager(providerRepo, modelProviderRepo, "", nil)
 	datasetRepo := repo_impl.NewDatasetRepoImpl(gormIns)
-
+	agentRepo := repo_impl.NewAgentRepoImpl(gormIns)
 	// domain
 	providerDomain := domain_service.NewProviderDomain(providerRepo, modelProviderRepo, tenantRepo, providerConfigurationsManager)
 	appDomain := appDomain.NewAppDomain(appRepo, webAppRepo, gormIns)
 	accountDomain := accountDomain.NewAccountDomain(accountRepo, nil, nil, nil, tenantRepo)
 	chatDomain := chatDomain.NewChatDomain(messageRepo, annotationRepo)
 	datasetDomain := datasetDomain.NewDatasetDomain(datasetRepo)
+	agentDomain := agentDomain.NewAgentDomain(agentDomain.NewToolTransformService(config), tools.NewToolManager(), agentRepo)
 	// service
-	chatService := service.NewChatService(appDomain, providerDomain, accountDomain, chatDomain, datasetDomain, redisIns)
+	chatService := service.NewChatService(appDomain, providerDomain, accountDomain, chatDomain, datasetDomain, agentDomain, redisIns)
 	annotationService := service.NewAnnotationService(appDomain, providerDomain, accountDomain, chatDomain, redisIns, mqProducer, datasetDomain)
 	chatController := controller.NewChatController(chatService, annotationService)
 

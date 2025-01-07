@@ -23,6 +23,14 @@ const (
 	SystemFilesType ToolParameterType = "systme-files" // Deprecated
 )
 
+func (t ToolParameterType) AsNormalType() string {
+	if t == SecretInputType || t == SelectType {
+		return "string"
+	} else {
+		return string(t)
+	}
+}
+
 type ToolInvokeFrom string
 
 const (

@@ -117,6 +117,7 @@ func (tpp *agentChatAppTaskScheduler) process_stream_end_chunk_queue(c context.C
 	for v := range tpp.StreamFinalChunkQueue {
 		if mc, ok := v.Event.(*biz_entity.QueueMessageEndEvent); ok {
 			tpp.taskState.LLMResult = mc.LLMResult
+			tpp.taskState.LLMResult.Message.Content = mc.LLMResult.Message.Content
 			if err := tpp.saveMessage(c); err != nil {
 				log.Errorf("failed to save message: %v", err)
 			}

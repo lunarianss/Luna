@@ -34,7 +34,7 @@ func (ar *AgentRepoImpl) GetAgentThoughtByID(ctx context.Context, id string) (*p
 
 func (ar *AgentRepoImpl) UpdateAgentThought(ctx context.Context, agentThought *po_entity.MessageAgentThought) error {
 
-	if err := ar.db.Model(&po_entity.MessageAgentThought{}).Updates(agentThought).Where("id = ?", agentThought.ID).Error; err != nil {
+	if err := ar.db.Model(&po_entity.MessageAgentThought{}).Where("id = ?", agentThought.ID).Updates(agentThought).Error; err != nil {
 		return errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return nil

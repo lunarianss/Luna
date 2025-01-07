@@ -437,6 +437,20 @@ func (m *openApiCompactLargeLanguageModel) sendAgentStreamChunkToQueue(ctx conte
 	m.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, false, nil, true)
 }
 
+func (m *openApiCompactLargeLanguageModel) sendAgentEndChunkToQueue(ctx context.Context, messageId string, assistantPromptMessage *biz_entity_chat.AssistantPromptMessage, finishReason string) {
+	streamResultChunk := &biz_entity_chat.LLMResultChunk{
+		ID:            messageId,
+		Model:         m.Model,
+		PromptMessage: m.PromptMessages,
+		Delta: &biz_entity_chat.LLMResultChunkDelta{
+			Index:        m.ChunkIndex,
+			Message:      assistantPromptMessage,
+			FinishReason: finishReason,
+		},
+	}
+	m.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, false, nil, true)
+}
+
 func (m *openApiCompactLargeLanguageModel) sendErrorChunkToQueue(ctx context.Context, code error) {
 	defer m.Close()
 	err := errors.WithMessage(code, fmt.Sprintf("Error ocurred when handle stream: %#+v", code))
@@ -478,7 +492,7 @@ func (m *openApiCompactLargeLanguageModel) convertToToolCall(toolStreamCalls []*
 	for _, toolCallStream := range toolStreamCalls {
 		var args map[string]any
 
-		if err := json.Unmarshal(toolCallStream.Function.Arguments, &args); err != nil {
+		if err := json.Unmarshal([]byte(toolCallStream.Function.Arguments), &args); err != nil {
 			return nil, errors.WithSCode(code.ErrDecodingJSON, err.Error())
 		}
 
@@ -712,7 +726,15 @@ func (m *openApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 				deltaContent, existContent := deltaMap["content"]
 
 				if tool_calls, ok := deltaMap["tool_calls"]; ok {
-					toolCallByte, err := json.Marshal(tool_calls)
+
+					toolCallSlice, ok := tool_calls.([]any)
+
+					if !ok {
+						m.sendErrorChunkToQueue(ctx, errors.WithCode(code.ErrInvokeToolUnConvertAble, "too_calls returned by llm isn't converted to []any"))
+						return
+					}
+
+					toolCallByte, err := json.Marshal(toolCallSlice)
 
 					if err != nil {
 						m.sendErrorChunkToQueue(ctx, errors.WithSCode(code.ErrEncodingJSON, err.Error()))
@@ -760,20 +782,26 @@ func (m *openApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 		if len(m.finalToolCalls) > 0 {
 			toolCalls, err := m.convertToToolCall(m.finalToolCalls)
 			if err != nil {
-				// todo 大问题
 				m.sendErrorChunkToQueue(ctx, errors.WithSCode(code.ErrRunTimeCaller, err.Error()))
 				return
 			}
-			assistantPromptMessage := biz_entity_chat.NewAssistantPromptMessage("")
+			assistantPromptMessage := biz_entity_chat.NewAssistantPromptMessage(m.FullAssistantContent)
 			assistantPromptMessage.ToolCalls = toolCalls
 
 			m.sendAgentStreamChunkToQueue(ctx, messageID, assistantPromptMessage)
+		} else {
+			assistantPromptMessage := biz_entity_chat.NewAssistantPromptMessage(m.FullAssistantContent)
+			m.sendAgentEndChunkToQueue(ctx, messageID, assistantPromptMessage, biz_entity_chat.AGENT_END)
+
 		}
 	}
 
 }
 
 func (m *openApiCompactLargeLanguageModel) getToolCall(tooCallID string) *biz_entity_chat.ToolCallStream {
+	if tooCallID == "" {
+		return m.finalToolCalls[len(m.finalToolCalls)-1]
+	}
 	for _, toolCall := range m.finalToolCalls {
 		if toolCall.ID == tooCallID {
 			return toolCall
@@ -785,7 +813,7 @@ func (m *openApiCompactLargeLanguageModel) getToolCall(tooCallID string) *biz_en
 		Type: "function",
 		Function: &biz_entity_chat.ToolCallStreamFunction{
 			Name:      "",
-			Arguments: make([]byte, 0),
+			Arguments: "",
 		},
 	}
 
@@ -809,8 +837,8 @@ func (m *openApiCompactLargeLanguageModel) increaseToolCall(newToolCalls []*biz_
 			toolCallFind.Function.Name = toolCall.Function.Name
 		}
 
-		if len(toolCall.Function.Arguments) > 0 {
-			toolCallFind.Function.Arguments = append(toolCallFind.Function.Arguments, toolCall.Function.Arguments...)
+		if toolCall.Function.Arguments != "" {
+			toolCallFind.Function.Arguments += toolCall.Function.Arguments
 		}
 
 	}
@@ -850,7 +878,7 @@ func (runner *openApiCompactLargeLanguageModel) HandleInvokeResultStream(ctx con
 
 	if isAgent {
 		event := biz_entity_chat.NewAppQueueEvent(biz_entity_chat.AgentMessage)
-		streamGenerator.Push(&biz_entity_chat.QueueLLMChunkEvent{
+		streamGenerator.Push(&biz_entity_chat.QueueAgentMessageEvent{
 			AppQueueEvent: event,
 			Chunk:         invokeResult})
 	} else {

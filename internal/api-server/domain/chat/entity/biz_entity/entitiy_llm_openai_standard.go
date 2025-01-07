@@ -46,7 +46,7 @@ type ToolCall struct {
 
 type ToolCallStreamFunction struct {
 	Name      string `json:"name"`
-	Arguments []byte `json:"arguments"`
+	Arguments string `json:"arguments"`
 }
 
 type ToolCallStream struct {

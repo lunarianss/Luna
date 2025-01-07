@@ -28,6 +28,7 @@ type RunnerRuntimeParameters struct {
 	historyPromptMessages []*po_entity.PromptMessage
 	assistantThoughts     []po_entity.IPromptMessage
 	toolResponse          []*ToolResponseItem
+	fullAnswer            string
 }
 
 type ToolInvokeMeta struct {
@@ -112,7 +113,6 @@ func (fca *FunctionCallAgentRunner) Run(ctx context.Context, message *po_entity.
 		}
 
 		agentThought, err := fca.handleStreamAgentMessageQueue(ctx, streamQueue)
-
 		if err != nil {
 			return err
 		}
@@ -216,7 +216,7 @@ func (fca *FunctionCallAgentRunner) Run(ctx context.Context, message *po_entity.
 		PromptMessage: fca.promptMessages,
 		Message: &biz_entity.AssistantPromptMessage{
 			PromptMessage: &po_entity.PromptMessage{
-				Content: "",
+				Content: fca.fullAnswer,
 			},
 		},
 		Usage: biz_entity.NewEmptyLLMUsage(),
@@ -254,6 +254,12 @@ func (fca *FunctionCallAgentRunner) handleStreamAgentMessageQueue(ctx context.Co
 		}
 
 		if chunkEvent, ok := resultChunk.Event.(*biz_entity.QueueAgentMessageEvent); ok {
+
+			if chunkEvent.Chunk.Delta.FinishReason == biz_entity.AGENT_END {
+				fca.fullAnswer = chunkEvent.Chunk.Delta.Message.GetContent()
+				break
+			}
+
 			if fca.checkTools(chunkEvent.Chunk) {
 				fca.functionCallState = true
 				fca.toolCalls = append(fca.toolCalls, fca.extractToolCalls(chunkEvent.Chunk)...)
@@ -266,6 +272,7 @@ func (fca *FunctionCallAgentRunner) handleStreamAgentMessageQueue(ctx context.Co
 			}
 		}
 	}
+
 	return agentThought, nil
 }
 

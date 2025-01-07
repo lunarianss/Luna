@@ -11,6 +11,10 @@ type IQueueEvent interface {
 }
 
 const (
+	AGENT_END = "agent end"
+)
+
+const (
 	LLMChunk                   QueueEvent = "llm_chunk"
 	TextChunk                  QueueEvent = "text_chunk"
 	AgentMessage               QueueEvent = "agent_message"

@@ -58,7 +58,7 @@ type Message struct {
 	ConversationID          string                                `gorm:"column:conversation_id" json:"conversation_id"`
 	Inputs                  map[string]interface{}                `gorm:"column:inputs;serializer:json" json:"inputs"`
 	Query                   string                                `gorm:"column:query" json:"query"`
-	Message                 []any                      `gorm:"column:message;serializer:json" json:"message"`
+	Message                 []any                                 `gorm:"column:message;serializer:json" json:"message"`
 	MessageTokens           int64                                 `gorm:"column:message_tokens" json:"message_tokens"`
 	MessageUnitPrice        float64                               `gorm:"column:message_unit_price" json:"message_unit_price"`
 	Answer                  string                                `gorm:"column:answer" json:"answer"`
@@ -141,8 +141,8 @@ type IPromptMessage interface {
 
 type PromptMessage struct {
 	Role    PromptMessageRole `json:"role"`
-	Content any               `json:"content"`
-	Name    string            `json:"name"`
+	Content any               `json:"content,omitempty"`
+	Name    string            `json:"name,omitempty"`
 }
 
 func (pm *PromptMessage) GetRole() string {

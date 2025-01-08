@@ -453,8 +453,7 @@ func (m *openApiCompactLargeLanguageModel) sendAgentEndChunkToQueue(ctx context.
 }
 
 func (m *openApiCompactLargeLanguageModel) sendErrorChunkToQueue(ctx context.Context, code error) {
-	err := errors.WithMessage(code, fmt.Sprintf("Error ocurred when handle stream: %#+v", code))
-	m.HandleInvokeResultStream(ctx, nil, false, err)
+	m.HandleInvokeResultStream(ctx, nil, false, code)
 }
 
 func handleTokenCount(count any) (int64, bool) {
@@ -490,18 +489,12 @@ func (m *openApiCompactLargeLanguageModel) convertToToolCall(toolStreamCalls []*
 	)
 
 	for _, toolCallStream := range toolStreamCalls {
-		var args map[string]any
-
-		if err := json.Unmarshal([]byte(toolCallStream.Function.Arguments), &args); err != nil {
-			return nil, errors.WithSCode(code.ErrDecodingJSON, err.Error())
-		}
-
 		toolCalls = append(toolCalls, &biz_entity_chat.ToolCall{
 			ID:   toolCallStream.ID,
 			Type: toolCallStream.Type,
 			Function: &biz_entity_chat.ToolCallFunction{
 				Name:      toolCallStream.Function.Name,
-				Arguments: args,
+				Arguments: toolCallStream.Function.Arguments,
 			},
 		})
 
@@ -809,6 +802,7 @@ func (m *openApiCompactLargeLanguageModel) HandleInvokeResultStream(ctx context.
 				PromptMessage: &po_entity_chat.PromptMessage{
 					Content: invokeResult.Delta.Message.Content,
 				},
+				ToolCalls: invokeResult.Delta.Message.ToolCalls,
 			},
 			Usage: invokeResult.Delta.Usage,
 		}

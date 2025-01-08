@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
+	"github.com/lunarianss/Luna/infrastructure/log"
 	"github.com/lunarianss/Luna/internal/api-server/core/tools/tool_registry"
 	"github.com/lunarianss/Luna/internal/api-server/domain/agent/entity/biz_entity"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
@@ -62,6 +63,8 @@ func (st *StableDiffusionTool) Register() string {
 }
 
 func (st *StableDiffusionTool) Invoke(ctx context.Context, userID string, toolParameters []byte, toolRuntime *biz_entity.ToolRuntimeConfiguration) ([]*biz_entity.ToolInvokeMessage, error) {
+
+	log.Infof("----- toolParameter %s -----\n\n", string(toolParameters))
 
 	if err := st.parseParameter(toolParameters, toolRuntime); err != nil {
 		return nil, err

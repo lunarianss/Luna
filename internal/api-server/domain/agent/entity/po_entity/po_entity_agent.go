@@ -20,7 +20,7 @@ type MessageAgentThought struct {
 	Tool             string                           `json:"tool" gorm:"column:tool"`
 	ToolLabelsStr    string                           `json:"tool_labels_str" gorm:"column:tool_labels_str;default:{}"`
 	ToolMetaStr      map[string]*ToolEngineInvokeMeta `json:"tool_meta_str" gorm:"column:tool_meta_str;default:{};serializer:json"`
-	ToolInput        map[string]map[string]any        `json:"tool_input" gorm:"column:tool_input;serializer:json"`
+	ToolInput        map[string]string                `json:"tool_input" gorm:"column:tool_input;serializer:json"`
 	Observation      map[string]string                `json:"observation" gorm:"column:observation;serializer:json"`
 	ToolProcessData  string                           `json:"tool_process_data" gorm:"column:tool_process_data"`
 	Message          string                           `json:"message" gorm:"column:message"`
@@ -56,7 +56,7 @@ func (m *MessageAgentThought) BeforeSave(tx *gorm.DB) (err error) {
 		m.ToolMetaStr = make(map[string]*ToolEngineInvokeMeta)
 	}
 	if m.ToolInput == nil {
-		m.ToolInput = make(map[string]map[string]any)
+		m.ToolInput = make(map[string]string)
 	}
 	if m.Observation == nil {
 		m.Observation = make(map[string]string)

@@ -24,7 +24,7 @@ type RunnerRuntimeParameters struct {
 	maxInteractionSteps   int
 	toolCalls             []*ToolCall
 	toolCallNames         string
-	toolCallInputs        map[string]map[string]any
+	toolCallInputs        map[string]string
 	historyPromptMessages []*po_entity.PromptMessage
 	assistantThoughts     []po_entity.IPromptMessage
 	toolResponse          []*ToolResponseItem
@@ -91,7 +91,7 @@ func NewFunctionCallAgentRunner(tenantID string, applicationGenerateEntity *biz_
 type ToolCall struct {
 	ToolCallID   string
 	ToolCallName string
-	TollCallArgs map[string]any
+	TollCallArgs string
 }
 
 func (fca *FunctionCallAgentRunner) Run(ctx context.Context, message *po_entity.Message, query string) (*biz_entity.ChatAppTaskState, error) {
@@ -220,6 +220,9 @@ func (fca *FunctionCallAgentRunner) Run(ctx context.Context, message *po_entity.
 func (fca *FunctionCallAgentRunner) interactionInvokeLLM(ctx context.Context) {
 	fca.IStreamGenerateQueue.Debug()
 	fca.IStreamGenerateQueue = fca.Fork()
+
+	go fca.IStreamGenerateQueue.Listen()
+
 	fca.modelCaller.InvokeLLM(ctx, fca.promptMessages, fca.IStreamGenerateQueue, fca.applicationGenerateEntity.ModelConf.Parameters, fca.promptToolMessages, make([]string, 0), fca.applicationGenerateEntity.UserID, nil)
 }
 
@@ -228,7 +231,7 @@ func (fca *FunctionCallAgentRunner) handleStreamAgentMessageQueue(ctx context.Co
 	isOccurredErr := false
 	isNormalQuit := false
 
-	agentThought, err := fca.CreateAgentThought(ctx, fca.message.ID, "", "", make(map[string]map[string]any, 0), []string{})
+	agentThought, err := fca.CreateAgentThought(ctx, fca.message.ID, "", "", make(map[string]string, 0), []string{})
 
 	if err != nil {
 		return nil, err
@@ -288,19 +291,18 @@ QuitLoop:
 
 func (fca *FunctionCallAgentRunner) handleFinalChunk(message *biz_entity.MessageQueueMessage) {
 	if mc, ok := message.Event.(*biz_entity.QueueMessageEndEvent); ok {
+		if fca.checkTools(mc.LLMResult) {
+			fca.functionCallState = true
+			fca.toolCalls = append(fca.toolCalls, fca.extractToolCalls(mc.LLMResult)...)
+			fca.toolCallNames = fca.getToolNames(fca.toolCalls)
+			fca.toolCallInputs = fca.getToolInputs(fca.toolCalls)
+		}
 		fca.taskState.LLMResult = mc.LLMResult
 	}
 }
 
 func (fca *FunctionCallAgentRunner) handleResultChunk(message *biz_entity.MessageQueueMessage) error {
 	if chunkEvent, ok := message.Event.(*biz_entity.QueueAgentMessageEvent); ok {
-		if fca.checkTools(chunkEvent.Chunk) {
-			fca.functionCallState = true
-			fca.toolCalls = append(fca.toolCalls, fca.extractToolCalls(chunkEvent.Chunk)...)
-			fca.toolCallNames = fca.getToolNames(fca.toolCalls)
-			fca.toolCallInputs = fca.getToolInputs(fca.toolCalls)
-		}
-
 		deltaText := chunkEvent.Chunk.Delta.Message.Content
 		if err := fca.agentFlusher.AgentMessageToStreamResponse(deltaText.(string)); err != nil {
 			return err
@@ -325,13 +327,13 @@ func (fca *FunctionCallAgentRunner) handleResultChunk(message *biz_entity.Messag
 // 	return appendedPromptMessage
 // }
 
-func (fca *FunctionCallAgentRunner) checkTools(llmChunk *biz_entity.LLMResultChunk) bool {
-	return len(llmChunk.Delta.Message.ToolCalls) > 0
+func (fca *FunctionCallAgentRunner) checkTools(llmChunk *biz_entity.LLMResult) bool {
+	return len(llmChunk.Message.ToolCalls) > 0
 }
 
-func (fca *FunctionCallAgentRunner) extractToolCalls(llmChunk *biz_entity.LLMResultChunk) []*ToolCall {
+func (fca *FunctionCallAgentRunner) extractToolCalls(llmChunk *biz_entity.LLMResult) []*ToolCall {
 	var toolCalls []*ToolCall
-	for _, prompt := range llmChunk.Delta.Message.ToolCalls {
+	for _, prompt := range llmChunk.Message.ToolCalls {
 		toolCalls = append(toolCalls, &ToolCall{
 			ToolCallID:   prompt.ID,
 			ToolCallName: prompt.Function.Name,
@@ -365,8 +367,8 @@ func (faa *FunctionCallAgentRunner) getObservationAndMeta(toolArtifacts []*biz_a
 	return observation, meta
 
 }
-func (fca *FunctionCallAgentRunner) getToolInputs(tools []*ToolCall) map[string]map[string]any {
-	var toolInput = make(map[string]map[string]any)
+func (fca *FunctionCallAgentRunner) getToolInputs(tools []*ToolCall) map[string]string {
+	var toolInput = make(map[string]string)
 
 	for _, tool := range tools {
 		toolInput[tool.ToolCallName] = tool.TollCallArgs
@@ -380,7 +382,7 @@ func (fca *FunctionCallAgentRunner) organizePromptMessage() {
 	}
 }
 
-func (fca *FunctionCallAgentRunner) CreateAgentThought(ctx context.Context, messageID, message, toolName string, toolInput map[string]map[string]any, messageFileIDs []string) (*po_agent.MessageAgentThought, error) {
+func (fca *FunctionCallAgentRunner) CreateAgentThought(ctx context.Context, messageID, message, toolName string, toolInput map[string]string, messageFileIDs []string) (*po_agent.MessageAgentThought, error) {
 
 	thoughtObject := &po_agent.MessageAgentThought{
 		MessageID:     messageID,

@@ -6,7 +6,6 @@ import (
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 )
 
-
 type AssistantPromptMessage struct {
 	*po_entity.PromptMessage
 	ToolCalls []*ToolCall `json:"tool_calls"`
@@ -17,11 +16,13 @@ func (msg *AssistantPromptMessage) ConvertToRequestData() (map[string]interface{
 
 	switch content := msg.Content.(type) {
 	case string:
-		requestData["role"] = "tool"
-		requestData["content"] = content
+		requestData["role"] = "assistant"
+		if content != "" {
+			requestData["content"] = content
+		}
 
 		if len(msg.ToolCalls) > 0 {
-			requestData["too_calls"] = msg.ToolCalls
+			requestData["tool_calls"] = msg.ToolCalls
 		}
 	default:
 		return nil, errors.WithCode(code.ErrTypeOfPromptMessage, "value %T is not string type", msg.Content)

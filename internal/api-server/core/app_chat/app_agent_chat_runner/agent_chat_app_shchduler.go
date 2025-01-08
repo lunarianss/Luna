@@ -75,9 +75,12 @@ func (tpp *agentChatAppTaskScheduler) Process(ctx context.Context) {
 			log.Errorf("failed to flush message to stream response: %v", err)
 			tpp.sendFallBackMessageEnd()
 		}
+		return
 	}
+
 	if err := tpp.saveMessage(ctx); err != nil {
 		log.Errorf("failed to save message: %v", err)
+		return
 	}
 
 	if err := tpp.messageEndToStreamResponse(); err != nil {
@@ -206,6 +209,10 @@ func (tpp *agentChatAppTaskScheduler) saveMessage(c context.Context) error {
 
 	if err != nil {
 		return err
+	}
+
+	if tpp.taskState == nil {
+		return nil
 	}
 
 	messageRecord.Answer = tpp.taskState.LLMResult.Message.Content.(string)

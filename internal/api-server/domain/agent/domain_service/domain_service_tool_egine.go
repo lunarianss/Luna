@@ -2,7 +2,6 @@ package domain_service
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
@@ -32,7 +31,7 @@ func NewToolEngine(tool *biz_entity.ToolRuntimeConfiguration, message *po_entity
 	return te
 }
 
-func (te *ToolEngine) AgentInvoke(ctx context.Context, toolParameters map[string]any, userID, tenantID string, invokeFrom biz_entity.InvokeFrom) *biz_entity.ToolEngineInvokeMessage {
+func (te *ToolEngine) AgentInvoke(ctx context.Context, toolParameters string, userID, tenantID string, invokeFrom biz_entity.InvokeFrom) *biz_entity.ToolEngineInvokeMessage {
 	response, err := te.invoke(ctx, toolParameters, userID)
 
 	if err != nil {
@@ -58,17 +57,11 @@ func (te *ToolEngine) AgentInvoke(ctx context.Context, toolParameters map[string
 	}
 }
 
-func (te *ToolEngine) invoke(ctx context.Context, toolParameters map[string]any, userID string) ([]*biz_entity.ToolInvokeMessage, error) {
+func (te *ToolEngine) invoke(ctx context.Context, toolParameters string, userID string) ([]*biz_entity.ToolInvokeMessage, error) {
 
 	toolCaller := tool_registry.NewModelRegisterCaller(userID, te.tool)
 
-	parameterByte, err := json.Marshal(toolParameters)
-
-	if err != nil {
-		return nil, errors.WithSCode(code.ErrInvokeTool, err.Error())
-	}
-
-	invokeMessages, err := toolCaller.Invoke(ctx, parameterByte)
+	invokeMessages, err := toolCaller.Invoke(ctx, []byte(toolParameters))
 
 	if err != nil {
 		return nil, errors.WithSCode(code.ErrInvokeTool, err.Error())

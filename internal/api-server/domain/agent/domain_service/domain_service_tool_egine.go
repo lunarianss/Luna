@@ -82,6 +82,8 @@ func (te *ToolEngine) handleInvokeError(err error) *biz_entity.ToolEngineInvokeM
 		invokeMessage.InvokeToolPrompt = fmt.Sprintf("tool invoke error: %s", err.Error())
 	} else if errors.IsCode(err, code.ErrToolParameter) {
 		invokeMessage.InvokeToolPrompt = "tool parameters validation error: please check your tool parameters"
+	} else if errors.IsCode(err, code.ErrNotFoundToolRegistry) {
+		invokeMessage.InvokeToolPrompt = fmt.Sprintf("there is not a tool named %s", te.tool.Identity.Name)
 	} else {
 		invokeMessage.InvokeToolPrompt = fmt.Sprintf("tool unknown error: %s", err.Error())
 	}

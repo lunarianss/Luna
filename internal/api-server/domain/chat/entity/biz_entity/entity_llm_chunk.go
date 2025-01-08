@@ -67,5 +67,6 @@ func NewEmptyLLMResult() *LLMResult {
 	return &LLMResult{
 		Message:       NewEmptyAssistantPromptMessage(),
 		PromptMessage: make([]po_entity.IPromptMessage, 0),
+		Usage:         NewEmptyLLMUsage(),
 	}
 }

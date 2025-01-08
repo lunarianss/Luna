@@ -446,6 +446,7 @@ func (m *openApiCompactLargeLanguageModel) sendAgentEndChunkToQueue(ctx context.
 			Index:        m.ChunkIndex,
 			Message:      assistantPromptMessage,
 			FinishReason: finishReason,
+			Usage:        biz_entity_chat.NewEmptyLLMUsage(),
 		},
 	}
 	m.HandleInvokeResultStream(ctx, streamResultChunk, true, nil)

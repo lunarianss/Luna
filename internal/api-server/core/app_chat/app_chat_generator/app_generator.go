@@ -221,6 +221,8 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, 
 
 	task_pipeline.NewChatAppTaskPipeline(applicationGenerateEntity, streamResultChunkQueue, streamFinalChunkQueue, g.chatDomain.MessageRepo, messageRecord, g.chatDomain.AnnotationRepo).Process(c)
 
+	// queueManager.Debug()
+
 	return nil
 }
 

@@ -218,6 +218,7 @@ func (fca *FunctionCallAgentRunner) Run(ctx context.Context, message *po_entity.
 }
 
 func (fca *FunctionCallAgentRunner) interactionInvokeLLM(ctx context.Context) {
+	fca.IStreamGenerateQueue.Debug()
 	fca.IStreamGenerateQueue = fca.Fork()
 	fca.modelCaller.InvokeLLM(ctx, fca.promptMessages, fca.IStreamGenerateQueue, fca.applicationGenerateEntity.ModelConf.Parameters, fca.promptToolMessages, make([]string, 0), fca.applicationGenerateEntity.UserID, nil)
 }

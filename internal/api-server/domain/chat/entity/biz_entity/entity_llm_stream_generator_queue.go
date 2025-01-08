@@ -5,6 +5,8 @@ package biz_entity
 // license that can be found in the LICENSE file.
 
 import (
+	"github.com/fatih/color"
+	"github.com/lunarianss/Luna/infrastructure/log"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 )
 
@@ -23,6 +25,7 @@ type IStreamGenerateQueue interface {
 	GetQueues() (chan *MessageQueueMessage, chan *MessageQueueMessage, chan *MessageQueueMessage)
 	CloseOutErr()
 	CloseOutNormalExit()
+	Debug()
 }
 
 var _ IStreamGenerateQueue = (*StreamGenerateQueue)(nil)
@@ -91,6 +94,23 @@ func (sgq *StreamGenerateQueue) CloseOutNormalExit() {
 
 }
 
+func (sgq *StreamGenerateQueue) printInfo(ch chan *MessageQueueMessage, name string) {
+
+	chanLen := len(ch)
+	v, ok := <-ch
+	log.Infof(color.GreenString("%s: 是否关闭: %v, 剩余容量: %d, 值: %+v", name, !ok, chanLen, v))
+
+}
+func (sgq *StreamGenerateQueue) Debug() {
+
+	log.Infof("=========== QUEUE ===========")
+	sgq.printInfo(sgq.StreamResultChunkQueue, "StreamResultQueue")
+	sgq.printInfo(sgq.StreamFinalChunkQueue, "StreamFinalQueue")
+
+	log.Infof("=========== END QUEUE ===========")
+	sgq.printInfo(sgq.OutStreamResultChunkQueue, "OutStreamResultQueue")
+	sgq.printInfo(sgq.OutStreamFinalChunkQueue, "OutStreamFinalQueue")
+}
 func (sgq *StreamGenerateQueue) GetQueues() (chan *MessageQueueMessage, chan *MessageQueueMessage, chan *MessageQueueMessage) {
 	return sgq.OutStreamResultChunkQueue, sgq.StreamFinalChunkQueue, nil
 }

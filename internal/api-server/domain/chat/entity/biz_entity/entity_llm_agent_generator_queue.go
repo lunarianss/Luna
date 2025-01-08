@@ -5,6 +5,8 @@ package biz_entity
 // license that can be found in the LICENSE file.
 
 import (
+	"github.com/fatih/color"
+	"github.com/lunarianss/Luna/infrastructure/log"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 )
 
@@ -87,6 +89,26 @@ func (sgq *AgentStreamGenerateQueue) Fork() IStreamGenerateQueue {
 		AppMode:                   sgq.AppMode,
 		InvokeFrom:                sgq.InvokeFrom,
 	}
+}
+
+func (sgq *AgentStreamGenerateQueue) printInfo(ch chan *MessageQueueMessage, name string) {
+
+	chanLen := len(ch)
+	v, ok := <-ch
+	log.Infof(color.GreenString("%s: 是否关闭: %v, 剩余容量: %d, 值: %+v", name, !ok, chanLen, v))
+
+}
+func (sgq *AgentStreamGenerateQueue) Debug() {
+
+	log.Infof("=========== QUEUE ===========")
+	sgq.printInfo(sgq.StreamResultChunkQueue, "StreamResultQueue")
+	sgq.printInfo(sgq.StreamFinalChunkQueue, "StreamFinalQueue")
+	sgq.printInfo(sgq.StreamErrorQueue, "StreamFinalQueue")
+
+	log.Infof("=========== END QUEUE ===========")
+	sgq.printInfo(sgq.OutStreamResultChunkQueue, "OutStreamResultQueue")
+	sgq.printInfo(sgq.OutStreamFinalChunkQueue, "OutStreamFinalQueue")
+	sgq.printInfo(sgq.OutStreamErrorChunkQueue, "OutStreamFinalQueue")
 }
 
 func (sgq *AgentStreamGenerateQueue) Close() {

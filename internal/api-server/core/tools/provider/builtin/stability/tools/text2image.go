@@ -96,7 +96,7 @@ func (st *StableDiffusionTool) Invoke(ctx context.Context, userID string, toolPa
 func (st *StableDiffusionTool) parseParameter(parameter []byte, toolRuntime *biz_entity.ToolRuntimeConfiguration) error {
 
 	if err := json.Unmarshal(parameter, st.parameter); err != nil {
-		return errors.WithCode(code.ErrDecodingJSON, "decoding json bytes: %s, error %+v", string(parameter), err.Error())
+		return errors.WithCode(code.ErrToolParameter, "parse parameter: %s, error %+v", string(parameter), err.Error())
 	}
 
 	model := st.parameter.Model

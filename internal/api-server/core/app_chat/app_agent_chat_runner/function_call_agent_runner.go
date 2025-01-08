@@ -212,6 +212,10 @@ func (fca *FunctionCallAgentRunner) Run(ctx context.Context, message *po_entity.
 		}
 
 		fca.interactionStep += 1
+		fca.toolCalls = make([]*ToolCall, 0)
+		fca.toolCallNames = ""
+		fca.toolCallInputs = make(map[string]string)
+
 	}
 
 	return fca.taskState, nil
@@ -222,6 +226,10 @@ func (fca *FunctionCallAgentRunner) interactionInvokeLLM(ctx context.Context) {
 	fca.IStreamGenerateQueue = fca.Fork()
 
 	go fca.IStreamGenerateQueue.Listen()
+
+	// log.Info(color.GreenString("========== 下一次 Agent 迭代 ==========="))
+
+	// util.LogCompleteInfo(fca.promptMessages)
 
 	fca.modelCaller.InvokeLLM(ctx, fca.promptMessages, fca.IStreamGenerateQueue, fca.applicationGenerateEntity.ModelConf.Parameters, fca.promptToolMessages, make([]string, 0), fca.applicationGenerateEntity.UserID, nil)
 }

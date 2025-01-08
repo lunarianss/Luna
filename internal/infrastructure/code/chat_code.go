@@ -19,7 +19,7 @@ const (
 	ErrRequiredOverrideConfig
 	// ErrNotFoundModelRegistry - 500: Model registry is not found in the model registry list.
 	ErrNotFoundModelRegistry
-	// ErrNotFoundToolRegistry - 500: tool registry is not found in the tool registry list.
+	// ErrNotFoundToolRegistry - 500: Tool registry is not found in the tool registry list.
 	ErrNotFoundToolRegistry
 	// ErrRequiredPromptMessage - 500: Prompt type is required when convert to prompt template.
 	ErrRequiredPromptType
@@ -47,6 +47,8 @@ const (
 	ErrNotStreamAgent
 	// ErrInvokeTool - 500: Failed to invoke agent tool.
 	ErrInvokeTool
+	// ErrToolParameter - 500: Failed to parse tool parameter.
+	ErrToolParameter
 	// ErrInvokeToolUnConvertAble - 500: Failed to convert to tool message.
 	ErrInvokeToolUnConvertAble
 )

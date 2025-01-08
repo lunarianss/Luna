@@ -80,6 +80,10 @@ func (te *ToolEngine) handleInvokeError(err error) *biz_entity.ToolEngineInvokeM
 
 	if errors.IsCode(err, code.ErrInvokeTool) || errors.IsCode(err, code.ErrInvokeToolUnConvertAble) {
 		invokeMessage.InvokeToolPrompt = fmt.Sprintf("tool invoke error: %s", err.Error())
+	} else if errors.IsCode(err, code.ErrToolParameter) {
+		invokeMessage.InvokeToolPrompt = "tool parameters validation error: please check your tool parameters"
+	} else {
+		invokeMessage.InvokeToolPrompt = fmt.Sprintf("tool unknown error: %s", err.Error())
 	}
 
 	return invokeMessage
@@ -118,9 +122,9 @@ func (te *ToolEngine) convertToolResponseToString(toolMessages []*biz_entity.Too
 			if !ok {
 				return result, errors.WithCode(code.ErrInvokeToolUnConvertAble, "(json)invoke message %+v isn't convert to []byte", message)
 			}
-			result += fmt.Sprintf("tool json response: %s", string(message))
+			result += fmt.Sprintf("tool response: %s", string(message))
 		} else {
-			result += fmt.Sprintf("tool json response: %+v", toolMessage.Message)
+			result += fmt.Sprintf("tool response: %+v", toolMessage.Message)
 		}
 	}
 

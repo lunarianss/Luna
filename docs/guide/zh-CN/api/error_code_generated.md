@@ -92,19 +92,22 @@ IAM 系统支持的错误码列表如下：
 | ErrRequiredCorrectModel | 110205 | 500 | Error occurred when model is not found or model isn't include in the model list |
 | ErrRequiredOverrideConfig | 110206 | 500 | Config_from is ARGS that override_config_dict is required |
 | ErrNotFoundModelRegistry | 110207 | 500 | Model registry is not found in the model registry list |
-| ErrRequiredPromptType | 110208 | 500 | Prompt type is required when convert to prompt template |
-| ErrQuotaExceed | 110209 | 500 | Your quota for Luna Hosted Model Provider has been exhausted,Please go to Settings -> Model Provider to complete your own provider credentials |
-| ErrAudioType | 110210 | 500 | Audio type error: only support extensions like mp3, mp4, mpeg, mpga, m4a, wav, webm, amr |
-| ErrAudioFileToLarge | 110211 | 500 | Audio file is to large |
-| ErrAudioFileEmpty | 110212 | 500 | Audio file is empty |
-| ErrAudioTextEmpty | 110213 | 500 | Audio text is empty |
-| ErrTTSWebSocket | 110214 | 500 | Failed to connect tts websocket |
-| ErrTTSWebSocketParse | 110215 | 500 | Failed to parse tts websocket message |
-| ErrContextTimeout | 110216 | 500 | Context timeout |
-| ErrTTSWebSocketWrite | 110217 | 500 | Failed to write tts websocket message |
-| ErrTencentARS | 110218 | 500 | Tencent ARS service error |
-| ErrNotStreamAgent | 110219 | 500 | Agent Chat App does not support blocking mode |
-| ErrInvokeTool | 110220 | 500 | Failed to invoke agent tool |
+| ErrNotFoundToolRegistry | 110208 | 500 | Tool registry is not found in the tool registry list |
+| ErrRequiredPromptType | 110209 | 500 | Prompt type is required when convert to prompt template |
+| ErrQuotaExceed | 110210 | 500 | Your quota for Luna Hosted Model Provider has been exhausted,Please go to Settings -> Model Provider to complete your own provider credentials |
+| ErrAudioType | 110211 | 500 | Audio type error: only support extensions like mp3, mp4, mpeg, mpga, m4a, wav, webm, amr |
+| ErrAudioFileToLarge | 110212 | 500 | Audio file is to large |
+| ErrAudioFileEmpty | 110213 | 500 | Audio file is empty |
+| ErrAudioTextEmpty | 110214 | 500 | Audio text is empty |
+| ErrTTSWebSocket | 110215 | 500 | Failed to connect tts websocket |
+| ErrTTSWebSocketParse | 110216 | 500 | Failed to parse tts websocket message |
+| ErrContextTimeout | 110217 | 500 | Context timeout |
+| ErrTTSWebSocketWrite | 110218 | 500 | Failed to write tts websocket message |
+| ErrTencentARS | 110219 | 500 | Tencent ARS service error |
+| ErrNotStreamAgent | 110220 | 500 | Agent Chat App does not support blocking mode |
+| ErrInvokeTool | 110221 | 500 | Failed to invoke agent tool |
+| ErrToolParameter | 110222 | 500 | Failed to parse tool parameter |
+| ErrInvokeToolUnConvertAble | 110223 | 500 | Failed to convert to tool message |
 | ErrProviderMapModel | 110001 | 500 | Error occurred while attempt to index from providerMpa using provider |
 | ErrProviderNotHaveIcon | 110002 | 500 | Error occurred while provider entity doesn't have icon property |
 | ErrToOriginModelType | 110003 | 500 | Error occurred while convert to origin model type |

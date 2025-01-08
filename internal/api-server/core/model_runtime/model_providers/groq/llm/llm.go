@@ -28,7 +28,7 @@ func NewGroqLargeLanguageModel() *groqLargeLanguageModel {
 
 var _ provider_register.IModelRegistry = (*groqLargeLanguageModel)(nil)
 
-func (m *groqLargeLanguageModel) Invoke(ctx context.Context, queueManager *biz_entity_chat.StreamGenerateQueue, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, user string, promptMessages []po_entity.IPromptMessage, modelRuntime biz_entity.IAIModelRuntime, tools []*biz_entity_chat.PromptMessageTool) {
+func (m *groqLargeLanguageModel) Invoke(ctx context.Context, queueManager biz_entity_chat.IStreamGenerateQueue, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, user string, promptMessages []po_entity.IPromptMessage, modelRuntime biz_entity.IAIModelRuntime, tools []*biz_entity_chat.PromptMessageTool) {
 	credentials = m.addCustomParameters(credentials)
 	m.IOpenApiCompactLargeLanguage = llm.NewOpenApiCompactLargeLanguageModel(promptMessages, modelParameters, credentials, model, modelRuntime, tools)
 	m.IOpenApiCompactLargeLanguage.Invoke(ctx, queueManager)

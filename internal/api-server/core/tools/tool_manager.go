@@ -74,6 +74,14 @@ func (tm *ToolManager) unMarshalTools() error {
 				return errors.WithSCode(code.ErrDecodingYaml, err.Error())
 			}
 
+			if toolRuntime.ToolStaticConfiguration.Identity.Provider == "" {
+				toolRuntime.ToolStaticConfiguration.Identity.Provider = providerRuntime.Identity.Name
+			}
+
+			if toolRuntime.ToolStaticConfiguration.Identity.Icon == "" {
+				toolRuntime.ToolStaticConfiguration.Identity.Icon = providerRuntime.Identity.Author
+			}
+
 			tools = append(tools, toolRuntime)
 
 			providerRuntime.Tools = tools
@@ -162,7 +170,7 @@ func (tm *ToolManager) resolveRuntimePath() error {
 	return nil
 }
 
-func (tm *ToolManager) getToolRuntime(providerType, providerID, toolName, tenantID, invokeFrom, toolInvokeForm string) (*biz_entity.ToolRuntimeConfiguration, error) {
+func (tm *ToolManager) getToolRuntime(providerType, providerID, toolName, _, _, _ string) (*biz_entity.ToolRuntimeConfiguration, error) {
 
 	if providerType == "builtin" {
 		toolRuntime := tm.getBuiltinTool(providerID, toolName)

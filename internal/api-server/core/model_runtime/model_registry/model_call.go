@@ -15,7 +15,7 @@ import (
 )
 
 type IModelRegistryCall interface {
-	InvokeLLM(ctx context.Context, promptMessage []po_entity.IPromptMessage, queueManager *biz_entity_chat.StreamGenerateQueue, modelParameters map[string]interface{}, tools []*biz_entity_chat.PromptMessageTool, stop []string, user string, callbacks interface{})
+	InvokeLLM(ctx context.Context, promptMessage []po_entity.IPromptMessage, queueManager biz_entity_chat.IStreamGenerateQueue, modelParameters map[string]interface{}, tools []*biz_entity_chat.PromptMessageTool, stop []string, user string, callbacks interface{})
 
 	InvokeLLMNonStream(ctx context.Context, promptMessage []po_entity.IPromptMessage, modelParameters map[string]interface{}, tools interface{}, stop []string, user string, callbacks interface{}) (*biz_entity_chat.LLMResult, error)
 
@@ -44,7 +44,7 @@ func NewModelRegisterCaller(model, modelType, provider string, credentials map[s
 	}
 }
 
-func (ac *modelRegistryCall) InvokeLLM(ctx context.Context, promptMessage []po_entity.IPromptMessage, queueManager *biz_entity_chat.StreamGenerateQueue, modelParameters map[string]interface{}, tools []*biz_entity_chat.PromptMessageTool, stop []string, user string, callbacks interface{}) {
+func (ac *modelRegistryCall) InvokeLLM(ctx context.Context, promptMessage []po_entity.IPromptMessage, queueManager biz_entity_chat.IStreamGenerateQueue, modelParameters map[string]interface{}, tools []*biz_entity_chat.PromptMessageTool, stop []string, user string, callbacks interface{}) {
 
 	modelKeyMapInvoke := fmt.Sprintf("%s/%s", ac.Provider, ac.ModelType)
 

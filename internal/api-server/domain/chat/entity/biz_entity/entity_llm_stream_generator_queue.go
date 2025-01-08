@@ -17,8 +17,15 @@ type IStreamGenerateQueue interface {
 	PushErr(err error)
 	Push(chunk IQueueEvent)
 	Final(chunk IQueueEvent)
+	Fork() IStreamGenerateQueue
 	Close()
+	Listen()
+	GetQueues() (chan *MessageQueueMessage, chan *MessageQueueMessage, chan *MessageQueueMessage)
+	CloseOutErr()
+	CloseOutNormalExit()
 }
+
+var _ IStreamGenerateQueue = (*StreamGenerateQueue)(nil)
 
 type StreamGenerateQueue struct {
 	// Input
@@ -72,12 +79,23 @@ func (sgq *StreamGenerateQueue) Push(chunk IQueueEvent) {
 	sgq.StreamResultChunkQueue <- sgq.constructMessageQueue(chunk)
 }
 
-func (sgq *StreamGenerateQueue) Final(chunk IQueueEvent) {
-	defer sgq.Close()
-	sgq.StreamFinalChunkQueue <- sgq.constructMessageQueue(chunk)
+func (sgq *StreamGenerateQueue) Fork() IStreamGenerateQueue {
+	return sgq
 }
 
-func (sgq *StreamGenerateQueue) FinalManual(chunk IQueueEvent) {
+func (sgq *StreamGenerateQueue) CloseOutErr() {
+
+}
+
+func (sgq *StreamGenerateQueue) CloseOutNormalExit() {
+
+}
+
+func (sgq *StreamGenerateQueue) GetQueues() (chan *MessageQueueMessage, chan *MessageQueueMessage, chan *MessageQueueMessage) {
+	return sgq.OutStreamResultChunkQueue, sgq.StreamFinalChunkQueue, nil
+}
+
+func (sgq *StreamGenerateQueue) Final(chunk IQueueEvent) {
 	defer sgq.Close()
 	sgq.StreamFinalChunkQueue <- sgq.constructMessageQueue(chunk)
 }

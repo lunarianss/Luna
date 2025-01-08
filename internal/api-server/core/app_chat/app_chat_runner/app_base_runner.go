@@ -43,7 +43,7 @@ func (r *AppBaseChatRunner) OrganizePromptMessage(ctx context.Context, appRecord
 	return promptMessages, stop, err
 }
 
-func (r *AppBaseChatRunner) DirectOutStream(applicationGenerateEntity biz_entity_app_generate.BasedAppGenerateEntity, message *po_entity_chat.Message, conversation *po_entity_chat.Conversation, queueManager *biz_entity.StreamGenerateQueue, text string, promptMessages []*po_entity_chat.PromptMessage) {
+func (r *AppBaseChatRunner) DirectOutStream(applicationGenerateEntity biz_entity_app_generate.BasedAppGenerateEntity, message *po_entity_chat.Message, conversation *po_entity_chat.Conversation, queueManager biz_entity.IStreamGenerateQueue, text string, promptMessages []*po_entity_chat.PromptMessage) {
 
 	index := 0
 	for i, token := range text {
@@ -66,7 +66,7 @@ func (r *AppBaseChatRunner) DirectOutStream(applicationGenerateEntity biz_entity
 		time.Sleep(10 * time.Millisecond)
 	}
 
-	queueManager.FinalManual(&biz_entity.QueueMessageEndEvent{
+	queueManager.Final(&biz_entity.QueueMessageEndEvent{
 		AppQueueEvent: biz_entity.NewAppQueueEvent(biz_entity.MessageEnd),
 		LLMResult: &biz_entity.LLMResult{
 			Model: applicationGenerateEntity.GetModel(),

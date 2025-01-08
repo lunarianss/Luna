@@ -30,6 +30,7 @@ type agentChatAppTaskScheduler struct {
 	biz_entity_app_generate.BasedAppGenerateEntity
 	StreamResultChunkQueue chan *biz_entity.MessageQueueMessage
 	StreamFinalChunkQueue  chan *biz_entity.MessageQueueMessage
+	StreamErrorChunkQueue  chan *biz_entity.MessageQueueMessage
 	Message                *po_entity.Message
 	MessageRepo            repository.MessageRepo
 	AnnotationRepo         repository.AnnotationRepo
@@ -43,13 +44,9 @@ type agentChatAppTaskScheduler struct {
 
 func NewAgentChatAppTaskScheduler(
 	applicationGenerateEntity biz_entity_app_generate.BasedAppGenerateEntity,
-	streamResultChunkQueue chan *biz_entity.MessageQueueMessage,
-	streamFinalChunkQueue chan *biz_entity.MessageQueueMessage,
 	messageRepo repository.MessageRepo, message *po_entity.Message, annotationRepo repository.AnnotationRepo, runner *FunctionCallAgentRunner) *agentChatAppTaskScheduler {
 	return &agentChatAppTaskScheduler{
 		BasedAppGenerateEntity: applicationGenerateEntity,
-		StreamResultChunkQueue: streamResultChunkQueue,
-		StreamFinalChunkQueue:  streamFinalChunkQueue,
 		Message:                message,
 		MessageRepo:            messageRepo,
 		AnnotationRepo:         annotationRepo,
@@ -69,14 +66,24 @@ func (tpp *agentChatAppTaskScheduler) Process(ctx context.Context) {
 		return
 	}
 
-	if err := tpp.runner.Run(ctx, tpp.Message, tpp.Message.Query, tpp.StreamResultChunkQueue); err != nil {
+	var err error
+
+	tpp.taskState, err = tpp.runner.Run(ctx, tpp.Message, tpp.Message.Query)
+
+	if err != nil {
 		if err := tpp.messageErrToStreamResponse(ctx, err); err != nil {
 			log.Errorf("failed to flush message to stream response: %v", err)
 			tpp.sendFallBackMessageEnd()
 		}
 	}
+	if err := tpp.saveMessage(ctx); err != nil {
+		log.Errorf("failed to save message: %v", err)
+	}
 
-	tpp.process_stream_response(ctx)
+	if err := tpp.messageEndToStreamResponse(); err != nil {
+		log.Errorf("failed to flush message to stream response: %v", err)
+		tpp.sendFallBackMessageEnd()
+	}
 }
 
 func (tpp *agentChatAppTaskScheduler) flush(streamString string) error {
@@ -111,34 +118,6 @@ func (tpp *agentChatAppTaskScheduler) sendFallBackMessageEnd() {
 	if err := tpp.flush("data: {\"event\": \"message_end\"}\n\n"); err != nil {
 		log.Errorf("failed to send fallback message end to stream response: %v", err)
 	}
-}
-
-func (tpp *agentChatAppTaskScheduler) process_stream_end_chunk_queue(c context.Context) {
-	for v := range tpp.StreamFinalChunkQueue {
-		if mc, ok := v.Event.(*biz_entity.QueueMessageEndEvent); ok {
-			tpp.taskState.LLMResult = mc.LLMResult
-			tpp.taskState.LLMResult.Message.Content = mc.LLMResult.Message.Content
-			if err := tpp.saveMessage(c); err != nil {
-				log.Errorf("failed to save message: %v", err)
-			}
-
-			if err := tpp.messageEndToStreamResponse(); err != nil {
-				log.Errorf("failed to flush message to stream response: %v", err)
-				tpp.sendFallBackMessageEnd()
-			}
-		} else if mc, ok := v.Event.(*biz_entity.QueueErrorEvent); ok {
-			log.Errorf("found queue error event: %#+v", mc.Err)
-
-			if err := tpp.messageErrToStreamResponse(c, mc.Err); err != nil {
-				log.Errorf("failed to flush err message to stream response: %v", err)
-				tpp.sendFallBackMessageEnd()
-			}
-		}
-	}
-}
-
-func (tpp *agentChatAppTaskScheduler) process_stream_response(c context.Context) {
-	tpp.process_stream_end_chunk_queue(c)
 }
 
 func (tpp *agentChatAppTaskScheduler) messageErrToStreamResponse(ctx context.Context, err error) error {

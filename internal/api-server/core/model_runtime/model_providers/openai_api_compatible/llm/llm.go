@@ -28,7 +28,7 @@ import (
 )
 
 type IOpenApiCompactLargeLanguage interface {
-	Invoke(ctx context.Context, queue *biz_entity_chat.StreamGenerateQueue)
+	Invoke(ctx context.Context, queue biz_entity_chat.IStreamGenerateQueue)
 	InvokeNonStream(ctx context.Context) (*biz_entity_chat.LLMResult, error)
 }
 
@@ -421,7 +421,7 @@ func (m *openApiCompactLargeLanguageModel) sendStreamChunkToQueue(ctx context.Co
 			Message: assistantPromptMessage,
 		},
 	}
-	m.HandleInvokeResultStream(ctx, streamResultChunk, false, nil, false)
+	m.HandleInvokeResultStream(ctx, streamResultChunk, false, nil)
 }
 
 func (m *openApiCompactLargeLanguageModel) sendAgentStreamChunkToQueue(ctx context.Context, messageId string, assistantPromptMessage *biz_entity_chat.AssistantPromptMessage) {
@@ -434,7 +434,7 @@ func (m *openApiCompactLargeLanguageModel) sendAgentStreamChunkToQueue(ctx conte
 			Message: assistantPromptMessage,
 		},
 	}
-	m.HandleInvokeResultStream(ctx, streamResultChunk, false, nil, true)
+	m.HandleInvokeResultStream(ctx, streamResultChunk, false, nil)
 }
 
 func (m *openApiCompactLargeLanguageModel) sendAgentEndChunkToQueue(ctx context.Context, messageId string, assistantPromptMessage *biz_entity_chat.AssistantPromptMessage, finishReason string) {
@@ -448,12 +448,12 @@ func (m *openApiCompactLargeLanguageModel) sendAgentEndChunkToQueue(ctx context.
 			FinishReason: finishReason,
 		},
 	}
-	m.HandleInvokeResultStream(ctx, streamResultChunk, true, nil, true)
+	m.HandleInvokeResultStream(ctx, streamResultChunk, true, nil)
 }
 
 func (m *openApiCompactLargeLanguageModel) sendErrorChunkToQueue(ctx context.Context, code error) {
 	err := errors.WithMessage(code, fmt.Sprintf("Error ocurred when handle stream: %#+v", code))
-	m.HandleInvokeResultStream(ctx, nil, false, err, m.agent)
+	m.HandleInvokeResultStream(ctx, nil, false, err)
 }
 
 func handleTokenCount(count any) (int64, bool) {
@@ -543,7 +543,7 @@ func (m *openApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx conte
 	promptPriceInfo, err := m.GetPrice(m.Model, m.Credentials, biz_entity.INPUT, promptTokensInt)
 
 	if err != nil {
-		m.HandleInvokeResultStream(ctx, nil, false, err, false)
+		m.HandleInvokeResultStream(ctx, nil, false, err)
 	}
 
 	completePriceInfo, err := m.GetPrice(m.Model, m.Credentials, biz_entity.OUTPUT, completeTokensInt)
@@ -553,7 +553,7 @@ func (m *openApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx conte
 	totalAmount := promptTotal.Add(completeTotal).InexactFloat64()
 
 	if err != nil {
-		m.HandleInvokeResultStream(ctx, nil, false, err, false)
+		m.HandleInvokeResultStream(ctx, nil, false, err)
 	}
 
 	llmUsage := &biz_entity_chat.LLMUsage{
@@ -586,7 +586,7 @@ func (m *openApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx conte
 			Usage:        llmUsage,
 		},
 	}
-	m.HandleInvokeResultStream(ctx, streamResultChunk, true, nil, false)
+	m.HandleInvokeResultStream(ctx, streamResultChunk, true, nil)
 }
 
 func (m *openApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Context, response *http.Response) {
@@ -793,7 +793,7 @@ func (m *openApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 	}
 }
 
-func (m *openApiCompactLargeLanguageModel) HandleInvokeResultStream(ctx context.Context, invokeResult *biz_entity_chat.LLMResultChunk, end bool, err error, isAgent bool) {
+func (m *openApiCompactLargeLanguageModel) HandleInvokeResultStream(ctx context.Context, invokeResult *biz_entity_chat.LLMResultChunk, end bool, err error) {
 	if err != nil && invokeResult == nil {
 		m.PushErr(err)
 		return
@@ -813,14 +813,16 @@ func (m *openApiCompactLargeLanguageModel) HandleInvokeResultStream(ctx context.
 		}
 
 		event := biz_entity_chat.NewAppQueueEvent(biz_entity_chat.MessageEnd)
-		m.Final(&biz_entity_chat.QueueMessageEndEvent{
+		endEvent := &biz_entity_chat.QueueMessageEndEvent{
 			AppQueueEvent: event,
 			LLMResult:     llmResult,
-		})
+		}
+
+		m.Final(endEvent)
 		return
 	}
 
-	if isAgent {
+	if m.agent {
 		event := biz_entity_chat.NewAppQueueEvent(biz_entity_chat.AgentMessage)
 		m.Push(&biz_entity_chat.QueueAgentMessageEvent{
 			AppQueueEvent: event,

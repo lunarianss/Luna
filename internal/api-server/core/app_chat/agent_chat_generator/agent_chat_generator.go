@@ -179,7 +179,7 @@ func (acg *AgentChatGenerator) Generate(c context.Context, appModel *po_entity.A
 		return err
 	}
 
-	queueManager, streamResultChunkQueue, streamFinalChunkQueue := biz_entity_chat.NewStreamGenerateQueue(
+	queueManager := biz_entity_chat.NewAgentStreamGenerateQueue(
 		uuid.NewString(),
 		applicationGenerateEntity.EasyUIBasedAppGenerateEntity.UserID,
 		conversationRecord.ID,
@@ -187,7 +187,7 @@ func (acg *AgentChatGenerator) Generate(c context.Context, appModel *po_entity.A
 		po_entity.AppMode("agent-chat"),
 		string(invokeFrom))
 
-	taskScheduler := app_agent_chat_runner.NewAgentChatAppTaskScheduler(applicationGenerateEntity, streamResultChunkQueue, streamFinalChunkQueue, acg.chatDomain.MessageRepo, messageRecord, acg.chatDomain.AnnotationRepo, nil)
+	taskScheduler := app_agent_chat_runner.NewAgentChatAppTaskScheduler(applicationGenerateEntity, acg.chatDomain.MessageRepo, messageRecord, acg.chatDomain.AnnotationRepo, nil)
 
 	flusher := task_pipeline.NewAgentChatFlusher(applicationGenerateEntity, acg.agentDomain.AgentRepo, messageRecord)
 
@@ -200,7 +200,7 @@ func (acg *AgentChatGenerator) Generate(c context.Context, appModel *po_entity.A
 	return nil
 }
 
-func (g *AgentChatGenerator) generateGoRoutine(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.AgentChatAppGenerateEntity, conversationID string, messageID string, queueManager *biz_entity_chat.StreamGenerateQueue, taskPipeline app_agent_chat_runner.IAgentChatAppTaskScheduler, flusher biz_entity.AgentFlusher) {
+func (g *AgentChatGenerator) generateGoRoutine(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.AgentChatAppGenerateEntity, conversationID string, messageID string, queueManager biz_entity_chat.IStreamGenerateQueue, taskPipeline app_agent_chat_runner.IAgentChatAppTaskScheduler, flusher biz_entity.AgentFlusher) {
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -225,10 +225,10 @@ func (g *AgentChatGenerator) generateGoRoutine(ctx context.Context, applicationG
 		return
 	}
 
-	appRunner.Run(ctx, applicationGenerateEntity, message, conversation, queueManager, taskPipeline, flusher)
+	appRunner.Run(ctx, applicationGenerateEntity, message, conversation, queueManager, taskPipeline, flusher, g.appConfig)
 }
 
-func (g *AgentChatGenerator) ListenQueue(queueManager *biz_entity_chat.StreamGenerateQueue) {
+func (g *AgentChatGenerator) ListenQueue(queueManager biz_entity_chat.IStreamGenerateQueue) {
 	queueManager.Listen()
 }
 

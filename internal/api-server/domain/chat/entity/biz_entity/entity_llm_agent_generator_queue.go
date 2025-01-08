@@ -8,6 +8,8 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 )
 
+var _ IStreamGenerateQueue = (*AgentStreamGenerateQueue)(nil)
+
 type AgentStreamGenerateQueue struct {
 	// Input
 	StreamResultChunkQueue chan *MessageQueueMessage
@@ -32,7 +34,7 @@ type AgentStreamGenerateQueue struct {
 	isNormalQuit  bool
 }
 
-func NewAgentStreamGenerateQueue(taskID, userID, conversationID, messageId string, appMode po_entity.AppMode, invokeFrom string) (*AgentStreamGenerateQueue, chan *MessageQueueMessage, chan *MessageQueueMessage, chan *MessageQueueMessage) {
+func NewAgentStreamGenerateQueue(taskID, userID, conversationID, messageId string, appMode po_entity.AppMode, invokeFrom string) IStreamGenerateQueue {
 
 	streamResultChan := make(chan *MessageQueueMessage, STREAM_BUFFER_SIZE)
 	streamFinalChan := make(chan *MessageQueueMessage, STREAM_BUFFER_SIZE)
@@ -44,13 +46,14 @@ func NewAgentStreamGenerateQueue(taskID, userID, conversationID, messageId strin
 		StreamErrorQueue:          make(chan *MessageQueueMessage, ERROR_BUFFER_SIZE),
 		OutStreamResultChunkQueue: streamResultChan,
 		OutStreamFinalChunkQueue:  streamFinalChan,
+		OutStreamErrorChunkQueue:  streamErrorQueue,
 		TaskID:                    taskID,
 		UserID:                    userID,
 		ConversationID:            conversationID,
 		MessageID:                 messageId,
 		AppMode:                   appMode,
 		InvokeFrom:                invokeFrom,
-	}, streamResultChan, streamFinalChan, streamErrorQueue
+	}
 }
 
 func (sgq *AgentStreamGenerateQueue) PushErr(err error) {
@@ -64,6 +67,28 @@ func (sgq *AgentStreamGenerateQueue) PushErr(err error) {
 	})
 }
 
+func (sgq *AgentStreamGenerateQueue) Fork() IStreamGenerateQueue {
+
+	streamResultChan := make(chan *MessageQueueMessage, STREAM_BUFFER_SIZE)
+	streamFinalChan := make(chan *MessageQueueMessage, STREAM_BUFFER_SIZE)
+	streamErrorQueue := make(chan *MessageQueueMessage, ERROR_BUFFER_SIZE)
+
+	return &AgentStreamGenerateQueue{
+		StreamResultChunkQueue:    make(chan *MessageQueueMessage, STREAM_BUFFER_SIZE),
+		StreamFinalChunkQueue:     make(chan *MessageQueueMessage, STREAM_BUFFER_SIZE),
+		StreamErrorQueue:          make(chan *MessageQueueMessage, ERROR_BUFFER_SIZE),
+		OutStreamResultChunkQueue: streamResultChan,
+		OutStreamFinalChunkQueue:  streamFinalChan,
+		OutStreamErrorChunkQueue:  streamErrorQueue,
+		TaskID:                    sgq.TaskID,
+		UserID:                    sgq.UserID,
+		ConversationID:            sgq.ConversationID,
+		MessageID:                 sgq.MessageID,
+		AppMode:                   sgq.AppMode,
+		InvokeFrom:                sgq.InvokeFrom,
+	}
+}
+
 func (sgq *AgentStreamGenerateQueue) Close() {
 
 }
@@ -75,6 +100,10 @@ func (sgq *AgentStreamGenerateQueue) Push(chunk IQueueEvent) {
 func (sgq *AgentStreamGenerateQueue) Final(chunk IQueueEvent) {
 	defer sgq.CloseFinalChan()
 	sgq.StreamFinalChunkQueue <- sgq.constructMessageQueue(chunk)
+}
+
+func (sgq *AgentStreamGenerateQueue) GetQueues() (chan *MessageQueueMessage, chan *MessageQueueMessage, chan *MessageQueueMessage) {
+	return sgq.OutStreamResultChunkQueue, sgq.OutStreamFinalChunkQueue, sgq.OutStreamErrorChunkQueue
 }
 
 func (sgq *AgentStreamGenerateQueue) constructMessageQueue(chunk IQueueEvent) *MessageQueueMessage {
@@ -95,9 +124,27 @@ func (sgq *AgentStreamGenerateQueue) CloseFinalChan() {
 	close(sgq.StreamFinalChunkQueue)
 }
 
+func (sgq *AgentStreamGenerateQueue) CloseOutFinalChan() {
+	close(sgq.OutStreamFinalChunkQueue)
+}
+
+func (sgq *AgentStreamGenerateQueue) CloseOutErrChan() {
+	close(sgq.OutStreamErrorChunkQueue)
+}
+
 func (sgq *AgentStreamGenerateQueue) closeErr() {
 	close(sgq.StreamFinalChunkQueue)
 	close(sgq.StreamResultChunkQueue)
+}
+
+func (sgq *AgentStreamGenerateQueue) CloseOutErr() {
+	close(sgq.OutStreamFinalChunkQueue)
+	close(sgq.OutStreamResultChunkQueue)
+}
+
+func (sgq *AgentStreamGenerateQueue) CloseOutNormalExit() {
+	close(sgq.OutStreamErrorChunkQueue)
+	close(sgq.OutStreamResultChunkQueue)
 }
 
 func (sgq *AgentStreamGenerateQueue) closeNormalExit() {
@@ -114,12 +161,14 @@ QuitLoop:
 		case finalChunk, ok := <-sgq.StreamFinalChunkQueue:
 			sgq.isNormalQuit = true
 			if !ok {
+				sgq.CloseOutFinalChan()
 				break QuitLoop
 			}
 			sgq.OutStreamFinalChunkQueue <- finalChunk
 		case errChunk, ok := <-sgq.StreamErrorQueue:
 			sgq.isOccurredErr = true
 			if !ok {
+				sgq.CloseOutErrChan()
 				break QuitLoop
 			}
 			sgq.OutStreamErrorChunkQueue <- errChunk
@@ -128,6 +177,7 @@ QuitLoop:
 
 	if sgq.isOccurredErr {
 		sgq.handleErrFallback()
+		return
 	}
 
 	if sgq.isNormalQuit {

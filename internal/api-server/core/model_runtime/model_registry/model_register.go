@@ -20,9 +20,8 @@ const (
 )
 
 type IModelRegistry interface {
-	Invoke(ctx context.Context, queueManager *biz_entity_chat.StreamGenerateQueue, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, user string, promptMessages []po_entity.IPromptMessage, modelRuntime biz_entity.IAIModelRuntime, tools []*biz_entity_chat.PromptMessageTool)
+	Invoke(ctx context.Context, queueManager biz_entity_chat.IStreamGenerateQueue, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, user string, promptMessages []po_entity.IPromptMessage, modelRuntime biz_entity.IAIModelRuntime, tools []*biz_entity_chat.PromptMessageTool)
 	InvokeNonStream(ctx context.Context, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, user string, promptMessages []po_entity.IPromptMessage, modelRuntime biz_entity.IAIModelRuntime) (*biz_entity_chat.LLMResult, error)
-
 	RegisterName() string
 }
 

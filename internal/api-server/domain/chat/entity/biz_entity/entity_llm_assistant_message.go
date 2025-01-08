@@ -6,6 +6,7 @@ import (
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 )
 
+
 type AssistantPromptMessage struct {
 	*po_entity.PromptMessage
 	ToolCalls []*ToolCall `json:"tool_calls"`

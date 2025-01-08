@@ -92,7 +92,7 @@ func (r *appAgentChatRunner) baseRun(ctx context.Context, applicationGenerateEnt
 	return modelInstance, promptMessages, stop, appRecord, nil
 }
 
-func (r *appAgentChatRunner) Run(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.AgentChatAppGenerateEntity, message *po_entity_chat.Message, conversation *po_entity_chat.Conversation, queueManager *biz_entity.StreamGenerateQueue, taskScheduler IAgentChatAppTaskScheduler, flusher biz_entity_agent.AgentFlusher) {
+func (r *appAgentChatRunner) Run(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.AgentChatAppGenerateEntity, message *po_entity_chat.Message, conversation *po_entity_chat.Conversation, queueManager biz_entity.IStreamGenerateQueue, taskScheduler IAgentChatAppTaskScheduler, flusher biz_entity_agent.AgentFlusher, appConfig *biz_entity_app_config.AgentChatAppConfig) {
 
 	modelCaller, promptMessages, stop, app, err := r.baseRun(ctx, applicationGenerateEntity, conversation)
 
@@ -135,7 +135,7 @@ func (r *appAgentChatRunner) Run(ctx context.Context, applicationGenerateEntity 
 
 		agentRunner := NewFunctionCallAgentRunner(app.TenantID, applicationGenerateEntity, conversation, r.agentDomain, queueManager, flusher, promptToolMessage, util.ConvertToInterfaceSlice(promptMessages, func(pm *po_entity_chat.PromptMessage) po_entity_chat.IPromptMessage {
 			return pm
-		}), toolRuntimeMap, modelCaller, "builtin")
+		}), toolRuntimeMap, modelCaller, appConfig, "builtin")
 
 		taskScheduler.SetFunctionCallRunner(agentRunner)
 

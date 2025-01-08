@@ -33,7 +33,7 @@ type IOpenApiCompactLargeLanguage interface {
 }
 
 type openApiCompactLargeLanguageModel struct {
-	*biz_entity_chat.StreamGenerateQueue
+	biz_entity_chat.IStreamGenerateQueue
 	biz_entity.IAIModelRuntime
 	FullAssistantContent string
 	Usage                interface{}
@@ -69,11 +69,11 @@ func (m *openApiCompactLargeLanguageModel) InvokeNonStream(ctx context.Context) 
 	return m.generateNonStream(ctx)
 }
 
-func (m *openApiCompactLargeLanguageModel) Invoke(ctx context.Context, queue *biz_entity_chat.StreamGenerateQueue) {
+func (m *openApiCompactLargeLanguageModel) Invoke(ctx context.Context, queue biz_entity_chat.IStreamGenerateQueue) {
 	if len(m.tools) > 0 {
 		m.agent = true
 	}
-	m.StreamGenerateQueue = queue
+	m.IStreamGenerateQueue = queue
 	m.generate(ctx)
 }
 
@@ -421,7 +421,7 @@ func (m *openApiCompactLargeLanguageModel) sendStreamChunkToQueue(ctx context.Co
 			Message: assistantPromptMessage,
 		},
 	}
-	m.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, false, nil, false)
+	m.HandleInvokeResultStream(ctx, streamResultChunk, false, nil, false)
 }
 
 func (m *openApiCompactLargeLanguageModel) sendAgentStreamChunkToQueue(ctx context.Context, messageId string, assistantPromptMessage *biz_entity_chat.AssistantPromptMessage) {
@@ -434,7 +434,7 @@ func (m *openApiCompactLargeLanguageModel) sendAgentStreamChunkToQueue(ctx conte
 			Message: assistantPromptMessage,
 		},
 	}
-	m.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, false, nil, true)
+	m.HandleInvokeResultStream(ctx, streamResultChunk, false, nil, true)
 }
 
 func (m *openApiCompactLargeLanguageModel) sendAgentEndChunkToQueue(ctx context.Context, messageId string, assistantPromptMessage *biz_entity_chat.AssistantPromptMessage, finishReason string) {
@@ -448,13 +448,12 @@ func (m *openApiCompactLargeLanguageModel) sendAgentEndChunkToQueue(ctx context.
 			FinishReason: finishReason,
 		},
 	}
-	m.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, false, nil, true)
+	m.HandleInvokeResultStream(ctx, streamResultChunk, true, nil, true)
 }
 
 func (m *openApiCompactLargeLanguageModel) sendErrorChunkToQueue(ctx context.Context, code error) {
-	defer m.Close()
 	err := errors.WithMessage(code, fmt.Sprintf("Error ocurred when handle stream: %#+v", code))
-	m.HandleInvokeResultStream(ctx, nil, m.StreamGenerateQueue, false, err, false)
+	m.HandleInvokeResultStream(ctx, nil, false, err, m.agent)
 }
 
 func handleTokenCount(count any) (int64, bool) {
@@ -511,7 +510,6 @@ func (m *openApiCompactLargeLanguageModel) convertToToolCall(toolStreamCalls []*
 
 }
 func (m *openApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx context.Context, messageId string, finalReason string, fullAssistant string, usage map[string]interface{}) {
-	defer m.Close()
 
 	var (
 		err               error
@@ -545,7 +543,7 @@ func (m *openApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx conte
 	promptPriceInfo, err := m.GetPrice(m.Model, m.Credentials, biz_entity.INPUT, promptTokensInt)
 
 	if err != nil {
-		m.HandleInvokeResultStream(ctx, nil, m.StreamGenerateQueue, false, err, false)
+		m.HandleInvokeResultStream(ctx, nil, false, err, false)
 	}
 
 	completePriceInfo, err := m.GetPrice(m.Model, m.Credentials, biz_entity.OUTPUT, completeTokensInt)
@@ -555,7 +553,7 @@ func (m *openApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx conte
 	totalAmount := promptTotal.Add(completeTotal).InexactFloat64()
 
 	if err != nil {
-		m.HandleInvokeResultStream(ctx, nil, m.StreamGenerateQueue, false, err, false)
+		m.HandleInvokeResultStream(ctx, nil, false, err, false)
 	}
 
 	llmUsage := &biz_entity_chat.LLMUsage{
@@ -588,7 +586,7 @@ func (m *openApiCompactLargeLanguageModel) sendStreamFinalChunkToQueue(ctx conte
 			Usage:        llmUsage,
 		},
 	}
-	m.HandleInvokeResultStream(ctx, streamResultChunk, m.StreamGenerateQueue, true, nil, false)
+	m.HandleInvokeResultStream(ctx, streamResultChunk, true, nil, false)
 }
 
 func (m *openApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Context, response *http.Response) {
@@ -787,15 +785,52 @@ func (m *openApiCompactLargeLanguageModel) handleStreamResponse(ctx context.Cont
 			}
 			assistantPromptMessage := biz_entity_chat.NewAssistantPromptMessage(m.FullAssistantContent)
 			assistantPromptMessage.ToolCalls = toolCalls
-
-			m.sendAgentStreamChunkToQueue(ctx, messageID, assistantPromptMessage)
+			m.sendAgentEndChunkToQueue(ctx, messageID, assistantPromptMessage, biz_entity_chat.AGENT_END)
 		} else {
 			assistantPromptMessage := biz_entity_chat.NewAssistantPromptMessage(m.FullAssistantContent)
 			m.sendAgentEndChunkToQueue(ctx, messageID, assistantPromptMessage, biz_entity_chat.AGENT_END)
-
 		}
 	}
+}
 
+func (m *openApiCompactLargeLanguageModel) HandleInvokeResultStream(ctx context.Context, invokeResult *biz_entity_chat.LLMResultChunk, end bool, err error, isAgent bool) {
+	if err != nil && invokeResult == nil {
+		m.PushErr(err)
+		return
+	}
+
+	if end {
+		llmResult := &biz_entity_chat.LLMResult{
+			Model:         invokeResult.Model,
+			PromptMessage: invokeResult.PromptMessage,
+			Reason:        invokeResult.Delta.FinishReason,
+			Message: &biz_entity_chat.AssistantPromptMessage{
+				PromptMessage: &po_entity_chat.PromptMessage{
+					Content: invokeResult.Delta.Message.Content,
+				},
+			},
+			Usage: invokeResult.Delta.Usage,
+		}
+
+		event := biz_entity_chat.NewAppQueueEvent(biz_entity_chat.MessageEnd)
+		m.Final(&biz_entity_chat.QueueMessageEndEvent{
+			AppQueueEvent: event,
+			LLMResult:     llmResult,
+		})
+		return
+	}
+
+	if isAgent {
+		event := biz_entity_chat.NewAppQueueEvent(biz_entity_chat.AgentMessage)
+		m.Push(&biz_entity_chat.QueueAgentMessageEvent{
+			AppQueueEvent: event,
+			Chunk:         invokeResult})
+	} else {
+		event := biz_entity_chat.NewAppQueueEvent(biz_entity_chat.LLMChunk)
+		m.Push(&biz_entity_chat.QueueLLMChunkEvent{
+			AppQueueEvent: event,
+			Chunk:         invokeResult})
+	}
 }
 
 func (m *openApiCompactLargeLanguageModel) getToolCall(tooCallID string) *biz_entity_chat.ToolCallStream {
@@ -840,51 +875,5 @@ func (m *openApiCompactLargeLanguageModel) increaseToolCall(newToolCalls []*biz_
 		if toolCall.Function.Arguments != "" {
 			toolCallFind.Function.Arguments += toolCall.Function.Arguments
 		}
-
-	}
-
-}
-
-func (runner *openApiCompactLargeLanguageModel) HandleInvokeResultStream(ctx context.Context, invokeResult *biz_entity_chat.LLMResultChunk, streamGenerator *biz_entity_chat.StreamGenerateQueue, end bool, err error, isAgent bool) {
-
-	if err != nil && invokeResult == nil {
-		streamGenerator.Final(&biz_entity_chat.QueueErrorEvent{
-			AppQueueEvent: biz_entity_chat.NewAppQueueEvent(biz_entity_chat.Error),
-			Err:           err,
-		})
-		return
-	}
-
-	if end {
-		llmResult := &biz_entity_chat.LLMResult{
-			Model:         invokeResult.Model,
-			PromptMessage: invokeResult.PromptMessage,
-			Reason:        invokeResult.Delta.FinishReason,
-			Message: &biz_entity_chat.AssistantPromptMessage{
-				PromptMessage: &po_entity_chat.PromptMessage{
-					Content: invokeResult.Delta.Message.Content,
-				},
-			},
-			Usage: invokeResult.Delta.Usage,
-		}
-
-		event := biz_entity_chat.NewAppQueueEvent(biz_entity_chat.MessageEnd)
-		streamGenerator.Final(&biz_entity_chat.QueueMessageEndEvent{
-			AppQueueEvent: event,
-			LLMResult:     llmResult,
-		})
-		return
-	}
-
-	if isAgent {
-		event := biz_entity_chat.NewAppQueueEvent(biz_entity_chat.AgentMessage)
-		streamGenerator.Push(&biz_entity_chat.QueueAgentMessageEvent{
-			AppQueueEvent: event,
-			Chunk:         invokeResult})
-	} else {
-		event := biz_entity_chat.NewAppQueueEvent(biz_entity_chat.LLMChunk)
-		streamGenerator.Push(&biz_entity_chat.QueueLLMChunkEvent{
-			AppQueueEvent: event,
-			Chunk:         invokeResult})
 	}
 }

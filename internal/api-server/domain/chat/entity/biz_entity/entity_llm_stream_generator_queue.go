@@ -13,6 +13,13 @@ const (
 	ERROR_BUFFER_SIZE  = 7
 )
 
+type IStreamGenerateQueue interface {
+	PushErr(err error)
+	Push(chunk IQueueEvent)
+	Final(chunk IQueueEvent)
+	Close()
+}
+
 type StreamGenerateQueue struct {
 	// Input
 	StreamResultChunkQueue chan *MessageQueueMessage
@@ -55,7 +62,7 @@ func (sgq *StreamGenerateQueue) PushErr(err error) {
 
 	errEvent := NewAppQueueEvent(Error)
 
-	sgq.Final(&QueueErrorEvent{
+	sgq.StreamFinalChunkQueue <- sgq.constructMessageQueue(&QueueErrorEvent{
 		AppQueueEvent: errEvent,
 		Err:           err,
 	})
@@ -66,6 +73,7 @@ func (sgq *StreamGenerateQueue) Push(chunk IQueueEvent) {
 }
 
 func (sgq *StreamGenerateQueue) Final(chunk IQueueEvent) {
+	defer sgq.Close()
 	sgq.StreamFinalChunkQueue <- sgq.constructMessageQueue(chunk)
 }
 

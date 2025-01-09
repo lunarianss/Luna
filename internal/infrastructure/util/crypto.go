@@ -6,6 +6,7 @@ package util
 
 import (
 	"bytes"
+	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
@@ -33,11 +34,30 @@ func GenerateRefreshToken(length int) (string, error) {
 	return token, nil
 }
 
+func GenerateNonce(length int) (string, error) {
+	if length <= 0 {
+		return "", fmt.Errorf("invalid length")
+	}
+	nonce := make([]byte, length)
+	_, err := io.ReadFull(rand.Reader, nonce)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate refresh token: %v", err)
+	}
+
+	return fmt.Sprintf("%x", nonce), nil
+}
+
 func GenerateTextHash(text string) string {
 	hashText := text + "None"
 	hash := sha256.New()
 	hash.Write([]byte(hashText))
 	return hex.EncodeToString(hash.Sum(nil))
+}
+
+func GenerateHMACSignature(dataToSign string, secretKey string) []byte {
+	h := hmac.New(sha256.New, []byte(secretKey))
+	h.Write([]byte(dataToSign))
+	return h.Sum(nil)
 }
 
 func EncodeFloat32ToBase64(vectors []float32) (string, error) {

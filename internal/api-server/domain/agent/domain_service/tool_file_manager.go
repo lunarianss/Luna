@@ -22,12 +22,13 @@ type ToolFileManager struct {
 
 func NewToolFileManager(agentDomain *AgentDomain, bucket string) *ToolFileManager {
 	return &ToolFileManager{
-		bucket: bucket,
+		bucket:      bucket,
+		AgentDomain: agentDomain,
 	}
 }
 
 func (tf *ToolFileManager) SignFile(toolFileID string, extension string, secretKey string, baseUrl string) (string, error) {
-	filePreviewURL := fmt.Sprintf("%s/files/tools/%s%s", baseUrl, toolFileID, extension)
+	filePreviewURL := fmt.Sprintf("%s/files/tools/%s.%s", baseUrl, toolFileID, extension)
 
 	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
 
@@ -59,7 +60,7 @@ func (tf *ToolFileManager) VerifyFile(fileID string, timestamp int64, nonce stri
 
 	currentTime := time.Now().Unix()
 
-	return currentTime-timestamp > timeout
+	return currentTime-timestamp < timeout
 }
 
 func (tf *ToolFileManager) CreateFileByRaw(ctx context.Context, userID, tenantID, conversationID string, fileBinary []byte, mimeType string) (*po_entity.ToolFile, error) {

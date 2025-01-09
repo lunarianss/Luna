@@ -252,7 +252,7 @@ func (fca *FunctionCallAgentRunner) interactionInvokeLLM(ctx context.Context) {
 }
 
 func (fca *FunctionCallAgentRunner) handleStreamAgentMessageQueue(ctx context.Context) (*po_agent.MessageAgentThought, error) {
-	isFirstChunk := true
+	// isFirstChunk := true
 	isOccurredErr := false
 	isNormalQuit := false
 
@@ -262,19 +262,18 @@ func (fca *FunctionCallAgentRunner) handleStreamAgentMessageQueue(ctx context.Co
 		return nil, err
 	}
 
+	// err = fca.agentFlusher.AgentThoughtToStreamResponse(ctx, agentThought.ID)
+
+	// if err != nil {
+	// 	return nil, err
+	// }
+
 	resultQueue, finalQueue, errorQueue := fca.GetQueues()
 
 QuitLoop:
 	for {
 		select {
 		case resultMessage := <-resultQueue:
-			if isFirstChunk {
-				err := fca.agentFlusher.AgentThoughtToStreamResponse(ctx, agentThought.ID)
-				if err != nil {
-					return nil, err
-				}
-				isFirstChunk = false
-			}
 			fca.handleResultChunk(resultMessage)
 		case finalMessage, ok := <-finalQueue:
 			isNormalQuit = true

@@ -186,7 +186,7 @@ func (te *ToolEngine) convertToolResponseToString(toolMessages []*biz_entity.Too
 			}
 			result += message
 		} else if toolMessage.Type == biz_entity.LINK {
-			result += fmt.Sprintf("result link: %s. please tell user to check it", toolMessage.Message)
+			result += fmt.Sprintf("result link: %s. please inform the user", toolMessage.Message)
 		} else if toolMessage.Type == biz_entity.IMAGE || toolMessage.Type == biz_entity.IMAGE_LINK {
 			result += "image has been created and sent to user already, you do not need to create it, just tell the user to check it now"
 		} else if toolMessage.Type == biz_entity.JSON {

@@ -181,6 +181,12 @@ type AgentChatBotAppStreamResponse struct {
 	CreatedAt      int64  `json:"created_at"`
 }
 
+type AgentThoughtBotAppStreamResponse struct {
+	*AgentThoughtStreamResponse
+	ConversationID string `json:"conversation_id"`
+	MessageID      string `json:"message_id"`
+	CreatedAt      int64  `json:"created_at"`
+}
 type AgentThoughtStreamResponse struct {
 	*StreamResponse
 	ID           string            `json:"id"`
@@ -191,6 +197,15 @@ type AgentThoughtStreamResponse struct {
 	ToolLabels   string            `json:"tool_labels"`
 	ToolInputs   map[string]string `json:"tool_input"`
 	MessageFiles []string          `json:"message_files"`
+}
+
+func NewAgentThoughtBotAppStreamResponse(cID, mID string, createAt int64, streamResp *AgentThoughtStreamResponse) *AgentThoughtBotAppStreamResponse {
+	return &AgentThoughtBotAppStreamResponse{
+		ConversationID:             cID,
+		MessageID:                  mID,
+		CreatedAt:                  createAt,
+		AgentThoughtStreamResponse: streamResp,
+	}
 }
 
 func NewChatBotAppStreamResponse(cID, mID string, createAt int64, streamResp *MessageStreamResponse) *ChatBotAppStreamResponse {

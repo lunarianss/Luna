@@ -81,16 +81,17 @@ func (st *StableDiffusionTool) Invoke(ctx context.Context, userID string, toolPa
 	body, err := io.ReadAll(response.Body)
 
 	if err != nil {
-		return nil, errors.WithCode(code.ErrInvokeTool, "failed to invoke stable diffusion tool error: %s", err.Error())
+		return nil, errors.WrapC(err, code.ErrInvokeTool, "")
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return nil, errors.WithCode(code.ErrInvokeTool, "failed to invoke stable diffusion tool error: %s", body)
+		return nil, errors.WrapC(errors.New(string(body)), code.ErrInvokeTool, "")
 	}
 
 	return []*biz_entity.ToolInvokeMessage{st.CreateBlobMessage(body, map[string]any{
 		"mime_type": "image/png",
 	}, "image")}, nil
+
 }
 
 func (st *StableDiffusionTool) parseParameter(parameter []byte, toolRuntime *biz_entity.ToolRuntimeConfiguration) error {
@@ -115,13 +116,13 @@ func (st *StableDiffusionTool) parseParameter(parameter []byte, toolRuntime *biz
 	st.payloadMap["seed"] = strconv.Itoa(st.parameter.Seed)
 	st.payloadMap["output_format"] = "png"
 
-	credentials, ok := toolRuntime.Credentials["api_key"].(string)
+	// credentials, ok := toolRuntime.Credentials["api_key"].(string)
 
-	if !ok {
-		errors.WithSCode(code.ErrRunTimeCaller, "stable diffusion tool api key is not converted to string")
-	}
+	// if !ok {
+	// 	errors.WithSCode(code.ErrRunTimeCaller, "stable diffusion tool api key is not converted to string")
+	// }
 
-	st.credentials = credentials
+	st.credentials = "sk-MqWsH12GYB1E1LN1f7tjsUTGI41vjOr6GWUmRLUAVadU8Rt5"
 
 	return nil
 }

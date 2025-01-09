@@ -175,6 +175,7 @@ func (tpp *agentChatFlusher) AgentThoughtToStreamResponse(ctx context.Context, a
 			TaskID: tpp.GetTaskID(),
 			Event:  biz_entity.StreamEventAgentThought,
 		},
+		ID:           agentThoughtID,
 		Position:     agentThought.Position,
 		Thought:      agentThought.Thought,
 		Observation:  agentThought.Observation,
@@ -184,7 +185,9 @@ func (tpp *agentChatFlusher) AgentThoughtToStreamResponse(ctx context.Context, a
 		MessageFiles: agentThought.MessageFiles,
 	}
 
-	streamBytes, err := json.Marshal(thoughtResp)
+	chatBotResponse := biz_entity.NewAgentThoughtBotAppStreamResponse(tpp.GetConversationID(), tpp.message.ID, tpp.message.CreatedAt, thoughtResp)
+
+	streamBytes, err := json.Marshal(chatBotResponse)
 
 	if err != nil {
 		return err

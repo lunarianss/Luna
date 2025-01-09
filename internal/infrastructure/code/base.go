@@ -51,6 +51,8 @@ const (
 	ErrVDB
 	// ErrRedis - 400: Redis error.
 	ErrRedis
+	// ErrMinio - 400: storage error.
+	ErrMinio
 )
 
 // common: authorization and authentication errors.

@@ -1,9 +1,14 @@
 package assembler
 
 import (
+	"github.com/jinzhu/copier"
+	"github.com/lunarianss/Luna/infrastructure/log"
 	po_account "github.com/lunarianss/Luna/internal/api-server/domain/account/entity/po_entity"
+	biz_agent "github.com/lunarianss/Luna/internal/api-server/domain/agent/entity/biz_entity"
+	po_agent "github.com/lunarianss/Luna/internal/api-server/domain/agent/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
+	dto_agent "github.com/lunarianss/Luna/internal/api-server/dto/agent"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
 )
 
@@ -43,7 +48,19 @@ func ConvertToAnnotationAccount(a *po_account.Account) (s *dto.AnnotationAccount
 }
 
 // ConvertToListMessageDto converts a Message from po_entity to ListChatMessageItem.
-func ConvertToListMessageDto(message *po_entity.Message, annotation *biz_entity.BizMessageAnnotation, history *po_entity.AppAnnotationHitHistory, account *po_account.Account) *dto.ListChatMessageItem {
+func ConvertToListMessageDto(message *po_entity.Message, annotation *biz_entity.BizMessageAnnotation, history *po_entity.AppAnnotationHitHistory, account *po_account.Account, thoughts []*po_agent.MessageAgentThought, buildFile []*biz_agent.BuildFile) *dto.ListChatMessageItem {
+
+	var thoughtDto []*dto_agent.MessageAgentThought
+	var buildFileDto []*dto_agent.BuildFile
+
+	if err := copier.Copy(&thoughtDto, &thoughts); err != nil {
+		log.Errorf("copier copy error from po agent-thought to dto agent-thought")
+	}
+
+	if err := copier.Copy(&buildFileDto, &buildFile); err != nil {
+		log.Errorf("copier copy error from po agent-thought to dto agent-thought")
+	}
+
 	messageItem := &dto.ListChatMessageItem{
 		ID:                      message.ID,
 		ConversationID:          message.ConversationID,
@@ -70,8 +87,8 @@ func ConvertToListMessageDto(message *po_entity.Message, annotation *biz_entity.
 		InvokeFrom:              message.InvokeFrom,
 		ParentMessageID:         message.ParentMessageID,
 		FeedBacks:               make([]string, 0),
-		AgentThoughts:           make([]string, 0),
-		MessageFiles:            make([]string, 0),
+		AgentThoughts:           thoughtDto,
+		MessageFiles:            buildFileDto,
 		Annotation:              ConvertToAnnotation(annotation),
 	}
 

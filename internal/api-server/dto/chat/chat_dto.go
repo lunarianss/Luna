@@ -6,6 +6,7 @@ package dto
 
 import (
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
+	dto "github.com/lunarianss/Luna/internal/api-server/dto/agent"
 )
 
 type Speech2TextResp struct {
@@ -90,35 +91,35 @@ type AnnotationHistory struct {
 }
 
 type ListChatMessageItem struct {
-	ID                      string                 `json:"id"`
-	ConversationID          string                 `json:"conversation_id"`
-	Inputs                  map[string]interface{} `json:"inputs"`
-	Query                   string                 `json:"query"`
-	Message                 []any                  `json:"message"`
-	MessageTokens           int64                  `json:"message_tokens"`
-	MessageUnitPrice        float64                `json:"message_unit_price"`
-	Answer                  string                 `json:"answer"`
-	AnswerTokens            int64                  `json:"answer_tokens"`
-	ProviderResponseLatency float64                `json:"provider_response_latency"`
-	TotalPrice              float64                `json:"total_price"`
-	Currency                string                 `json:"currency"`
-	FromSource              string                 `json:"from_source"`
-	FromEndUserID           string                 `json:"from_end_user_id"`
-	FromAccountID           string                 `json:"from_account_id"`
-	CreatedAt               int64                  `json:"created_at"`
-	MessagePriceUnit        float64                `json:"message_price_unit"`
-	AnswerPriceUnit         float64                `json:"answer_price_unit"`
-	WorkflowRunID           string                 `json:"workflow_run_id"`
-	Status                  string                 `json:"status"`
-	Error                   string                 `json:"error"`
-	MessageMetadata         map[string]interface{} `json:"metadata"`
-	InvokeFrom              string                 `json:"invoke_from"`
-	FeedBacks               []string               `json:"feedbacks"`
-	AgentThoughts           []string               `json:"agent_thoughts"`
-	MessageFiles            []string               `json:"message_files"`
-	ParentMessageID         string                 `json:"parent_message_id"`
-	Annotation              *MessageAnnotation     `json:"annotation"`
-	AnnotationHistory       *AnnotationHistory     `json:"annotation_hit_history"`
+	ID                      string                     `json:"id"`
+	ConversationID          string                     `json:"conversation_id"`
+	Inputs                  map[string]interface{}     `json:"inputs"`
+	Query                   string                     `json:"query"`
+	Message                 []any                      `json:"message"`
+	MessageTokens           int64                      `json:"message_tokens"`
+	MessageUnitPrice        float64                    `json:"message_unit_price"`
+	Answer                  string                     `json:"answer"`
+	AnswerTokens            int64                      `json:"answer_tokens"`
+	ProviderResponseLatency float64                    `json:"provider_response_latency"`
+	TotalPrice              float64                    `json:"total_price"`
+	Currency                string                     `json:"currency"`
+	FromSource              string                     `json:"from_source"`
+	FromEndUserID           string                     `json:"from_end_user_id"`
+	FromAccountID           string                     `json:"from_account_id"`
+	CreatedAt               int64                      `json:"created_at"`
+	MessagePriceUnit        float64                    `json:"message_price_unit"`
+	AnswerPriceUnit         float64                    `json:"answer_price_unit"`
+	WorkflowRunID           string                     `json:"workflow_run_id"`
+	Status                  string                     `json:"status"`
+	Error                   string                     `json:"error"`
+	MessageMetadata         map[string]interface{}     `json:"metadata"`
+	InvokeFrom              string                     `json:"invoke_from"`
+	FeedBacks               []string                   `json:"feedbacks"`
+	AgentThoughts           []*dto.MessageAgentThought `json:"agent_thoughts"`
+	MessageFiles            []*dto.BuildFile           `json:"message_files"`
+	ParentMessageID         string                     `json:"parent_message_id"`
+	Annotation              *MessageAnnotation         `json:"annotation"`
+	AnnotationHistory       *AnnotationHistory         `json:"annotation_hit_history"`
 }
 
 type ListChatMessagesResponse struct {

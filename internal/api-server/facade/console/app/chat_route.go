@@ -69,7 +69,7 @@ func (a *ChatRoutes) Register(g *gin.Engine) error {
 	accountDomain := accountDomain.NewAccountDomain(accountRepo, nil, nil, nil, tenantRepo)
 	chatDomain := chatDomain.NewChatDomain(messageRepo, annotationRepo)
 	datasetDomain := datasetDomain.NewDatasetDomain(datasetRepo)
-	agentDomain := agentDomain.NewAgentDomain(agentDomain.NewToolTransformService(config), tools.NewToolManager(), agentRepo)
+	agentDomain := agentDomain.NewAgentDomain(agentDomain.NewToolTransformService(config), tools.NewToolManager(), agentRepo, appRepo)
 	// service
 	chatService := service.NewChatService(appDomain, providerDomain, accountDomain, chatDomain, datasetDomain, agentDomain, redisIns, config)
 	annotationService := service.NewAnnotationService(appDomain, providerDomain, accountDomain, chatDomain, redisIns, mqProducer, datasetDomain)

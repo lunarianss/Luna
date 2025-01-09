@@ -239,7 +239,20 @@ func (s *ChatService) ListConsoleMessagesOfConversation(ctx context.Context, acc
 			}
 		}
 
-		messageDto := assembler.ConvertToListMessageDto(mr, annotation, annotationHistory, annotationAccount)
+		agentThoughts, err := s.agentDomain.AgentRepo.GetAgentThoughtByMessage(ctx, mr.ID)
+
+		if err != nil {
+			return nil, err
+		}
+
+		buildFile, err := s.agentDomain.BuildMessageFile(ctx, mr, tenant.ID, s.config.SystemOptions.FileBaseUrl, s.config.SystemOptions.SecretKey)
+
+		if err != nil {
+			return nil, err
+		}
+
+		messageDto := assembler.ConvertToListMessageDto(mr, annotation, annotationHistory, annotationAccount, agentThoughts, buildFile)
+
 		messageItems = append(messageItems, messageDto)
 	}
 

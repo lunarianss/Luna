@@ -63,7 +63,7 @@ func (a *AppRoutes) Register(g *gin.Engine) error {
 	appDomain := appDomain.NewAppDomain(appRepo, webAppRepo, gormIns)
 	accountDomain := accountDomain.NewAccountDomain(accountRepo, nil, nil, nil, tenantRepo)
 	chatDomain := chatDomain.NewChatDomain(messageRepo, annotationRepo)
-	agentDomain := agentDomain.NewAgentDomain(agentDomain.NewToolTransformService(config), tools.NewToolManager(), agentRepo)
+	agentDomain := agentDomain.NewAgentDomain(agentDomain.NewToolTransformService(config), tools.NewToolManager(), agentRepo, appRepo)
 
 	// service
 	appService := service.NewAppService(appDomain, providerDomain, accountDomain, chatDomain, gormIns, config)

@@ -34,8 +34,9 @@ func (a *ToolFilesRoutes) Register(g *gin.Engine) error {
 	// repos
 
 	agentRepo := repo_impl.NewAgentRepoImpl(gormIns)
+	appRepo := repo_impl.NewAppRepoImpl(gormIns)
 	// domain
-	agentDomain := agentDomain.NewAgentDomain(agentDomain.NewToolTransformService(config), tools.NewToolManager(), agentRepo)
+	agentDomain := agentDomain.NewAgentDomain(agentDomain.NewToolTransformService(config), tools.NewToolManager(), agentRepo, appRepo)
 
 	// service
 

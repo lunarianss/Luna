@@ -27,6 +27,31 @@ func (ar *AgentRepoImpl) CreateAgentThought(ctx context.Context, agentThought *p
 	return agentThought, nil
 }
 
+func (ar *AgentRepoImpl) GetMessageFileByMessage(ctx context.Context, messageID string) ([]*po_entity.MessageFile, error) {
+	var result []*po_entity.MessageFile
+	if err := ar.db.Find(&result, "message_id = ?", messageID).Error; err != nil {
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
+	}
+	return result, nil
+}
+
+func (ar *AgentRepoImpl) GetToolFileByTenant(ctx context.Context, toolFileID string, accountID, tenantID string) (*po_entity.ToolFile, error) {
+	var toolFile po_entity.ToolFile
+
+	if err := ar.db.First(&toolFile, "id = ? AND tenant_id = ? AND user_id = ?", toolFileID, tenantID, accountID).Error; err != nil {
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
+	}
+	return &toolFile, nil
+}
+
+func (ar *AgentRepoImpl) GetAgentThoughtByMessage(ctx context.Context, messageID string) ([]*po_entity.MessageAgentThought, error) {
+	var result []*po_entity.MessageAgentThought
+	if err := ar.db.Order("position ASC").Find(&result, "message_id = ?", messageID).Error; err != nil {
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
+	}
+	return result, nil
+}
+
 func (ar *AgentRepoImpl) CreateToolFile(ctx context.Context, toolFile *po_entity.ToolFile) (*po_entity.ToolFile, error) {
 	if err := ar.db.Create(toolFile).Error; err != nil {
 		return nil, errors.WithSCode(code.ErrDatabase, err.Error())

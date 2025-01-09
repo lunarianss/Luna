@@ -59,9 +59,10 @@ func (w *withCode) Format(state fmt.State, verb rune) {
 		jsonData := []map[string]interface{}{}
 
 		var (
-			flagDetail bool
-			flagTrace  bool
-			modeJSON   bool
+			flagDetail  bool
+			flagTrace   bool
+			modeJSON    bool
+			onlyMessage bool
 		)
 
 		if state.Flag('#') {
@@ -70,6 +71,7 @@ func (w *withCode) Format(state fmt.State, verb rune) {
 
 		if state.Flag('-') {
 			flagDetail = true
+			onlyMessage = true
 		}
 		if state.Flag('+') {
 			flagTrace = true
@@ -80,7 +82,7 @@ func (w *withCode) Format(state fmt.State, verb rune) {
 		length := len(errs)
 		for k, e := range errs {
 			finfo := buildFormatInfo(e)
-			jsonData, str = format(length-k-1, jsonData, str, finfo, sep, flagDetail, flagTrace, modeJSON)
+			jsonData, str = format(length-k-1, jsonData, str, finfo, sep, flagDetail, flagTrace, modeJSON, onlyMessage)
 			sep = "; "
 
 			if !flagTrace {
@@ -107,14 +109,21 @@ func (w *withCode) Format(state fmt.State, verb rune) {
 }
 
 func format(k int, jsonData []map[string]interface{}, str *bytes.Buffer, finfo *formatInfo,
-	sep string, flagDetail, flagTrace, modeJSON bool) ([]map[string]interface{}, *bytes.Buffer) {
+	sep string, flagDetail, flagTrace, modeJSON, onlyMessage bool) ([]map[string]interface{}, *bytes.Buffer) {
 	if modeJSON {
 		data := map[string]interface{}{}
 		if flagDetail || flagTrace {
-			data = map[string]interface{}{
-				"message": finfo.message,
-				"code":    finfo.code,
-				"error":   finfo.err,
+
+			if onlyMessage {
+				data = map[string]interface{}{
+					"message": finfo.message,
+				}
+			} else {
+				data = map[string]interface{}{
+					"message": finfo.message,
+					"code":    finfo.code,
+					"error":   finfo.err,
+				}
 			}
 
 			caller := fmt.Sprintf("#%d", k)
@@ -127,7 +136,9 @@ func format(k int, jsonData []map[string]interface{}, str *bytes.Buffer, finfo *
 					f.name(),
 				)
 			}
-			data["caller"] = caller
+			if !onlyMessage {
+				data["caller"] = caller
+			}
 		} else {
 			data["error"] = finfo.message
 		}

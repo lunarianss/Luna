@@ -118,7 +118,7 @@ func (te *ToolEngine) invoke(ctx context.Context, toolParameters string, userID 
 	invokeMessages, err := toolCaller.Invoke(ctx, []byte(toolParameters))
 
 	if err != nil {
-		return nil, errors.WithSCode(code.ErrInvokeTool, err.Error())
+		return nil, err
 	}
 
 	return invokeMessages, nil
@@ -133,13 +133,13 @@ func (te *ToolEngine) handleInvokeError(err error) *biz_entity.ToolEngineInvokeM
 	invokeMessage.MessageFiles = make([]*biz_entity.ToolEngineInvokeMessageFiles, 0)
 
 	if errors.IsCode(err, code.ErrInvokeTool) || errors.IsCode(err, code.ErrInvokeToolUnConvertAble) {
-		invokeMessage.InvokeToolPrompt = fmt.Sprintf("tool invoke error: %s", err.Error())
+		invokeMessage.InvokeToolPrompt = fmt.Sprintf("tool invoke failed due to the follow json format error: %#+-v", err)
 	} else if errors.IsCode(err, code.ErrToolParameter) {
 		invokeMessage.InvokeToolPrompt = "tool parameters validation error: please check your tool parameters"
 	} else if errors.IsCode(err, code.ErrNotFoundToolRegistry) {
 		invokeMessage.InvokeToolPrompt = fmt.Sprintf("there is not a tool named %s", te.tool.Identity.Name)
 	} else {
-		invokeMessage.InvokeToolPrompt = fmt.Sprintf("tool unknown error: %s", err.Error())
+		invokeMessage.InvokeToolPrompt = fmt.Sprintf("tool failed due to the follow json format error: %#+-v", err)
 	}
 
 	return invokeMessage
@@ -148,9 +148,9 @@ func (te *ToolEngine) handleInvokeError(err error) *biz_entity.ToolEngineInvokeM
 func (te *ToolEngine) extractToolResponseBinary(toolMessages []*biz_entity.ToolInvokeMessage) []*biz_entity.ToolInvokeMessageBinary {
 	var result []*biz_entity.ToolInvokeMessageBinary
 	for _, toolMessage := range toolMessages {
-		if toolMessage.Type == biz_entity.BLOB {
+		if toolMessage.Type == biz_entity.IMAGE || toolMessage.Type == biz_entity.IMAGE_LINK {
 			result = append(result, &biz_entity.ToolInvokeMessageBinary{
-				MimeType:   toolMessage.Meta["mine_type"].(string),
+				MimeType:   toolMessage.Meta["mime_type"].(string),
 				Url:        toolMessage.Message.(string),
 				SaveAs:     toolMessage.SaveAs,
 				ToolFileID: toolMessage.ToolFileID,

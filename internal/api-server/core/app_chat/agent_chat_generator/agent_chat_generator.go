@@ -219,7 +219,7 @@ func (g *AgentChatGenerator) generateGoRoutine(ctx context.Context, applicationG
 		return
 	}
 
-	appRunner := app_agent_chat_runner.NewAppAgentChatRunner(app_agent_chat_runner.NewAppBaseAgentChatRunner(app_chat_runner.NewAppBaseChatRunner()), g.AppDomain, g.chatDomain, g.ProviderDomain, g.DatasetDomain, g.redis, g.agentDomain, applicationGenerateEntity.AppConfig.TenantID, applicationGenerateEntity.UserID, g.appConfig, applicationGenerateEntity, lunaConfig.SystemOptions.SecretKey, lunaConfig.SystemOptions.FileBaseUrl)
+	appRunner := app_agent_chat_runner.NewAppAgentChatRunner(app_agent_chat_runner.NewAppBaseAgentChatRunner(app_chat_runner.NewAppBaseChatRunner()), g.AppDomain, g.chatDomain, g.ProviderDomain, g.DatasetDomain, g.redis, g.agentDomain, applicationGenerateEntity.AppConfig.TenantID, applicationGenerateEntity.UserID, g.appConfig, applicationGenerateEntity, lunaConfig.SystemOptions.SecretKey, lunaConfig.SystemOptions.FileBaseUrl, lunaConfig.MinioOptions.Bucket)
 
 	message, err := g.chatDomain.MessageRepo.GetMessageByID(ctx, messageID)
 

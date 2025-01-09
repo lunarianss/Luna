@@ -13,13 +13,15 @@ import (
 
 type ToolFileMessageTransformer struct {
 	toolMessages []*biz_entity.ToolInvokeMessage
+	bucket       string
 	*AgentDomain
 }
 
-func NewToolFileMessageTransformer(agentDomain *AgentDomain) *ToolFileMessageTransformer {
+func NewToolFileMessageTransformer(agentDomain *AgentDomain, bucket string) *ToolFileMessageTransformer {
 	return &ToolFileMessageTransformer{
 		AgentDomain:  agentDomain,
 		toolMessages: make([]*biz_entity.ToolInvokeMessage, 0),
+		bucket:       bucket,
 	}
 }
 
@@ -70,7 +72,7 @@ func (ttr *ToolFileMessageTransformer) handleBlobMessage(ctx context.Context, to
 		return errors.WithCode(code.ErrInvokeToolUnConvertAble, "tool blob response is not convert to []byte, actual it's %T", toolMessage.Message)
 	}
 
-	toolFile, err := NewToolFileManager(ttr.AgentDomain).CreateFileByRaw(ctx, userID, tenantID, conversationID, toolResByte, mimeTypeStr)
+	toolFile, err := NewToolFileManager(ttr.AgentDomain, ttr.bucket).CreateFileByRaw(ctx, userID, tenantID, conversationID, toolResByte, mimeTypeStr)
 
 	if err != nil {
 		return err

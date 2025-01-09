@@ -60,10 +60,11 @@ type FunctionCallAgentRunner struct {
 	providerType string
 	secretKet    string
 	fileBaseUrl  string
+	bucket       string
 }
 
 func NewFunctionCallAgentRunner(tenantID string, applicationGenerateEntity *biz_entity_app_generate.AgentChatAppGenerateEntity, conversation *po_entity.Conversation, agentDomain *domain_service.AgentDomain, queueManager biz_entity.IStreamGenerateQueue, agentFlusher biz_agent.AgentFlusher,
-	promptToolMessage []*biz_entity.PromptMessageTool, promptMessage []po_entity.IPromptMessage, toolRuntimeMap map[string]*biz_agent.ToolRuntimeConfiguration, modelCaller model_registry.IModelRegistryCall, appConfig *biz_entity_app_config.AgentChatAppConfig, providerType string, secretKet, fileBaseUrl string) *FunctionCallAgentRunner {
+	promptToolMessage []*biz_entity.PromptMessageTool, promptMessage []po_entity.IPromptMessage, toolRuntimeMap map[string]*biz_agent.ToolRuntimeConfiguration, modelCaller model_registry.IModelRegistryCall, appConfig *biz_entity_app_config.AgentChatAppConfig, providerType string, secretKet, fileBaseUrl string, bucket string) *FunctionCallAgentRunner {
 
 	return &FunctionCallAgentRunner{
 		applicationGenerateEntity: applicationGenerateEntity,
@@ -74,6 +75,7 @@ func NewFunctionCallAgentRunner(tenantID string, applicationGenerateEntity *biz_
 		agentDomain:               agentDomain,
 		IStreamGenerateQueue:      queueManager,
 		providerType:              providerType,
+		bucket:                    bucket,
 		agentFlusher:              agentFlusher,
 		promptToolMessages:        promptToolMessage,
 		promptMessages:            promptMessage,
@@ -179,7 +181,7 @@ func (fca *FunctionCallAgentRunner) Run(ctx context.Context, message *po_entity.
 				})
 			}
 
-			toolEngine := domain_service.NewToolEngine(toolRuntimeIns, message, fca.providerType, fca.agentDomain)
+			toolEngine := domain_service.NewToolEngine(toolRuntimeIns, message, fca.providerType, fca.agentDomain, fca.bucket)
 
 			toolInvokeResponse := toolEngine.AgentInvoke(ctx, toolCall.TollCallArgs, fca.applicationGenerateEntity.UserID, fca.appConfig.TenantID, biz_agent.InvokeFrom(fca.applicationGenerateEntity.InvokeFrom))
 

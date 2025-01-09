@@ -19,16 +19,18 @@ type ToolEngine struct {
 	traceManager      any
 	message           *po_entity.Message
 	meta              *biz_entity.ToolEngineInvokeMeta
+	bucket            string
 	providerType      string
 	*AgentDomain
 }
 
-func NewToolEngine(tool *biz_entity.ToolRuntimeConfiguration, message *po_entity.Message, providerType string, agentDomain *AgentDomain) *ToolEngine {
+func NewToolEngine(tool *biz_entity.ToolRuntimeConfiguration, message *po_entity.Message, providerType string, agentDomain *AgentDomain, bucket string) *ToolEngine {
 	te := &ToolEngine{
 		tool:         tool,
 		message:      message,
 		providerType: providerType,
 		AgentDomain:  agentDomain,
+		bucket:       bucket,
 	}
 
 	te.constructInvokeMeta()
@@ -42,7 +44,7 @@ func (te *ToolEngine) AgentInvoke(ctx context.Context, toolParameters string, us
 		return te.handleInvokeError(err)
 	}
 
-	convertedMessages, err := NewToolFileMessageTransformer(te.AgentDomain).TransformToolInvokeMessages(ctx, response, userID, tenantID, te.message.ConversationID)
+	convertedMessages, err := NewToolFileMessageTransformer(te.AgentDomain, te.bucket).TransformToolInvokeMessages(ctx, response, userID, tenantID, te.message.ConversationID)
 
 	if err != nil {
 		return te.handleInvokeError(err)

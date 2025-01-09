@@ -103,7 +103,7 @@ func (tpp *agentChatFlusher) AgentMessageFileToStreamResponse(ctx context.Contex
 		url = messageFile.URL
 	} else {
 
-		signedUrl, err := domain_service.NewToolFileManager(nil).SignFile(toolFileID, extension, "", "")
+		signedUrl, err := domain_service.NewToolFileManager(nil, "").SignFile(toolFileID, extension, secretKey, baseUrl)
 
 		if err != nil {
 			return err

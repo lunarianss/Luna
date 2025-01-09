@@ -9,16 +9,21 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lunarianss/Luna/internal/api-server/core/storage"
+	storage_interface "github.com/lunarianss/Luna/internal/api-server/core/storage/interface"
 	"github.com/lunarianss/Luna/internal/api-server/domain/agent/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/infrastructure/util"
 )
 
 type ToolFileManager struct {
 	*AgentDomain
+	bucket string
 }
 
-func NewToolFileManager(agentDomain *AgentDomain) *ToolFileManager {
-	return &ToolFileManager{}
+func NewToolFileManager(agentDomain *AgentDomain, bucket string) *ToolFileManager {
+	return &ToolFileManager{
+		bucket: bucket,
+	}
 }
 
 func (tf *ToolFileManager) SignFile(toolFileID string, extension string, secretKey string, baseUrl string) (string, error) {
@@ -72,7 +77,16 @@ func (tf *ToolFileManager) CreateFileByRaw(ctx context.Context, userID, tenantID
 	filename := fmt.Sprintf("%s%s", uuid.NewString(), extension)
 	filepath := fmt.Sprintf("tools/%s/%s", tenantID, filename)
 
-	// todo storage save
+	storage, err := storage.NewStorage(ctx, tf.bucket, storage_interface.MINIO)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if err := storage.Save(ctx, filepath, fileBinary); err != nil {
+		return nil, err
+	}
+
 	toolFile := &po_entity.ToolFile{
 		UserID:         userID,
 		TenantID:       tenantID,

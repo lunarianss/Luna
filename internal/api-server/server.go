@@ -19,6 +19,7 @@ import (
 	"github.com/lunarianss/Luna/infrastructure/shutdown"
 	"github.com/lunarianss/Luna/internal/infrastructure/email"
 	"github.com/lunarianss/Luna/internal/infrastructure/jwt"
+	"github.com/lunarianss/Luna/internal/infrastructure/minio"
 	"github.com/lunarianss/Luna/internal/infrastructure/mq"
 	"github.com/lunarianss/Luna/internal/infrastructure/mysql"
 	"github.com/lunarianss/Luna/internal/infrastructure/redis"
@@ -101,6 +102,12 @@ func (s *LunaApiServer) Run() error {
 	}
 
 	if err := s.APIServer.InitMQConsumer(context.Background(), s.GracefulShutdown); err != nil {
+		return err
+	}
+
+	_, err = minio.GetMinioClient(s.AppRuntimeConfig.MinioOptions)
+
+	if err != nil {
 		return err
 	}
 

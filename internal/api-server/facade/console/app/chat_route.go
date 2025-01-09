@@ -71,7 +71,7 @@ func (a *ChatRoutes) Register(g *gin.Engine) error {
 	datasetDomain := datasetDomain.NewDatasetDomain(datasetRepo)
 	agentDomain := agentDomain.NewAgentDomain(agentDomain.NewToolTransformService(config), tools.NewToolManager(), agentRepo)
 	// service
-	chatService := service.NewChatService(appDomain, providerDomain, accountDomain, chatDomain, datasetDomain, agentDomain, redisIns)
+	chatService := service.NewChatService(appDomain, providerDomain, accountDomain, chatDomain, datasetDomain, agentDomain, redisIns, config)
 	annotationService := service.NewAnnotationService(appDomain, providerDomain, accountDomain, chatDomain, redisIns, mqProducer, datasetDomain)
 	chatController := controller.NewChatController(chatService, annotationService)
 

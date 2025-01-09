@@ -9,6 +9,7 @@ import (
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	assembler "github.com/lunarianss/Luna/internal/api-server/assembler/chat"
+	"github.com/lunarianss/Luna/internal/api-server/config"
 	app_agent_chat_generator "github.com/lunarianss/Luna/internal/api-server/core/app_chat/agent_chat_generator"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_chat_generator"
 	"github.com/lunarianss/Luna/internal/api-server/core/model_runtime/model_registry"
@@ -38,9 +39,10 @@ type ChatService struct {
 	datasetDomain  *datasetDomain.DatasetDomain
 	agentDomain    *agentDomain.AgentDomain
 	redis          *redis.Client
+	config         *config.Config
 }
 
-func NewChatService(appDomain *appDomain.AppDomain, providerDomain *domain_service.ProviderDomain, accountDomain *accountDomain.AccountDomain, chatDomain *chatDomain.ChatDomain, datasetDomain *datasetDomain.DatasetDomain, agentDomain *agentDomain.AgentDomain, redis *redis.Client) *ChatService {
+func NewChatService(appDomain *appDomain.AppDomain, providerDomain *domain_service.ProviderDomain, accountDomain *accountDomain.AccountDomain, chatDomain *chatDomain.ChatDomain, datasetDomain *datasetDomain.DatasetDomain, agentDomain *agentDomain.AgentDomain, redis *redis.Client, config *config.Config) *ChatService {
 	return &ChatService{
 		appDomain:      appDomain,
 		providerDomain: providerDomain,
@@ -49,6 +51,7 @@ func NewChatService(appDomain *appDomain.AppDomain, providerDomain *domain_servi
 		datasetDomain:  datasetDomain,
 		redis:          redis,
 		agentDomain:    agentDomain,
+		config:         config,
 	}
 }
 
@@ -154,7 +157,7 @@ func (s *ChatService) Generate(ctx context.Context, appID, accountID string, arg
 		}
 	} else if appModel.Mode == string(biz_entity.AGENT_CHAT) {
 
-		chatAppGenerator := app_agent_chat_generator.NewChatAppGenerator(s.appDomain, s.providerDomain, s.chatDomain, s.datasetDomain, s.redis, s.agentDomain)
+		chatAppGenerator := app_agent_chat_generator.NewChatAppGenerator(s.appDomain, s.providerDomain, s.chatDomain, s.datasetDomain, s.redis, s.agentDomain, s.config)
 
 		if err := chatAppGenerator.Generate(ctx, appModel, accountRecord, args, invokeFrom, true); err != nil {
 			return err

@@ -5,6 +5,7 @@ import (
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/internal/api-server/domain/agent/entity/po_entity"
+	"github.com/lunarianss/Luna/internal/api-server/domain/agent/repository"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"gorm.io/gorm"
 )
@@ -12,6 +13,8 @@ import (
 type AgentRepoImpl struct {
 	db *gorm.DB
 }
+
+var _ repository.AgentRepo = (*AgentRepoImpl)(nil)
 
 func NewAgentRepoImpl(db *gorm.DB) *AgentRepoImpl {
 	return &AgentRepoImpl{db: db}
@@ -36,6 +39,15 @@ func (ar *AgentRepoImpl) CreateMessageFile(ctx context.Context, messageFile *po_
 		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
 	}
 	return messageFile, nil
+}
+
+func (ar *AgentRepoImpl) GetMessageFileByID(ctx context.Context, fileID string) (*po_entity.MessageFile, error) {
+	var messageFile po_entity.MessageFile
+
+	if err := ar.db.First(&messageFile, "id = ?", fileID).Error; err != nil {
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
+	}
+	return &messageFile, nil
 }
 
 func (ar *AgentRepoImpl) GetAgentThoughtByID(ctx context.Context, id string) (*po_entity.MessageAgentThought, error) {

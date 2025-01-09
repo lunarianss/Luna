@@ -133,6 +133,22 @@ type ChatBotAppErrStreamResponse struct {
 	CreatedAt      int64  `json:"created_at"`
 }
 
+type ChatBotAppMessageFileStreamResponse struct {
+	*MessageFileStreamResponse
+	ConversationID string `json:"conversation_id"`
+	MessageID      string `json:"message_id"`
+	CreatedAt      int64  `json:"created_at"`
+}
+
+func NewChatBotAppMessageFileStreamResponse(cID, mID string, createAt int64, streamResp *MessageFileStreamResponse) *ChatBotAppMessageFileStreamResponse {
+	return &ChatBotAppMessageFileStreamResponse{
+		ConversationID:            cID,
+		MessageID:                 mID,
+		CreatedAt:                 createAt,
+		MessageFileStreamResponse: streamResp,
+	}
+}
+
 func NewChatBotAppErrStreamResponse(cID, mID string, createAt int64, streamResp *ErrorStreamResponse) *ChatBotAppErrStreamResponse {
 	return &ChatBotAppErrStreamResponse{
 		ConversationID:      cID,

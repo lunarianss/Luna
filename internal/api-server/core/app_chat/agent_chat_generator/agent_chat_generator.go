@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/infrastructure/log"
+	"github.com/lunarianss/Luna/internal/api-server/config"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_agent_chat_runner"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_chat_runner"
 	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/task_pipeline"
@@ -44,9 +45,10 @@ type AgentChatGenerator struct {
 	redis          *redis.Client
 	agentDomain    *agentDomain.AgentDomain
 	appConfig      *biz_entity_app_config.AgentChatAppConfig
+	config         *config.Config
 }
 
-func NewChatAppGenerator(appDomain *appDomain.AppDomain, providerDomain *domain_service.ProviderDomain, chatDomain *chatDomain.ChatDomain, datasetDomain *datasetDomain.DatasetDomain, redis *redis.Client, agentDomain *agentDomain.AgentDomain) *AgentChatGenerator {
+func NewChatAppGenerator(appDomain *appDomain.AppDomain, providerDomain *domain_service.ProviderDomain, chatDomain *chatDomain.ChatDomain, datasetDomain *datasetDomain.DatasetDomain, redis *redis.Client, agentDomain *agentDomain.AgentDomain, config *config.Config) *AgentChatGenerator {
 
 	return &AgentChatGenerator{
 		AppDomain:      appDomain,
@@ -54,6 +56,7 @@ func NewChatAppGenerator(appDomain *appDomain.AppDomain, providerDomain *domain_
 		chatDomain:     chatDomain,
 		DatasetDomain:  datasetDomain,
 		redis:          redis,
+		config:         config,
 		agentDomain:    agentDomain,
 	}
 }
@@ -209,7 +212,14 @@ func (g *AgentChatGenerator) generateGoRoutine(ctx context.Context, applicationG
 		}
 	}()
 
-	appRunner := app_agent_chat_runner.NewAppAgentChatRunner(app_agent_chat_runner.NewAppBaseAgentChatRunner(app_chat_runner.NewAppBaseChatRunner()), g.AppDomain, g.chatDomain, g.ProviderDomain, g.DatasetDomain, g.redis, g.agentDomain, applicationGenerateEntity.AppConfig.TenantID, applicationGenerateEntity.UserID, g.appConfig, applicationGenerateEntity)
+	lunaConfig, err := config.GetLunaRuntimeConfig()
+
+	if err != nil {
+		queueManager.PushErr(err)
+		return
+	}
+
+	appRunner := app_agent_chat_runner.NewAppAgentChatRunner(app_agent_chat_runner.NewAppBaseAgentChatRunner(app_chat_runner.NewAppBaseChatRunner()), g.AppDomain, g.chatDomain, g.ProviderDomain, g.DatasetDomain, g.redis, g.agentDomain, applicationGenerateEntity.AppConfig.TenantID, applicationGenerateEntity.UserID, g.appConfig, applicationGenerateEntity, lunaConfig.SystemOptions.SecretKey, lunaConfig.SystemOptions.FileBaseUrl)
 
 	message, err := g.chatDomain.MessageRepo.GetMessageByID(ctx, messageID)
 

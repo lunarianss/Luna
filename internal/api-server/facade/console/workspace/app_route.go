@@ -67,7 +67,7 @@ func (a *AppRoutes) Register(g *gin.Engine) error {
 
 	// service
 	appService := service.NewAppService(appDomain, providerDomain, accountDomain, chatDomain, gormIns, config)
-	chatService := service.NewChatService(appDomain, providerDomain, accountDomain, chatDomain, datasetDomain, agentDomain, redisIns)
+	chatService := service.NewChatService(appDomain, providerDomain, accountDomain, chatDomain, datasetDomain, agentDomain, redisIns, config)
 
 	appController := controller.NewAppController(appService, chatService)
 

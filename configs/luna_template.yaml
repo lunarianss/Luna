@@ -25,7 +25,8 @@ system:
   upload-video-file-size-limit: 100
   upload-audio-file-size-limit: 50
   batch-upload-limit: 20
-
+  file-base-url: http://127.0.0.1:9090
+  secret-key: xxxx
 # 日志配置
 log:
   debug-mode: true # 是否是debug模式。如果是debug模式，会对log.Debug 日志进行跟踪。

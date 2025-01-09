@@ -37,11 +37,13 @@ type appAgentChatRunner struct {
 	redis                       *redis.Client
 	tenantID                    string
 	userID                      string
+	secretKet                   string
+	fileBaseUrl                 string
 	appConfig                   *biz_entity_app_config.AgentChatAppConfig
 	application_generate_entity *biz_entity_app_generate.AgentChatAppGenerateEntity
 }
 
-func NewAppAgentChatRunner(appBaseChatRunner *AppBaseAgentChatRunner, appDomain *domain_service.AppDomain, chatDomain *chatDomain.ChatDomain, providerDomain *providerDomain.ProviderDomain, datasetDomain *datasetDomain.DatasetDomain, redis *redis.Client, agentDomain *agentDomain.AgentDomain, tenantID string, userID string, appConfig *biz_entity_app_config.AgentChatAppConfig, application_generate_entity *biz_entity_app_generate.AgentChatAppGenerateEntity) *appAgentChatRunner {
+func NewAppAgentChatRunner(appBaseChatRunner *AppBaseAgentChatRunner, appDomain *domain_service.AppDomain, chatDomain *chatDomain.ChatDomain, providerDomain *providerDomain.ProviderDomain, datasetDomain *datasetDomain.DatasetDomain, redis *redis.Client, agentDomain *agentDomain.AgentDomain, tenantID string, userID string, appConfig *biz_entity_app_config.AgentChatAppConfig, application_generate_entity *biz_entity_app_generate.AgentChatAppGenerateEntity, secretKet, fileBaseUrl string) *appAgentChatRunner {
 	return &appAgentChatRunner{
 		AppBaseAgentChatRunner:      appBaseChatRunner,
 		AppDomain:                   appDomain,
@@ -52,6 +54,8 @@ func NewAppAgentChatRunner(appBaseChatRunner *AppBaseAgentChatRunner, appDomain 
 		agentDomain:                 agentDomain,
 		tenantID:                    tenantID,
 		userID:                      userID,
+		secretKet:                   secretKet,
+		fileBaseUrl:                 fileBaseUrl,
 		appConfig:                   appConfig,
 		application_generate_entity: application_generate_entity,
 	}
@@ -135,7 +139,7 @@ func (r *appAgentChatRunner) Run(ctx context.Context, applicationGenerateEntity 
 
 		agentRunner := NewFunctionCallAgentRunner(app.TenantID, applicationGenerateEntity, conversation, r.agentDomain, queueManager, flusher, promptToolMessage, util.ConvertToInterfaceSlice(promptMessages, func(pm *po_entity_chat.PromptMessage) po_entity_chat.IPromptMessage {
 			return pm
-		}), toolRuntimeMap, modelCaller, appConfig, "builtin")
+		}), toolRuntimeMap, modelCaller, appConfig, "builtin", r.secretKet, r.fileBaseUrl)
 
 		taskScheduler.SetFunctionCallRunner(agentRunner)
 

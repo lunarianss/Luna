@@ -58,14 +58,18 @@ type FunctionCallAgentRunner struct {
 	toolRuntimeMap     map[string]*biz_agent.ToolRuntimeConfiguration
 	*RunnerRuntimeParameters
 	providerType string
+	secretKet    string
+	fileBaseUrl  string
 }
 
 func NewFunctionCallAgentRunner(tenantID string, applicationGenerateEntity *biz_entity_app_generate.AgentChatAppGenerateEntity, conversation *po_entity.Conversation, agentDomain *domain_service.AgentDomain, queueManager biz_entity.IStreamGenerateQueue, agentFlusher biz_agent.AgentFlusher,
-	promptToolMessage []*biz_entity.PromptMessageTool, promptMessage []po_entity.IPromptMessage, toolRuntimeMap map[string]*biz_agent.ToolRuntimeConfiguration, modelCaller model_registry.IModelRegistryCall, appConfig *biz_entity_app_config.AgentChatAppConfig, providerType string) *FunctionCallAgentRunner {
+	promptToolMessage []*biz_entity.PromptMessageTool, promptMessage []po_entity.IPromptMessage, toolRuntimeMap map[string]*biz_agent.ToolRuntimeConfiguration, modelCaller model_registry.IModelRegistryCall, appConfig *biz_entity_app_config.AgentChatAppConfig, providerType string, secretKet, fileBaseUrl string) *FunctionCallAgentRunner {
 
 	return &FunctionCallAgentRunner{
 		applicationGenerateEntity: applicationGenerateEntity,
 		conversation:              conversation,
+		secretKet:                 secretKet,
+		fileBaseUrl:               fileBaseUrl,
 		toolRuntimeMap:            toolRuntimeMap,
 		agentDomain:               agentDomain,
 		IStreamGenerateQueue:      queueManager,
@@ -100,7 +104,8 @@ func (fca *FunctionCallAgentRunner) Run(ctx context.Context, message *po_entity.
 
 	for fca.functionCallState && fca.interactionStep <= int(fca.maxInteractionSteps) {
 		var (
-			response string
+			response       string
+			messageFileIDs []string
 		)
 
 		fca.functionCallState = false
@@ -177,6 +182,16 @@ func (fca *FunctionCallAgentRunner) Run(ctx context.Context, message *po_entity.
 			toolEngine := domain_service.NewToolEngine(toolRuntimeIns, message, fca.providerType, fca.agentDomain)
 
 			toolInvokeResponse := toolEngine.AgentInvoke(ctx, toolCall.TollCallArgs, fca.applicationGenerateEntity.UserID, fca.appConfig.TenantID, biz_agent.InvokeFrom(fca.applicationGenerateEntity.InvokeFrom))
+
+			for _, messageFile := range toolInvokeResponse.MessageFiles {
+				err := fca.agentFlusher.AgentMessageFileToStreamResponse(ctx, messageFile.MessageFile, fca.secretKet, fca.fileBaseUrl)
+
+				if err != nil {
+					return nil, err
+				}
+
+				messageFileIDs = append(messageFileIDs, messageFile.MessageFile)
+			}
 
 			toolArtifacts = append(toolArtifacts, &biz_agent.ToolArtifact{
 				ToolCallID:   toolCall.ToolCallID,

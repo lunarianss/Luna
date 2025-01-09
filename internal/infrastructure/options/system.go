@@ -27,6 +27,7 @@ type SystemOptions struct {
 	BatchUploadLimit             int    `mapstructure:"batch-upload-limit" json:"batch_upload_limit"`
 	FileBaseUrl                  string `mapstructure:"file-base-url" json:"file_base_url"`
 	SecretKey                    string `mapstructure:"secret-key" json:"secret_key"`
+	FileTimeout                  int64  `mapstructure:"file-timeout" json:"file_timeout"`
 }
 
 // NewJwtOptions creates a JwtOptions object with default parameters.

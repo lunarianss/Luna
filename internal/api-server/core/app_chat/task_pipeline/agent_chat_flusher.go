@@ -110,7 +110,6 @@ func (tpp *agentChatFlusher) AgentMessageFileToStreamResponse(ctx context.Contex
 		}
 
 		url = signedUrl
-
 	}
 
 	messageFileChunkResponse := &biz_entity.MessageFileStreamResponse{

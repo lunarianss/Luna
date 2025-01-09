@@ -50,6 +50,15 @@ func (ar *AgentRepoImpl) GetMessageFileByID(ctx context.Context, fileID string) 
 	return &messageFile, nil
 }
 
+func (ar *AgentRepoImpl) GetToolFileByID(ctx context.Context, toolFileID string) (*po_entity.ToolFile, error) {
+	var toolFile po_entity.ToolFile
+
+	if err := ar.db.First(&toolFile, "id = ?", toolFileID).Error; err != nil {
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
+	}
+	return &toolFile, nil
+}
+
 func (ar *AgentRepoImpl) GetAgentThoughtByID(ctx context.Context, id string) (*po_entity.MessageAgentThought, error) {
 	var agentThought po_entity.MessageAgentThought
 	if err := ar.db.First(&agentThought, "id = ?", id).Error; err != nil {

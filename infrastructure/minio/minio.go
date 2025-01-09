@@ -3,6 +3,8 @@ package s3_minio
 import (
 	"context"
 
+	"github.com/fatih/color"
+	"github.com/lunarianss/Luna/infrastructure/log"
 	"github.com/lunarianss/Luna/internal/infrastructure/options"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -34,6 +36,8 @@ func New(opt *options.MinioOptions) (*minio.Client, error) {
 			return nil, err
 		}
 	}
+
+	log.Info(color.GreenString("minio is ready!"))
 
 	return minioClient, nil
 }

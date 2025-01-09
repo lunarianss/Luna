@@ -63,3 +63,46 @@ func (m *MessageAgentThought) BeforeSave(tx *gorm.DB) (err error) {
 	}
 	return nil
 }
+
+type ToolFile struct {
+	ID             string `json:"id" gorm:"column:id;primaryKey"`
+	UserID         string `json:"user_id" gorm:"column:user_id"`
+	TenantID       string `json:"tenant_id" gorm:"column:tenant_id"`
+	ConversationID string `json:"conversation_id" gorm:"column:conversation_id;default:''"`
+	FileKey        string `json:"file_key" gorm:"column:file_key"`
+	MimeType       string `json:"mimetype" gorm:"column:mimetype"`
+	OriginalURL    string `json:"original_url" gorm:"column:original_url;default:''"`
+	Name           string `json:"name" gorm:"column:name;default:''"`
+	Size           int    `json:"size" gorm:"column:size;default:-1"`
+}
+
+func (*ToolFile) TableName() string {
+	return "tool_files"
+}
+
+func (t *ToolFile) BeforeCreate(tx *gorm.DB) (err error) {
+	t.ID = uuid.NewString()
+	return
+}
+
+type MessageFile struct {
+	ID             string `json:"id" gorm:"column:id"`
+	MessageID      string `json:"message_id" gorm:"column:message_id"`
+	Type           string `json:"type" gorm:"column:type"`
+	TransferMethod string `json:"transfer_method" gorm:"column:transfer_method"`
+	URL            string `json:"url" gorm:"column:url"`
+	BelongsTo      string `json:"belongs_to" gorm:"column:belongs_to"`
+	UploadFileID   string `json:"upload_file_id" gorm:"column:upload_file_id"`
+	CreatedByRole  string `json:"created_by_role" gorm:"column:created_by_role"`
+	CreatedBy      string `json:"created_by" gorm:"column:created_by"`
+	CreatedAt      int64  `json:"created_at" gorm:"column:created_at;autoCreateTime"`
+}
+
+func (*MessageFile) TableName() string {
+	return "message_files"
+}
+
+func (m *MessageFile) BeforeCreate(tx *gorm.DB) (err error) {
+	m.ID = uuid.NewString()
+	return
+}

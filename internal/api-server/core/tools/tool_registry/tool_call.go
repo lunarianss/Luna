@@ -41,5 +41,11 @@ func (ac *modelRegistryCall) Invoke(ctx context.Context, toolParameters []byte) 
 		return nil, err
 	}
 
-	return toolIns.Invoke(ctx, ac.userID, toolParameters, ac.toolRuntime)
+	msgs, err := toolIns.Invoke(ctx, ac.userID, toolParameters, ac.toolRuntime)
+
+	if err != nil {
+		log.Errorf("tool invoke error %#+v", err)
+	}
+
+	return msgs, err
 }

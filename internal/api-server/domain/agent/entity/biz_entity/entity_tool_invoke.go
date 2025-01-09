@@ -15,10 +15,19 @@ var (
 )
 
 type ToolInvokeMessage struct {
-	Type    MessageType    `json:"type"`
-	Message any            `json:"message"`
-	Meta    map[string]any `json:"meta"`
-	SaveAs  string         `json:"save_as"`
+	Type       MessageType    `json:"type"`
+	Message    any            `json:"message"`
+	Meta       map[string]any `json:"meta"`
+	SaveAs     string         `json:"save_as"`
+	ToolFileID string         `json:"tool_file_id"`
+}
+
+type ToolInvokeMessageBinary struct {
+	MimeType   string `json:"mime_type"`
+	Url        string `json:"url"`
+	SaveAs     string `json:"save_as"`
+	FileVar    string `json:"file_var"`
+	ToolFileID string `json:"tool_file_id"`
 }
 
 type ToolEngineInvokeMeta struct {

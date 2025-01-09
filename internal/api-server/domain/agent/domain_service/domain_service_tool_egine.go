@@ -3,10 +3,12 @@ package domain_service
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/internal/api-server/core/tools/tool_registry"
 	"github.com/lunarianss/Luna/internal/api-server/domain/agent/entity/biz_entity"
+	po_agent "github.com/lunarianss/Luna/internal/api-server/domain/agent/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 )
@@ -18,13 +20,15 @@ type ToolEngine struct {
 	message           *po_entity.Message
 	meta              *biz_entity.ToolEngineInvokeMeta
 	providerType      string
+	*AgentDomain
 }
 
-func NewToolEngine(tool *biz_entity.ToolRuntimeConfiguration, message *po_entity.Message, providerType string) *ToolEngine {
+func NewToolEngine(tool *biz_entity.ToolRuntimeConfiguration, message *po_entity.Message, providerType string, agentDomain *AgentDomain) *ToolEngine {
 	te := &ToolEngine{
 		tool:         tool,
 		message:      message,
 		providerType: providerType,
+		AgentDomain:  agentDomain,
 	}
 
 	te.constructInvokeMeta()
@@ -38,7 +42,15 @@ func (te *ToolEngine) AgentInvoke(ctx context.Context, toolParameters string, us
 		return te.handleInvokeError(err)
 	}
 
-	convertedMessages, err := NewToolFileMessageTransformer().TransformToolInvokeMessages(response, userID, tenantID, te.message.ConversationID)
+	convertedMessages, err := NewToolFileMessageTransformer(te.AgentDomain).TransformToolInvokeMessages(ctx, response, userID, tenantID, te.message.ConversationID)
+
+	if err != nil {
+		return te.handleInvokeError(err)
+	}
+
+	binaryFiles := te.extractToolResponseBinary(convertedMessages)
+
+	messageFiles, err := te.createMessageFiles(ctx, binaryFiles, te.message, invokeFrom, userID)
 
 	if err != nil {
 		return te.handleInvokeError(err)
@@ -52,13 +64,53 @@ func (te *ToolEngine) AgentInvoke(ctx context.Context, toolParameters string, us
 
 	return &biz_entity.ToolEngineInvokeMessage{
 		InvokeToolPrompt: plainText,
-		MessageFiles:     nil,
+		MessageFiles:     messageFiles,
 		ToolInvokeMeta:   te.meta,
 	}
 }
 
-func (te *ToolEngine) invoke(ctx context.Context, toolParameters string, userID string) ([]*biz_entity.ToolInvokeMessage, error) {
+func (te *ToolEngine) createMessageFiles(ctx context.Context, toolMessages []*biz_entity.ToolInvokeMessageBinary, agentMessage *po_entity.Message, invokeFrom biz_entity.InvokeFrom, userID string) ([]*biz_entity.ToolEngineInvokeMessageFiles, error) {
+	var (
+		result        []*biz_entity.ToolEngineInvokeMessageFiles
+		fileType      string
+		createdByRole string
+	)
 
+	for _, toolMessage := range toolMessages {
+		if invokeFrom == biz_entity.DebuggerInvoke || invokeFrom == biz_entity.ExploreInvoke {
+			createdByRole = "account"
+		} else {
+			createdByRole = "end_user"
+		}
+
+		fileType = te.getFileType(toolMessage.MimeType)
+
+		messageFile := &po_agent.MessageFile{
+			MessageID:      agentMessage.ID,
+			Type:           fileType,
+			TransferMethod: "tool_file",
+			BelongsTo:      "assistant",
+			URL:            toolMessage.Url,
+			UploadFileID:   toolMessage.ToolFileID,
+			CreatedByRole:  createdByRole,
+			CreatedBy:      userID,
+		}
+
+		messageFile, err := te.AgentDomain.CreateMessageFile(ctx, messageFile)
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, &biz_entity.ToolEngineInvokeMessageFiles{
+			MessageFile: messageFile.ID,
+			SaveAs:      toolMessage.SaveAs,
+		})
+	}
+
+	return result, nil
+}
+
+func (te *ToolEngine) invoke(ctx context.Context, toolParameters string, userID string) ([]*biz_entity.ToolInvokeMessage, error) {
 	toolCaller := tool_registry.NewModelRegisterCaller(userID, te.tool)
 
 	invokeMessages, err := toolCaller.Invoke(ctx, []byte(toolParameters))
@@ -89,6 +141,22 @@ func (te *ToolEngine) handleInvokeError(err error) *biz_entity.ToolEngineInvokeM
 	}
 
 	return invokeMessage
+}
+
+func (te *ToolEngine) extractToolResponseBinary(toolMessages []*biz_entity.ToolInvokeMessage) []*biz_entity.ToolInvokeMessageBinary {
+	var result []*biz_entity.ToolInvokeMessageBinary
+	for _, toolMessage := range toolMessages {
+		if toolMessage.Type == biz_entity.BLOB {
+			result = append(result, &biz_entity.ToolInvokeMessageBinary{
+				MimeType:   toolMessage.Meta["mine_type"].(string),
+				Url:        toolMessage.Message.(string),
+				SaveAs:     toolMessage.SaveAs,
+				ToolFileID: toolMessage.ToolFileID,
+			})
+		}
+	}
+
+	return result
 }
 
 func (te *ToolEngine) constructInvokeMeta() {
@@ -131,4 +199,20 @@ func (te *ToolEngine) convertToolResponseToString(toolMessages []*biz_entity.Too
 	}
 
 	return result, nil
+}
+
+func (te *ToolEngine) getFileType(mimeType string) string {
+	var fileType string
+	if strings.Contains(mimeType, "image") {
+		fileType = "image"
+	} else if strings.Contains(mimeType, "video") {
+		fileType = "video"
+	} else if strings.Contains(mimeType, "audio") {
+		fileType = "audio"
+	} else if strings.Contains(mimeType, "text") || strings.Contains(mimeType, "pdf") {
+		fileType = "document"
+	} else {
+		fileType = "custom"
+	}
+	return fileType
 }

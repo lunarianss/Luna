@@ -24,6 +24,20 @@ func (ar *AgentRepoImpl) CreateAgentThought(ctx context.Context, agentThought *p
 	return agentThought, nil
 }
 
+func (ar *AgentRepoImpl) CreateToolFile(ctx context.Context, toolFile *po_entity.ToolFile) (*po_entity.ToolFile, error) {
+	if err := ar.db.Create(toolFile).Error; err != nil {
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
+	}
+	return toolFile, nil
+}
+
+func (ar *AgentRepoImpl) CreateMessageFile(ctx context.Context, messageFile *po_entity.MessageFile) (*po_entity.MessageFile, error) {
+	if err := ar.db.Create(messageFile).Error; err != nil {
+		return nil, errors.WithSCode(code.ErrDatabase, err.Error())
+	}
+	return messageFile, nil
+}
+
 func (ar *AgentRepoImpl) GetAgentThoughtByID(ctx context.Context, id string) (*po_entity.MessageAgentThought, error) {
 	var agentThought po_entity.MessageAgentThought
 	if err := ar.db.First(&agentThought, "id = ?", id).Error; err != nil {

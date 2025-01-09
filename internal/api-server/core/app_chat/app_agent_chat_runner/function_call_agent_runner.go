@@ -174,7 +174,7 @@ func (fca *FunctionCallAgentRunner) Run(ctx context.Context, message *po_entity.
 				})
 			}
 
-			toolEngine := domain_service.NewToolEngine(toolRuntimeIns, message, fca.providerType)
+			toolEngine := domain_service.NewToolEngine(toolRuntimeIns, message, fca.providerType, fca.agentDomain)
 
 			toolInvokeResponse := toolEngine.AgentInvoke(ctx, toolCall.TollCallArgs, fca.applicationGenerateEntity.UserID, fca.appConfig.TenantID, biz_agent.InvokeFrom(fca.applicationGenerateEntity.InvokeFrom))
 

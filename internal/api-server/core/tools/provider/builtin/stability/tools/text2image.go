@@ -116,13 +116,13 @@ func (st *StableDiffusionTool) parseParameter(parameter []byte, toolRuntime *biz
 	st.payloadMap["seed"] = strconv.Itoa(st.parameter.Seed)
 	st.payloadMap["output_format"] = "png"
 
-	// credentials, ok := toolRuntime.Credentials["api_key"].(string)
+	credentials, ok := toolRuntime.Credentials["api_key"].(string)
 
-	// if !ok {
-	// 	errors.WithSCode(code.ErrRunTimeCaller, "stable diffusion tool api key is not converted to string")
-	// }
+	if !ok {
+		errors.WithSCode(code.ErrRunTimeCaller, "stable diffusion tool api key is not converted to string")
+	}
 
-	st.credentials = "sk-MqWsH12GYB1E1LN1f7tjsUTGI41vjOr6GWUmRLUAVadU8Rt5"
+	st.credentials = credentials
 
 	return nil
 }

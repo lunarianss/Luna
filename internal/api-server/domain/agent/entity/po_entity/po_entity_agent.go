@@ -18,7 +18,7 @@ type MessageAgentThought struct {
 	Position         int                              `json:"position" gorm:"column:position"`
 	Thought          string                           `json:"thought" gorm:"column:thought"`
 	Tool             string                           `json:"tool" gorm:"column:tool"`
-	ToolLabelsStr    string                           `json:"tool_labels_str" gorm:"column:tool_labels_str;default:{}"`
+	ToolLabelsStr    map[string]map[string]any        `json:"tool_labels_str" gorm:"column:tool_labels_str;default:{};serializer:json"`
 	ToolMetaStr      map[string]*ToolEngineInvokeMeta `json:"tool_meta_str" gorm:"column:tool_meta_str;default:{};serializer:json"`
 	ToolInput        map[string]string                `json:"tool_input" gorm:"column:tool_input;serializer:json"`
 	Observation      map[string]string                `json:"observation" gorm:"column:observation;serializer:json"`
@@ -60,6 +60,9 @@ func (m *MessageAgentThought) BeforeSave(tx *gorm.DB) (err error) {
 	}
 	if m.Observation == nil {
 		m.Observation = make(map[string]string)
+	}
+	if m.ToolLabelsStr == nil {
+		m.ToolLabelsStr = make(map[string]map[string]any)
 	}
 	return nil
 }

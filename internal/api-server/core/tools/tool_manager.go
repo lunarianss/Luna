@@ -17,11 +17,13 @@ import (
 type ToolManager struct {
 	providerRuntimes []*biz_entity.ToolProviderRuntime
 	providerMap      map[string]*biz_entity.ToolProviderRuntime
+	toolMap          map[string]*biz_entity.ToolRuntimeConfiguration
 }
 
 func NewToolManager() *ToolManager {
 	return &ToolManager{
 		providerMap: make(map[string]*biz_entity.ToolProviderRuntime),
+		toolMap:     make(map[string]*biz_entity.ToolRuntimeConfiguration),
 	}
 }
 
@@ -84,6 +86,7 @@ func (tm *ToolManager) unMarshalTools() error {
 
 			tools = append(tools, toolRuntime)
 
+			tm.toolMap[toolRuntime.Identity.Name] = toolRuntime
 			providerRuntime.Tools = tools
 		}
 	}
@@ -108,6 +111,10 @@ func (tm *ToolManager) unMarshalProvider() error {
 		tm.providerMap[providerRuntime.Identity.Name] = providerRuntime
 	}
 	return nil
+}
+
+func (tm *ToolManager) GetToolByIdentity(toolName string) *biz_entity.ToolRuntimeConfiguration {
+	return tm.toolMap[toolName]
 }
 
 func (tm *ToolManager) ResolveProviderPath(provider string) (string, error) {

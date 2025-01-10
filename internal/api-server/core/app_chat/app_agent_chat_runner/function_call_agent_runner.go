@@ -29,6 +29,7 @@ type RunnerRuntimeParameters struct {
 	assistantThoughts     []po_entity.IPromptMessage
 	toolResponse          []*ToolResponseItem
 	taskState             *biz_entity.ChatAppTaskState
+	fullAssistant         string
 }
 
 type ToolInvokeMeta struct {
@@ -127,18 +128,7 @@ func (fca *FunctionCallAgentRunner) Run(ctx context.Context, message *po_entity.
 			return nil, err
 		}
 
-		agentThought.Tool = fca.toolCallNames
-		agentThought.ToolInput = fca.toolCallInputs
-
-		if err := fca.agentDomain.UpdateAgentThought(ctx, agentThought); err != nil {
-			return nil, err
-		}
-
-		if err := fca.agentFlusher.AgentThoughtToStreamResponse(ctx, agentThought.ID); err != nil {
-			return nil, err
-		}
-
-		assistantMessage := biz_entity.NewAssistantPromptMessage(response)
+		assistantMessage := biz_entity.NewAssistantPromptMessage(fca.fullAssistant)
 
 		if len(fca.toolCalls) > 0 {
 			for _, toolCall := range fca.toolCalls {
@@ -153,12 +143,12 @@ func (fca *FunctionCallAgentRunner) Run(ctx context.Context, message *po_entity.
 			}
 		}
 
+		// before tool call update agent thought
 		fca.assistantThoughts = append(fca.assistantThoughts, assistantMessage)
 
-		agentThought.ToolInput = fca.toolCallInputs
-		agentThought.Tool = fca.toolCallNames
+		agentThought, err = fca.SaveAgentThought(ctx, agentThought, fca.toolCallNames, fca.toolCallInputs, fca.fullAssistant, nil, nil, response, []string{}, nil)
 
-		if err := fca.agentDomain.UpdateAgentThought(ctx, agentThought); err != nil {
+		if err != nil {
 			return nil, err
 		}
 
@@ -216,10 +206,17 @@ func (fca *FunctionCallAgentRunner) Run(ctx context.Context, message *po_entity.
 
 		if len(toolArtifacts) > 0 {
 			observation, meta := fca.getObservationAndMeta(toolArtifacts)
-			agentThought.ToolMetaStr = meta
-			agentThought.Observation = observation
 
-			if err := fca.agentDomain.UpdateAgentThought(ctx, agentThought); err != nil {
+			toolInvokeMeta := make(map[string]*biz_agent.ToolEngineInvokeMeta)
+
+			for _, toolArtifact := range toolArtifacts {
+				toolInvokeMeta[toolArtifact.ToolCallName] = toolArtifact.Meta
+			}
+
+			// after tool call update agent thought
+			agentThought, err = fca.SaveAgentThought(ctx, agentThought, "", nil, "", observation, meta, "", messageFileIDs, nil)
+
+			if err != nil {
 				return nil, err
 			}
 		}
@@ -232,7 +229,7 @@ func (fca *FunctionCallAgentRunner) Run(ctx context.Context, message *po_entity.
 		fca.toolCalls = make([]*ToolCall, 0)
 		fca.toolCallNames = ""
 		fca.toolCallInputs = make(map[string]string)
-
+		fca.fullAssistant = ""
 	}
 
 	return fca.taskState, nil
@@ -262,11 +259,11 @@ func (fca *FunctionCallAgentRunner) handleStreamAgentMessageQueue(ctx context.Co
 		return nil, err
 	}
 
-	// err = fca.agentFlusher.AgentThoughtToStreamResponse(ctx, agentThought.ID)
+	err = fca.agentFlusher.AgentThoughtToStreamResponse(ctx, agentThought.ID)
 
-	// if err != nil {
-	// 	return nil, err
-	// }
+	if err != nil {
+		return nil, err
+	}
 
 	resultQueue, finalQueue, errorQueue := fca.GetQueues()
 
@@ -321,6 +318,7 @@ func (fca *FunctionCallAgentRunner) handleFinalChunk(message *biz_entity.Message
 			fca.toolCallNames = fca.getToolNames(fca.toolCalls)
 			fca.toolCallInputs = fca.getToolInputs(fca.toolCalls)
 		}
+		fca.fullAssistant = mc.LLMResult.Message.GetContent()
 		fca.taskState.LLMResult = mc.LLMResult
 	}
 }
@@ -428,4 +426,74 @@ func (fca *FunctionCallAgentRunner) CreateAgentThought(ctx context.Context, mess
 
 	fca.agentThoughtCount += 1
 	return thought, nil
+}
+
+func (fca *FunctionCallAgentRunner) SaveAgentThought(ctx context.Context, agentThought *po_agent.MessageAgentThought, toolName string, toolInput map[string]string, thought string, observation map[string]string, toolInvokeMeta map[string]*po_agent.ToolEngineInvokeMeta, answer string, messageIDs []string, llmUsage *biz_entity.LLMUsage) (*po_agent.MessageAgentThought, error) {
+
+	if thought != "" {
+		agentThought.Thought = thought
+	}
+
+	if toolName != "" {
+		agentThought.Tool = toolName
+	}
+
+	if len(toolInput) > 0 {
+		agentThought.ToolInput = toolInput
+	}
+
+	if len(observation) > 0 {
+		agentThought.Observation = observation
+	}
+
+	if answer != "" {
+		agentThought.Answer = answer
+	}
+
+	if len(messageIDs) > 0 {
+		agentThought.MessageFiles = messageIDs
+	}
+
+	if agentThought.ToolMetaStr == nil {
+		agentThought.ToolMetaStr = make(map[string]*po_agent.ToolEngineInvokeMeta, 0)
+	}
+
+	if len(toolInvokeMeta) > 0 {
+		agentThought.ToolMetaStr = toolInvokeMeta
+	}
+
+	if agentThought.Tool != "" {
+		tools := strings.Split(agentThought.Tool, ";")
+
+		labels := agentThought.ToolLabelsStr
+
+		if labels == nil {
+			labels = make(map[string]map[string]any, 0)
+		}
+
+		for _, tool := range tools {
+			if tool == "" {
+				continue
+			}
+
+			_, ok := labels[tool]
+
+			if ok {
+				continue
+			}
+
+			toolRuntime := fca.agentDomain.ToolManager.GetToolByIdentity(tool)
+			if toolRuntime != nil {
+				labels[tool] = map[string]any{"en_US": toolRuntime.Identity.Label.En_US, "zh_Hans": toolRuntime.Identity.Label.Zh_Hans}
+			} else {
+				labels[tool] = map[string]any{"en_US": tool, "zh_Hans": tool}
+			}
+		}
+	}
+
+	if err := fca.agentDomain.UpdateAgentThought(ctx, agentThought); err != nil {
+		return nil, err
+	}
+
+	return agentThought, nil
 }

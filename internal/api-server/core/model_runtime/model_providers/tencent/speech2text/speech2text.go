@@ -6,7 +6,7 @@ import (
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	provider_register "github.com/lunarianss/Luna/internal/api-server/core/model_runtime/model_registry"
-	biz_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
+	biz_entity_openai_standard_response "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/openai_standard_response"
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider/model_provider"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 	"github.com/tencentcloud/tencentcloud-speech-sdk-go/asr"
@@ -26,7 +26,7 @@ func NewTencentAudioLargeLanguageModel() *tencentAudioLargeLanguageModel {
 
 var _ provider_register.IAudioModelRegistry = (*tencentAudioLargeLanguageModel)(nil)
 
-func (m *tencentAudioLargeLanguageModel) Invoke(ctx context.Context, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, user, filename string, fileContent []byte, modelRuntime biz_entity.IAIModelRuntime) (*biz_entity_chat.Speech2TextResp, error) {
+func (m *tencentAudioLargeLanguageModel) Invoke(ctx context.Context, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, user, filename string, fileContent []byte, modelRuntime biz_entity.IAIModelRuntime) (*biz_entity_openai_standard_response.Speech2TextResp, error) {
 
 	credential := common.NewCredential(credentials["secret_id"].(string), credentials["secret_key"].(string))
 
@@ -55,7 +55,7 @@ func (m *tencentAudioLargeLanguageModel) Invoke(ctx context.Context, model strin
 		tranStr = append(tranStr, channelResult.Text)
 	}
 
-	return &biz_entity_chat.Speech2TextResp{
+	return &biz_entity_openai_standard_response.Speech2TextResp{
 		Text: strings.Join(tranStr, ""),
 	}, nil
 }

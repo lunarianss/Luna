@@ -8,6 +8,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/lunarianss/Luna/infrastructure/log"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
+	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/stream_base_generator"
 )
 
 const (
@@ -15,29 +16,16 @@ const (
 	ERROR_BUFFER_SIZE  = 7
 )
 
-type IStreamGenerateQueue interface {
-	PushErr(err error)
-	Push(chunk IQueueEvent)
-	Final(chunk IQueueEvent)
-	Fork() IStreamGenerateQueue
-	Close()
-	Listen()
-	GetQueues() (chan *MessageQueueMessage, chan *MessageQueueMessage, chan *MessageQueueMessage)
-	CloseOutErr()
-	CloseOutNormalExit()
-	Debug()
-}
-
-var _ IStreamGenerateQueue = (*StreamGenerateQueue)(nil)
+var _ biz_entity.IStreamGenerateQueue = (*StreamGenerateQueue)(nil)
 
 type StreamGenerateQueue struct {
 	// Input
-	StreamResultChunkQueue chan *MessageQueueMessage
-	StreamFinalChunkQueue  chan *MessageQueueMessage
+	StreamResultChunkQueue chan *biz_entity.MessageQueueMessage
+	StreamFinalChunkQueue  chan *biz_entity.MessageQueueMessage
 
 	// Output
-	OutStreamResultChunkQueue chan *MessageQueueMessage
-	OutStreamFinalChunkQueue  chan *MessageQueueMessage
+	OutStreamResultChunkQueue chan *biz_entity.MessageQueueMessage
+	OutStreamFinalChunkQueue  chan *biz_entity.MessageQueueMessage
 
 	// Message Info
 	TaskID         string
@@ -48,14 +36,14 @@ type StreamGenerateQueue struct {
 	InvokeFrom     string
 }
 
-func NewStreamGenerateQueue(taskID, userID, conversationID, messageId string, appMode po_entity.AppMode, invokeFrom string) (*StreamGenerateQueue, chan *MessageQueueMessage, chan *MessageQueueMessage) {
+func NewStreamGenerateQueue(taskID, userID, conversationID, messageId string, appMode po_entity.AppMode, invokeFrom string) (*StreamGenerateQueue, chan *biz_entity.MessageQueueMessage, chan *biz_entity.MessageQueueMessage) {
 
-	streamResultChan := make(chan *MessageQueueMessage, STREAM_BUFFER_SIZE)
-	streamFinalChan := make(chan *MessageQueueMessage, STREAM_BUFFER_SIZE)
+	streamResultChan := make(chan *biz_entity.MessageQueueMessage, STREAM_BUFFER_SIZE)
+	streamFinalChan := make(chan *biz_entity.MessageQueueMessage, STREAM_BUFFER_SIZE)
 
 	return &StreamGenerateQueue{
-		StreamResultChunkQueue:    make(chan *MessageQueueMessage, STREAM_BUFFER_SIZE),
-		StreamFinalChunkQueue:     make(chan *MessageQueueMessage, STREAM_BUFFER_SIZE),
+		StreamResultChunkQueue:    make(chan *biz_entity.MessageQueueMessage, STREAM_BUFFER_SIZE),
+		StreamFinalChunkQueue:     make(chan *biz_entity.MessageQueueMessage, STREAM_BUFFER_SIZE),
 		OutStreamResultChunkQueue: streamResultChan,
 		OutStreamFinalChunkQueue:  streamFinalChan,
 		TaskID:                    taskID,
@@ -70,19 +58,19 @@ func NewStreamGenerateQueue(taskID, userID, conversationID, messageId string, ap
 func (sgq *StreamGenerateQueue) PushErr(err error) {
 	defer sgq.Close()
 
-	errEvent := NewAppQueueEvent(Error)
+	errEvent := biz_entity.NewAppQueueEvent(biz_entity.Error)
 
-	sgq.StreamFinalChunkQueue <- sgq.constructMessageQueue(&QueueErrorEvent{
+	sgq.StreamFinalChunkQueue <- sgq.constructMessageQueue(&biz_entity.QueueErrorEvent{
 		AppQueueEvent: errEvent,
 		Err:           err,
 	})
 }
 
-func (sgq *StreamGenerateQueue) Push(chunk IQueueEvent) {
+func (sgq *StreamGenerateQueue) Push(chunk biz_entity.IQueueEvent) {
 	sgq.StreamResultChunkQueue <- sgq.constructMessageQueue(chunk)
 }
 
-func (sgq *StreamGenerateQueue) Fork() IStreamGenerateQueue {
+func (sgq *StreamGenerateQueue) Fork() biz_entity.IStreamGenerateQueue {
 	return sgq
 }
 
@@ -94,7 +82,7 @@ func (sgq *StreamGenerateQueue) CloseOutNormalExit() {
 
 }
 
-func (sgq *StreamGenerateQueue) printInfo(ch chan *MessageQueueMessage, name string) {
+func (sgq *StreamGenerateQueue) printInfo(ch chan *biz_entity.MessageQueueMessage, name string) {
 
 	chanLen := len(ch)
 	v, ok := <-ch
@@ -111,17 +99,17 @@ func (sgq *StreamGenerateQueue) Debug() {
 	sgq.printInfo(sgq.OutStreamResultChunkQueue, "OutStreamResultQueue")
 	sgq.printInfo(sgq.OutStreamFinalChunkQueue, "OutStreamFinalQueue")
 }
-func (sgq *StreamGenerateQueue) GetQueues() (chan *MessageQueueMessage, chan *MessageQueueMessage, chan *MessageQueueMessage) {
+func (sgq *StreamGenerateQueue) GetQueues() (chan *biz_entity.MessageQueueMessage, chan *biz_entity.MessageQueueMessage, chan *biz_entity.MessageQueueMessage) {
 	return sgq.OutStreamResultChunkQueue, sgq.StreamFinalChunkQueue, nil
 }
 
-func (sgq *StreamGenerateQueue) Final(chunk IQueueEvent) {
+func (sgq *StreamGenerateQueue) Final(chunk biz_entity.IQueueEvent) {
 	defer sgq.Close()
 	sgq.StreamFinalChunkQueue <- sgq.constructMessageQueue(chunk)
 }
 
-func (sgq *StreamGenerateQueue) constructMessageQueue(chunk IQueueEvent) *MessageQueueMessage {
-	return &MessageQueueMessage{
+func (sgq *StreamGenerateQueue) constructMessageQueue(chunk biz_entity.IQueueEvent) *biz_entity.MessageQueueMessage {
+	return &biz_entity.MessageQueueMessage{
 		Event:          chunk,
 		TaskID:         sgq.TaskID,
 		ConversationID: sgq.ConversationID,

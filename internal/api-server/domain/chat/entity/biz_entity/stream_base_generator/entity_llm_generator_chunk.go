@@ -1,6 +1,6 @@
 package biz_entity
 
-import "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
+import biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/chat_prompt_message"
 
 // Copyright 2024 Benjamin Lee <cyan0908@163.com>. All rights reserved.
 // Use of this source code is governed by a MIT style
@@ -39,34 +39,34 @@ func NewEmptyLLMUsage() *LLMUsage {
 }
 
 type LLMResultChunkDelta struct {
-	Index        int                     `json:"index"`
-	Message      *AssistantPromptMessage `json:"message"`
-	Usage        *LLMUsage               `json:"usage"`
-	FinishReason string                  `json:"finish_reason"`
+	Index        int                                `json:"index"`
+	Message      *biz_entity.AssistantPromptMessage `json:"message"`
+	Usage        *LLMUsage                          `json:"usage"`
+	FinishReason string                             `json:"finish_reason"`
 }
 
 type LLMResultChunk struct {
-	ID                string                     `json:"id"`
-	Model             string                     `json:"model"`
-	PromptMessage     []po_entity.IPromptMessage `json:"prompt_message"`
-	SystemFingerprint string                     `json:"system_fingerprint"`
-	Delta             *LLMResultChunkDelta       `json:"delta"`
+	ID                string                      `json:"id"`
+	Model             string                      `json:"model"`
+	PromptMessage     []biz_entity.IPromptMessage `json:"prompt_message"`
+	SystemFingerprint string                      `json:"system_fingerprint"`
+	Delta             *LLMResultChunkDelta        `json:"delta"`
 }
 
 type LLMResult struct {
-	ID                string                     `json:"id"`
-	Model             string                     `json:"model"`
-	Message           *AssistantPromptMessage    `json:"message"`
-	PromptMessage     []po_entity.IPromptMessage `json:"prompt_message"`
-	Usage             *LLMUsage                  `json:"usage"`
-	SystemFingerprint string                     `json:"system_fingerprint"`
-	Reason            string                     `json:"reason"`
+	ID                string                             `json:"id"`
+	Model             string                             `json:"model"`
+	Message           *biz_entity.AssistantPromptMessage `json:"message"`
+	PromptMessage     []biz_entity.IPromptMessage        `json:"prompt_message"`
+	Usage             *LLMUsage                          `json:"usage"`
+	SystemFingerprint string                             `json:"system_fingerprint"`
+	Reason            string                             `json:"reason"`
 }
 
 func NewEmptyLLMResult() *LLMResult {
 	return &LLMResult{
-		Message:       NewEmptyAssistantPromptMessage(),
-		PromptMessage: make([]po_entity.IPromptMessage, 0),
+		Message:       biz_entity.NewAssistantToolPromptMessage(""),
+		PromptMessage: make([]biz_entity.IPromptMessage, 0),
 		Usage:         NewEmptyLLMUsage(),
 	}
 }

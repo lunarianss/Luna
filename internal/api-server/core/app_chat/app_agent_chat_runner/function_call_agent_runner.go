@@ -12,7 +12,9 @@ import (
 	biz_agent "github.com/lunarianss/Luna/internal/api-server/domain/agent/entity/biz_entity"
 	po_agent "github.com/lunarianss/Luna/internal/api-server/domain/agent/entity/po_entity"
 	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
-	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
+	biz_entity_chat_prompt_message "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/chat_prompt_message"
+	biz_entity_openai_standard_response "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/openai_standard_response"
+	biz_entity_base_stream_generator "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/stream_base_generator"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
 )
@@ -25,10 +27,10 @@ type RunnerRuntimeParameters struct {
 	toolCalls             []*ToolCall
 	toolCallNames         string
 	toolCallInputs        map[string]string
-	historyPromptMessages []*po_entity.PromptMessage
-	assistantThoughts     []po_entity.IPromptMessage
+	historyPromptMessages []*biz_entity_chat_prompt_message.PromptMessage
+	assistantThoughts     []biz_entity_chat_prompt_message.IPromptMessage
 	toolResponse          []*ToolResponseItem
-	taskState             *biz_entity.ChatAppTaskState
+	taskState             *biz_entity_base_stream_generator.ChatAppTaskState
 	fullAssistant         string
 }
 
@@ -51,11 +53,11 @@ type FunctionCallAgentRunner struct {
 	appConfig                 *biz_entity_app_config.AgentChatAppConfig
 	conversation              *po_entity.Conversation
 	agentDomain               *domain_service.AgentDomain
-	biz_entity.IStreamGenerateQueue
+	biz_entity_base_stream_generator.IStreamGenerateQueue
 	agentFlusher       biz_agent.AgentFlusher
-	promptToolMessages []*biz_entity.PromptMessageTool
+	promptToolMessages []*biz_entity_chat_prompt_message.PromptMessageTool
 	modelCaller        model_registry.IModelRegistryCall
-	promptMessages     []po_entity.IPromptMessage
+	promptMessages     []biz_entity_chat_prompt_message.IPromptMessage
 	toolRuntimeMap     map[string]*biz_agent.ToolRuntimeConfiguration
 	*RunnerRuntimeParameters
 	providerType string
@@ -64,8 +66,8 @@ type FunctionCallAgentRunner struct {
 	bucket       string
 }
 
-func NewFunctionCallAgentRunner(tenantID string, applicationGenerateEntity *biz_entity_app_generate.AgentChatAppGenerateEntity, conversation *po_entity.Conversation, agentDomain *domain_service.AgentDomain, queueManager biz_entity.IStreamGenerateQueue, agentFlusher biz_agent.AgentFlusher,
-	promptToolMessage []*biz_entity.PromptMessageTool, promptMessage []po_entity.IPromptMessage, toolRuntimeMap map[string]*biz_agent.ToolRuntimeConfiguration, modelCaller model_registry.IModelRegistryCall, appConfig *biz_entity_app_config.AgentChatAppConfig, providerType string, secretKet, fileBaseUrl string, bucket string) *FunctionCallAgentRunner {
+func NewFunctionCallAgentRunner(tenantID string, applicationGenerateEntity *biz_entity_app_generate.AgentChatAppGenerateEntity, conversation *po_entity.Conversation, agentDomain *domain_service.AgentDomain, queueManager biz_entity_base_stream_generator.IStreamGenerateQueue, agentFlusher biz_agent.AgentFlusher,
+	promptToolMessage []*biz_entity_chat_prompt_message.PromptMessageTool, promptMessage []biz_entity_chat_prompt_message.IPromptMessage, toolRuntimeMap map[string]*biz_agent.ToolRuntimeConfiguration, modelCaller model_registry.IModelRegistryCall, appConfig *biz_entity_app_config.AgentChatAppConfig, providerType string, secretKet, fileBaseUrl string, bucket string) *FunctionCallAgentRunner {
 
 	return &FunctionCallAgentRunner{
 		applicationGenerateEntity: applicationGenerateEntity,
@@ -84,12 +86,12 @@ func NewFunctionCallAgentRunner(tenantID string, applicationGenerateEntity *biz_
 		modelCaller:               modelCaller,
 		RunnerRuntimeParameters: &RunnerRuntimeParameters{
 			interactionStep:       1,
-			historyPromptMessages: make([]*po_entity.PromptMessage, 0),
+			historyPromptMessages: make([]*biz_entity_chat_prompt_message.PromptMessage, 0),
 			functionCallState:     true,
 			maxInteractionSteps:   int(math.Min(float64(applicationGenerateEntity.MaxIteration), 5)),
 			toolResponse:          make([]*ToolResponseItem, 0),
-			taskState: &biz_entity.ChatAppTaskState{
-				LLMResult: biz_entity.NewEmptyLLMResult(),
+			taskState: &biz_entity_base_stream_generator.ChatAppTaskState{
+				LLMResult: biz_entity_base_stream_generator.NewEmptyLLMResult(),
 			},
 		},
 	}
@@ -101,20 +103,19 @@ type ToolCall struct {
 	TollCallArgs string
 }
 
-func (fca *FunctionCallAgentRunner) Run(ctx context.Context, message *po_entity.Message, query string) (*biz_entity.ChatAppTaskState, error) {
+func (fca *FunctionCallAgentRunner) Run(ctx context.Context, message *po_entity.Message, query string) (*biz_entity_base_stream_generator.ChatAppTaskState, error) {
 
 	fca.message = message
 
 	for fca.functionCallState && fca.interactionStep <= int(fca.maxInteractionSteps) {
 		var (
-			response       string
 			messageFileIDs []string
 		)
 
 		fca.functionCallState = false
 
 		if fca.interactionStep == fca.maxInteractionSteps {
-			fca.promptToolMessages = make([]*biz_entity.PromptMessageTool, 0)
+			fca.promptToolMessages = make([]*biz_entity_chat_prompt_message.PromptMessageTool, 0)
 		}
 
 		fca.organizePromptMessage()
@@ -128,14 +129,14 @@ func (fca *FunctionCallAgentRunner) Run(ctx context.Context, message *po_entity.
 			return nil, err
 		}
 
-		assistantMessage := biz_entity.NewAssistantPromptMessage(fca.fullAssistant)
+		assistantMessage := biz_entity_chat_prompt_message.NewAssistantToolPromptMessage(fca.fullAssistant)
 
 		if len(fca.toolCalls) > 0 {
 			for _, toolCall := range fca.toolCalls {
-				assistantMessage.ToolCalls = append(assistantMessage.ToolCalls, &biz_entity.ToolCall{
+				assistantMessage.ToolCalls = append(assistantMessage.ToolCalls, &biz_entity_openai_standard_response.ToolCall{
 					ID:   toolCall.ToolCallID,
 					Type: "function",
-					Function: &biz_entity.ToolCallFunction{
+					Function: &biz_entity_openai_standard_response.ToolCallFunction{
 						Name:      toolCall.ToolCallName,
 						Arguments: toolCall.TollCallArgs,
 					},
@@ -146,7 +147,7 @@ func (fca *FunctionCallAgentRunner) Run(ctx context.Context, message *po_entity.
 		// before tool call update agent thought
 		fca.assistantThoughts = append(fca.assistantThoughts, assistantMessage)
 
-		agentThought, err = fca.SaveAgentThought(ctx, agentThought, fca.toolCallNames, fca.toolCallInputs, fca.fullAssistant, nil, nil, response, []string{}, nil)
+		agentThought, err = fca.SaveAgentThought(ctx, agentThought, fca.toolCallNames, fca.toolCallInputs, fca.fullAssistant, nil, nil, fca.fullAssistant, []string{}, nil)
 
 		if err != nil {
 			return nil, err
@@ -193,10 +194,10 @@ func (fca *FunctionCallAgentRunner) Run(ctx context.Context, message *po_entity.
 			})
 
 			if toolInvokeResponse.InvokeToolPrompt != "" {
-				fca.assistantThoughts = append(fca.assistantThoughts, &po_entity.ToolPromptMessage{
-					PromptMessage: &po_entity.PromptMessage{
+				fca.assistantThoughts = append(fca.assistantThoughts, &biz_entity_chat_prompt_message.ToolPromptMessage{
+					PromptMessage: &biz_entity_chat_prompt_message.PromptMessage{
 						Content: toolInvokeResponse.InvokeToolPrompt,
-						Role:    po_entity.TOOL,
+						Role:    biz_entity_chat_prompt_message.TOOL,
 						Name:    toolCall.ToolCallName,
 					},
 					ToolCallID: toolCall.ToolCallID,
@@ -283,7 +284,7 @@ QuitLoop:
 			if !ok {
 				break QuitLoop
 			}
-			if mc, ok := errorMessage.Event.(*biz_entity.QueueErrorEvent); ok {
+			if mc, ok := errorMessage.Event.(*biz_entity_base_stream_generator.QueueErrorEvent); ok {
 				log.Errorf("found queue error event: %#+v", mc.Err)
 				return nil, mc.Err
 			}
@@ -310,8 +311,8 @@ QuitLoop:
 	return agentThought, nil
 }
 
-func (fca *FunctionCallAgentRunner) handleFinalChunk(message *biz_entity.MessageQueueMessage) {
-	if mc, ok := message.Event.(*biz_entity.QueueMessageEndEvent); ok {
+func (fca *FunctionCallAgentRunner) handleFinalChunk(message *biz_entity_base_stream_generator.MessageQueueMessage) {
+	if mc, ok := message.Event.(*biz_entity_base_stream_generator.QueueMessageEndEvent); ok {
 		if fca.checkTools(mc.LLMResult) {
 			fca.functionCallState = true
 			fca.toolCalls = append(fca.toolCalls, fca.extractToolCalls(mc.LLMResult)...)
@@ -323,8 +324,8 @@ func (fca *FunctionCallAgentRunner) handleFinalChunk(message *biz_entity.Message
 	}
 }
 
-func (fca *FunctionCallAgentRunner) handleResultChunk(message *biz_entity.MessageQueueMessage) error {
-	if chunkEvent, ok := message.Event.(*biz_entity.QueueAgentMessageEvent); ok {
+func (fca *FunctionCallAgentRunner) handleResultChunk(message *biz_entity_base_stream_generator.MessageQueueMessage) error {
+	if chunkEvent, ok := message.Event.(*biz_entity_base_stream_generator.QueueAgentMessageEvent); ok {
 		deltaText := chunkEvent.Chunk.Delta.Message.Content
 		if err := fca.agentFlusher.AgentMessageToStreamResponse(deltaText.(string)); err != nil {
 			return err
@@ -349,11 +350,11 @@ func (fca *FunctionCallAgentRunner) handleResultChunk(message *biz_entity.Messag
 // 	return appendedPromptMessage
 // }
 
-func (fca *FunctionCallAgentRunner) checkTools(llmChunk *biz_entity.LLMResult) bool {
+func (fca *FunctionCallAgentRunner) checkTools(llmChunk *biz_entity_base_stream_generator.LLMResult) bool {
 	return len(llmChunk.Message.ToolCalls) > 0
 }
 
-func (fca *FunctionCallAgentRunner) extractToolCalls(llmChunk *biz_entity.LLMResult) []*ToolCall {
+func (fca *FunctionCallAgentRunner) extractToolCalls(llmChunk *biz_entity_base_stream_generator.LLMResult) []*ToolCall {
 	var toolCalls []*ToolCall
 	for _, prompt := range llmChunk.Message.ToolCalls {
 		toolCalls = append(toolCalls, &ToolCall{
@@ -428,7 +429,7 @@ func (fca *FunctionCallAgentRunner) CreateAgentThought(ctx context.Context, mess
 	return thought, nil
 }
 
-func (fca *FunctionCallAgentRunner) SaveAgentThought(ctx context.Context, agentThought *po_agent.MessageAgentThought, toolName string, toolInput map[string]string, thought string, observation map[string]string, toolInvokeMeta map[string]*po_agent.ToolEngineInvokeMeta, answer string, messageIDs []string, llmUsage *biz_entity.LLMUsage) (*po_agent.MessageAgentThought, error) {
+func (fca *FunctionCallAgentRunner) SaveAgentThought(ctx context.Context, agentThought *po_agent.MessageAgentThought, toolName string, toolInput map[string]string, thought string, observation map[string]string, toolInvokeMeta map[string]*po_agent.ToolEngineInvokeMeta, answer string, messageIDs []string, llmUsage *biz_entity_base_stream_generator.LLMUsage) (*po_agent.MessageAgentThought, error) {
 
 	if thought != "" {
 		agentThought.Thought = thought

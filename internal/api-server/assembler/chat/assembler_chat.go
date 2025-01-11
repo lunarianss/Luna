@@ -6,7 +6,10 @@ import (
 	po_account "github.com/lunarianss/Luna/internal/api-server/domain/account/entity/po_entity"
 	biz_agent "github.com/lunarianss/Luna/internal/api-server/domain/agent/entity/biz_entity"
 	po_agent "github.com/lunarianss/Luna/internal/api-server/domain/agent/entity/po_entity"
-	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
+	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/chat_annotation"
+	biz_entity_app_chat_annotation "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/chat_annotation"
+	biz_entity_chat_prompt_message "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/chat_prompt_message"
+	biz_entity_base_stream_generator "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/stream_base_generator"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	dto_agent "github.com/lunarianss/Luna/internal/api-server/dto/agent"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/chat"
@@ -48,7 +51,7 @@ func ConvertToAnnotationAccount(a *po_account.Account) (s *dto.AnnotationAccount
 }
 
 // ConvertToListMessageDto converts a Message from po_entity to ListChatMessageItem.
-func ConvertToListMessageDto(message *po_entity.Message, annotation *biz_entity.BizMessageAnnotation, history *po_entity.AppAnnotationHitHistory, account *po_account.Account, thoughts []*po_agent.MessageAgentThought, buildFile []*biz_agent.BuildFile) *dto.ListChatMessageItem {
+func ConvertToListMessageDto(message *po_entity.Message, annotation *biz_entity_app_chat_annotation.BizMessageAnnotation, history *po_entity.AppAnnotationHitHistory, account *po_account.Account, thoughts []*po_agent.MessageAgentThought, buildFile []*biz_agent.BuildFile) *dto.ListChatMessageItem {
 
 	var thoughtDto []*dto_agent.MessageAgentThought
 	var buildFileDto []*dto_agent.BuildFile
@@ -107,7 +110,7 @@ func ConvertToListMessageDto(message *po_entity.Message, annotation *biz_entity.
 	return messageItem
 }
 
-func ConvertPromptMessageDto(messages []po_entity.IPromptMessage) []*dto.PromptMessage {
+func ConvertPromptMessageDto(messages []biz_entity_chat_prompt_message.IPromptMessage) []*dto.PromptMessage {
 	var pms []*dto.PromptMessage
 
 	if len(messages) == 0 {
@@ -140,7 +143,7 @@ func ConvertToConversationJoins(conversation *po_entity.Conversation) *dto.ListC
 	}
 }
 
-func CovertToServiceChatCompletionResponse(message *po_entity.Message, cID string, llmResult *biz_entity.LLMResult) *dto.ServiceChatCompletionResponse {
+func CovertToServiceChatCompletionResponse(message *po_entity.Message, cID string, llmResult *biz_entity_base_stream_generator.LLMResult) *dto.ServiceChatCompletionResponse {
 	return &dto.ServiceChatCompletionResponse{
 		MessageID:      message.ID,
 		CreatedAt:      message.CreatedAt,

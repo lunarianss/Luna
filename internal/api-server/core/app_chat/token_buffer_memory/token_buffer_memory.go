@@ -5,6 +5,7 @@ import (
 
 	"github.com/lunarianss/Luna/internal/api-server/core/model_runtime/model_registry"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
+	biz_entity_chat_prompt_message "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/chat_prompt_message"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/infrastructure/util"
 )
@@ -12,7 +13,7 @@ import (
 const UUID_NIL = "00000000-0000-0000-0000-000000000000"
 
 type ITokenBufferMemory interface {
-	GetHistoryPromptMessage(ctx context.Context, maxTokenLimit int, messageLimit int) ([]*po_entity.PromptMessage, error)
+	GetHistoryPromptMessage(ctx context.Context, maxTokenLimit int, messageLimit int) ([]*biz_entity_chat_prompt_message.PromptMessage, error)
 }
 
 type tokenBufferMemory struct {
@@ -22,7 +23,6 @@ type tokenBufferMemory struct {
 }
 
 func NewTokenBufferMemory(conversation *po_entity.Conversation, modelRegistryCaller model_registry.IModelRegistryCall, chatDomain *domain_service.ChatDomain) *tokenBufferMemory {
-
 	return &tokenBufferMemory{
 		conversation:        conversation,
 		modelRegistryCaller: modelRegistryCaller,
@@ -30,10 +30,10 @@ func NewTokenBufferMemory(conversation *po_entity.Conversation, modelRegistryCal
 	}
 }
 
-func (s *tokenBufferMemory) GetHistoryPromptMessage(ctx context.Context, maxTokenLimit int, messageLimit int) ([]*po_entity.PromptMessage, error) {
+func (s *tokenBufferMemory) GetHistoryPromptMessage(ctx context.Context, maxTokenLimit int, messageLimit int) ([]*biz_entity_chat_prompt_message.PromptMessage, error) {
 
 	var (
-		promptMessages []*po_entity.PromptMessage
+		promptMessages []*biz_entity_chat_prompt_message.PromptMessage
 	)
 
 	if messageLimit != 0 && messageLimit > 0 {
@@ -59,7 +59,7 @@ func (s *tokenBufferMemory) GetHistoryPromptMessage(ctx context.Context, maxToke
 	messages = util.SliceReverse(messages)
 
 	for _, message := range messages {
-		promptMessages = append(promptMessages, po_entity.NewUserMessage(message.Query), po_entity.NewAssistantMessage(message.Answer))
+		promptMessages = append(promptMessages, biz_entity_chat_prompt_message.NewUserMessage(message.Query), biz_entity_chat_prompt_message.NewAssistantMessage(message.Answer))
 	}
 
 	return promptMessages, nil

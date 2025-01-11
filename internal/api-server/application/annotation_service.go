@@ -19,7 +19,7 @@ import (
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
-	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
+	biz_entity_app_chat_annotation "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/chat_annotation"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	datasetDomain "github.com/lunarianss/Luna/internal/api-server/domain/dataset/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
@@ -58,7 +58,7 @@ func NewAnnotationService(appDomain *appDomain.AppDomain, providerDomain *domain
 func (as *AnnotationService) InsertAnnotationFromMessage(ctx context.Context, accountID string, appID string, args *dto.InsertAnnotationFormMessage) (*dto.MessageAnnotation, error) {
 
 	var (
-		bizMessageAnnotation *biz_entity.BizMessageAnnotation
+		bizMessageAnnotation *biz_entity_app_chat_annotation.BizMessageAnnotation
 	)
 
 	accountRecord, err := as.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)

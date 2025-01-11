@@ -15,11 +15,11 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/core/model_runtime/model_registry"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
+	biz_entity_app_prompt_template "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/app_prompt_template"
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
-	biz_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
-	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
+	biz_entity_chat_prompt_message "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/chat_prompt_message"
 	"github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	common "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/common_relation"
 	dto "github.com/lunarianss/Luna/internal/api-server/dto/app"
@@ -397,7 +397,7 @@ func (as *AppService) GeneratePrompt(ctx context.Context, accountID string, args
 		return nil, err
 	}
 
-	promptGenerate := biz_entity_chat.GetRuleConfigPromptGenerateTemplate()
+	promptGenerate := biz_entity_app_prompt_template.GetRuleConfigPromptGenerateTemplate()
 
 	promptTemplateParse := biz_entity.NewPromptTemplateParse(promptGenerate, false)
 
@@ -405,13 +405,13 @@ func (as *AppService) GeneratePrompt(ctx context.Context, accountID string, args
 		"TaskDescription": args.Instruction,
 	}, false)
 
-	var promptMessages []*po_entity_chat.PromptMessage
+	var promptMessages []*biz_entity_chat_prompt_message.PromptMessage
 
-	promptMessages = append(promptMessages, po_entity_chat.NewUserMessage(promptGenerate))
+	promptMessages = append(promptMessages, biz_entity_chat_prompt_message.NewUserMessage(promptGenerate))
 
 	modelCaller := model_registry.NewModelRegisterCaller(args.ModelConfig.Name, string(common.LLM), args.ModelConfig.Provider, modelIns.Credentials, modelIns.ModelTypeInstance)
 
-	llmResult, err := modelCaller.InvokeLLMNonStream(ctx, util.ConvertToInterfaceSlice(promptMessages, func(pm *po_entity_chat.PromptMessage) po_entity_chat.IPromptMessage {
+	llmResult, err := modelCaller.InvokeLLMNonStream(ctx, util.ConvertToInterfaceSlice(promptMessages, func(pm *biz_entity_chat_prompt_message.PromptMessage) biz_entity_chat_prompt_message.IPromptMessage {
 		return pm
 	}), modelParameters, nil, nil, accountID, nil)
 

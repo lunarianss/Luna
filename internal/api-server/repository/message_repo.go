@@ -12,7 +12,7 @@ import (
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/infrastructure/log"
 	po_entity_account "github.com/lunarianss/Luna/internal/api-server/domain/account/entity/po_entity"
-	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
+	biz_entity_console_app_statistic "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/console_app_statistic"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/repository"
 	repo_common "github.com/lunarianss/Luna/internal/api-server/domain/common/repository"
@@ -85,12 +85,12 @@ func (md *MessageRepoImpl) UpdateConversationName(ctx context.Context, conversat
 	return nil
 }
 
-func (md *MessageRepoImpl) StatisticAverageSessionInteraction(ctx context.Context, appID, start, end, location string) ([]*biz_entity.StatisticAverageInteractionItem, error) {
+func (md *MessageRepoImpl) StatisticAverageSessionInteraction(ctx context.Context, appID, start, end, location string) ([]*biz_entity_console_app_statistic.StatisticAverageInteractionItem, error) {
 
 	var (
 		startTimeUTC int64
 		endTimeUTC   int64
-		rets         []*biz_entity.StatisticAverageInteractionItem
+		rets         []*biz_entity_console_app_statistic.StatisticAverageInteractionItem
 	)
 
 	timezoneIns, err := time.LoadLocation(location)
@@ -152,12 +152,12 @@ func (md *MessageRepoImpl) StatisticAverageSessionInteraction(ctx context.Contex
 
 }
 
-func (md *MessageRepoImpl) StatisticDailyUsers(ctx context.Context, appID, start, end, location string) ([]*biz_entity.StatisticDailyUsersItem, error) {
+func (md *MessageRepoImpl) StatisticDailyUsers(ctx context.Context, appID, start, end, location string) ([]*biz_entity_console_app_statistic.StatisticDailyUsersItem, error) {
 
 	var (
 		startTimeUTC int64
 		endTimeUTC   int64
-		rets         []*biz_entity.StatisticDailyUsersItem
+		rets         []*biz_entity_console_app_statistic.StatisticDailyUsersItem
 	)
 	timezoneIns, err := time.LoadLocation(location)
 
@@ -200,12 +200,12 @@ func (md *MessageRepoImpl) StatisticDailyUsers(ctx context.Context, appID, start
 	return rets, nil
 }
 
-func (md *MessageRepoImpl) StatisticDailyConversations(ctx context.Context, appID, start, end, location string) ([]*biz_entity.StatisticDailyConversationsItem, error) {
+func (md *MessageRepoImpl) StatisticDailyConversations(ctx context.Context, appID, start, end, location string) ([]*biz_entity_console_app_statistic.StatisticDailyConversationsItem, error) {
 
 	var (
 		startTimeUTC int64
 		endTimeUTC   int64
-		rets         []*biz_entity.StatisticDailyConversationsItem
+		rets         []*biz_entity_console_app_statistic.StatisticDailyConversationsItem
 	)
 	timezoneIns, err := time.LoadLocation(location)
 
@@ -248,12 +248,12 @@ func (md *MessageRepoImpl) StatisticDailyConversations(ctx context.Context, appI
 	return rets, nil
 }
 
-func (md *MessageRepoImpl) StatisticTokenCosts(ctx context.Context, appID, start, end, location string) ([]*biz_entity.StatisticTokenCostsItem, error) {
+func (md *MessageRepoImpl) StatisticTokenCosts(ctx context.Context, appID, start, end, location string) ([]*biz_entity_console_app_statistic.StatisticTokenCostsItem, error) {
 
 	var (
 		startTimeUTC int64
 		endTimeUTC   int64
-		rets         []*biz_entity.StatisticTokenCostsItem
+		rets         []*biz_entity_console_app_statistic.StatisticTokenCostsItem
 	)
 	timezoneIns, err := time.LoadLocation(location)
 
@@ -302,12 +302,12 @@ func (md *MessageRepoImpl) StatisticTokenCosts(ctx context.Context, appID, start
 	return rets, nil
 }
 
-func (md *MessageRepoImpl) StatisticDailyMessages(ctx context.Context, appID, start, end, location string) ([]*biz_entity.StatisticDailyConversationsItem, error) {
+func (md *MessageRepoImpl) StatisticDailyMessages(ctx context.Context, appID, start, end, location string) ([]*biz_entity_console_app_statistic.StatisticDailyConversationsItem, error) {
 
 	var (
 		startTimeUTC int64
 		endTimeUTC   int64
-		rets         []*biz_entity.StatisticDailyConversationsItem
+		rets         []*biz_entity_console_app_statistic.StatisticDailyConversationsItem
 	)
 	timezoneIns, err := time.LoadLocation(location)
 

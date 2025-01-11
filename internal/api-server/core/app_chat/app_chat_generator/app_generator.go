@@ -23,7 +23,8 @@ import (
 	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
-	biz_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
+	biz_entity_base_stream_generator "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/stream_base_generator"
+	biz_entity_app_stream_generator "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/stream_chat_generator"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/common/repository"
 	datasetDomain "github.com/lunarianss/Luna/internal/api-server/domain/dataset/domain_service"
@@ -207,7 +208,7 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, 
 		return err
 	}
 
-	queueManager, streamResultChunkQueue, streamFinalChunkQueue := biz_entity_chat.NewStreamGenerateQueue(
+	queueManager, streamResultChunkQueue, streamFinalChunkQueue := biz_entity_app_stream_generator.NewStreamGenerateQueue(
 		uuid.NewString(),
 		applicationGenerateEntity.UserID,
 		conversationRecord.ID,
@@ -226,11 +227,11 @@ func (g *ChatAppGenerator) Generate(c context.Context, appModel *po_entity.App, 
 	return nil
 }
 
-func (g *ChatAppGenerator) ListenQueue(queueManager *biz_entity_chat.StreamGenerateQueue) {
+func (g *ChatAppGenerator) ListenQueue(queueManager biz_entity_base_stream_generator.IStreamGenerateQueue) {
 	queueManager.Listen()
 }
 
-func (g *ChatAppGenerator) generateNonStream(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, conversationID string, messageID string) (*biz_entity_chat.LLMResult, error) {
+func (g *ChatAppGenerator) generateNonStream(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, conversationID string, messageID string) (*biz_entity_base_stream_generator.LLMResult, error) {
 
 	appRunner := app_chat_runner.NewAppChatRunner(app_chat_runner.NewAppBaseChatRunner(), g.AppDomain, g.chatDomain, g.ProviderDomain, g.DatasetDomain, g.redis)
 
@@ -250,7 +251,7 @@ func (g *ChatAppGenerator) generateNonStream(ctx context.Context, applicationGen
 	return appRunner.RunNonStream(ctx, applicationGenerateEntity, message, conversation)
 }
 
-func (g *ChatAppGenerator) generateGoRoutine(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, conversationID string, messageID string, queueManager *biz_entity_chat.StreamGenerateQueue) {
+func (g *ChatAppGenerator) generateGoRoutine(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, conversationID string, messageID string, queueManager biz_entity_base_stream_generator.IStreamGenerateQueue) {
 
 	defer func() {
 		if r := recover(); r != nil {

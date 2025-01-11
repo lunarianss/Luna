@@ -5,8 +5,8 @@ import (
 
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	appDomain "github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
+	biz_entity_console_app_statistic "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/console_app_statistic"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
-	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 )
 
 type StatisticService struct {
@@ -23,7 +23,7 @@ func NewStatisticService(chatDomain *chatDomain.ChatDomain, accountDomain *accou
 	}
 }
 
-func (ss *StatisticService) DailyMessages(ctx context.Context, appID, accountID, start, end string) (*biz_entity.StatisticDailyConversations, error) {
+func (ss *StatisticService) DailyMessages(ctx context.Context, appID, accountID, start, end string) (*biz_entity_console_app_statistic.StatisticDailyConversations, error) {
 
 	accountRecord, err := ss.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
 
@@ -49,12 +49,12 @@ func (ss *StatisticService) DailyMessages(ctx context.Context, appID, accountID,
 		return nil, err
 	}
 
-	return &biz_entity.StatisticDailyConversations{
+	return &biz_entity_console_app_statistic.StatisticDailyConversations{
 		Data: statistics,
 	}, nil
 }
 
-func (ss *StatisticService) DailyConversations(ctx context.Context, appID, accountID, start, end string) (*biz_entity.StatisticDailyConversations, error) {
+func (ss *StatisticService) DailyConversations(ctx context.Context, appID, accountID, start, end string) (*biz_entity_console_app_statistic.StatisticDailyConversations, error) {
 
 	accountRecord, err := ss.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
 
@@ -80,12 +80,12 @@ func (ss *StatisticService) DailyConversations(ctx context.Context, appID, accou
 		return nil, err
 	}
 
-	return &biz_entity.StatisticDailyConversations{
+	return &biz_entity_console_app_statistic.StatisticDailyConversations{
 		Data: statistics,
 	}, nil
 }
 
-func (ss *StatisticService) DailyUsers(ctx context.Context, appID, accountID, start, end string) (*biz_entity.StatisticDailyUser, error) {
+func (ss *StatisticService) DailyUsers(ctx context.Context, appID, accountID, start, end string) (*biz_entity_console_app_statistic.StatisticDailyUser, error) {
 	accountRecord, err := ss.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
 
 	if err != nil {
@@ -110,12 +110,12 @@ func (ss *StatisticService) DailyUsers(ctx context.Context, appID, accountID, st
 		return nil, err
 	}
 
-	return &biz_entity.StatisticDailyUser{
+	return &biz_entity_console_app_statistic.StatisticDailyUser{
 		Data: statistics,
 	}, nil
 }
 
-func (ss *StatisticService) AverageInteractions(ctx context.Context, appID, accountID, start, end string) (*biz_entity.StatisticAverageInteraction, error) {
+func (ss *StatisticService) AverageInteractions(ctx context.Context, appID, accountID, start, end string) (*biz_entity_console_app_statistic.StatisticAverageInteraction, error) {
 	accountRecord, err := ss.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
 
 	if err != nil {
@@ -140,12 +140,12 @@ func (ss *StatisticService) AverageInteractions(ctx context.Context, appID, acco
 		return nil, err
 	}
 
-	return &biz_entity.StatisticAverageInteraction{
+	return &biz_entity_console_app_statistic.StatisticAverageInteraction{
 		Data: statistics,
 	}, nil
 }
 
-func (ss *StatisticService) SumTokenCosts(ctx context.Context, appID, accountID, start, end string) (*biz_entity.StatisticTokenCosts, error) {
+func (ss *StatisticService) SumTokenCosts(ctx context.Context, appID, accountID, start, end string) (*biz_entity_console_app_statistic.StatisticTokenCosts, error) {
 	accountRecord, err := ss.accountDomain.AccountRepo.GetAccountByID(ctx, accountID)
 
 	if err != nil {
@@ -170,7 +170,7 @@ func (ss *StatisticService) SumTokenCosts(ctx context.Context, appID, accountID,
 		return nil, err
 	}
 
-	return &biz_entity.StatisticTokenCosts{
+	return &biz_entity_console_app_statistic.StatisticTokenCosts{
 		Data: statistics,
 	}, nil
 }

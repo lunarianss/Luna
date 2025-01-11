@@ -12,24 +12,23 @@ import (
 	"strings"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
-	biz_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
+
+	biz_entity_openai_standard_response "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/openai_standard_response"
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider/model_provider"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 )
 
 type IOpenAudioApiCompactLargeLanguage interface {
-	Invoke(ctx context.Context) (*biz_entity_chat.Speech2TextResp, error)
+	Invoke(ctx context.Context) (*biz_entity_openai_standard_response.Speech2TextResp, error)
 }
 
 type OpenAudioApiCompactLargeLanguage struct {
 	biz_entity.IAIModelRuntime
-	fullAssistantContent string
-	model                string
-	user                 string
-	credentials          map[string]interface{}
-	audioFileContent     []byte
-	modelParameters      map[string]interface{}
-	filename             string
+	model            string
+	credentials      map[string]interface{}
+	audioFileContent []byte
+	modelParameters  map[string]interface{}
+	filename         string
 }
 
 func NewOpenAudioApiCompactLargeLanguage(audioFileContent []byte, modelParameters map[string]interface{}, credentials map[string]interface{}, model, filename string, modelRuntime biz_entity.IAIModelRuntime) *OpenAudioApiCompactLargeLanguage {
@@ -43,7 +42,7 @@ func NewOpenAudioApiCompactLargeLanguage(audioFileContent []byte, modelParameter
 	}
 }
 
-func (m *OpenAudioApiCompactLargeLanguage) Invoke(ctx context.Context) (*biz_entity_chat.Speech2TextResp, error) {
+func (m *OpenAudioApiCompactLargeLanguage) Invoke(ctx context.Context) (*biz_entity_openai_standard_response.Speech2TextResp, error) {
 
 	headers := map[string]string{
 		"Accept-Charset": "utf-8",
@@ -67,13 +66,13 @@ func (m *OpenAudioApiCompactLargeLanguage) Invoke(ctx context.Context) (*biz_ent
 
 	if !ok || endpointUrl == "" {
 
-		return nil, errors.WithCode(code.ErrModelNotHaveEndPoint, fmt.Sprintf("Model %s not have endpoint url", m.model))
+		return nil, errors.WithCode(code.ErrModelNotHaveEndPoint, "Model %s not have endpoint url", m.model)
 	}
 
 	endpointUrlStr, ok := endpointUrl.(string)
 
 	if !ok {
-		return nil, errors.WithCode(code.ErrModelNotHaveEndPoint, fmt.Sprintf("Model %s not have endpoint url", m.model))
+		return nil, errors.WithCode(code.ErrModelNotHaveEndPoint, "Model %s not have endpoint url", m.model)
 	}
 
 	if !strings.HasSuffix(endpointUrlStr, "/") {
@@ -135,7 +134,7 @@ func (m *OpenAudioApiCompactLargeLanguage) Invoke(ctx context.Context) (*biz_ent
 		return nil, err
 	}
 
-	speechText := &biz_entity_chat.Speech2TextResp{}
+	speechText := &biz_entity_openai_standard_response.Speech2TextResp{}
 
 	json.Unmarshal(transBytes, speechText)
 

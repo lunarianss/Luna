@@ -10,15 +10,17 @@ import (
 	"strings"
 	"time"
 
+	biz_entity_openai_standard_response "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/openai_standard_response"
+
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/infrastructure/log"
-	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
+
 	biz_entity_model "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider/model_provider"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 )
 
 type IOpenApiCompactTextEmbeddingModel interface {
-	Invoke(ctx context.Context) (*biz_entity.TextEmbeddingResult, error)
+	Invoke(ctx context.Context) (*biz_entity_openai_standard_response.TextEmbeddingResult, error)
 }
 
 type openApiCompactLargeLanguageModel struct {
@@ -37,7 +39,7 @@ func NewOpenApiCompactLargeLanguageModel(ctx context.Context, model string, cred
 	}
 }
 
-func (o *openApiCompactLargeLanguageModel) Invoke(ctx context.Context) (*biz_entity.TextEmbeddingResult, error) {
+func (o *openApiCompactLargeLanguageModel) Invoke(ctx context.Context) (*biz_entity_openai_standard_response.TextEmbeddingResult, error) {
 	var (
 		err            error
 		batchEmbedding [][]float32
@@ -103,7 +105,7 @@ func (o *openApiCompactLargeLanguageModel) Invoke(ctx context.Context) (*biz_ent
 	}
 
 	decoder := json.NewDecoder(response.Body)
-	var LLMResult biz_entity.TextEmbeddingLargeModelResult
+	var LLMResult biz_entity_openai_standard_response.TextEmbeddingLargeModelResult
 
 	if err = decoder.Decode(&LLMResult); err != nil {
 		return nil, errors.WithSCode(code.ErrDecodingJSON, err.Error())
@@ -121,14 +123,14 @@ func (o *openApiCompactLargeLanguageModel) Invoke(ctx context.Context) (*biz_ent
 		return nil, err
 	}
 
-	return &biz_entity.TextEmbeddingResult{
+	return &biz_entity_openai_standard_response.TextEmbeddingResult{
 		Usage:      embeddingUsage,
 		Embeddings: batchEmbedding,
 		Model:      o.model,
 	}, nil
 }
 
-func (o *openApiCompactLargeLanguageModel) calcResponseUsage(tokens int) (*biz_entity.EmbeddingUsage, error) {
+func (o *openApiCompactLargeLanguageModel) calcResponseUsage(tokens int) (*biz_entity_openai_standard_response.EmbeddingUsage, error) {
 
 	priceInfo, err := o.GetPrice(o.model, o.credentials, biz_entity_model.INPUT, int64(tokens))
 
@@ -136,7 +138,7 @@ func (o *openApiCompactLargeLanguageModel) calcResponseUsage(tokens int) (*biz_e
 		return nil, err
 	}
 
-	return &biz_entity.EmbeddingUsage{
+	return &biz_entity_openai_standard_response.EmbeddingUsage{
 		Tokens:      tokens,
 		TotalTokens: tokens,
 		UnitPrice:   priceInfo.UnitPrice,

@@ -14,7 +14,6 @@ import (
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/domain_service"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
-	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 
 	"github.com/lunarianss/Luna/internal/api-server/core/model_runtime/model_registry"
@@ -22,6 +21,9 @@ import (
 	providerDomain "github.com/lunarianss/Luna/internal/api-server/domain/provider/domain_service"
 	biz_entity_app_generate "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider_app_generate"
 	"github.com/redis/go-redis/v9"
+
+	biz_entity_chat_prompt_message "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/chat_prompt_message"
+	biz_entity_base_stream_generator "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/stream_base_generator"
 )
 
 type appChatRunner struct {
@@ -44,7 +46,7 @@ func NewAppChatRunner(appBaseChatRunner *AppBaseChatRunner, appDomain *domain_se
 	}
 }
 
-func (r *appChatRunner) baseRun(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, conversation *po_entity_chat.Conversation) (model_registry.IModelRegistryCall, []*po_entity_chat.PromptMessage, []string, *po_entity.App, error) {
+func (r *appChatRunner) baseRun(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, conversation *po_entity_chat.Conversation) (model_registry.IModelRegistryCall, []*biz_entity_chat_prompt_message.PromptMessage, []string, *po_entity.App, error) {
 
 	var (
 		memory token_buffer_memory.ITokenBufferMemory
@@ -79,7 +81,7 @@ func (r *appChatRunner) baseRun(ctx context.Context, applicationGenerateEntity *
 	return modelInstance, promptMessages, stop, appRecord, nil
 }
 
-func (r *appChatRunner) Run(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, message *po_entity_chat.Message, conversation *po_entity_chat.Conversation, queueManager *biz_entity.StreamGenerateQueue) {
+func (r *appChatRunner) Run(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, message *po_entity_chat.Message, conversation *po_entity_chat.Conversation, queueManager biz_entity_base_stream_generator.IStreamGenerateQueue) {
 
 	modelInstance, promptMessages, stop, app, err := r.baseRun(ctx, applicationGenerateEntity, conversation)
 
@@ -97,8 +99,8 @@ func (r *appChatRunner) Run(ctx context.Context, applicationGenerateEntity *biz_
 		}
 
 		if annotation != nil {
-			queueEvent := biz_entity.NewAppQueueEvent(biz_entity.AnnotationReply)
-			queueManager.Push(&biz_entity.QueueAnnotationReplyEvent{
+			queueEvent := biz_entity_base_stream_generator.NewAppQueueEvent(biz_entity_base_stream_generator.AnnotationReply)
+			queueManager.Push(&biz_entity_base_stream_generator.QueueAnnotationReplyEvent{
 				AppQueueEvent:       queueEvent,
 				MessageAnnotationID: annotation.ID,
 			})
@@ -108,12 +110,12 @@ func (r *appChatRunner) Run(ctx context.Context, applicationGenerateEntity *biz_
 		}
 	}
 
-	modelInstance.InvokeLLM(ctx, util.ConvertToInterfaceSlice(promptMessages, func(pm *po_entity_chat.PromptMessage) po_entity_chat.IPromptMessage {
+	modelInstance.InvokeLLM(ctx, util.ConvertToInterfaceSlice(promptMessages, func(pm *biz_entity_chat_prompt_message.PromptMessage) biz_entity_chat_prompt_message.IPromptMessage {
 		return pm
 	}), queueManager, applicationGenerateEntity.ModelConf.Parameters, nil, stop, applicationGenerateEntity.UserID, nil)
 }
 
-func (r *appChatRunner) RunNonStream(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, message *po_entity_chat.Message, conversation *po_entity_chat.Conversation) (*biz_entity.LLMResult, error) {
+func (r *appChatRunner) RunNonStream(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.ChatAppGenerateEntity, message *po_entity_chat.Message, conversation *po_entity_chat.Conversation) (*biz_entity_base_stream_generator.LLMResult, error) {
 
 	modelInstance, promptMessages, stop, app, err := r.baseRun(ctx, applicationGenerateEntity, conversation)
 
@@ -129,18 +131,18 @@ func (r *appChatRunner) RunNonStream(ctx context.Context, applicationGenerateEnt
 		}
 
 		if annotation != nil {
-			return &biz_entity.LLMResult{
+			return &biz_entity_base_stream_generator.LLMResult{
 				Model: applicationGenerateEntity.ModelConf.Model,
-				PromptMessage: util.ConvertToInterfaceSlice(promptMessages, func(pm *po_entity_chat.PromptMessage) po_entity_chat.IPromptMessage {
+				PromptMessage: util.ConvertToInterfaceSlice(promptMessages, func(pm *biz_entity_chat_prompt_message.PromptMessage) biz_entity_chat_prompt_message.IPromptMessage {
 					return pm
 				}),
-				Message: biz_entity.NewAssistantPromptMessage(annotation.Content),
-				Usage:   biz_entity.NewEmptyLLMUsage(),
+				Message: biz_entity_chat_prompt_message.NewAssistantToolPromptMessage(annotation.Content),
+				Usage:   biz_entity_base_stream_generator.NewEmptyLLMUsage(),
 			}, nil
 		}
 	}
 
-	return modelInstance.InvokeLLMNonStream(ctx, util.ConvertToInterfaceSlice(promptMessages, func(pm *po_entity_chat.PromptMessage) po_entity_chat.IPromptMessage {
+	return modelInstance.InvokeLLMNonStream(ctx, util.ConvertToInterfaceSlice(promptMessages, func(pm *biz_entity_chat_prompt_message.PromptMessage) biz_entity_chat_prompt_message.IPromptMessage {
 		return pm
 	}), applicationGenerateEntity.ModelConf.Parameters, nil, stop, applicationGenerateEntity.UserID, nil)
 }

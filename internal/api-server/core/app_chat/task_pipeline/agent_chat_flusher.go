@@ -11,7 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	biz_agent "github.com/lunarianss/Luna/internal/api-server/domain/agent/entity/biz_entity"
-	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
+	biz_entity_base_stream_generator "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/stream_base_generator"
+
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 
 	"github.com/lunarianss/Luna/infrastructure/log"
@@ -112,18 +113,18 @@ func (tpp *agentChatFlusher) AgentMessageFileToStreamResponse(ctx context.Contex
 		url = signedUrl
 	}
 
-	messageFileChunkResponse := &biz_entity.MessageFileStreamResponse{
+	messageFileChunkResponse := &biz_entity_base_stream_generator.MessageFileStreamResponse{
 		ID:        messageFile.ID,
 		Type:      messageFile.Type,
 		BelongsTo: messageFile.BelongsTo,
 		URL:       url,
-		StreamResponse: &biz_entity.StreamResponse{
+		StreamResponse: &biz_entity_base_stream_generator.StreamResponse{
 			TaskID: tpp.GetTaskID(),
-			Event:  biz_entity.StreamEventMessageFile,
+			Event:  biz_entity_base_stream_generator.StreamEventMessageFile,
 		},
 	}
 
-	chatBotResponse := biz_entity.NewChatBotAppMessageFileStreamResponse(tpp.GetConversationID(), tpp.message.ID, tpp.message.CreatedAt, messageFileChunkResponse)
+	chatBotResponse := biz_entity_base_stream_generator.NewChatBotAppMessageFileStreamResponse(tpp.GetConversationID(), tpp.message.ID, tpp.message.CreatedAt, messageFileChunkResponse)
 
 	streamBytes, err := json.Marshal(chatBotResponse)
 
@@ -139,16 +140,16 @@ func (tpp *agentChatFlusher) AgentMessageFileToStreamResponse(ctx context.Contex
 }
 
 func (tpp *agentChatFlusher) AgentMessageToStreamResponse(answer string) error {
-	messageChunkResponse := &biz_entity.AgentMessageStreamResponse{
+	messageChunkResponse := &biz_entity_base_stream_generator.AgentMessageStreamResponse{
 		ID:     tpp.message.ID,
 		Answer: answer,
-		StreamResponse: &biz_entity.StreamResponse{
+		StreamResponse: &biz_entity_base_stream_generator.StreamResponse{
 			TaskID: tpp.GetTaskID(),
-			Event:  biz_entity.StreamEventAgentMessage,
+			Event:  biz_entity_base_stream_generator.StreamEventAgentMessage,
 		},
 	}
 
-	chatBotResponse := biz_entity.NewAgentChatBotAppStreamResponse(tpp.GetConversationID(), tpp.message.ID, tpp.message.CreatedAt, messageChunkResponse)
+	chatBotResponse := biz_entity_base_stream_generator.NewAgentChatBotAppStreamResponse(tpp.GetConversationID(), tpp.message.ID, tpp.message.CreatedAt, messageChunkResponse)
 
 	streamBytes, err := json.Marshal(chatBotResponse)
 
@@ -170,10 +171,10 @@ func (tpp *agentChatFlusher) AgentThoughtToStreamResponse(ctx context.Context, a
 		return err
 	}
 
-	thoughtResp := &biz_entity.AgentThoughtStreamResponse{
-		StreamResponse: &biz_entity.StreamResponse{
+	thoughtResp := &biz_entity_base_stream_generator.AgentThoughtStreamResponse{
+		StreamResponse: &biz_entity_base_stream_generator.StreamResponse{
 			TaskID: tpp.GetTaskID(),
-			Event:  biz_entity.StreamEventAgentThought,
+			Event:  biz_entity_base_stream_generator.StreamEventAgentThought,
 		},
 		ID:           agentThoughtID,
 		Position:     agentThought.Position,
@@ -185,7 +186,7 @@ func (tpp *agentChatFlusher) AgentThoughtToStreamResponse(ctx context.Context, a
 		MessageFiles: agentThought.MessageFiles,
 	}
 
-	chatBotResponse := biz_entity.NewAgentThoughtBotAppStreamResponse(tpp.GetConversationID(), tpp.message.ID, tpp.message.CreatedAt, thoughtResp)
+	chatBotResponse := biz_entity_base_stream_generator.NewAgentThoughtBotAppStreamResponse(tpp.GetConversationID(), tpp.message.ID, tpp.message.CreatedAt, thoughtResp)
 
 	streamBytes, err := json.Marshal(chatBotResponse)
 

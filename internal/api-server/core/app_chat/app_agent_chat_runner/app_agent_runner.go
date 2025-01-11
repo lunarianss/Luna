@@ -17,7 +17,9 @@ import (
 	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
-	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
+	biz_entity_chat_prompt_message "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/chat_prompt_message"
+	biz_entity_base_stream_generator "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/stream_base_generator"
+
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 
 	"github.com/lunarianss/Luna/internal/api-server/core/model_runtime/model_registry"
@@ -63,7 +65,7 @@ func NewAppAgentChatRunner(appBaseChatRunner *AppBaseAgentChatRunner, appDomain 
 	}
 }
 
-func (r *appAgentChatRunner) baseRun(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.AgentChatAppGenerateEntity, conversation *po_entity_chat.Conversation) (model_registry.IModelRegistryCall, []*po_entity_chat.PromptMessage, []string, *po_entity.App, error) {
+func (r *appAgentChatRunner) baseRun(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.AgentChatAppGenerateEntity, conversation *po_entity_chat.Conversation) (model_registry.IModelRegistryCall, []*biz_entity_chat_prompt_message.PromptMessage, []string, *po_entity.App, error) {
 
 	var (
 		memory token_buffer_memory.ITokenBufferMemory
@@ -98,7 +100,7 @@ func (r *appAgentChatRunner) baseRun(ctx context.Context, applicationGenerateEnt
 	return modelInstance, promptMessages, stop, appRecord, nil
 }
 
-func (r *appAgentChatRunner) Run(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.AgentChatAppGenerateEntity, message *po_entity_chat.Message, conversation *po_entity_chat.Conversation, queueManager biz_entity.IStreamGenerateQueue, taskScheduler IAgentChatAppTaskScheduler, flusher biz_entity_agent.AgentFlusher, appConfig *biz_entity_app_config.AgentChatAppConfig) {
+func (r *appAgentChatRunner) Run(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.AgentChatAppGenerateEntity, message *po_entity_chat.Message, conversation *po_entity_chat.Conversation, queueManager biz_entity_base_stream_generator.IStreamGenerateQueue, taskScheduler IAgentChatAppTaskScheduler, flusher biz_entity_agent.AgentFlusher, appConfig *biz_entity_app_config.AgentChatAppConfig) {
 
 	modelCaller, promptMessages, stop, app, err := r.baseRun(ctx, applicationGenerateEntity, conversation)
 
@@ -116,8 +118,8 @@ func (r *appAgentChatRunner) Run(ctx context.Context, applicationGenerateEntity 
 		}
 
 		if annotation != nil {
-			queueEvent := biz_entity.NewAppQueueEvent(biz_entity.AnnotationReply)
-			queueManager.Push(&biz_entity.QueueAnnotationReplyEvent{
+			queueEvent := biz_entity_base_stream_generator.NewAppQueueEvent(biz_entity_base_stream_generator.AnnotationReply)
+			queueManager.Push(&biz_entity_base_stream_generator.QueueAnnotationReplyEvent{
 				AppQueueEvent:       queueEvent,
 				MessageAnnotationID: annotation.ID,
 			})
@@ -135,11 +137,11 @@ func (r *appAgentChatRunner) Run(ctx context.Context, applicationGenerateEntity 
 			return
 		}
 
-		go modelCaller.InvokeLLM(ctx, util.ConvertToInterfaceSlice(promptMessages, func(pm *po_entity_chat.PromptMessage) po_entity_chat.IPromptMessage {
+		go modelCaller.InvokeLLM(ctx, util.ConvertToInterfaceSlice(promptMessages, func(pm *biz_entity_chat_prompt_message.PromptMessage) biz_entity_chat_prompt_message.IPromptMessage {
 			return pm
 		}), queueManager, applicationGenerateEntity.ModelConf.Parameters, promptToolMessage, stop, applicationGenerateEntity.UserID, nil)
 
-		agentRunner := NewFunctionCallAgentRunner(app.TenantID, applicationGenerateEntity, conversation, r.agentDomain, queueManager, flusher, promptToolMessage, util.ConvertToInterfaceSlice(promptMessages, func(pm *po_entity_chat.PromptMessage) po_entity_chat.IPromptMessage {
+		agentRunner := NewFunctionCallAgentRunner(app.TenantID, applicationGenerateEntity, conversation, r.agentDomain, queueManager, flusher, promptToolMessage, util.ConvertToInterfaceSlice(promptMessages, func(pm *biz_entity_chat_prompt_message.PromptMessage) biz_entity_chat_prompt_message.IPromptMessage {
 			return pm
 		}), toolRuntimeMap, modelCaller, appConfig, "builtin", r.secretKet, r.fileBaseUrl, r.bucket)
 
@@ -153,9 +155,9 @@ func (r *appAgentChatRunner) QueryAppAnnotationToReply(ctx context.Context, appR
 	return app_feature.NewAnnotationReplyFeature(r.ChatDomain, r.DatasetDomain, r.ProviderDomain, r.redis).Query(ctx, appRecord, message, query, accountID, invokeFrom)
 }
 
-func (r *appAgentChatRunner) InitPromptTools() (map[string]*biz_entity_agent.ToolRuntimeConfiguration, []*biz_entity.PromptMessageTool, error) {
+func (r *appAgentChatRunner) InitPromptTools() (map[string]*biz_entity_agent.ToolRuntimeConfiguration, []*biz_entity_chat_prompt_message.PromptMessageTool, error) {
 	var (
-		promptMessageTools []*biz_entity.PromptMessageTool
+		promptMessageTools []*biz_entity_chat_prompt_message.PromptMessageTool
 		toolInstance       = make(map[string]*biz_entity_agent.ToolRuntimeConfiguration)
 	)
 
@@ -173,17 +175,17 @@ func (r *appAgentChatRunner) InitPromptTools() (map[string]*biz_entity_agent.Too
 	return toolInstance, promptMessageTools, nil
 }
 
-func (r *appAgentChatRunner) convertToolToPromptMessageTool(tool *biz_entity_app_config.AgentToolEntity) (*biz_entity.PromptMessageTool, *biz_entity_agent.ToolRuntimeConfiguration, error) {
+func (r *appAgentChatRunner) convertToolToPromptMessageTool(tool *biz_entity_app_config.AgentToolEntity) (*biz_entity_chat_prompt_message.PromptMessageTool, *biz_entity_agent.ToolRuntimeConfiguration, error) {
 	toolRuntime, err := r.agentDomain.GetAgentToolRuntime(r.tenantID, r.appConfig.AppID, tool, "builtin")
 
 	if err != nil {
 		return nil, nil, err
 	}
 
-	promptMessageTool := &biz_entity.PromptMessageTool{
+	promptMessageTool := &biz_entity_chat_prompt_message.PromptMessageTool{
 		Name:        tool.ToolName,
 		Description: toolRuntime.Description.LLM,
-		Parameters:  biz_entity.NewPromptMessageToolParameter(),
+		Parameters:  biz_entity_chat_prompt_message.NewPromptMessageToolParameter(),
 	}
 
 	parameters := toolRuntime.GetAllRuntimeParameters()
@@ -205,7 +207,7 @@ func (r *appAgentChatRunner) convertToolToPromptMessageTool(tool *biz_entity_app
 			}
 		}
 
-		promptMessageTool.Parameters.Properties[parameter.Name] = &biz_entity.PromptMessageToolProperty{
+		promptMessageTool.Parameters.Properties[parameter.Name] = &biz_entity_chat_prompt_message.PromptMessageToolProperty{
 			Type:        parameter.Type.AsNormalType(),
 			Description: parameter.LLMDescription,
 		}

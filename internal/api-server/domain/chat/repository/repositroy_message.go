@@ -7,7 +7,7 @@ package repository
 import (
 	"context"
 
-	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
+	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/console_app_statistic"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/common/repository"
 )

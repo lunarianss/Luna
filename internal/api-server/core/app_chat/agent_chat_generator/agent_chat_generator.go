@@ -20,7 +20,8 @@ import (
 	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	chatDomain "github.com/lunarianss/Luna/internal/api-server/domain/chat/domain_service"
-	biz_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
+	biz_entity_agent_generator "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/stream_agent_generator"
+	biz_entity_base_stream_generator "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/stream_base_generator"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/common/repository"
 	datasetDomain "github.com/lunarianss/Luna/internal/api-server/domain/dataset/domain_service"
@@ -182,7 +183,7 @@ func (acg *AgentChatGenerator) Generate(c context.Context, appModel *po_entity.A
 		return err
 	}
 
-	queueManager := biz_entity_chat.NewAgentStreamGenerateQueue(
+	queueManager := biz_entity_agent_generator.NewAgentStreamGenerateQueue(
 		uuid.NewString(),
 		applicationGenerateEntity.EasyUIBasedAppGenerateEntity.UserID,
 		conversationRecord.ID,
@@ -203,7 +204,7 @@ func (acg *AgentChatGenerator) Generate(c context.Context, appModel *po_entity.A
 	return nil
 }
 
-func (g *AgentChatGenerator) generateGoRoutine(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.AgentChatAppGenerateEntity, conversationID string, messageID string, queueManager biz_entity_chat.IStreamGenerateQueue, taskPipeline app_agent_chat_runner.IAgentChatAppTaskScheduler, flusher biz_entity.AgentFlusher) {
+func (g *AgentChatGenerator) generateGoRoutine(ctx context.Context, applicationGenerateEntity *biz_entity_app_generate.AgentChatAppGenerateEntity, conversationID string, messageID string, queueManager biz_entity_base_stream_generator.IStreamGenerateQueue, taskPipeline app_agent_chat_runner.IAgentChatAppTaskScheduler, flusher biz_entity.AgentFlusher) {
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -238,7 +239,7 @@ func (g *AgentChatGenerator) generateGoRoutine(ctx context.Context, applicationG
 	appRunner.Run(ctx, applicationGenerateEntity, message, conversation, queueManager, taskPipeline, flusher, g.appConfig)
 }
 
-func (g *AgentChatGenerator) ListenQueue(queueManager biz_entity_chat.IStreamGenerateQueue) {
+func (g *AgentChatGenerator) ListenQueue(queueManager biz_entity_base_stream_generator.IStreamGenerateQueue) {
 	queueManager.Listen()
 }
 

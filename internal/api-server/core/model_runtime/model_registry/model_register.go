@@ -9,8 +9,9 @@ import (
 	"sync"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
-	biz_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
-	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
+	biz_entity_chat_prompt_message "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/chat_prompt_message"
+	biz_entity_openai_standard_response "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/openai_standard_response"
+	biz_entity_base_stream_generator "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/stream_base_generator"
 	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/provider/entity/biz_entity/provider/model_provider"
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 )
@@ -20,13 +21,13 @@ const (
 )
 
 type IModelRegistry interface {
-	Invoke(ctx context.Context, queueManager biz_entity_chat.IStreamGenerateQueue, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, user string, promptMessages []po_entity.IPromptMessage, modelRuntime biz_entity.IAIModelRuntime, tools []*biz_entity_chat.PromptMessageTool)
-	InvokeNonStream(ctx context.Context, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, user string, promptMessages []po_entity.IPromptMessage, modelRuntime biz_entity.IAIModelRuntime) (*biz_entity_chat.LLMResult, error)
+	Invoke(ctx context.Context, queueManager biz_entity_base_stream_generator.IStreamGenerateQueue, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, user string, promptMessages []biz_entity_chat_prompt_message.IPromptMessage, modelRuntime biz_entity.IAIModelRuntime, tools []*biz_entity_chat_prompt_message.PromptMessageTool)
+	InvokeNonStream(ctx context.Context, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, stop []string, user string, promptMessages []biz_entity_chat_prompt_message.IPromptMessage, modelRuntime biz_entity.IAIModelRuntime) (*biz_entity_base_stream_generator.LLMResult, error)
 	RegisterName() string
 }
 
 type IAudioModelRegistry interface {
-	Invoke(ctx context.Context, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, user, filename string, fileContent []byte, modelRuntime biz_entity.IAIModelRuntime) (*biz_entity_chat.Speech2TextResp, error)
+	Invoke(ctx context.Context, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, user, filename string, fileContent []byte, modelRuntime biz_entity.IAIModelRuntime) (*biz_entity_openai_standard_response.Speech2TextResp, error)
 	RegisterName() string
 }
 
@@ -36,7 +37,7 @@ type ITTSModelRegistry interface {
 }
 
 type ITextEmbeddingRegistry interface {
-	Embedding(ctx context.Context, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, user string, modelRuntime biz_entity.IAIModelRuntime, inputType string, texts []string) (*biz_entity_chat.TextEmbeddingResult, error)
+	Embedding(ctx context.Context, model string, credentials map[string]interface{}, modelParameters map[string]interface{}, user string, modelRuntime biz_entity.IAIModelRuntime, inputType string, texts []string) (*biz_entity_openai_standard_response.TextEmbeddingResult, error)
 	RegisterName() string
 }
 

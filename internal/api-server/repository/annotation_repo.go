@@ -7,7 +7,7 @@ import (
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	"github.com/lunarianss/Luna/infrastructure/log"
 	po_account "github.com/lunarianss/Luna/internal/api-server/domain/account/entity/po_entity"
-	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
+	biz_entity_app_chat_annotation "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/chat_annotation"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/repository"
 	po_dataset "github.com/lunarianss/Luna/internal/api-server/domain/dataset/entity/po_entity"
@@ -41,7 +41,7 @@ func (ap *AnnotationRepoImpl) CreateAppAnnotationSetting(ctx context.Context, se
 	return setting, nil
 }
 
-func (ap *AnnotationRepoImpl) GetMessageAnnotation(ctx context.Context, messageID string) (*biz_entity.BizMessageAnnotation, error) {
+func (ap *AnnotationRepoImpl) GetMessageAnnotation(ctx context.Context, messageID string) (*biz_entity_app_chat_annotation.BizMessageAnnotation, error) {
 	var (
 		ma      po_entity.MessageAnnotation
 		account po_account.Account
@@ -54,7 +54,7 @@ func (ap *AnnotationRepoImpl) GetMessageAnnotation(ctx context.Context, messageI
 		return nil, errors.WrapC(err, code.ErrDatabase, "Get account by accountID-[%s] error: %s", ma.AccountID, err.Error())
 	}
 
-	return biz_entity.ConvertToBizMessageAnnotation(&ma, &account), nil
+	return biz_entity_app_chat_annotation.ConvertToBizMessageAnnotation(&ma, &account), nil
 }
 
 func (ap *AnnotationRepoImpl) GetMessageAnnotationHistory(ctx context.Context, messageID string) (*po_entity.AppAnnotationHitHistory, error) {
@@ -140,7 +140,7 @@ func (ap *AnnotationRepoImpl) GetAnnotationSettingWithCreate(ctx context.Context
 		dbIns = ap.db
 	}
 	var (
-		annotationSetting   *biz_entity.AnnotationSettingWithBinding
+		annotationSetting   *biz_entity_app_chat_annotation.AnnotationSettingWithBinding
 		poAnnotationSetting *po_entity.AppAnnotationSetting
 	)
 
@@ -169,7 +169,7 @@ func (ap *AnnotationRepoImpl) GetAnnotationSettingWithCreate(ctx context.Context
 	return poAnnotationSetting, nil
 }
 
-func (ap *AnnotationRepoImpl) CreateMessageAnnotation(ctx context.Context, annotation *po_entity.MessageAnnotation) (*biz_entity.BizMessageAnnotation, error) {
+func (ap *AnnotationRepoImpl) CreateMessageAnnotation(ctx context.Context, annotation *po_entity.MessageAnnotation) (*biz_entity_app_chat_annotation.BizMessageAnnotation, error) {
 	var (
 		account po_account.Account
 	)
@@ -181,7 +181,7 @@ func (ap *AnnotationRepoImpl) CreateMessageAnnotation(ctx context.Context, annot
 		return nil, errors.WrapC(err, code.ErrDatabase, "Get account by accountID-[%s] error: %s", annotation.AccountID, err.Error())
 	}
 
-	return biz_entity.ConvertToBizMessageAnnotation(annotation, &account), nil
+	return biz_entity_app_chat_annotation.ConvertToBizMessageAnnotation(annotation, &account), nil
 }
 
 func (ap *AnnotationRepoImpl) UpdateMessageAnnotation(ctx context.Context, id, answer, question string) error {
@@ -192,7 +192,7 @@ func (ap *AnnotationRepoImpl) UpdateMessageAnnotation(ctx context.Context, id, a
 	return nil
 }
 
-func (ap *AnnotationRepoImpl) GetAnnotationSetting(ctx context.Context, appID string, tx *gorm.DB) (*biz_entity.AnnotationSettingWithBinding, error) {
+func (ap *AnnotationRepoImpl) GetAnnotationSetting(ctx context.Context, appID string, tx *gorm.DB) (*biz_entity_app_chat_annotation.AnnotationSettingWithBinding, error) {
 
 	var dbIns *gorm.DB
 
@@ -213,7 +213,7 @@ func (ap *AnnotationRepoImpl) GetAnnotationSetting(ctx context.Context, appID st
 		return nil, errors.WrapC(err, code.ErrDatabase, "Get collection binding by ID-[%s] not error: %s", ma.CollectionBindingID, err.Error())
 	}
 
-	return biz_entity.ConvertPoAnnotationSetting(&ma, &binding), nil
+	return biz_entity_app_chat_annotation.ConvertPoAnnotationSetting(&ma, &binding), nil
 }
 
 func (ap *AnnotationRepoImpl) CreateAppAnnotationHistory(ctx context.Context, history *po_entity.AppAnnotationHitHistory) (*po_entity.AppAnnotationHitHistory, error) {

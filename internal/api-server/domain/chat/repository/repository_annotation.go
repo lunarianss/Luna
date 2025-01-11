@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity"
+	biz_entity "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/chat_annotation"
 	"github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
 	"gorm.io/gorm"
 )

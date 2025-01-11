@@ -186,7 +186,7 @@ func (s *SimplePromptTransform) getPromptRole(appMode po_entity.AppMode, provide
 	}
 
 	if err := json.Unmarshal(roleJsonContent, &promptRoleMap); err != nil {
-		return nil, errors.WithCode(code.ErrDecodingJSON, err.Error())
+		return nil, errors.WithSCode(code.ErrDecodingJSON, err.Error())
 	}
 
 	return &promptRoleMap, nil

@@ -46,7 +46,7 @@ func (m *tencentAudioLargeLanguageModel) Invoke(ctx context.Context, model strin
 	resp, err := recognizer.Recognize(req, fileContent)
 
 	if err != nil {
-		return nil, errors.WithCode(code.ErrTencentARS, err.Error())
+		return nil, errors.WithSCode(code.ErrTencentARS, err.Error())
 	}
 
 	var tranStr []string

@@ -13,7 +13,7 @@ import (
 	"runtime"
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
-	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/token_buffer_memory"
+	"github.com/lunarianss/Luna/internal/api-server/core/app/token_buffer_memory"
 	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	biz_entity_chat_prompt_message "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/biz_entity/chat_prompt_message"

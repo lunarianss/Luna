@@ -7,8 +7,8 @@ package app_agent_chat_runner
 import (
 	"context"
 
-	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/token_buffer_memory"
-	"github.com/lunarianss/Luna/internal/api-server/core/app_feature"
+	"github.com/lunarianss/Luna/internal/api-server/core/app/app_feature"
+	"github.com/lunarianss/Luna/internal/api-server/core/app/token_buffer_memory"
 	"github.com/lunarianss/Luna/internal/infrastructure/util"
 
 	agentDomain "github.com/lunarianss/Luna/internal/api-server/domain/agent/domain_service"

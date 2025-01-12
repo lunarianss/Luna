@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
-package app_config
+package app_agent_config
 
 import (
 	"context"
@@ -10,9 +10,9 @@ import (
 
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	assembler "github.com/lunarianss/Luna/internal/api-server/assembler/app"
-	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_model_config"
-	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_prompt_template"
-	"github.com/lunarianss/Luna/internal/api-server/core/app_config/app_variable_config"
+	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/app_model_config"
+	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/app_prompt_template"
+	"github.com/lunarianss/Luna/internal/api-server/core/app/app_config/app_variable_config"
 	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	"github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"
@@ -21,38 +21,30 @@ import (
 	"github.com/lunarianss/Luna/internal/infrastructure/code"
 )
 
-type ChatAppConfigManager struct {
+type ChatAgentAppConfigManager struct {
 	ProviderDomain *domain_service.ProviderDomain
 }
 
-func NewChatAppConfigManager(providerDomain *domain_service.ProviderDomain) *ChatAppConfigManager {
-	return &ChatAppConfigManager{
+func NewAgentChatAppConfigManager(providerDomain *domain_service.ProviderDomain) *ChatAgentAppConfigManager {
+	return &ChatAgentAppConfigManager{
 		ProviderDomain: providerDomain,
 	}
 }
 
-func (m *ChatAppConfigManager) ConfigValidate(ctx context.Context, tenantID string, config *dto.AppModelConfigDto) (*dto.AppModelConfigDto, error) {
-	var (
-		relatedConfigKeys        []string
-		currentRelatedConfigKeys []string
-	)
+func (m *ChatAgentAppConfigManager) ConfigValidate(ctx context.Context, tenantID string, config *dto.AppModelConfigDto) (*dto.AppModelConfigDto, error) {
 
 	// model
 	modelConfigManager := app_model_config.NewModelConfigManager(m.ProviderDomain)
 
-	config, currentRelatedConfigKeys, err := modelConfigManager.ValidateAndSetDefaults(ctx, tenantID, config)
+	config, _, err := modelConfigManager.ValidateAndSetDefaults(ctx, tenantID, config)
 
 	if err != nil {
 		return nil, err
 	}
-
-	relatedConfigKeys = append(relatedConfigKeys, currentRelatedConfigKeys...)
-
-	// todo Filter out extra parameters
 	return config, nil
 }
 
-func (m *ChatAppConfigManager) GetAppConfig(ctx context.Context, appModel *po_entity.App, appModelConfig *po_entity.AppModelConfig, conversation *po_entity_chat.Conversation, overrideConfigDict *dto.AppModelConfigDto) (*biz_entity_app_config.ChatAppConfig, error) {
+func (m *ChatAgentAppConfigManager) GetAppConfig(ctx context.Context, appModel *po_entity.App, appModelConfig *po_entity.AppModelConfig, conversation *po_entity_chat.Conversation, overrideConfigDict *dto.AppModelConfigDto) (*biz_entity_app_config.AgentChatAppConfig, error) {
 
 	var (
 		configFrom biz_entity_app_config.EasyUIBasedAppModelConfigFrom
@@ -102,7 +94,12 @@ func (m *ChatAppConfigManager) GetAppConfig(ctx context.Context, appModel *po_en
 
 	variables := app_variable_config.NewBasicVariablesConfigManager()
 
-	return &biz_entity_app_config.ChatAppConfig{
+	agentConfig, err := NewAgentConfigManager().Convert(configDict)
+
+	if err != nil {
+		return nil, err
+	}
+	return &biz_entity_app_config.AgentChatAppConfig{
 		EasyUIBasedAppConfig: &biz_entity_app_config.EasyUIBasedAppConfig{
 			AppConfig: &biz_entity_app_config.AppConfig{
 				TenantID:               appModel.TenantID,
@@ -118,5 +115,6 @@ func (m *ChatAppConfigManager) GetAppConfig(ctx context.Context, appModel *po_en
 			Model:              modelConfigEntity,
 			PromptTemplate:     promptTemplate,
 		},
+		AgentEntity: agentConfig,
 	}, nil
 }

@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/token_buffer_memory"
-	prompt "github.com/lunarianss/Luna/internal/api-server/core/app_prompt"
+	prompt "github.com/lunarianss/Luna/internal/api-server/core/app/app_prompt"
+	"github.com/lunarianss/Luna/internal/api-server/core/app/token_buffer_memory"
 	biz_entity_app_config "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/biz_entity/provider_app_config"
 	po_entity_app "github.com/lunarianss/Luna/internal/api-server/domain/app/entity/po_entity"
 	po_entity_chat "github.com/lunarianss/Luna/internal/api-server/domain/chat/entity/po_entity"

@@ -10,7 +10,7 @@ import (
 	"github.com/lunarianss/Luna/infrastructure/errors"
 	assembler "github.com/lunarianss/Luna/internal/api-server/assembler/service"
 	"github.com/lunarianss/Luna/internal/api-server/config"
-	"github.com/lunarianss/Luna/internal/api-server/core/app_chat/app_chat_generator"
+	"github.com/lunarianss/Luna/internal/api-server/core/app/app_chat_generator"
 	"github.com/lunarianss/Luna/internal/api-server/core/model_runtime/model_registry"
 	accountDomain "github.com/lunarianss/Luna/internal/api-server/domain/account/domain_service"
 	po_account "github.com/lunarianss/Luna/internal/api-server/domain/account/entity/po_entity"

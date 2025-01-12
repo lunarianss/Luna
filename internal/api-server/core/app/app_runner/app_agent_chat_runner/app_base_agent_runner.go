@@ -1,7 +1,7 @@
 package app_agent_chat_runner
 
 import (
-	"github.com/lunarianss/Luna/internal/api-server/core/app/app_chat_runner"
+	"github.com/lunarianss/Luna/internal/api-server/core/app/app_runner/app_chat_runner"
 )
 
 type AppBaseAgentChatRunner struct {

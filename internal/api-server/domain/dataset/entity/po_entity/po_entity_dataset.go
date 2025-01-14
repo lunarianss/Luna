@@ -104,3 +104,53 @@ func (a *Embedding) SetEmbedding(embeddingVector []float32) ([]byte, error) {
 
 	return buf.Bytes(), nil
 }
+
+type DatasetProcessRule struct {
+	ID        string `json:"id" gorm:"column:id"`
+	DatasetID string `json:"dataset_id" gorm:"column:dataset_id"`
+	Mode      string `json:"mode" gorm:"column:mode;default:automatic"`
+	Rules     string `json:"rules" gorm:"column:rules"`
+	CreatedBy string `json:"created_by" gorm:"column:created_by"`
+	CreatedAt int64  `json:"created_at" gorm:"column:created_at"`
+}
+
+func (a *DatasetProcessRule) TableName() string {
+	return "dataset_process_rules"
+}
+
+type AppDatasetJoin struct {
+	ID        string `json:"id" gorm:"column:id"`
+	AppID     string `json:"app_id" gorm:"column:app_id"`
+	DatasetID string `json:"dataset_id" gorm:"column:dataset_id"`
+	CreatedAt int64  `json:"created_at" gorm:"column:created_at"`
+}
+
+func (a *AppDatasetJoin) TableName() string {
+	return "app_dataset_joins"
+}
+
+type DatasetQuery struct {
+	ID            string `json:"id" gorm:"column:id"`
+	DatasetID     string `json:"dataset_id" gorm:"column:dataset_id"`
+	Content       string `json:"content" gorm:"column:content"`
+	Source        string `json:"source" gorm:"column:source"`
+	SourceAppID   string `json:"source_app_id" gorm:"column:source_app_id"`
+	CreatedByRole string `json:"created_by_role" gorm:"column:created_by_role"`
+	CreatedBy     string `json:"created_by" gorm:"column:created_by"`
+	CreatedAt     int64  `json:"created_at" gorm:"column:created_at"`
+}
+
+func (a *DatasetQuery) TableName() string {
+	return "dataset_queries"
+}
+
+type DatasetKeywordTable struct {
+	ID             string `json:"id" gorm:"column:id"`
+	DatasetID      string `json:"dataset_id" gorm:"column:dataset_id"`
+	KeywordTable   string `json:"keyword_table" gorm:"column:keyword_table"`
+	DataSourceType string `json:"data_source_type" gorm:"column:data_source_type;default:database"`
+}
+
+func (a *DatasetKeywordTable) TableName() string {
+	return "dataset_keyword_tables"
+}

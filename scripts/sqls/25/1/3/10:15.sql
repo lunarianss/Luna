@@ -26,7 +26,7 @@ CREATE TABLE message_agent_thoughts (
     tokens INT,
     total_price DECIMAL(15, 7),
     currency VARCHAR(255),
-    latency FLOAT(8, 2),
+    latency FLOAT,
     created_by_role VARCHAR(255) NOT NULL,
     created_by CHAR(36) NOT NULL,
     created_at int(10) NOT NULL

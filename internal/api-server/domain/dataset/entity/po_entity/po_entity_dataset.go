@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/lunarianss/Luna/internal/infrastructure/field"
 	"gorm.io/gorm"
 )
 
@@ -118,6 +119,11 @@ func (a *DatasetProcessRule) TableName() string {
 	return "dataset_process_rules"
 }
 
+func (a *DatasetProcessRule) BeforeCreate(tx *gorm.DB) (err error) {
+	a.ID = uuid.NewString()
+	return
+}
+
 type AppDatasetJoin struct {
 	ID        string `json:"id" gorm:"column:id"`
 	AppID     string `json:"app_id" gorm:"column:app_id"`
@@ -127,6 +133,11 @@ type AppDatasetJoin struct {
 
 func (a *AppDatasetJoin) TableName() string {
 	return "app_dataset_joins"
+}
+
+func (a *AppDatasetJoin) BeforeCreate(tx *gorm.DB) (err error) {
+	a.ID = uuid.NewString()
+	return
 }
 
 type DatasetQuery struct {
@@ -144,6 +155,11 @@ func (a *DatasetQuery) TableName() string {
 	return "dataset_queries"
 }
 
+func (a *DatasetQuery) BeforeCreate(tx *gorm.DB) (err error) {
+	a.ID = uuid.NewString()
+	return
+}
+
 type DatasetKeywordTable struct {
 	ID             string `json:"id" gorm:"column:id"`
 	DatasetID      string `json:"dataset_id" gorm:"column:dataset_id"`
@@ -153,4 +169,36 @@ type DatasetKeywordTable struct {
 
 func (a *DatasetKeywordTable) TableName() string {
 	return "dataset_keyword_tables"
+}
+
+func (a *DatasetKeywordTable) BeforeCreate(tx *gorm.DB) (err error) {
+	a.ID = uuid.NewString()
+	return
+}
+
+type UploadFile struct {
+	ID            string        `json:"id" gorm:"column:id"`
+	TenantID      string        `json:"tenant_id" gorm:"column:tenant_id"`
+	StorageType   string        `json:"storage_type" gorm:"column:storage_type"`
+	Key           string        `json:"key" gorm:"column:key"`
+	Name          string        `json:"name" gorm:"column:name"`
+	Size          int           `json:"size" gorm:"column:size"`
+	Extension     string        `json:"extension" gorm:"column:extension"`
+	MimeType      string        `json:"mime_type" gorm:"column:mime_type"`
+	CreatedByRole string        `json:"created_by_role" gorm:"column:created_by_role"`
+	CreatedBy     string        `json:"created_by" gorm:"column:created_by"`
+	CreatedAt     int64         `json:"created_at" gorm:"column:created_at"`
+	Used          field.BitBool `json:"used" gorm:"column:used"`
+	UsedBy        string        `json:"used_by" gorm:"column:used_by"`
+	UsedAt        int64         `json:"used_at" gorm:"column:used_at"`
+	Hash          string        `json:"hash" gorm:"column:hash"`
+}
+
+func (a *UploadFile) TableName() string {
+	return "upload_files"
+}
+
+func (a *UploadFile) BeforeCreate(tx *gorm.DB) (err error) {
+	a.ID = uuid.NewString()
+	return
 }

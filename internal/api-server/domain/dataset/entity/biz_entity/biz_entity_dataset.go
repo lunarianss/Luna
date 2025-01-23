@@ -32,6 +32,7 @@ type SimilaritySearchAdditional struct {
 	Vector   []float32 `json:"vector"`
 	Distance float32   `json:"distance"`
 }
+
 type SimilaritySearchCollectionInfo struct {
 	Text         string                      `json:"text"`
 	DocID        string                      `json:"doc_id"`
